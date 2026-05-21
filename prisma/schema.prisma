@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Aluno {
+  id             Int          @id @default(autoincrement())
+  nome           String
+  dataNascimento DateTime
+  turma          String
+  horario        String
+  responsavel    String
+  telefone       String
+  email          String
+  dataMatricula  DateTime
+  mensalidade    Float
+  status         String       @default("Ativo")
+  observacoes    String?
+  pagamentos     Pagamento[]
+  frequencias    Frequencia[]
+  createdAt      DateTime     @default(now())
+}
+
+model Pagamento {
+  id             Int       @id @default(autoincrement())
+  alunoId        Int
+  aluno          Aluno     @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  mesReferencia  String
+  dataVencimento DateTime
+  dataPagamento  DateTime?
+  formaPagamento String?
+  valorRecebido  Float?
+  createdAt      DateTime  @default(now())
+}
+
+model Custo {
+  id             Int      @id @default(autoincrement())
+  data           DateTime
+  categoria      String
+  descricao      String
+  fornecedor     String
+  valor          Float
+  formaPagamento String
+  comprovante    Boolean  @default(false)
+  observacoes    String?
+  createdAt      DateTime @default(now())
+}
+
+model Frequencia {
+  id        Int      @id @default(autoincrement())
+  alunoId   Int
+  aluno     Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  data      DateTime
+  presenca  String
+
+  @@unique([alunoId, data])
+}
