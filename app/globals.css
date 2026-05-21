@@ -5,6 +5,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-brand-900: #7F0000;
+  --color-brand-800: #B71C1C;
+  --color-brand-600: #C62828;
+  --color-brand-500: #E53935;
+  --color-brand-300: #EF9A9A;
+  --color-brand-100: #FFEBEE;
+  --color-brand-50: #FFF5F5;
+  --font-heading: "Nunito", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -123,9 +135,11 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply font-body bg-[#FAFAF8] text-[#1A1A1A];
+    font-family: var(--font-body);
+    background-color: #FAFAF8;
+    color: #1A1A1A;
   }
   h1, h2, h3, h4 {
-    @apply font-heading;
+    font-family: var(--font-heading);
   }
 }
