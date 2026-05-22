@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,17 +17,18 @@ interface ReciboData {
   dataPagamento: string
 }
 
-export default function RecibosPage() {
+function RecibosForm() {
+  const searchParams = useSearchParams()
   const today = new Date().toISOString().split("T")[0]
 
   const [form, setForm] = useState<ReciboData>({
     numero: "001",
-    aluno: "",
-    responsavel: "",
-    referencia: "",
-    valor: "",
-    forma: "PIX",
-    dataPagamento: today,
+    aluno: searchParams.get("aluno") ?? "",
+    responsavel: searchParams.get("responsavel") ?? "",
+    referencia: searchParams.get("referencia") ?? "",
+    valor: searchParams.get("valor") ?? "",
+    forma: searchParams.get("forma") ?? "PIX",
+    dataPagamento: searchParams.get("data") ?? today,
   })
 
   function handleChange(
@@ -211,6 +213,14 @@ export default function RecibosPage() {
         </div>
       </div>
     </>
+  )
+}
+
+export default function RecibosPage() {
+  return (
+    <Suspense fallback={null}>
+      <RecibosForm />
+    </Suspense>
   )
 }
 
