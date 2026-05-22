@@ -13,7 +13,7 @@ interface StatCardProps {
 
 export function StatCard({ title, value, description, icon: Icon, className, accent }: StatCardProps) {
   return (
-    <Card className={cn("", className)}>
+    <Card className={cn(className)}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
