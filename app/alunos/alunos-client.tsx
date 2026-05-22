@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { PlusIcon, PencilIcon, UserXIcon } from "lucide-react"
@@ -315,7 +316,14 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
             )}
             {filtered.map((aluno) => (
               <TableRow key={aluno.id}>
-                <TableCell className="font-medium">{aluno.nome}</TableCell>
+                <TableCell className="font-medium">
+                  <Link
+                    href={`/alunos/${aluno.id}`}
+                    className="hover:underline hover:text-brand-800"
+                  >
+                    {aluno.nome}
+                  </Link>
+                </TableCell>
                 <TableCell>{aluno.turma}</TableCell>
                 <TableCell>{aluno.horario}</TableCell>
                 <TableCell>{aluno.responsavel}</TableCell>
