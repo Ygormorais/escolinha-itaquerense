@@ -1,65 +1,166 @@
-import Image from "next/image";
+import { db } from "@/lib/db"
+import { PageHeader } from "@/components/layout/page-header"
+import { StatCard } from "@/components/ui/stat-card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Users, TrendingUp, AlertCircle, CalendarCheck } from "lucide-react"
+import { format, startOfMonth, endOfMonth } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
-export default function Home() {
+export default async function DashboardPage() {
+  const now = new Date()
+  const mesAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+  const inicioMes = startOfMonth(now)
+  const fimMes = endOfMonth(now)
+
+  const [
+    totalAtivos,
+    pagamentosMes,
+    ultimosPagamentos,
+    frequenciasMes,
+    totalFrequencias,
+    inadimplentes,
+  ] = await Promise.all([
+    db.aluno.count({ where: { status: "Ativo" } }),
+    db.pagamento.findMany({
+      where: { mesReferencia: mesAtual, dataPagamento: { not: null } },
+    }),
+    db.pagamento.findMany({
+      where: { dataPagamento: { not: null } },
+      include: { aluno: { select: { nome: true, turma: true } } },
+      orderBy: { dataPagamento: "desc" },
+      take: 5,
+    }),
+    db.frequencia.count({
+      where: { data: { gte: inicioMes, lte: fimMes }, presenca: "Presente" },
+    }),
+    db.frequencia.count({
+      where: { data: { gte: inicioMes, lte: fimMes } },
+    }),
+    db.pagamento.findMany({
+      where: {
+        mesReferencia: mesAtual,
+        dataPagamento: null,
+        dataVencimento: { lt: now },
+      },
+      include: { aluno: { select: { nome: true, turma: true } } },
+      orderBy: { dataVencimento: "asc" },
+      take: 5,
+    }),
+  ])
+
+  const receitaMes = pagamentosMes.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
+  const presencaMedia = totalFrequencias > 0
+    ? Math.round((frequenciasMes / totalFrequencias) * 100)
+    : 0
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-col gap-6 p-6">
+      <PageHeader
+        title="Dashboard"
+        description={`Visão geral — ${format(now, "MMMM yyyy", { locale: ptBR })}`}
+      />
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          title="Alunos Ativos"
+          value={totalAtivos}
+          icon={Users}
+          accent
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <StatCard
+          title="Receita do Mês"
+          value={`R$ ${receitaMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+          icon={TrendingUp}
+          accent
+        />
+        <StatCard
+          title="Inadimplentes"
+          value={inadimplentes.length}
+          description="Mensalidades vencidas"
+          icon={AlertCircle}
+        />
+        <StatCard
+          title="Presença Média"
+          value={`${presencaMedia}%`}
+          description="No mês atual"
+          icon={CalendarCheck}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Últimos Pagamentos</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Aluno</TableHead>
+                  <TableHead>Turma</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {ultimosPagamentos.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      Nenhum pagamento registrado
+                    </TableCell>
+                  </TableRow>
+                )}
+                {ultimosPagamentos.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                    <TableCell>{p.aluno.turma}</TableCell>
+                    <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
+                    <TableCell className="text-right">
+                      R$ {(p.valorRecebido ?? 0).toFixed(2)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Mensalidades em Atraso</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Aluno</TableHead>
+                  <TableHead>Turma</TableHead>
+                  <TableHead>Vencimento</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {inadimplentes.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">
+                      Nenhuma mensalidade em atraso
+                    </TableCell>
+                  </TableRow>
+                )}
+                {inadimplentes.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                    <TableCell>{p.aluno.turma}</TableCell>
+                    <TableCell className="text-red-600">
+                      {format(p.dataVencimento, "dd/MM/yyyy")}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  );
+  )
 }
