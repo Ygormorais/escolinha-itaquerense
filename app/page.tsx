@@ -14,6 +14,8 @@ export default async function DashboardPage() {
   const inicioMes = startOfMonth(now)
   const fimMes = endOfMonth(now)
 
+  const sixMonthsAgo = subMonths(startOfMonth(now), 5)
+
   const [
     totalAtivos,
     pagamentosMes,
@@ -21,6 +23,8 @@ export default async function DashboardPage() {
     frequenciasMes,
     totalFrequencias,
     inadimplentes,
+    pagamentosChart,
+    custosChart,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -48,11 +52,6 @@ export default async function DashboardPage() {
       orderBy: { dataVencimento: "asc" },
       take: 5,
     }),
-  ])
-
-  const sixMonthsAgo = subMonths(startOfMonth(now), 5)
-
-  const [pagamentosChart, custosChart] = await Promise.all([
     db.pagamento.findMany({
       where: { dataPagamento: { gte: sixMonthsAgo } },
       select: { dataPagamento: true, valorRecebido: true },

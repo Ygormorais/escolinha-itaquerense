@@ -27,7 +27,9 @@ export function ChartReceitaCustos({ data }: { data: ChartData[] }) {
             />
             <Tooltip
               formatter={(v) =>
-                (v as number).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                typeof v === "number"
+                  ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                  : String(v)
               }
             />
             <Legend />
