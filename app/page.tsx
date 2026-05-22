@@ -4,8 +4,9 @@ import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Users, TrendingUp, AlertCircle, CalendarCheck } from "lucide-react"
-import { format, startOfMonth, endOfMonth } from "date-fns"
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
 
 export default async function DashboardPage() {
   const now = new Date()
@@ -49,6 +50,36 @@ export default async function DashboardPage() {
     }),
   ])
 
+  const sixMonthsAgo = subMonths(startOfMonth(now), 5)
+
+  const [pagamentosChart, custosChart] = await Promise.all([
+    db.pagamento.findMany({
+      where: { dataPagamento: { gte: sixMonthsAgo } },
+      select: { dataPagamento: true, valorRecebido: true },
+    }),
+    db.custo.findMany({
+      where: { data: { gte: sixMonthsAgo } },
+      select: { data: true, valor: true },
+    }),
+  ])
+
+  const last6Months = Array.from({ length: 6 }, (_, i) => {
+    const d = subMonths(now, 5 - i)
+    return format(d, "yyyy-MM")
+  })
+
+  const chartData = last6Months.map((mes) => {
+    const recebido = pagamentosChart
+      .filter((p) => p.dataPagamento && format(p.dataPagamento, "yyyy-MM") === mes)
+      .reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+    const custos = custosChart
+      .filter((c) => format(c.data, "yyyy-MM") === mes)
+      .reduce((s, c) => s + c.valor, 0)
+    const [year, month] = mes.split("-")
+    const label = format(new Date(Number(year), Number(month) - 1), "MMM/yy", { locale: ptBR })
+    return { mes: label, recebido, custos }
+  })
+
   const receitaMes = pagamentosMes.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
   const presencaMedia = totalFrequencias > 0
     ? Math.round((frequenciasMes / totalFrequencias) * 100)
@@ -87,6 +118,8 @@ export default async function DashboardPage() {
           icon={CalendarCheck}
         />
       </div>
+
+      <ChartReceitaCustos data={chartData} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
