@@ -30,8 +30,10 @@ export default async function AlunoDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const numId = Number(id)
+  if (!Number.isInteger(numId)) notFound()
   const aluno = await db.aluno.findUnique({
-    where: { id: Number(id) },
+    where: { id: numId },
     include: {
       pagamentos: { orderBy: { dataVencimento: "desc" } },
       frequencias: { orderBy: { data: "desc" }, take: 30 },

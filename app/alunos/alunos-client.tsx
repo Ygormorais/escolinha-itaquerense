@@ -329,7 +329,7 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
                 <TableCell>{aluno.responsavel}</TableCell>
                 <TableCell>R$ {aluno.mensalidade.toFixed(2)}</TableCell>
                 <TableCell>
-                  <StatusBadge status={aluno.status as any} />
+                  <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
