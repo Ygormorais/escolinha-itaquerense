@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
@@ -72,12 +72,10 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<span />} onClick={() => setOpen(true)}>
-        <Button variant="outline" size="sm">
-          <CheckCircleIcon className="size-3.5" />
-          Registrar
-        </Button>
-      </DialogTrigger>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <CheckCircleIcon className="size-3.5" />
+        Registrar
+      </Button>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Registrar Pagamento</DialogTitle>

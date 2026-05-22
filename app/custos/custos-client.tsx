@@ -8,7 +8,7 @@ import { PlusIcon, CheckIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
@@ -89,12 +89,10 @@ function NovoCustoDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<span />} onClick={() => setOpen(true)}>
-        <Button className="bg-brand-800 text-white hover:bg-brand-900">
-          <PlusIcon className="size-4" />
-          Novo Custo
-        </Button>
-      </DialogTrigger>
+      <Button onClick={() => setOpen(true)} className="bg-brand-800 text-white hover:bg-brand-900">
+        <PlusIcon className="size-4" />
+        Novo Custo
+      </Button>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Registrar Custo</DialogTitle>

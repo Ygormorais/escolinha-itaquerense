@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
@@ -100,9 +100,7 @@ function AlunoFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<span />} onClick={() => setOpen(true)}>
-        {trigger}
-      </DialogTrigger>
+      <div onClick={() => setOpen(true)}>{trigger}</div>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{aluno ? "Editar Aluno" : "Novo Aluno"}</DialogTitle>
