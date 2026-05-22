@@ -175,7 +175,13 @@ export function PagamentosClient({
           Gerar Mensalidades
         </Button>
 
-        <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <Dialog
+          open={confirmOpen}
+          onOpenChange={(open) => {
+            if (!open) setResultado(null)
+            setConfirmOpen(open)
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Gerar Mensalidades</DialogTitle>

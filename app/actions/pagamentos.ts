@@ -27,32 +27,31 @@ export async function registrarPagamento(
 export async function gerarMensalidadesMes(
   mes: string
 ): Promise<{ criados: number; ignorados: number }> {
-  const alunos = await db.aluno.findMany({ where: { status: "Ativo" } })
+  const [ano, mesNum] = mes.split("-").map(Number)
 
-  let criados = 0
-  let ignorados = 0
+  const [alunos, existentes] = await Promise.all([
+    db.aluno.findMany({ where: { status: "Ativo" } }),
+    db.pagamento.findMany({
+      where: { mesReferencia: mes },
+      select: { alunoId: true },
+    }),
+  ])
 
-  for (const aluno of alunos) {
-    const existe = await db.pagamento.findFirst({
-      where: { alunoId: aluno.id, mesReferencia: mes },
-    })
-    if (existe) {
-      ignorados++
-      continue
-    }
-    const [ano, mesNum] = mes.split("-").map(Number)
-    await db.pagamento.create({
-      data: {
-        alunoId: aluno.id,
+  const existentesSet = new Set(existentes.map((e) => e.alunoId))
+  const novos = alunos.filter((a) => !existentesSet.has(a.id))
+
+  if (novos.length > 0) {
+    await db.pagamento.createMany({
+      data: novos.map((a) => ({
+        alunoId: a.id,
         mesReferencia: mes,
         dataVencimento: new Date(ano, mesNum - 1, 10),
-      },
+      })),
     })
-    criados++
   }
 
   revalidatePath("/pagamentos")
   revalidatePath("/")
 
-  return { criados, ignorados }
+  return { criados: novos.length, ignorados: existentesSet.size }
 }
