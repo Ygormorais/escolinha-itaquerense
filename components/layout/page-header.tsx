@@ -1,9 +1,10 @@
+import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
 interface PageHeaderProps {
   title: string
   description?: string
-  action?: React.ReactNode
+  action?: ReactNode
   className?: string
 }
 
