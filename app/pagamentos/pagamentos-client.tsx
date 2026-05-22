@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { CheckCircleIcon } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -20,7 +20,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { registrarPagamento } from "@/app/actions/pagamentos"
+import { registrarPagamento, gerarMensalidadesMes } from "@/app/actions/pagamentos"
 
 type Pagamento = {
   id: number
@@ -137,6 +137,19 @@ export function PagamentosClient({
   mes: string
 }) {
   const router = useRouter()
+  const [gerando, startGerando] = useTransition()
+  const [resultado, setResultado] = useState<{ criados: number; ignorados: number } | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  function handleGerar() {
+    startGerando(async () => {
+      const r = await gerarMensalidadesMes(mes)
+      setResultado(r)
+      setConfirmOpen(false)
+      router.refresh()
+    })
+  }
+
   const totalPago = pagamentos
     .filter((p) => p.dataPagamento)
     .reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
@@ -152,6 +165,41 @@ export function PagamentosClient({
           <label className="text-sm font-medium text-muted-foreground">Mês de referência</label>
           <Input type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setConfirmOpen(true)}
+          disabled={gerando}
+        >
+          <PlusCircleIcon className="size-4" />
+          Gerar Mensalidades
+        </Button>
+
+        <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Gerar Mensalidades</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Criar mensalidades de <strong>{mes}</strong> para todos os alunos ativos que ainda não têm registro neste mês?
+            </p>
+            {resultado && (
+              <p className="text-sm font-medium text-green-700">
+                ✅ {resultado.criados} criada(s), {resultado.ignorados} já existia(m).
+              </p>
+            )}
+            <DialogFooter showCloseButton>
+              <Button
+                onClick={handleGerar}
+                disabled={gerando}
+                className="bg-brand-800 text-white hover:bg-brand-900"
+              >
+                {gerando ? "Gerando..." : "Confirmar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="ml-auto text-right">
           <p className="text-sm text-muted-foreground">Total recebido</p>
           <p className="text-xl font-bold font-heading text-green-700">
