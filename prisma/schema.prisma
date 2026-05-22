@@ -58,3 +58,15 @@ model Frequencia {
 
   @@unique([alunoId, data])
 }
+
+model Recibo {
+  id             Int      @id @default(autoincrement())
+  numero         String   @unique
+  alunoNome      String
+  responsavel    String
+  mesReferencia  String
+  valor          Float
+  formaPagamento String
+  dataPagamento  DateTime
+  createdAt      DateTime @default(now())
+}
