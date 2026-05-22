@@ -6,6 +6,9 @@ const dbPath = path.join(process.cwd(), "prisma", "dev.db")
 
 export default defineConfig({
   schema: "./prisma/schema.prisma",
+  migrations: {
+    seed: "npx ts-node ./prisma/seed.ts",
+  },
   migrate: {
     async adapter() {
       return new PrismaBetterSqlite3({ url: dbPath })

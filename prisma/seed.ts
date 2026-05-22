@@ -1,7 +1,11 @@
 import { PrismaClient } from "@prisma/client"
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import path from "path"
 import { alunosData, custosData } from "../lib/seed-data"
 
-const db = new PrismaClient()
+const dbPath = path.join(process.cwd(), "prisma", "dev.db")
+const adapter = new PrismaBetterSqlite3({ url: dbPath })
+const db = new PrismaClient({ adapter } as any)
 
 async function main() {
   console.log("🌱 Iniciando seed...")
