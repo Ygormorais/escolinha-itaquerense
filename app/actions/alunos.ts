@@ -35,18 +35,15 @@ export async function createAluno(data: {
 
   // Generate 12 monthly payments starting from matricula month
   const baseDate = new Date(data.dataMatricula)
-  for (let i = 0; i < 12; i++) {
+  const pagamentos = Array.from({ length: 12 }, (_, i) => {
     const month = addMonths(baseDate, i)
-    const mesReferencia = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`
-    const dataVencimento = setDate(month, 10)
-    await db.pagamento.create({
-      data: {
-        alunoId: aluno.id,
-        mesReferencia,
-        dataVencimento,
-      },
-    })
-  }
+    return {
+      alunoId: aluno.id,
+      mesReferencia: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`,
+      dataVencimento: setDate(month, 10),
+    }
+  })
+  await db.pagamento.createMany({ data: pagamentos })
 
   revalidatePath("/alunos")
   revalidatePath("/")

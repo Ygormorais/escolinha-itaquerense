@@ -328,6 +328,7 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
                 <TableCell>
                   <div className="flex gap-1">
                     <AlunoFormDialog
+                      key={aluno.id}
                       aluno={aluno}
                       trigger={
                         <Button variant="ghost" size="icon-sm">

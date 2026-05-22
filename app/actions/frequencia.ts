@@ -6,13 +6,15 @@ import { db } from "@/lib/db"
 export async function salvarFrequencia(
   registros: { alunoId: number; data: string; presenca: string }[]
 ) {
-  for (const r of registros) {
-    await db.frequencia.upsert({
-      where: { alunoId_data: { alunoId: r.alunoId, data: new Date(r.data) } },
-      update: { presenca: r.presenca },
-      create: { alunoId: r.alunoId, data: new Date(r.data), presenca: r.presenca },
-    })
-  }
+  await Promise.all(
+    registros.map((r) =>
+      db.frequencia.upsert({
+        where: { alunoId_data: { alunoId: r.alunoId, data: new Date(r.data) } },
+        update: { presenca: r.presenca },
+        create: { alunoId: r.alunoId, data: new Date(r.data), presenca: r.presenca },
+      })
+    )
+  )
 
   revalidatePath("/frequencia")
   revalidatePath("/")
