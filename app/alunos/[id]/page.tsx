@@ -16,7 +16,7 @@ import { FrequenciaChart } from "./frequencia-chart"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
-  "Pendente": "bg-gray-100 text-gray-600",
+  "Pendente": "bg-muted text-muted-foreground",
   "Em atraso": "bg-warning-50 text-warning-600",
   "Atraso grave": "bg-danger-50 text-danger-600",
 }

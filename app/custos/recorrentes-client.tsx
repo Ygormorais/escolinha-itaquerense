@@ -226,7 +226,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
                   R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </TableCell>
                 <TableCell className="text-center">
-                  <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${r.ativo ? "bg-success-50 text-success-600" : "bg-gray-100 text-gray-500"}`}>
+                  <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${r.ativo ? "bg-success-50 text-success-600" : "bg-muted text-muted-foreground"}`}>
                     {r.ativo ? "Sim" : "Não"}
                   </span>
                 </TableCell>
