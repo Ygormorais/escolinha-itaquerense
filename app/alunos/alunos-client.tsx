@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, PencilIcon, UserXIcon } from "lucide-react"
+import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -21,7 +21,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { createAluno, updateAluno, inativarAluno } from "@/app/actions/alunos"
+import { createAluno, updateAluno, inativarAluno, reativarAluno } from "@/app/actions/alunos"
 
 type Aluno = {
   id: number
@@ -55,7 +55,7 @@ type FormValues = {
 const TURMAS = ["Sub-7", "Sub-9", "Sub-11", "Sub-13", "Sub-15", "Sub-17"]
 const HORARIOS = ["Seg/Qua 08h", "Seg/Qua 10h", "Seg/Qua 14h", "Ter/Qui 08h", "Ter/Qui 10h", "Ter/Qui 14h"]
 
-function AlunoFormDialog({
+export function AlunoFormDialog({
   aluno,
   trigger,
 }: {
@@ -242,10 +242,13 @@ function AlunoFormDialog({
   )
 }
 
+const PAGE_SIZE = 15
+
 export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
   const [search, setSearch] = useState("")
   const [turmaFilter, setTurmaFilter] = useState("Todas")
   const [statusFilter, setStatusFilter] = useState("Todos")
+  const [page, setPage] = useState(1)
   const router = useRouter()
 
   const filtered = alunos.filter((a) => {
@@ -255,9 +258,42 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
     return matchSearch && matchTurma && matchStatus
   })
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
+  function handleFilterChange(fn: () => void) {
+    fn()
+    setPage(1)
+  }
+
+  function exportarCSV() {
+    const linhas = [
+      ["Nome", "Turma", "Horário", "Responsável", "Telefone", "Email", "Mensalidade", "Status"],
+      ...filtered.map((a) => [
+        a.nome, a.turma, a.horario, a.responsavel, a.telefone, a.email,
+        a.mensalidade.toFixed(2), a.status,
+      ]),
+    ]
+    const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `alunos.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   async function handleInativar(id: number) {
     if (!confirm("Inativar este aluno?")) return
     await inativarAluno(id)
+    router.refresh()
+  }
+
+  async function handleReativar(id: number) {
+    if (!confirm("Reativar este aluno?")) return
+    await reativarAluno(id)
     router.refresh()
   }
 
@@ -267,10 +303,10 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
         <Input
           placeholder="Buscar por nome..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
           className="max-w-xs"
         />
-        <Select value={turmaFilter} onValueChange={setTurmaFilter}>
+        <Select value={turmaFilter} onValueChange={(v) => handleFilterChange(() => setTurmaFilter(v))}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -281,7 +317,7 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
             ))}
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(v) => handleFilterChange(() => setStatusFilter(v))}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -291,6 +327,37 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
             <SelectItem value="Inativo">Inativo</SelectItem>
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={exportarCSV} disabled={filtered.length === 0} className="ml-auto">
+          <Download className="size-4" />
+          Exportar CSV
+        </Button>
+      </div>
+
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>{filtered.length} aluno(s) encontrado(s)</span>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </Button>
+            <span className="text-xs">
+              {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="rounded-xl border bg-white">
@@ -307,14 +374,14 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground">
                   Nenhum aluno encontrado
                 </TableCell>
               </TableRow>
             )}
-            {filtered.map((aluno) => (
+            {paginated.map((aluno) => (
               <TableRow key={aluno.id}>
                 <TableCell className="font-medium">
                   <Link
@@ -342,13 +409,23 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
                         </Button>
                       }
                     />
-                    {aluno.status === "Ativo" && (
+                    {aluno.status === "Ativo" ? (
                       <Button
                         variant="ghost"
                         size="icon-sm"
+                        title="Inativar aluno"
                         onClick={() => handleInativar(aluno.id)}
                       >
                         <UserXIcon className="size-3.5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        title="Reativar aluno"
+                        onClick={() => handleReativar(aluno.id)}
+                      >
+                        <UserCheckIcon className="size-3.5 text-success-600" />
                       </Button>
                     )}
                   </div>

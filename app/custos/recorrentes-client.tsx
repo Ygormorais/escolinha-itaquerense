@@ -1,0 +1,260 @@
+"use client"
+
+import { useState, useTransition } from "react"
+import { useForm } from "react-hook-form"
+import { PlusIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
+} from "@/components/ui/form"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table"
+import {
+  createCustoRecorrente, updateCustoRecorrente, deleteCustoRecorrente,
+} from "@/app/actions/custos"
+import { useRouter } from "next/navigation"
+
+const CATEGORIAS = ["Aluguel de campo", "Salário técnico", "Material esportivo", "Uniforme", "Outros"]
+const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
+
+type Recorrente = {
+  id: number
+  categoria: string
+  descricao: string
+  fornecedor: string
+  valor: number
+  formaPagamento: string
+  ativo: boolean
+}
+
+type FormValues = {
+  categoria: string
+  descricao: string
+  fornecedor: string
+  valor: string
+  formaPagamento: string
+  ativo: boolean
+}
+
+function RecorrenteFormDialog({ recorrente, trigger }: { recorrente?: Recorrente; trigger: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const form = useForm<FormValues>({
+    defaultValues: {
+      categoria: recorrente?.categoria ?? CATEGORIAS[0],
+      descricao: recorrente?.descricao ?? "",
+      fornecedor: recorrente?.fornecedor ?? "",
+      valor: recorrente ? String(recorrente.valor) : "",
+      formaPagamento: recorrente?.formaPagamento ?? FORMAS_PAGAMENTO[0],
+      ativo: recorrente?.ativo ?? true,
+    },
+  })
+
+  async function onSubmit(values: FormValues) {
+    setLoading(true)
+    try {
+      const payload = { ...values, valor: Number(values.valor) }
+      if (recorrente) {
+        await updateCustoRecorrente(recorrente.id, payload)
+      } else {
+        await createCustoRecorrente(payload)
+      }
+      setOpen(false)
+      form.reset()
+      router.refresh()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <div onClick={() => setOpen(true)}>{trigger}</div>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{recorrente ? "Editar Recorrente" : "Novo Custo Recorrente"}</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            <FormField control={form.control} name="descricao" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descrição</FormLabel>
+                <FormControl><Input {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField control={form.control} name="categoria" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="fornecedor" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fornecedor</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="valor" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valor (R$)</FormLabel>
+                  <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="formaPagamento" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Forma de Pagamento</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {FORMAS_PAGAMENTO.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </FormItem>
+              )} />
+            </div>
+            {recorrente && (
+              <FormField control={form.control} name="ativo" render={({ field }) => (
+                <FormItem className="flex items-center gap-2">
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="size-4 accent-brand-800"
+                    />
+                  </FormControl>
+                  <FormLabel className="!mt-0">Ativo</FormLabel>
+                </FormItem>
+              )} />
+            )}
+            <DialogFooter showCloseButton>
+              <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
+                {loading ? "Salvando..." : recorrente ? "Salvar" : "Cadastrar"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }) {
+  const [deleting, startDelete] = useTransition()
+  const router = useRouter()
+
+  function handleDelete(id: number) {
+    if (!confirm("Excluir este modelo recorrente?")) return
+    startDelete(async () => {
+      await deleteCustoRecorrente(id)
+      router.refresh()
+    })
+  }
+
+  const total = recorrentes.filter((r) => r.ativo).reduce((s, r) => s + r.valor, 0)
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">
+            {recorrentes.filter((r) => r.ativo).length} modelo(s) ativo(s) —{" "}
+            <span className="font-medium text-foreground">
+              R$ {total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} /mês
+            </span>
+          </p>
+        </div>
+        <RecorrenteFormDialog
+          trigger={
+            <Button className="bg-brand-800 text-white hover:bg-brand-900">
+              <PlusIcon className="size-4" />
+              Novo Modelo
+            </Button>
+          }
+        />
+      </div>
+
+      <div className="rounded-xl border bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Descrição</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead>Fornecedor</TableHead>
+              <TableHead>Forma</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="text-center">Ativo</TableHead>
+              <TableHead className="w-16" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {recorrentes.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  Nenhum modelo cadastrado
+                </TableCell>
+              </TableRow>
+            )}
+            {recorrentes.map((r) => (
+              <TableRow key={r.id} className={!r.ativo ? "opacity-50" : ""}>
+                <TableCell className="font-medium">{r.descricao}</TableCell>
+                <TableCell>{r.categoria}</TableCell>
+                <TableCell>{r.fornecedor}</TableCell>
+                <TableCell>{r.formaPagamento}</TableCell>
+                <TableCell className="text-right">
+                  R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </TableCell>
+                <TableCell className="text-center">
+                  <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${r.ativo ? "bg-success-50 text-success-600" : "bg-gray-100 text-gray-500"}`}>
+                    {r.ativo ? "Sim" : "Não"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <RecorrenteFormDialog
+                      recorrente={r}
+                      trigger={
+                        <Button variant="ghost" size="icon-sm">
+                          <PencilIcon className="size-3.5" />
+                        </Button>
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      disabled={deleting}
+                      onClick={() => handleDelete(r.id)}
+                    >
+                      <Trash2Icon className="size-3.5 text-danger-600" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+}

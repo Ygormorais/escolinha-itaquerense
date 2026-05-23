@@ -33,3 +33,8 @@ export async function salvarRecibo(data: {
 export async function getRecibos() {
   return db.recibo.findMany({ orderBy: { createdAt: "desc" } })
 }
+
+export async function deleteRecibo(id: number) {
+  await db.recibo.delete({ where: { id } })
+  revalidatePath("/recibos")
+}

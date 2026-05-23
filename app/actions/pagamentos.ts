@@ -55,3 +55,28 @@ export async function gerarMensalidadesMes(
 
   return { criados: novos.length, ignorados: existentesSet.size }
 }
+
+export async function deletePagamento(id: number) {
+  await db.pagamento.delete({ where: { id } })
+  revalidatePath("/pagamentos")
+  revalidatePath("/inadimplencia")
+  revalidatePath("/")
+}
+
+export async function marcarComoPago(
+  id: number,
+  data: { dataPagamento: string; formaPagamento: string; valorRecebido: number }
+) {
+  await db.pagamento.update({
+    where: { id },
+    data: {
+      dataPagamento: new Date(data.dataPagamento),
+      formaPagamento: data.formaPagamento,
+      valorRecebido: data.valorRecebido,
+    },
+  })
+
+  revalidatePath("/inadimplencia")
+  revalidatePath("/pagamentos")
+  revalidatePath("/")
+}

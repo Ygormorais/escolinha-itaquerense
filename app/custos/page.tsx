@@ -1,7 +1,9 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { CustosClient } from "./custos-client"
+import { RecorrentesClient } from "./recorrentes-client"
 import { startOfMonth, endOfMonth } from "date-fns"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default async function CustosPage({
   searchParams,
@@ -17,10 +19,13 @@ export default async function CustosPage({
   const inicio = startOfMonth(dataRef)
   const fim = endOfMonth(dataRef)
 
-  const custos = await db.custo.findMany({
-    where: { data: { gte: inicio, lte: fim } },
-    orderBy: { data: "desc" },
-  })
+  const [custos, recorrentes] = await Promise.all([
+    db.custo.findMany({
+      where: { data: { gte: inicio, lte: fim } },
+      orderBy: { data: "desc" },
+    }),
+    db.custoRecorrente.findMany({ orderBy: { descricao: "asc" } }),
+  ])
 
   const total = custos.reduce((sum, c) => sum + c.valor, 0)
 
@@ -30,7 +35,18 @@ export default async function CustosPage({
         title="Custos"
         description={`Despesas operacionais — ${mes}`}
       />
-      <CustosClient custos={custos} mes={mes} total={total} />
+      <Tabs defaultValue="lancamentos">
+        <TabsList>
+          <TabsTrigger value="lancamentos">Lançamentos</TabsTrigger>
+          <TabsTrigger value="recorrentes">Recorrentes</TabsTrigger>
+        </TabsList>
+        <TabsContent value="lancamentos" className="mt-4">
+          <CustosClient custos={custos} mes={mes} total={total} recorrentes={recorrentes} />
+        </TabsContent>
+        <TabsContent value="recorrentes" className="mt-4">
+          <RecorrentesClient recorrentes={recorrentes} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

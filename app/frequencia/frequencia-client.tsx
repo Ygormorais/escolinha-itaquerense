@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon } from "lucide-react"
+import { SaveIcon, PrinterIcon, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -28,6 +28,7 @@ export function FrequenciaClient() {
   const [saving, startSaving] = useTransition()
   const [loading, startLoading] = useTransition()
   const [presencas, setPresencas] = useState<Record<number, PresencaValue>>({})
+  const [saved, setSaved] = useState(false)
 
   function handleLoad() {
     startLoading(async () => {
@@ -52,12 +53,37 @@ export function FrequenciaClient() {
       data,
       presenca: presencas[a.id] ?? "Ausente",
     }))
+    setSaved(false)
     startSaving(async () => {
       await salvarFrequencia(registros)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
     })
   }
 
   const presentes = Object.values(presencas).filter((v) => v === "Presente").length
+
+  function handleImprimir() {
+    const dataFormatada = new Date(data + "T12:00:00").toLocaleDateString("pt-BR")
+    const linhas = alunos.map((a) => `<tr><td>${a.nome}</td><td style="width:80px"></td><td style="width:80px"></td><td style="width:80px"></td></tr>`).join("")
+    const html = `<html><head><style>
+      body{font-family:sans-serif;padding:24px}
+      h2{margin-bottom:4px}p{margin:0 0 16px;color:#666}
+      table{width:100%;border-collapse:collapse}
+      th,td{border:1px solid #ccc;padding:8px 12px;text-align:left}
+      th{background:#f1f5f9;font-size:12px;text-transform:uppercase}
+    </style></head><body>
+      <h2>Lista de Presença — ${turma}</h2>
+      <p>Data: ${dataFormatada}</p>
+      <table><thead><tr><th>Aluno</th><th>Presente</th><th>Ausente</th><th>Justificado</th></tr></thead>
+      <tbody>${linhas}</tbody></table>
+    </body></html>`
+    const win = window.open("", "_blank")
+    if (!win) return
+    win.document.write(html)
+    win.document.close()
+    win.print()
+  }
 
   return (
     <div className="space-y-4">
@@ -97,14 +123,24 @@ export function FrequenciaClient() {
             <p className="text-sm text-muted-foreground">
               {presentes} de {alunos.length} presentes
             </p>
-            <Button
-              onClick={handleSalvar}
-              disabled={saving || alunos.length === 0}
-              className="bg-brand-800 text-white hover:bg-brand-900"
-            >
-              <SaveIcon className="size-4" />
-              {saving ? "Salvando..." : "Salvar Frequência"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleImprimir}
+                disabled={alunos.length === 0}
+              >
+                <PrinterIcon className="size-4" />
+                Imprimir Lista
+              </Button>
+              <Button
+                onClick={handleSalvar}
+                disabled={saving || alunos.length === 0}
+                className={saved ? "bg-success-600 text-white hover:bg-success-600/90" : "bg-brand-800 text-white hover:bg-brand-900"}
+              >
+                {saved ? <CheckCircle2 className="size-4" /> : <SaveIcon className="size-4" />}
+                {saving ? "Salvando..." : saved ? "Salvo!" : "Salvar Frequência"}
+              </Button>
+            </div>
           </div>
 
           <div className="rounded-xl border bg-white">
@@ -136,9 +172,9 @@ export function FrequenciaClient() {
                             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                               presencas[aluno.id] === opcao
                                 ? opcao === "Presente"
-                                  ? "bg-green-600 text-white"
+                                  ? "bg-success-600 text-white"
                                   : opcao === "Ausente"
-                                  ? "bg-red-600 text-white"
+                                  ? "bg-danger-600 text-white"
                                   : "bg-blue-600 text-white"
                                 : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}

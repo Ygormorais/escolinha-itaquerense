@@ -10,18 +10,21 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { calcStatus, formatMoney, formatDate } from "@/lib/utils"
+import { PagamentoButton } from "./pagamento-button"
+import { EditarAlunoButton } from "./editar-button"
+import { FrequenciaChart } from "./frequencia-chart"
 
 const statusPagStyle: Record<string, string> = {
-  "Pago": "bg-green-100 text-green-800",
+  "Pago": "bg-success-50 text-success-600",
   "Pendente": "bg-gray-100 text-gray-600",
-  "Em atraso": "bg-yellow-100 text-yellow-800",
-  "Atraso grave": "bg-red-100 text-red-800",
+  "Em atraso": "bg-warning-50 text-warning-600",
+  "Atraso grave": "bg-danger-50 text-danger-600",
 }
 
 const presencaStyle: Record<string, string> = {
-  Presente: "bg-green-100 text-green-800",
-  Ausente: "bg-red-100 text-red-800",
-  Justificado: "bg-yellow-100 text-yellow-800",
+  Presente: "bg-success-50 text-success-600",
+  Ausente: "bg-danger-50 text-danger-600",
+  Justificado: "bg-warning-50 text-warning-600",
 }
 
 export default async function AlunoDetailPage({
@@ -61,15 +64,18 @@ export default async function AlunoDetailPage({
           title={aluno.nome}
           description={`${aluno.turma} · ${aluno.horario}`}
           action={
-            <Badge
-              className={
-                aluno.status === "Ativo"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }
-            >
-              {aluno.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge
+                className={
+                  aluno.status === "Ativo"
+                    ? "bg-success-50 text-success-600"
+                    : "bg-danger-50 text-danger-600"
+                }
+              >
+                {aluno.status}
+              </Badge>
+              <EditarAlunoButton aluno={aluno} />
+            </div>
           }
         />
       </div>
@@ -92,6 +98,12 @@ export default async function AlunoDetailPage({
                 <span className="font-medium">{value}</span>
               </div>
             ))}
+            {aluno.observacoes && (
+              <div className="pt-2">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Observações</span>
+                <p className="mt-1 text-sm text-foreground">{aluno.observacoes}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -115,6 +127,8 @@ export default async function AlunoDetailPage({
         </Card>
       </div>
 
+      <FrequenciaChart alunoId={aluno.id} />
+
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Pagamentos</CardTitle>
@@ -129,12 +143,13 @@ export default async function AlunoDetailPage({
                 <TableHead>Forma</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {aluno.pagamentos.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     Nenhum registro de pagamento
                   </TableCell>
                 </TableRow>
@@ -156,6 +171,11 @@ export default async function AlunoDetailPage({
                       >
                         {status}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      {!p.dataPagamento && (
+                        <PagamentoButton pagamentoId={p.id} mensalidade={aluno.mensalidade} />
+                      )}
                     </TableCell>
                   </TableRow>
                 )

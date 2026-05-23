@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TrendingUp, TrendingDown, DollarSign, Wallet } from "lucide-react"
 import { startOfMonth, endOfMonth } from "date-fns"
 import { MonthPicker } from "./month-picker"
+import { ExportarCaixaButton } from "./exportar-button"
 
 export default async function CaixaPage({
   searchParams,
@@ -30,6 +31,7 @@ export default async function CaixaPage({
         dataPagamento: { gte: inicio, lte: fim },
         valorRecebido: { not: null },
       },
+      include: { aluno: { select: { nome: true } } },
     }),
     db.custo.findMany({
       where: { data: { gte: inicio, lte: fim } },
@@ -59,7 +61,12 @@ export default async function CaixaPage({
       <PageHeader
         title="Caixa"
         description={`Fluxo financeiro — ${mes}`}
-        action={<MonthPicker mes={mes} />}
+        action={
+          <div className="flex gap-2">
+            <ExportarCaixaButton mes={mes} pagamentos={pagamentosPagos} custos={custosDoMes} />
+            <MonthPicker mes={mes} />
+          </div>
+        }
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

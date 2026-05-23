@@ -95,3 +95,13 @@ export async function inativarAluno(id: number) {
   revalidatePath("/alunos")
   revalidatePath("/")
 }
+
+export async function reativarAluno(id: number) {
+  await db.aluno.update({
+    where: { id },
+    data: { status: "Ativo" },
+  })
+
+  revalidatePath("/alunos")
+  revalidatePath("/")
+}

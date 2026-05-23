@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
+import { Input } from "@/components/ui/input"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Printer } from "lucide-react"
-import { salvarRecibo } from "@/app/actions/recibos"
+import { Printer, Trash2 } from "lucide-react"
+import { salvarRecibo, deleteRecibo } from "@/app/actions/recibos"
+import type { ClubConfig } from "@/lib/config"
 
 type Recibo = {
   id: number
@@ -30,7 +32,7 @@ interface ReciboData {
   dataPagamento: string
 }
 
-export default function RecibosForm({ recibos }: { recibos: Recibo[] }) {
+export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; config: ClubConfig }) {
   const searchParams = useSearchParams()
   const today = new Date().toISOString().split("T")[0]
 
@@ -45,6 +47,8 @@ export default function RecibosForm({ recibos }: { recibos: Recibo[] }) {
   })
 
   const [salvando, setSalvando] = useState(false)
+  const [searchRecibo, setSearchRecibo] = useState("")
+  const router = useRouter()
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -205,7 +209,7 @@ export default function RecibosForm({ recibos }: { recibos: Recibo[] }) {
         <div className="bg-brand-800 px-8 py-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-bold">E.C. Itaquerense</h2>
+              <h2 className="text-xl font-bold">{config.nome}</h2>
               <p className="mt-0.5 text-sm text-white/80">
                 Recibo de Pagamento — Escolinha de Futebol
               </p>
@@ -243,13 +247,21 @@ export default function RecibosForm({ recibos }: { recibos: Recibo[] }) {
 
         {/* Footer */}
         <div className="border-t border-border bg-muted/30 px-8 py-3 text-center text-xs text-muted-foreground">
-          Rua das Palmeiras, 123 — Vila Futebol — São Paulo/SP
+          {config.endereco}{config.cidade ? ` — ${config.cidade}` : ""}{config.telefone ? ` · ${config.telefone}` : ""}
         </div>
       </div>
 
       {/* History section - hidden on print */}
       <div className="print:hidden mt-8 w-full max-w-4xl mx-auto px-6 pb-8 no-print">
-        <h2 className="font-heading text-lg font-bold mb-4">Recibos Emitidos</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-heading text-lg font-bold">Recibos Emitidos</h2>
+          <Input
+            placeholder="Buscar por aluno ou referência..."
+            value={searchRecibo}
+            onChange={(e) => setSearchRecibo(e.target.value)}
+            className="max-w-xs"
+          />
+        </div>
         {recibos.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum recibo emitido ainda.</p>
         ) : (
@@ -263,11 +275,16 @@ export default function RecibosForm({ recibos }: { recibos: Recibo[] }) {
                   <th className="px-4 py-3 text-right">Valor</th>
                   <th className="px-4 py-3 text-left">Forma</th>
                   <th className="px-4 py-3 text-left">Data</th>
-                  <th className="px-4 py-3 text-left">Ação</th>
+                  <th className="px-4 py-3 text-left">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {recibos.map((r, i) => (
+                {recibos
+                  .filter((r) => {
+                    const q = searchRecibo.toLowerCase()
+                    return !q || r.alunoNome.toLowerCase().includes(q) || r.mesReferencia.toLowerCase().includes(q)
+                  })
+                  .map((r, i) => (
                   <tr key={r.id} className={i % 2 === 0 ? "bg-white" : "bg-brand-50"}>
                     <td className="px-4 py-3 font-bold text-brand-800">#{r.numero}</td>
                     <td className="px-4 py-3 font-medium">{r.alunoNome}</td>
@@ -276,23 +293,36 @@ export default function RecibosForm({ recibos }: { recibos: Recibo[] }) {
                     <td className="px-4 py-3">{r.formaPagamento}</td>
                     <td className="px-4 py-3">{new Date(r.dataPagamento).toLocaleDateString("pt-BR")}</td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => {
-                          setForm({
-                            numero: r.numero,
-                            aluno: r.alunoNome,
-                            responsavel: r.responsavel,
-                            referencia: r.mesReferencia,
-                            valor: String(r.valor),
-                            forma: r.formaPagamento,
-                            dataPagamento: new Date(r.dataPagamento).toISOString().slice(0, 10),
-                          })
-                          window.scrollTo({ top: 0, behavior: "smooth" })
-                        }}
-                        className="text-xs text-brand-800 hover:underline font-medium"
-                      >
-                        Re-imprimir
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            setForm({
+                              numero: r.numero,
+                              aluno: r.alunoNome,
+                              responsavel: r.responsavel,
+                              referencia: r.mesReferencia,
+                              valor: String(r.valor),
+                              forma: r.formaPagamento,
+                              dataPagamento: new Date(r.dataPagamento).toISOString().slice(0, 10),
+                            })
+                            window.scrollTo({ top: 0, behavior: "smooth" })
+                          }}
+                          className="text-xs text-brand-800 hover:underline font-medium"
+                        >
+                          Re-imprimir
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Excluir recibo #${r.numero}?`)) return
+                            await deleteRecibo(r.id)
+                            router.refresh()
+                          }}
+                          className="text-danger-600 hover:text-danger-600"
+                          title="Excluir recibo"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

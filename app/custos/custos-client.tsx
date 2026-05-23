@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, CheckIcon } from "lucide-react"
+import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -19,7 +19,8 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { createCusto } from "@/app/actions/custos"
+import { createCusto, updateCusto, deleteCusto, gerarCustosRecorrentes } from "@/app/actions/custos"
+import { RefreshCw } from "lucide-react"
 
 const CATEGORIAS = [
   "Aluguel de campo",
@@ -53,34 +54,52 @@ type FormValues = {
   observacoes: string
 }
 
-function NovoCustoDialog() {
+function CustoFormDialog({
+  custo,
+  trigger,
+}: {
+  custo?: Custo
+  trigger: React.ReactNode
+}) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const form = useForm<FormValues>({
-    defaultValues: {
-      data: format(new Date(), "yyyy-MM-dd"),
-      categoria: "",
-      descricao: "",
-      fornecedor: "",
-      valor: "",
-      formaPagamento: "PIX",
-      comprovante: false,
-      observacoes: "",
-    },
+    defaultValues: custo
+      ? {
+          data: format(new Date(custo.data), "yyyy-MM-dd"),
+          categoria: custo.categoria,
+          descricao: custo.descricao,
+          fornecedor: custo.fornecedor,
+          valor: String(custo.valor),
+          formaPagamento: custo.formaPagamento,
+          comprovante: custo.comprovante,
+          observacoes: custo.observacoes ?? "",
+        }
+      : {
+          data: format(new Date(), "yyyy-MM-dd"),
+          categoria: "",
+          descricao: "",
+          fornecedor: "",
+          valor: "",
+          formaPagamento: "PIX",
+          comprovante: false,
+          observacoes: "",
+        },
   })
 
   async function onSubmit(values: FormValues) {
     setLoading(true)
     try {
-      await createCusto({
-        ...values,
-        valor: Number(values.valor),
-        comprovante: values.comprovante,
-      })
+      const payload = { ...values, valor: Number(values.valor) }
+      if (custo) {
+        await updateCusto(custo.id, payload)
+      } else {
+        await createCusto(payload)
+        form.reset()
+      }
       setOpen(false)
-      form.reset()
       router.refresh()
     } finally {
       setLoading(false)
@@ -89,13 +108,10 @@ function NovoCustoDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button onClick={() => setOpen(true)} className="bg-brand-800 text-white hover:bg-brand-900">
-        <PlusIcon className="size-4" />
-        Novo Custo
-      </Button>
+      <div onClick={() => setOpen(true)}>{trigger}</div>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Registrar Custo</DialogTitle>
+          <DialogTitle>{custo ? "Editar Custo" : "Registrar Custo"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -191,7 +207,7 @@ function NovoCustoDialog() {
 
             <DialogFooter showCloseButton>
               <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                {loading ? "Salvando..." : "Registrar"}
+                {loading ? "Salvando..." : custo ? "Salvar" : "Registrar"}
               </Button>
             </DialogFooter>
           </form>
@@ -201,35 +217,113 @@ function NovoCustoDialog() {
   )
 }
 
+function exportarCSV(custos: Custo[], mes: string) {
+  const linhas = [
+    ["Data", "Categoria", "Descrição", "Fornecedor", "Forma", "Comprovante", "Valor (R$)"],
+    ...custos.map((c) => [
+      format(new Date(c.data), "dd/MM/yyyy"),
+      c.categoria,
+      c.descricao,
+      c.fornecedor,
+      c.formaPagamento,
+      c.comprovante ? "Sim" : "Não",
+      c.valor.toFixed(2),
+    ]),
+  ]
+  const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `custos-${mes}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+type Recorrente = { id: number; descricao: string; valor: number; ativo: boolean }
+
 export function CustosClient({
   custos,
   mes,
   total,
+  recorrentes = [],
 }: {
   custos: Custo[]
   mes: string
   total: number
+  recorrentes?: Recorrente[]
 }) {
   const router = useRouter()
+  const [gerando, startGerando] = useTransition()
+  const [geradoMsg, setGeradoMsg] = useState<string | null>(null)
 
   function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
     router.push(`/custos?mes=${e.target.value}`)
   }
 
+  async function handleDelete(id: number) {
+    if (!confirm("Excluir este custo? Esta ação não pode ser desfeita.")) return
+    await deleteCusto(id)
+    router.refresh()
+  }
+
+  function handleGerarRecorrentes() {
+    const ativos = recorrentes.filter((r) => r.ativo)
+    if (ativos.length === 0) {
+      alert("Nenhum modelo recorrente ativo cadastrado. Acesse a aba Recorrentes para cadastrar.")
+      return
+    }
+    if (!confirm(`Gerar ${ativos.length} custo(s) recorrente(s) para ${mes}?`)) return
+    setGeradoMsg(null)
+    startGerando(async () => {
+      const r = await gerarCustosRecorrentes(mes)
+      setGeradoMsg(`✅ ${r.criados} custo(s) gerado(s) para ${mes}`)
+      router.refresh()
+    })
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <div>
           <label className="text-sm font-medium text-muted-foreground">Mês</label>
           <Input type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
         </div>
-        <div className="ml-auto text-right">
+        <div className="text-right">
           <p className="text-sm text-muted-foreground">Total do mês</p>
-          <p className="text-xl font-bold font-heading text-red-700">
+          <p className="text-xl font-bold font-heading text-danger-600">
             R$ {total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </p>
         </div>
-        <NovoCustoDialog />
+        <div className="ml-auto flex flex-col items-end gap-2">
+          {geradoMsg && <p className="text-xs text-success-600 font-medium">{geradoMsg}</p>}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleGerarRecorrentes}
+              disabled={gerando}
+            >
+              <RefreshCw className="size-4" />
+              {gerando ? "Gerando..." : "Gerar Recorrentes"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => exportarCSV(custos, mes)}
+              disabled={custos.length === 0}
+            >
+              <Download className="size-4" />
+              Exportar CSV
+            </Button>
+              <CustoFormDialog
+              trigger={
+                <Button className="bg-brand-800 text-white hover:bg-brand-900">
+                  <PlusIcon className="size-4" />
+                  Novo Custo
+                </Button>
+              }
+            />
+          </div>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-white">
@@ -243,12 +337,13 @@ export function CustosClient({
               <TableHead>Forma Pgto</TableHead>
               <TableHead>Comp.</TableHead>
               <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="w-16" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {custos.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   Nenhum custo registrado neste mês
                 </TableCell>
               </TableRow>
@@ -261,10 +356,29 @@ export function CustosClient({
                 <TableCell className="text-muted-foreground">{c.fornecedor}</TableCell>
                 <TableCell>{c.formaPagamento}</TableCell>
                 <TableCell>
-                  {c.comprovante && <CheckIcon className="size-4 text-green-600" />}
+                  {c.comprovante && <CheckIcon className="size-4 text-success-600" />}
                 </TableCell>
                 <TableCell className="text-right font-medium">
                   R$ {c.valor.toFixed(2)}
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <CustoFormDialog
+                      custo={c}
+                      trigger={
+                        <Button variant="ghost" size="icon-sm">
+                          <PencilIcon className="size-3.5" />
+                        </Button>
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => handleDelete(c.id)}
+                    >
+                      <Trash2Icon className="size-3.5 text-danger-600" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

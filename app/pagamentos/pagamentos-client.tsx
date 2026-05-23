@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { CheckCircleIcon, PlusCircleIcon, Printer } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -20,7 +20,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { registrarPagamento, gerarMensalidadesMes } from "@/app/actions/pagamentos"
+import { registrarPagamento, gerarMensalidadesMes, deletePagamento } from "@/app/actions/pagamentos"
 
 type Pagamento = {
   id: number
@@ -97,7 +97,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
         </DialogHeader>
         {done ? (
           <div className="flex flex-col items-center gap-4 py-4">
-            <p className="text-sm font-medium text-green-700">✅ Pagamento registrado!</p>
+            <p className="text-sm font-medium text-success-600">✅ Pagamento registrado!</p>
             <div className="flex gap-2">
               <a
                 href={reciboUrl}
@@ -177,6 +177,9 @@ export function PagamentosClient({
   const [gerando, startGerando] = useTransition()
   const [resultado, setResultado] = useState<{ criados: number; ignorados: number } | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState("Todos")
+  const [turmaFilter, setTurmaFilter] = useState("Todas")
 
   function handleGerar() {
     startGerando(async () => {
@@ -191,12 +194,50 @@ export function PagamentosClient({
     .filter((p) => p.dataPagamento)
     .reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
 
+  const TURMAS = [...new Set(pagamentos.map((p) => p.aluno.turma))].sort()
+
+  const filtered = pagamentos.filter((p) => {
+    const matchSearch = p.aluno.nome.toLowerCase().includes(search.toLowerCase())
+    const status = getPagamentoStatus(p)
+    const matchStatus = statusFilter === "Todos" || status === statusFilter
+    const matchTurma = turmaFilter === "Todas" || p.aluno.turma === turmaFilter
+    return matchSearch && matchStatus && matchTurma
+  })
+
   function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
     router.push(`/pagamentos?mes=${e.target.value}`)
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <Input
+          placeholder="Buscar aluno..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
+        <Select value={statusFilter} onValueChange={(v) => { if (v) setStatusFilter(v) }}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Todos">Todos</SelectItem>
+            <SelectItem value="Pago">Pago</SelectItem>
+            <SelectItem value="Pendente">Pendente</SelectItem>
+            <SelectItem value="Vencido">Vencido</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
+          <SelectTrigger className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Todas">Todas</SelectItem>
+            {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex items-center gap-4">
         <div>
           <label className="text-sm font-medium text-muted-foreground">Mês de referência</label>
@@ -227,7 +268,7 @@ export function PagamentosClient({
               Criar mensalidades de <strong>{mes}</strong> para todos os alunos ativos que ainda não têm registro neste mês?
             </p>
             {resultado && (
-              <p className="text-sm font-medium text-green-700">
+              <p className="text-sm font-medium text-success-600">
                 ✅ {resultado.criados} criada(s), {resultado.ignorados} já existia(m).
               </p>
             )}
@@ -245,7 +286,7 @@ export function PagamentosClient({
 
         <div className="ml-auto text-right">
           <p className="text-sm text-muted-foreground">Total recebido</p>
-          <p className="text-xl font-bold font-heading text-green-700">
+          <p className="text-xl font-bold font-heading text-success-600">
             R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </p>
         </div>
@@ -265,14 +306,14 @@ export function PagamentosClient({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {pagamentos.length === 0 && (
+            {filtered.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  Nenhum pagamento neste mês
+                  Nenhum pagamento encontrado
                 </TableCell>
               </TableRow>
             )}
-            {pagamentos.map((p) => {
+            {filtered.map((p) => {
               const status = getPagamentoStatus(p)
               return (
                 <TableRow key={p.id}>
@@ -287,7 +328,23 @@ export function PagamentosClient({
                     R$ {(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
+                    <div className="flex gap-1">
+                      {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
+                      {status !== "Pago" && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Excluir pagamento"
+                          onClick={async () => {
+                            if (!confirm("Excluir este registro de pagamento?")) return
+                            await deletePagamento(p.id)
+                            router.refresh()
+                          }}
+                        >
+                          <Trash2Icon className="size-3.5 text-danger-600" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               )
