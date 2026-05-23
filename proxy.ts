@@ -42,6 +42,7 @@ export async function proxy(request: NextRequest) {
   if (
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/whatsapp/webhook") ||
     pathname.startsWith("/responsavel") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
