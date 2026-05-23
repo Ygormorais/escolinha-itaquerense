@@ -13,11 +13,10 @@ import { Download } from "lucide-react"
 import { format } from "date-fns"
 import { getResumoFrequenciaMes, getPresencaPorTurma } from "@/app/actions/frequencia"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { TURMAS } from "@/lib/constants"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts"
-
-const TURMAS = ["Sub-7", "Sub-9", "Sub-11", "Sub-13", "Sub-15", "Sub-17"]
 
 type Resumo = {
   id: number

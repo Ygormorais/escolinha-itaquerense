@@ -13,6 +13,7 @@ import { calcStatus, formatMoney, formatDate } from "@/lib/utils"
 import { PagamentoButton } from "./pagamento-button"
 import { EditarAlunoButton } from "./editar-button"
 import { FrequenciaChart } from "./frequencia-chart"
+import { PaginacaoAluno } from "./paginacao-aluno"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
@@ -27,28 +28,47 @@ const presencaStyle: Record<string, string> = {
   Justificado: "bg-warning-50 text-warning-600",
 }
 
+const PAG_PAGE_SIZE = 12
+
 export default async function AlunoDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ pagina?: string }>
 }) {
-  const { id } = await params
+  const [{ id }, sp] = await Promise.all([params, searchParams])
   const numId = Number(id)
   if (!Number.isInteger(numId)) notFound()
-  const aluno = await db.aluno.findUnique({
-    where: { id: numId },
-    include: {
-      pagamentos: { orderBy: { dataVencimento: "desc" } },
-      frequencias: { orderBy: { data: "desc" }, take: 30 },
-    },
-  })
+
+  const pagina = Math.max(1, Number(sp.pagina ?? 1))
+
+  const [aluno, totalPagamentos] = await Promise.all([
+    db.aluno.findUnique({
+      where: { id: numId },
+      include: {
+        pagamentos: {
+          orderBy: { dataVencimento: "desc" },
+          skip: (pagina - 1) * PAG_PAGE_SIZE,
+          take: PAG_PAGE_SIZE,
+        },
+        frequencias: { orderBy: { data: "desc" }, take: 30 },
+      },
+    }),
+    db.pagamento.count({ where: { alunoId: numId } }),
+  ])
 
   if (!aluno) notFound()
 
-  const totalPago = aluno.pagamentos
-    .filter((p) => p.dataPagamento)
-    .reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
-  const pendentes = aluno.pagamentos.filter((p) => !p.dataPagamento).length
+  const [totalPago, pendentes] = await Promise.all([
+    db.pagamento.aggregate({
+      where: { alunoId: numId, dataPagamento: { not: null } },
+      _sum: { valorRecebido: true },
+    }).then((r) => r._sum.valorRecebido ?? 0),
+    db.pagamento.count({ where: { alunoId: numId, dataPagamento: null } }),
+  ])
+
+  const totalPagesPag = Math.max(1, Math.ceil(totalPagamentos / PAG_PAGE_SIZE))
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -130,8 +150,9 @@ export default async function AlunoDetailPage({
       <FrequenciaChart alunoId={aluno.id} />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Histórico de Pagamentos</CardTitle>
+          <PaginacaoAluno alunoId={numId} page={pagina} totalPages={totalPagesPag} />
         </CardHeader>
         <CardContent className="p-0">
           <Table>
