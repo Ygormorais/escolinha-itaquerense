@@ -21,6 +21,7 @@ import {
   LogOut,
   ClipboardList,
   Trophy,
+  UserCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -72,6 +73,7 @@ const navGroups = [
       { href: "/relatorio",     label: "Relatório",     icon: BarChart3 },
       { href: "/historico",     label: "Histórico",     icon: History },
       { href: "/configuracoes", label: "Configurações", icon: Settings },
+      { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
     ],
   },
 ]
