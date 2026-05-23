@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { addMonths, setDate } from "date-fns"
+import { registrarLog } from "@/app/actions/log"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -16,6 +17,7 @@ export async function createAluno(data: {
   email: string
   dataMatricula: string
   mensalidade: number
+  desconto?: number
   status: string
   observacoes?: string
 }): Promise<ActionResult> {
@@ -31,6 +33,7 @@ export async function createAluno(data: {
         email: data.email,
         dataMatricula: new Date(data.dataMatricula),
         mensalidade: data.mensalidade,
+        desconto: data.desconto ?? 0,
         status: data.status,
         observacoes: data.observacoes ?? null,
       },
@@ -47,6 +50,7 @@ export async function createAluno(data: {
     })
     await db.pagamento.createMany({ data: pagamentos })
 
+    await registrarLog("aluno_novo", `Novo aluno cadastrado — ${data.nome}`, { turma: data.turma })
     revalidatePath("/alunos")
     revalidatePath("/")
     return { success: true }
@@ -67,6 +71,7 @@ export async function updateAluno(
     email: string
     dataMatricula: string
     mensalidade: number
+    desconto?: number
     status: string
     observacoes?: string
   }
@@ -84,6 +89,7 @@ export async function updateAluno(
         email: data.email,
         dataMatricula: new Date(data.dataMatricula),
         mensalidade: data.mensalidade,
+        desconto: data.desconto ?? 0,
         status: data.status,
         observacoes: data.observacoes ?? null,
       },
@@ -99,7 +105,8 @@ export async function updateAluno(
 
 export async function inativarAluno(id: number): Promise<ActionResult> {
   try {
-    await db.aluno.update({ where: { id }, data: { status: "Inativo" } })
+    const aluno = await db.aluno.update({ where: { id }, data: { status: "Inativo" }, select: { nome: true, turma: true } })
+    await registrarLog("aluno_inativo", `Aluno inativado — ${aluno.nome}`, { turma: aluno.turma })
     revalidatePath("/alunos")
     revalidatePath("/")
     return { success: true }
@@ -110,7 +117,8 @@ export async function inativarAluno(id: number): Promise<ActionResult> {
 
 export async function reativarAluno(id: number): Promise<ActionResult> {
   try {
-    await db.aluno.update({ where: { id }, data: { status: "Ativo" } })
+    const aluno = await db.aluno.update({ where: { id }, data: { status: "Ativo" }, select: { nome: true, turma: true } })
+    await registrarLog("aluno_reativo", `Aluno reativado — ${aluno.nome}`, { turma: aluno.turma })
     revalidatePath("/alunos")
     revalidatePath("/")
     return { success: true }

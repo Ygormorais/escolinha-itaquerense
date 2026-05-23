@@ -113,3 +113,39 @@ export async function getResumoFrequenciaMes(turma: string, mes: string) {
     return { id: a.id, nome: a.nome, total, presentes, ausentes, justificados, pct }
   })
 }
+
+export async function getEstatisticasFrequencia(mes: string) {
+  const [ano, mesNum] = mes.split("-").map(Number)
+  const inicio = new Date(ano, mesNum - 1, 1)
+  const fim = new Date(ano, mesNum, 0, 23, 59, 59)
+
+  const frequencias = await db.frequencia.findMany({
+    where: { data: { gte: inicio, lte: fim } },
+    include: { aluno: { select: { nome: true, turma: true, status: true } } },
+  })
+
+  // Ranking por % presença (ativos)
+  const porAluno = new Map<number, { nome: string; turma: string; total: number; presentes: number }>()
+  for (const f of frequencias) {
+    if (f.aluno.status !== "Ativo") continue
+    const cur = porAluno.get(f.alunoId) ?? { nome: f.aluno.nome, turma: f.aluno.turma, total: 0, presentes: 0 }
+    cur.total++
+    if (f.presenca === "Presente") cur.presentes++
+    porAluno.set(f.alunoId, cur)
+  }
+  const ranking = Array.from(porAluno.entries())
+    .map(([id, d]) => ({ id, ...d, pct: d.total > 0 ? Math.round((d.presentes / d.total) * 100) : 0 }))
+    .sort((a, b) => b.pct - a.pct)
+
+  // Presença por dia da semana (0=Dom, 1=Seg...)
+  const diasNomes = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+  const porDia = Array.from({ length: 7 }, (_, i) => ({ dia: diasNomes[i], total: 0, presentes: 0 }))
+  for (const f of frequencias) {
+    const dow = new Date(f.data).getDay()
+    porDia[dow].total++
+    if (f.presenca === "Presente") porDia[dow].presentes++
+  }
+  const heatmap = porDia.map((d) => ({ ...d, pct: d.total > 0 ? Math.round((d.presentes / d.total) * 100) : null }))
+
+  return { ranking, heatmap }
+}

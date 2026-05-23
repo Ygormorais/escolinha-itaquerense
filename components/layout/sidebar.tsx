@@ -14,8 +14,28 @@ import {
   FileText,
   BarChart3,
   Settings,
+  History,
+  LogOut,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { BuscaGlobal } from "@/components/ui/busca-global"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+
+function LogoutButton() {
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" })
+    window.location.href = "/login"
+  }
+  return (
+    <button
+      onClick={handleLogout}
+      className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      title="Sair"
+    >
+      <LogOut className="size-4" />
+    </button>
+  )
+}
 
 const navGroups = [
   {
@@ -40,6 +60,7 @@ const navGroups = [
     items: [
       { href: "/recibos",       label: "Recibos",       icon: FileText },
       { href: "/relatorio",     label: "Relatório",     icon: BarChart3 },
+      { href: "/historico",     label: "Histórico",     icon: History },
       { href: "/configuracoes", label: "Configurações", icon: Settings },
     ],
   },
@@ -61,6 +82,10 @@ export function Sidebar() {
         <span className="font-heading text-sm font-bold leading-tight text-brand-900">
           Escolinha<br />Itaquerense
         </span>
+      </div>
+
+      <div className="px-3 pt-3">
+        <BuscaGlobal />
       </div>
 
       <nav className="flex flex-1 flex-col gap-4 overflow-y-auto p-3 pt-4">
@@ -94,8 +119,12 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-border px-4 py-3">
+      <div className="border-t border-border px-4 py-3 flex items-center justify-between">
         <p className="text-[10px] text-muted-foreground">E.C. Itaquerense · v0.1</p>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <LogoutButton />
+        </div>
       </div>
     </aside>
   )

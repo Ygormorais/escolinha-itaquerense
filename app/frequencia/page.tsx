@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/layout/page-header"
 import { FrequenciaClient } from "./frequencia-client"
 import { ResumoFrequenciaClient } from "./resumo-client"
+import { EstatisticasFrequencia } from "./estatisticas-client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function FrequenciaPage() {
@@ -14,12 +15,16 @@ export default function FrequenciaPage() {
         <TabsList>
           <TabsTrigger value="registro">Registro</TabsTrigger>
           <TabsTrigger value="resumo">Resumo Mensal</TabsTrigger>
+          <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
         </TabsList>
         <TabsContent value="registro" className="mt-4">
           <FrequenciaClient />
         </TabsContent>
         <TabsContent value="resumo" className="mt-4">
           <ResumoFrequenciaClient />
+        </TabsContent>
+        <TabsContent value="estatisticas" className="mt-4">
+          <EstatisticasFrequencia />
         </TabsContent>
       </Tabs>
     </div>

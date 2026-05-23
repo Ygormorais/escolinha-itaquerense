@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays } from "date-fns"
 import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send } from "lucide-react"
+import { EmailNotifButton } from "@/components/ui/email-notif-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -237,6 +238,7 @@ export function InadimplenciaClient({
             <Send className="size-4" />
             {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}
           </Button>
+          <EmailNotifButton />
           <Button
             variant="outline"
             onClick={() => exportarCSV(inadimplentes)}

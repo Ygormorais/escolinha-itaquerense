@@ -8,7 +8,7 @@ import {
 import { TrendingUp, TrendingDown, Wallet, AlertCircle } from "lucide-react"
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { RelatorioHeader, RelatorioChart } from "./relatorio-client"
+import { RelatorioHeader, RelatorioChart, RelatorioPrintStyle } from "./relatorio-client"
 
 export default async function RelatorioPage({
   searchParams,
@@ -68,6 +68,7 @@ export default async function RelatorioPage({
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <RelatorioPrintStyle ano={ano} nomeClube="Escolinha Itaquerense" />
       <PageHeader
         title="Relatório Anual"
         description={`Resumo financeiro consolidado — ${ano}`}

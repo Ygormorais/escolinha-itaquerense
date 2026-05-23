@@ -15,6 +15,7 @@ type Aluno = {
   email: string
   dataMatricula: Date
   mensalidade: number
+  desconto: number
   status: string
   observacoes: string | null
 }

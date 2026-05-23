@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Download } from "lucide-react"
+import { Download, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -61,7 +61,25 @@ export function RelatorioHeader({ ano, meses }: { ano: number; meses: MesData[] 
         <Download className="size-4" />
         Exportar CSV
       </Button>
+      <Button variant="outline" onClick={() => window.print()}>
+        <Printer className="size-4" />
+        Imprimir PDF
+      </Button>
     </div>
+  )
+}
+
+export function RelatorioPrintStyle({ ano, nomeClube }: { ano: number; nomeClube: string }) {
+  return (
+    <style>{`
+      @media print {
+        body * { visibility: hidden; }
+        .relatorio-print, .relatorio-print * { visibility: visible; }
+        .relatorio-print { position: absolute; top: 0; left: 0; width: 100%; padding: 24px; }
+        .no-print { display: none !important; }
+        @page { margin: 1.5cm; }
+      }
+    `}</style>
   )
 }
 

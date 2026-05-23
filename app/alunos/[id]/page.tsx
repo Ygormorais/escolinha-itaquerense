@@ -17,7 +17,11 @@ import { PaginacaoAluno } from "./paginacao-aluno"
 import { PixButton } from "@/components/ui/pix-modal"
 import { MatriculaButton } from "./matricula-button"
 import { AdimplenciaChart } from "./adimplencia-chart"
+import { UniformesCard } from "./uniformes-card"
+import { FotoUpload } from "./foto-upload"
 import { getConfig } from "@/lib/config"
+import { getUniformes } from "@/app/actions/uniformes"
+import { IdCard, MessageCircle, Receipt } from "lucide-react"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
@@ -49,7 +53,7 @@ export default async function AlunoDetailPage({
 
   const config = getConfig()
 
-  const [aluno, totalPagamentos, todosPagamentos] = await Promise.all([
+  const [aluno, totalPagamentos, todosPagamentos, uniformes] = await Promise.all([
     db.aluno.findUnique({
       where: { id: numId },
       include: {
@@ -67,6 +71,7 @@ export default async function AlunoDetailPage({
       select: { mesReferencia: true, dataVencimento: true, dataPagamento: true },
       orderBy: { mesReferencia: "asc" },
     }),
+    getUniformes(numId),
   ])
 
   if (!aluno) notFound()
@@ -112,6 +117,13 @@ export default async function AlunoDetailPage({
                 cidade={config.cidade}
                 telefoneClube={config.telefone}
               />
+              <Link
+                href={`/alunos/${aluno.id}/carteirinha`}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
+              >
+                <IdCard className="size-4" />
+                Carteirinha
+              </Link>
               <EditarAlunoButton aluno={aluno} />
             </div>
           }
@@ -124,6 +136,9 @@ export default async function AlunoDetailPage({
             <CardTitle>Informações</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-center pb-2">
+              <FotoUpload alunoId={aluno.id} fotoAtual={aluno.foto ?? null} />
+            </div>
             {[
               ["Responsável", aluno.responsavel],
               ["Telefone", aluno.telefone],
@@ -152,6 +167,8 @@ export default async function AlunoDetailPage({
           <CardContent className="space-y-2 text-sm">
             {[
               ["Mensalidade", formatMoney(aluno.mensalidade)],
+              ...(aluno.desconto > 0 ? [["Desconto", `- ${formatMoney(aluno.desconto)}`] as [string, string]] : []),
+              ...(aluno.desconto > 0 ? [["Valor líquido", formatMoney(aluno.mensalidade - aluno.desconto)] as [string, string]] : []),
               ["Total Pago", formatMoney(totalPago)],
               ["Pendências", `${pendentes} mês(es)`],
               ["Total Registros", String(aluno.pagamentos.length)],
@@ -166,6 +183,8 @@ export default async function AlunoDetailPage({
       </div>
 
       <AdimplenciaChart pagamentos={todosPagamentos} />
+
+      <UniformesCard alunoId={aluno.id} uniformes={uniformes} />
 
       <FrequenciaChart alunoId={aluno.id} />
 
@@ -214,22 +233,46 @@ export default async function AlunoDetailPage({
                       </span>
                     </TableCell>
                     <TableCell>
-                      {!p.dataPagamento && (
-                        <div className="flex items-center gap-1">
-                          <PagamentoButton pagamentoId={p.id} mensalidade={aluno.mensalidade} />
-                          {config.chavePix && (
-                            <PixButton
-                              chave={config.chavePix}
-                              nomeClube={config.nome}
-                              cidade={config.cidade}
-                              valor={aluno.mensalidade}
-                              descricao={`Mensalidade ${p.mesReferencia}`}
-                              telefoneResponsavel={aluno.telefone}
-                              nomeResponsavel={aluno.responsavel}
-                            />
-                          )}
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {!p.dataPagamento ? (
+                          <>
+                            <PagamentoButton pagamentoId={p.id} mensalidade={aluno.mensalidade} />
+                            {config.chavePix && (
+                              <PixButton
+                                chave={config.chavePix}
+                                nomeClube={config.nome}
+                                cidade={config.cidade}
+                                valor={aluno.mensalidade}
+                                descricao={`Mensalidade ${p.mesReferencia}`}
+                                telefoneResponsavel={aluno.telefone}
+                                nomeResponsavel={aluno.responsavel}
+                              />
+                            )}
+                            {aluno.telefone && (
+                              <a
+                                href={`https://wa.me/55${aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 😊 A mensalidade de *${p.mesReferencia}* está em aberto. Pode realizar o pagamento? Obrigado!`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Cobrar via WhatsApp"
+                                className="inline-flex items-center justify-center rounded-md p-1.5 text-success-600 hover:bg-success-50 transition-colors"
+                              >
+                                <MessageCircle className="size-3.5" />
+                              </a>
+                            )}
+                          </>
+                        ) : (
+                          <a
+                            href={`/recibos?aluno=${encodeURIComponent(aluno.nome)}&responsavel=${encodeURIComponent(aluno.responsavel ?? "")}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Imprimir recibo"
+                            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          >
+                            <Receipt className="size-3" />
+                            Recibo
+                          </a>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 )

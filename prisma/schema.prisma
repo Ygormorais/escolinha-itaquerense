@@ -17,10 +17,13 @@ model Aluno {
   email          String
   dataMatricula  DateTime
   mensalidade    Float
+  desconto       Float        @default(0)
+  foto           String?
   status         String       @default("Ativo")
   observacoes    String?
   pagamentos     Pagamento[]
   frequencias    Frequencia[]
+  uniformes      Uniforme[]
   createdAt      DateTime     @default(now())
 }
 
@@ -33,6 +36,7 @@ model Pagamento {
   dataPagamento  DateTime?
   formaPagamento String?
   valorRecebido  Float?
+  observacoes    String?
   createdAt      DateTime  @default(now())
 }
 
@@ -68,6 +72,49 @@ model Frequencia {
   presenca  String
 
   @@unique([alunoId, data])
+}
+
+model Uniforme {
+  id        Int      @id @default(autoincrement())
+  alunoId   Int
+  aluno     Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  item      String
+  tamanho   String?
+  entregue  Boolean  @default(false)
+  dataEntrega DateTime?
+  observacoes String?
+  createdAt DateTime @default(now())
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  tipo      String
+  descricao String
+  meta      String?
+  createdAt DateTime @default(now())
+}
+
+model Evento {
+  id         Int      @id @default(autoincrement())
+  titulo     String
+  tipo       String   // Treino, Jogo, Evento, Reunião
+  data       DateTime
+  horaInicio String?
+  horaFim    String?
+  local      String?
+  turmas     String?  // "Todas" ou turmas separadas por vírgula
+  descricao  String?
+  createdAt  DateTime @default(now())
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  nome      String
+  senha     String
+  role      String   @default("secretaria") // admin, secretaria, tecnico
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
 }
 
 model Recibo {

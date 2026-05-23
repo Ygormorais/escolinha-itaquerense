@@ -65,6 +65,12 @@ export function FrequenciaClient() {
 
   const presentes = Object.values(presencas).filter((v) => v === "Presente").length
 
+  function marcarTodos(opcao: PresencaValue) {
+    const todos: Record<number, PresencaValue> = {}
+    for (const a of alunos) todos[a.id] = opcao
+    setPresencas(todos)
+  }
+
   function handleImprimir() {
     const dataFormatada = new Date(data + "T12:00:00").toLocaleDateString("pt-BR")
     const linhas = alunos.map((a) => `<tr><td>${a.nome}</td><td style="width:80px"></td><td style="width:80px"></td><td style="width:80px"></td></tr>`).join("")
@@ -122,9 +128,27 @@ export function FrequenciaClient() {
       {loaded && (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {presentes} de {alunos.length} presentes
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                {presentes} de {alunos.length} presentes
+              </p>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => marcarTodos("Presente")}
+                  className="rounded-full bg-success-100 px-2.5 py-1 text-xs font-medium text-success-700 hover:bg-success-200 transition-colors"
+                >
+                  Todos presentes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => marcarTodos("Ausente")}
+                  className="rounded-full bg-danger-100 px-2.5 py-1 text-xs font-medium text-danger-700 hover:bg-danger-200 transition-colors"
+                >
+                  Todos ausentes
+                </button>
+              </div>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"

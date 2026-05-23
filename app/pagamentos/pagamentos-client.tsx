@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -21,7 +21,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { toast } from "sonner"
-import { registrarPagamento, gerarMensalidadesMes, deletePagamento } from "@/app/actions/pagamentos"
+import { registrarPagamento, gerarMensalidadesMes, deletePagamento, registrarPagamentosLote } from "@/app/actions/pagamentos"
 import { PixButton } from "@/components/ui/pix-modal"
 
 type Pagamento = {
@@ -56,6 +56,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
       dataPagamento: format(new Date(), "yyyy-MM-dd"),
       formaPagamento: "PIX",
       valorRecebido: String(pagamento.aluno.mensalidade),
+      observacoes: "",
     },
   })
 
@@ -64,13 +65,14 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
     setOpen(isOpen)
   }
 
-  async function onSubmit(values: { dataPagamento: string; formaPagamento: string; valorRecebido: string }) {
+  async function onSubmit(values: { dataPagamento: string; formaPagamento: string; valorRecebido: string; observacoes?: string }) {
     setLoading(true)
     try {
       const result = await registrarPagamento(pagamento.id, {
         dataPagamento: values.dataPagamento,
         formaPagamento: values.formaPagamento,
         valorRecebido: Number(values.valorRecebido),
+        observacoes: values.observacoes || undefined,
       })
       if ("error" in result) {
         toast.error(result.error)
@@ -158,6 +160,13 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
                     <FormMessage />
                   </FormItem>
                 )} />
+                <FormField control={form.control} name="observacoes" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observações <span className="text-muted-foreground font-normal">(opcional)</span></FormLabel>
+                    <FormControl><Input placeholder="Ex: pagou parte em dinheiro..." {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
                 <DialogFooter showCloseButton>
                   <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
                     {loading ? "Salvando..." : "Confirmar"}
@@ -192,6 +201,11 @@ export function PagamentosClient({
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("Todos")
   const [turmaFilter, setTurmaFilter] = useState("Todas")
+  const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [bulkOpen, setBulkOpen] = useState(false)
+  const [bulkForma, setBulkForma] = useState("PIX")
+  const [bulkData, setBulkData] = useState(format(new Date(), "yyyy-MM-dd"))
+  const [bulkPending, startBulk] = useTransition()
 
   function handleGerar() {
     startGerando(async () => {
@@ -257,8 +271,84 @@ export function PagamentosClient({
     }
   }
 
+  const pendentesFiltered = filtered.filter((p) => getPagamentoStatus(p) !== "Pago")
+  const allPendentesSelected = pendentesFiltered.length > 0 && pendentesFiltered.every((p) => selected.has(p.id))
+
+  function toggleSelect(id: number) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleAll() {
+    if (allPendentesSelected) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(pendentesFiltered.map((p) => p.id)))
+    }
+  }
+
+  function handleBulkConfirm() {
+    startBulk(async () => {
+      const r = await registrarPagamentosLote(Array.from(selected), { dataPagamento: bulkData, formaPagamento: bulkForma })
+      if ("error" in r) { toast.error(r.error); return }
+      toast.success(`${r.atualizados} pagamento(s) registrado(s)`)
+      setSelected(new Set())
+      setBulkOpen(false)
+      router.refresh()
+    })
+  }
+
   return (
     <div className="space-y-4">
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
+          <span className="text-sm font-medium text-brand-800">{selected.size} selecionado(s)</span>
+          <Button
+            size="sm"
+            onClick={() => setBulkOpen(true)}
+            className="bg-brand-800 text-white hover:bg-brand-900 gap-1.5"
+          >
+            <ListChecks className="size-4" />
+            Registrar todos
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Limpar</Button>
+        </div>
+      )}
+
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar {selected.size} pagamento(s)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-sm font-medium">Data do pagamento</label>
+              <input type="date" value={bulkData} onChange={(e) => setBulkData(e.target.value)}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Forma de pagamento</label>
+              <Select value={bulkForma} onValueChange={(v) => { if (v) setBulkForma(v) }}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FORMAS_PAGAMENTO.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter showCloseButton>
+            <Button onClick={handleBulkConfirm} disabled={bulkPending} className="bg-brand-800 text-white hover:bg-brand-900">
+              {bulkPending ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Confirmar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex flex-wrap items-center gap-3">
         <Input
           placeholder="Buscar aluno..."
@@ -355,6 +445,15 @@ export function PagamentosClient({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-8">
+                <input
+                  type="checkbox"
+                  checked={allPendentesSelected}
+                  onChange={toggleAll}
+                  className="cursor-pointer"
+                  title="Selecionar todos pendentes"
+                />
+              </TableHead>
               <TableHead>Aluno</TableHead>
               <TableHead>Turma</TableHead>
               <TableHead>Vencimento</TableHead>
@@ -367,7 +466,7 @@ export function PagamentosClient({
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   Nenhum pagamento encontrado
                 </TableCell>
               </TableRow>
@@ -375,7 +474,17 @@ export function PagamentosClient({
             {filtered.map((p) => {
               const status = getPagamentoStatus(p)
               return (
-                <TableRow key={p.id}>
+                <TableRow key={p.id} className={selected.has(p.id) ? "bg-brand-50" : undefined}>
+                  <TableCell>
+                    {status !== "Pago" && (
+                      <input
+                        type="checkbox"
+                        checked={selected.has(p.id)}
+                        onChange={() => toggleSelect(p.id)}
+                        className="cursor-pointer"
+                      />
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{p.aluno.nome}</TableCell>
                   <TableCell>{p.aluno.turma}</TableCell>
                   <TableCell>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
@@ -387,7 +496,7 @@ export function PagamentosClient({
                     R$ {(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 items-center">
                       {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
                       {status !== "Pago" && chavePix && nomeClube && cidade && (
                         <PixButton
@@ -399,6 +508,29 @@ export function PagamentosClient({
                           telefoneResponsavel={p.aluno.telefone}
                           nomeResponsavel={p.aluno.nome}
                         />
+                      )}
+                      {status !== "Pago" && p.aluno.telefone && (
+                        <a
+                          href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Cobrar via WhatsApp"
+                          className="inline-flex items-center justify-center size-7 rounded-md text-success-600 hover:bg-success-50 transition-colors"
+                        >
+                          <MessageCircle className="size-3.5" />
+                        </a>
+                      )}
+                      {status === "Pago" && (
+                        <a
+                          href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Imprimir recibo"
+                          className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        >
+                          <Receipt className="size-3" />
+                          Recibo
+                        </a>
                       )}
                       {status !== "Pago" && (
                         <Button

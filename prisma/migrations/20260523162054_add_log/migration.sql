@@ -1,0 +1,8 @@
+-- CreateTable
+CREATE TABLE "Log" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "tipo" TEXT NOT NULL,
+    "descricao" TEXT NOT NULL,
+    "meta" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

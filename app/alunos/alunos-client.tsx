@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download } from "lucide-react"
+import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Pagination } from "@/components/ui/pagination"
 import { TURMAS } from "@/lib/constants"
@@ -38,6 +38,7 @@ type Aluno = {
   email: string
   dataMatricula: Date
   mensalidade: number
+  desconto: number
   status: string
   observacoes: string | null
 }
@@ -52,6 +53,7 @@ type FormValues = {
   email: string
   dataMatricula: string
   mensalidade: string
+  desconto: string
   status: string
   observacoes: string
 }
@@ -80,6 +82,7 @@ export function AlunoFormDialog({
       email: aluno?.email ?? "",
       dataMatricula: aluno ? format(new Date(aluno.dataMatricula), "yyyy-MM-dd") : "",
       mensalidade: aluno ? String(aluno.mensalidade) : "",
+      desconto: aluno ? String(aluno.desconto ?? 0) : "0",
       status: aluno?.status ?? "Ativo",
       observacoes: aluno?.observacoes ?? "",
     },
@@ -88,7 +91,7 @@ export function AlunoFormDialog({
   async function onSubmit(values: FormValues) {
     setLoading(true)
     try {
-      const payload = { ...values, mensalidade: Number(values.mensalidade) }
+      const payload = { ...values, mensalidade: Number(values.mensalidade), desconto: Number(values.desconto ?? 0) }
       const result = aluno ? await updateAluno(aluno.id, payload) : await createAluno(payload)
       if ("error" in result) {
         toast.error(result.error)
@@ -203,6 +206,14 @@ export function AlunoFormDialog({
                 <FormItem>
                   <FormLabel>Mensalidade (R$)</FormLabel>
                   <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="desconto" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Desconto/Bolsa (R$)</FormLabel>
+                  <FormControl><Input type="number" step="0.01" min="0" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -352,10 +363,18 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
             <SelectItem value="Inativo">Inativo</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0} className="ml-auto">
-          <Download className="size-4" />
-          Exportar CSV
-        </Button>
+        <div className="ml-auto flex gap-2">
+          <a href="/alunos/importar">
+            <Button variant="outline">
+              <Upload className="size-4" />
+              Importar CSV
+            </Button>
+          </a>
+          <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0}>
+            <Download className="size-4" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">

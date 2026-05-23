@@ -8,6 +8,7 @@ import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
 import { MonthPicker } from "@/app/caixa/month-picker"
+import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
 import { TURMAS } from "@/lib/constants"
 
@@ -129,7 +130,12 @@ export default async function DashboardPage({
       <PageHeader
         title="Dashboard"
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}
-        action={<MonthPicker mes={mesSelecionado} basePath="/" />}
+        action={
+            <div className="flex items-center gap-2">
+              <GerarMesButton mes={mesAtual} />
+              <MonthPicker mes={mesSelecionado} basePath="/" />
+            </div>
+          }
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
