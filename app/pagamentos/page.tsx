@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { PagamentosClient } from "./pagamentos-client"
+import { getConfig } from "@/lib/config"
 
 export default async function PagamentosPage({
   searchParams,
@@ -14,10 +15,12 @@ export default async function PagamentosPage({
   const pagamentos = await db.pagamento.findMany({
     where: { mesReferencia: mes },
     include: {
-      aluno: { select: { nome: true, turma: true, mensalidade: true } },
+      aluno: { select: { nome: true, turma: true, mensalidade: true, telefone: true } },
     },
     orderBy: { aluno: { nome: "asc" } },
   })
+
+  const config = getConfig()
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -25,7 +28,13 @@ export default async function PagamentosPage({
         title="Pagamentos"
         description={`Controle de mensalidades — ${mes}`}
       />
-      <PagamentosClient pagamentos={pagamentos} mes={mes} />
+      <PagamentosClient
+        pagamentos={pagamentos}
+        mes={mes}
+        chavePix={config.chavePix}
+        nomeClube={config.nome}
+        cidade={config.cidade}
+      />
     </div>
   )
 }

@@ -15,6 +15,8 @@ import { EditarAlunoButton } from "./editar-button"
 import { FrequenciaChart } from "./frequencia-chart"
 import { PaginacaoAluno } from "./paginacao-aluno"
 import { PixButton } from "@/components/ui/pix-modal"
+import { MatriculaButton } from "./matricula-button"
+import { AdimplenciaChart } from "./adimplencia-chart"
 import { getConfig } from "@/lib/config"
 
 const statusPagStyle: Record<string, string> = {
@@ -47,7 +49,7 @@ export default async function AlunoDetailPage({
 
   const config = getConfig()
 
-  const [aluno, totalPagamentos] = await Promise.all([
+  const [aluno, totalPagamentos, todosPagamentos] = await Promise.all([
     db.aluno.findUnique({
       where: { id: numId },
       include: {
@@ -60,6 +62,11 @@ export default async function AlunoDetailPage({
       },
     }),
     db.pagamento.count({ where: { alunoId: numId } }),
+    db.pagamento.findMany({
+      where: { alunoId: numId },
+      select: { mesReferencia: true, dataVencimento: true, dataPagamento: true },
+      orderBy: { mesReferencia: "asc" },
+    }),
   ])
 
   if (!aluno) notFound()
@@ -98,6 +105,13 @@ export default async function AlunoDetailPage({
               >
                 {aluno.status}
               </Badge>
+              <MatriculaButton
+                aluno={aluno}
+                nomeClube={config.nome}
+                endereco={config.endereco}
+                cidade={config.cidade}
+                telefoneClube={config.telefone}
+              />
               <EditarAlunoButton aluno={aluno} />
             </div>
           }
@@ -150,6 +164,8 @@ export default async function AlunoDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <AdimplenciaChart pagamentos={todosPagamentos} />
 
       <FrequenciaChart alunoId={aluno.id} />
 

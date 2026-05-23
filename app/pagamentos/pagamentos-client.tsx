@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table"
 import { toast } from "sonner"
 import { registrarPagamento, gerarMensalidadesMes, deletePagamento } from "@/app/actions/pagamentos"
+import { PixButton } from "@/components/ui/pix-modal"
 
 type Pagamento = {
   id: number
@@ -30,7 +31,7 @@ type Pagamento = {
   dataPagamento: Date | null
   formaPagamento: string | null
   valorRecebido: number | null
-  aluno: { nome: string; turma: string; mensalidade: number }
+  aluno: { nome: string; turma: string; mensalidade: number; telefone: string }
 }
 
 type StatusPagamento = "Pago" | "Pendente" | "Vencido"
@@ -174,9 +175,15 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
 export function PagamentosClient({
   pagamentos,
   mes,
+  chavePix,
+  nomeClube,
+  cidade,
 }: {
   pagamentos: Pagamento[]
   mes: string
+  chavePix?: string
+  nomeClube?: string
+  cidade?: string
 }) {
   const router = useRouter()
   const [gerando, startGerando] = useTransition()
@@ -216,6 +223,38 @@ export function PagamentosClient({
 
   function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
     router.push(`/pagamentos?mes=${e.target.value}`)
+  }
+
+  const now = new Date()
+  const em7dias = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const vencendoSemana = pagamentos.filter((p) => {
+    if (p.dataPagamento) return false
+    const venc = new Date(p.dataVencimento)
+    return venc >= now && venc <= em7dias
+  })
+
+  async function handleNotificarVencendo() {
+    if (vencendoSemana.length === 0) {
+      toast.info("Nenhuma mensalidade vencendo nos próximos 7 dias")
+      return
+    }
+    if (!confirm(`Abrir WhatsApp para ${vencendoSemana.length} responsável(is)?`)) return
+    for (let i = 0; i < vencendoSemana.length; i++) {
+      const p = vencendoSemana[i]
+      const fone = (p.aluno.telefone ?? "").replace(/\D/g, "")
+      if (!fone) continue
+      const venc = format(new Date(p.dataVencimento), "dd/MM/yyyy")
+      const msg = [
+        `Olá! 👋 Passando para lembrar que a mensalidade de *${p.aluno.nome}* (${p.aluno.turma}) vence em *${venc}*.`,
+        ``,
+        `Valor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*`,
+        chavePix ? `\nChave PIX: *${chavePix}*` : "",
+        ``,
+        `Qualquer dúvida estamos à disposição. Obrigado! ⚽`,
+      ].join("\n")
+      window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, "_blank")
+      if (i < vencendoSemana.length - 1) await new Promise((r) => setTimeout(r, 800))
+    }
   }
 
   return (
@@ -294,6 +333,16 @@ export function PagamentosClient({
           </DialogContent>
         </Dialog>
 
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNotificarVencendo}
+          className="text-success-600 border-success-600/30 hover:bg-success-50"
+        >
+          <MessageCircle className="size-4" />
+          Notificar vencendo ({vencendoSemana.length})
+        </Button>
+
         <div className="ml-auto text-right">
           <p className="text-sm text-muted-foreground">Total recebido</p>
           <p className="text-xl font-bold font-heading text-success-600">
@@ -340,6 +389,17 @@ export function PagamentosClient({
                   <TableCell>
                     <div className="flex gap-1">
                       {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
+                      {status !== "Pago" && chavePix && nomeClube && cidade && (
+                        <PixButton
+                          chave={chavePix}
+                          nomeClube={nomeClube}
+                          cidade={cidade}
+                          valor={p.aluno.mensalidade}
+                          descricao={`Mensalidade ${p.mesReferencia} ${p.aluno.nome.split(" ")[0]}`}
+                          telefoneResponsavel={p.aluno.telefone}
+                          nomeResponsavel={p.aluno.nome}
+                        />
+                      )}
                       {status !== "Pago" && (
                         <Button
                           variant="ghost"
