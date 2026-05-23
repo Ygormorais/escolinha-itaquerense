@@ -30,7 +30,7 @@ export function CobrancaWhatsApp({
   function handleCobrar() {
     start(async () => {
       const result = await enviarCobrancaWhatsApp(alunoId, telefone, mesReferencia, valor)
-      if (result.success) {
+      if ("success" in result) {
         toast.success(`Cobrança enviada para ${alunoNome}`)
       } else {
         toast.error(result.error ?? "Erro ao enviar cobrança")

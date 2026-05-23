@@ -192,7 +192,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                     ) : (
                       <span className={cn(
                         "text-xs font-semibold",
-                        entregue === total ? "text-success-600" : "text-warning-600"
+                        entregues === total ? "text-success-600" : "text-warning-600"
                       )}>
                         {entregues}/{total}
                       </span>
@@ -203,10 +203,11 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                       setDialogOpen(open)
                       if (!open) setSelectedAluno(null)
                     }}>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="icon-sm" onClick={() => setSelectedAluno(aluno)}>
-                          <Plus className="size-4" />
-                        </Button>
+                      <DialogTrigger
+                        className="inline-flex items-center justify-center size-7 rounded-md hover:bg-muted transition-colors"
+                        onClick={() => setSelectedAluno(aluno)}
+                      >
+                        <Plus className="size-4" />
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>

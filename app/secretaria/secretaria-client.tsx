@@ -116,9 +116,9 @@ export function SecretariaClient({
             <CardTitle className="flex items-center gap-2 text-sm font-heading">
               <Calendar className="size-4" /> Eventos de Hoje
             </CardTitle>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/agenda">Ver agenda</Link>
-            </Button>
+            <Link href="/agenda">
+              <Button variant="ghost" size="sm">Ver agenda</Button>
+            </Link>
           </CardHeader>
           <CardContent>
             {eventosHoje.length === 0 ? (

@@ -1,14 +1,13 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { MessageCircle, Loader2, Check, X } from "lucide-react"
+import { MessageCircle, Loader2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,7 +29,7 @@ export function EnviarWhatsApp({ alunoId, telefone, nome }: Props) {
     if (!mensagem.trim()) return
     start(async () => {
       const result = await enviarWhatsApp(alunoId, telefone, mensagem)
-      if (result.success) {
+      if ("success" in result) {
         toast.success("Mensagem enviada com sucesso!")
         setMensagem("")
         setOpen(false)
@@ -47,12 +46,10 @@ export function EnviarWhatsApp({ alunoId, telefone, nome }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <MessageCircle className="size-4" />
-          WhatsApp
-        </Button>
-      </DialogTrigger>
+      <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpen(true)}>
+        <MessageCircle className="size-4" />
+        WhatsApp
+      </Button>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Enviar WhatsApp — {nome}</DialogTitle>
