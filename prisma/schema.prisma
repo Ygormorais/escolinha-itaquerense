@@ -49,6 +49,17 @@ model Custo {
   createdAt      DateTime @default(now())
 }
 
+model CustoRecorrente {
+  id             Int      @id @default(autoincrement())
+  categoria      String
+  descricao      String
+  fornecedor     String
+  valor          Float
+  formaPagamento String
+  ativo          Boolean  @default(true)
+  createdAt      DateTime @default(now())
+}
+
 model Frequencia {
   id        Int      @id @default(autoincrement())
   alunoId   Int
