@@ -16,6 +16,7 @@ import {
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
+import { toast } from "sonner"
 import { marcarComoPago } from "@/app/actions/pagamentos"
 
 type Pagamento = {
@@ -45,11 +46,13 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
 
   function handleSalvar() {
     startTransition(async () => {
-      await marcarComoPago(pagamentoId, {
+      const result = await marcarComoPago(pagamentoId, {
         dataPagamento: data,
         formaPagamento: forma,
         valorRecebido: parseFloat(valor),
       })
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("Pagamento registrado")
       onClose()
       router.refresh()
     })

@@ -6,16 +6,14 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateClubConfig } from "@/app/actions/config"
 import type { ClubConfig } from "@/lib/config"
-import { CheckCircle } from "lucide-react"
+import { toast } from "sonner"
 
 export function ConfigForm({ config }: { config: ClubConfig }) {
   const [form, setForm] = useState(config)
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev: ClubConfig) => ({ ...prev, [e.target.name]: e.target.value }))
-    setSaved(false)
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -23,7 +21,9 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
     setSaving(true)
     try {
       await updateClubConfig(form)
-      setSaved(true)
+      toast.success("Configurações salvas")
+    } catch {
+      toast.error("Erro ao salvar configurações")
     } finally {
       setSaving(false)
     }
@@ -52,16 +52,9 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
             <label className="text-sm font-medium">Telefone</label>
             <Input name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
           </div>
-          <div className="flex items-center gap-3">
-            <Button type="submit" disabled={saving} className="bg-brand-800 text-white hover:bg-brand-900">
-              {saving ? "Salvando..." : "Salvar"}
-            </Button>
-            {saved && (
-              <span className="flex items-center gap-1 text-sm text-success-600">
-                <CheckCircle className="size-4" /> Salvo
-              </span>
-            )}
-          </div>
+          <Button type="submit" disabled={saving} className="bg-brand-800 text-white hover:bg-brand-900">
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
         </form>
       </CardContent>
     </Card>

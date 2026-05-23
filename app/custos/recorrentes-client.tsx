@@ -21,6 +21,7 @@ import {
   createCustoRecorrente, updateCustoRecorrente, deleteCustoRecorrente,
 } from "@/app/actions/custos"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const CATEGORIAS = ["Aluguel de campo", "Salário técnico", "Material esportivo", "Uniforme", "Outros"]
 const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
@@ -64,11 +65,11 @@ function RecorrenteFormDialog({ recorrente, trigger }: { recorrente?: Recorrente
     setLoading(true)
     try {
       const payload = { ...values, valor: Number(values.valor) }
-      if (recorrente) {
-        await updateCustoRecorrente(recorrente.id, payload)
-      } else {
-        await createCustoRecorrente(payload)
-      }
+      const result = recorrente
+        ? await updateCustoRecorrente(recorrente.id, payload)
+        : await createCustoRecorrente(payload)
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success(recorrente ? "Modelo atualizado" : "Modelo cadastrado")
       setOpen(false)
       form.reset()
       router.refresh()
@@ -167,7 +168,9 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
   function handleDelete(id: number) {
     if (!confirm("Excluir este modelo recorrente?")) return
     startDelete(async () => {
-      await deleteCustoRecorrente(id)
+      const result = await deleteCustoRecorrente(id)
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("Modelo excluído")
       router.refresh()
     })
   }

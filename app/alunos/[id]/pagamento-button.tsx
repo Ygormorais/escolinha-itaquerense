@@ -12,6 +12,7 @@ import {
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
+import { toast } from "sonner"
 import { registrarPagamento } from "@/app/actions/pagamentos"
 
 const FORMAS = ["Pix", "Dinheiro", "Cartão de Débito", "Cartão de Crédito", "Transferência"]
@@ -31,11 +32,13 @@ export function PagamentoButton({ pagamentoId, mensalidade }: Props) {
 
   function handleSalvar() {
     startTransition(async () => {
-      await registrarPagamento(pagamentoId, {
+      const result = await registrarPagamento(pagamentoId, {
         dataPagamento: data,
         formaPagamento: forma,
         valorRecebido: parseFloat(valor),
       })
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("Pagamento registrado")
       setOpen(false)
       router.refresh()
     })
