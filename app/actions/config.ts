@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { requireAuth } from "@/lib/auth"
 import { getConfig, saveConfig, type ClubConfig } from "@/lib/config"
 
 export async function getClubConfig() {
@@ -8,6 +9,7 @@ export async function getClubConfig() {
 }
 
 export async function updateClubConfig(data: ClubConfig) {
+  await requireAuth()
   saveConfig(data)
   revalidatePath("/recibos")
   revalidatePath("/configuracoes")

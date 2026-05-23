@@ -4,10 +4,12 @@ import { db } from "@/lib/db"
 import { enviarEmail } from "@/lib/mailer"
 import { getConfig } from "@/lib/config"
 import { differenceInDays } from "date-fns"
+import { requireAuth } from "@/lib/auth"
 
 type ResultadoEmail = { enviados: number; erros: number; semEmail: number }
 
 export async function enviarLembretesInadimplentes(): Promise<ResultadoEmail | { error: string }> {
+  await requireAuth()
   try {
     const config = getConfig()
 
@@ -81,6 +83,7 @@ export async function enviarLembretesInadimplentes(): Promise<ResultadoEmail | {
 }
 
 export async function enviarLembreteVencendo(): Promise<ResultadoEmail | { error: string }> {
+  await requireAuth()
   try {
     const config = getConfig()
     const amanha = new Date()

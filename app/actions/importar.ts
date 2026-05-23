@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { addMonths, setDate } from "date-fns"
 import { registrarLog } from "@/app/actions/log"
+import { requireAuth } from "@/lib/auth"
 
 type AlunoCSV = {
   nome: string
@@ -22,6 +23,7 @@ type AlunoCSV = {
 type ImportResult = { importados: number; erros: { linha: number; erro: string }[] }
 
 export async function importarAlunosCSV(alunos: AlunoCSV[]): Promise<ImportResult | { error: string }> {
+  await requireAuth()
   try {
     const erros: { linha: number; erro: string }[] = []
     let importados = 0

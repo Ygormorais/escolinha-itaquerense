@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { addMonths, setDate } from "date-fns"
 import { registrarLog } from "@/app/actions/log"
+import { requireAuth } from "@/lib/auth"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -21,6 +22,7 @@ export async function createAluno(data: {
   status: string
   observacoes?: string
 }): Promise<ActionResult> {
+  await requireAuth()
   try {
     const aluno = await db.aluno.create({
       data: {
@@ -76,6 +78,7 @@ export async function updateAluno(
     observacoes?: string
   }
 ): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.aluno.update({
       where: { id },
@@ -104,6 +107,7 @@ export async function updateAluno(
 }
 
 export async function inativarAluno(id: number): Promise<ActionResult> {
+  await requireAuth()
   try {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Inativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_inativo", `Aluno inativado — ${aluno.nome}`, { turma: aluno.turma })
@@ -116,6 +120,7 @@ export async function inativarAluno(id: number): Promise<ActionResult> {
 }
 
 export async function reativarAluno(id: number): Promise<ActionResult> {
+  await requireAuth()
   try {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Ativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_reativo", `Aluno reativado — ${aluno.nome}`, { turma: aluno.turma })

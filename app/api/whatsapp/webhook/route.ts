@@ -3,6 +3,14 @@ import { db } from "@/lib/db"
 import { routeMessage } from "@/lib/whatsapp/ai-router"
 
 export async function POST(req: NextRequest) {
+  const apiKey = process.env.EVOLUTION_API_KEY
+  if (apiKey) {
+    const auth = req.headers.get("apikey") || req.headers.get("authorization")?.replace("Bearer ", "")
+    if (auth !== apiKey) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+  }
+
   try {
     const body = await req.json()
     const { event, instance, data } = body

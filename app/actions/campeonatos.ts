@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 export async function listarCampeonatos() {
   return db.campeonato.findMany({
@@ -35,6 +36,7 @@ export async function criarCampeonato(data: {
   custoUniforme?: number
   observacoes?: string
 }) {
+  await requireAuth()
   const campeonato = await db.campeonato.create({
     data: {
       nome: data.nome,
@@ -68,6 +70,7 @@ export async function editarCampeonato(id: number, data: {
   observacoes?: string
   status?: string
 }) {
+  await requireAuth()
   await db.campeonato.update({
     where: { id },
     data: {
@@ -90,6 +93,7 @@ export async function editarCampeonato(id: number, data: {
 }
 
 export async function deletarCampeonato(id: number) {
+  await requireAuth()
   await db.campeonato.delete({ where: { id } })
   revalidatePath("/campeonatos")
 }
@@ -99,6 +103,7 @@ export async function inscreverAluno(campeonatoId: number, alunoId: number, data
   desconto?: number
   observacoes?: string
 }) {
+  await requireAuth()
   const inscricao = await db.inscricaoCampeonato.create({
     data: {
       campeonatoId,
@@ -113,6 +118,7 @@ export async function inscreverAluno(campeonatoId: number, alunoId: number, data
 }
 
 export async function removerInscricao(id: number, campeonatoId: number) {
+  await requireAuth()
   await db.inscricaoCampeonato.delete({ where: { id } })
   revalidatePath(`/campeonatos/${campeonatoId}`)
 }
@@ -122,6 +128,7 @@ export async function registrarPagamentoInscricao(
   campeonatoId: number,
   data: { valorPago: number; formaPagamento: string; dataPagamento: string }
 ) {
+  await requireAuth()
   const inscricao = await db.inscricaoCampeonato.findUnique({ where: { id } })
   if (!inscricao) return { error: "Inscrição não encontrada" }
 

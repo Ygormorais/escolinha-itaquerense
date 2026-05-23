@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { getConfig } from "@/lib/config"
 import { format } from "date-fns"
+import { requireAuth } from "@/lib/auth"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -13,6 +14,7 @@ export async function enviarWhatsApp(
   telefone: string,
   mensagem: string
 ): Promise<ActionResult> {
+  await requireAuth()
   try {
     const provider = getWhatsAppProvider()
     const result = await provider.sendText({ telefone, mensagem })
@@ -43,6 +45,7 @@ export async function enviarCobrancaWhatsApp(
   mesReferencia: string,
   valor: number
 ): Promise<ActionResult> {
+  await requireAuth()
   try {
     const aluno = await db.aluno.findUnique({
       where: { id: alunoId },
@@ -82,6 +85,7 @@ export async function enviarComunicadoMassa(
   mensagem: string,
   turma: string
 ): Promise<{ enviados: number; erros: number; semTelefone: number } | { error: string }> {
+  await requireAuth()
   try {
     const where = turma === "Todas" ? {} : { turma }
     const alunos = await db.aluno.findMany({
@@ -146,6 +150,7 @@ export async function getMensagensNaoLidas() {
 }
 
 export async function marcarMensagemLida(id: number) {
+  await requireAuth()
   await db.whatsAppMensagem.update({
     where: { id },
     data: { lida: true },
