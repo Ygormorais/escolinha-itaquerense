@@ -22,6 +22,11 @@ export async function POST(req: NextRequest) {
 
       if (!texto) return NextResponse.json({ ok: true })
 
+      if (messageId) {
+        const existing = await db.whatsAppMensagem.findFirst({ where: { messageId } })
+        if (existing) return NextResponse.json({ ok: true })
+      }
+
       await db.whatsAppMensagem.create({
         data: {
           telefone,

@@ -78,7 +78,8 @@ export async function routeMessage(telefone: string, texto: string) {
         origem: "ai-router",
       },
     })
-    await appendHistory(telefone, "user", texto)
+    // Redact the user message before storing — it may contain CPF (sensitive PII)
+    await appendHistory(telefone, "user", "[identificação]")
     await appendHistory(telefone, "assistant", identificacaoMsg)
     return
   }
