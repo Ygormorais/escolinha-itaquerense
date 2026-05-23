@@ -44,8 +44,10 @@ async function identificarResponsavel(telefone: string, texto: string): Promise<
 
     const nomeEnviado = normalizeText(texto.replace(cpf, ""))
     const nomeCadastrado = normalizeText(responsavel.nome)
-    if (!nomeCadastrado.includes(nomeEnviado.split(" ")[0])) {
-      return "Nome não confere com o CPF informado. Tente novamente."
+    const tokens = nomeEnviado.trim().split(/\s+/).filter(t => t.length > 1)
+    const matched = tokens.filter(t => nomeCadastrado.includes(t))
+    if (tokens.length < 2 || matched.length < 2) {
+      return "Por favor, informe seu nome completo (primeiro e último nome) junto com o CPF. Exemplo: João Silva 12345678900"
     }
 
     await identifySession(telefone, responsavel.id)
@@ -108,21 +110,31 @@ export async function routeMessage(telefone: string, texto: string) {
   ]
 
   // Agentic loop com tool use
-  let response = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
-    system: [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT + contexto,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    tools: TOOL_DEFINITIONS,
-    messages,
-  })
+  let response
+  try {
+    response = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
+      system: [
+        {
+          type: "text",
+          text: SYSTEM_PROMPT + contexto,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      tools: TOOL_DEFINITIONS,
+      messages,
+    })
+  } catch (err) {
+    console.error("[AI Router] Claude API error:", err)
+    const provider = getProvider()
+    await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
+    return
+  }
 
-  while (response.stop_reason === "tool_use") {
+  let iterations = 0
+  while (response.stop_reason === "tool_use" && iterations < 8) {
+    iterations++
     const toolUses = response.content.filter((b) => b.type === "tool_use")
 
     // Check for escalation before executing other tools
@@ -175,19 +187,26 @@ export async function routeMessage(telefone: string, texto: string) {
     messages.push({ role: "assistant", content: response.content })
     messages.push(toolResults)
 
-    response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      system: [
-        {
-          type: "text",
-          text: SYSTEM_PROMPT + contexto,
-          cache_control: { type: "ephemeral" },
-        },
-      ],
-      tools: TOOL_DEFINITIONS,
-      messages,
-    })
+    try {
+      response = await anthropic.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1024,
+        system: [
+          {
+            type: "text",
+            text: SYSTEM_PROMPT + contexto,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        tools: TOOL_DEFINITIONS,
+        messages,
+      })
+    } catch (err) {
+      console.error("[AI Router] Claude API error (loop):", err)
+      const provider = getProvider()
+      await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
+      break
+    }
   }
 
   // Extract final text response

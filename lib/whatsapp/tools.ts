@@ -146,8 +146,10 @@ export async function executeTool(name: string, input: ToolInput): Promise<strin
         return `Turma: ${turma}\nHorário: ${alunos[0].horario}`
       }
 
+      // Escalation is handled in ai-router.ts before executeTool is called for this tool.
+      // This branch should never be reached in practice.
       case "escalonar_humano":
-        return "__ESCALAR__"
+        return ""
 
       default:
         return "Tool desconhecida."
