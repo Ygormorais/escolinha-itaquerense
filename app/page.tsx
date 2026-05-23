@@ -7,14 +7,24 @@ import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, TrendingDown } fro
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
+import { MonthPicker } from "@/app/caixa/month-picker"
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mes?: string }>
+}) {
+  const params = await searchParams
   const now = new Date()
-  const mesAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-  const inicioMes = startOfMonth(now)
-  const fimMes = endOfMonth(now)
+  const mesSelecionado = params.mes ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
 
-  const sixMonthsAgo = subMonths(startOfMonth(now), 5)
+  const [anoRef, mesRef] = mesSelecionado.split("-").map(Number)
+  const dataRef = new Date(anoRef, mesRef - 1, 1)
+  const mesAtual = mesSelecionado
+  const inicioMes = startOfMonth(dataRef)
+  const fimMes = endOfMonth(dataRef)
+
+  const sixMonthsAgo = subMonths(startOfMonth(dataRef), 5)
 
   const [
     totalAtivos,
@@ -48,7 +58,7 @@ export default async function DashboardPage() {
       where: {
         mesReferencia: mesAtual,
         dataPagamento: null,
-        dataVencimento: { lt: now },
+        dataVencimento: { lt: fimMes },
       },
       include: { aluno: { select: { nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
@@ -70,7 +80,7 @@ export default async function DashboardPage() {
     db.pagamento.findMany({
       where: {
         dataPagamento: null,
-        dataVencimento: { gte: now, lte: addDays(now, 7) },
+        dataVencimento: { gte: inicioMes, lte: addDays(fimMes, 7) },
       },
       include: { aluno: { select: { nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
@@ -94,9 +104,8 @@ export default async function DashboardPage() {
     return { mes: label, recebido, custos }
   })
 
-  const mesAtualNum = now.getMonth() + 1
   const aniversariantesMes = aniversariantes.filter(
-    (a) => new Date(a.dataNascimento).getMonth() + 1 === mesAtualNum
+    (a) => new Date(a.dataNascimento).getMonth() + 1 === mesRef
   ).sort((a, b) => new Date(a.dataNascimento).getDate() - new Date(b.dataNascimento).getDate())
 
   const receitaMes = pagamentosMes.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
@@ -108,7 +117,8 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Dashboard"
-        description={`Visão geral — ${format(now, "MMMM yyyy", { locale: ptBR })}`}
+        description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}
+        action={<MonthPicker mes={mesSelecionado} basePath="/" />}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
