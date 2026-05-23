@@ -2,6 +2,8 @@ import { db } from "@/lib/db"
 
 const SESSION_TTL_HOURS = 24
 
+type Message = { role: "user" | "assistant"; content: string }
+
 export async function getSession(telefone: string) {
   const session = await db.chatSession.findUnique({ where: { telefone } })
   if (!session) return null
@@ -25,6 +27,7 @@ export async function createSession(telefone: string) {
 export async function identifySession(telefone: string, responsavelId: number) {
   const expiresAt = new Date()
   expiresAt.setHours(expiresAt.getHours() + SESSION_TTL_HOURS)
+  // Note: Prisma will throw if session not found — caller must handle this
   return db.chatSession.update({
     where: { telefone },
     data: { responsavelId, identificado: true, expiresAt },
@@ -35,10 +38,13 @@ export async function appendHistory(
   telefone: string,
   role: "user" | "assistant",
   content: string
-) {
+): Promise<boolean> {
   const session = await db.chatSession.findUnique({ where: { telefone } })
-  if (!session) return
-  let history: { role: string; content: string }[] = []
+  if (!session) {
+    console.warn(`[ChatSession] appendHistory: session not found for ${telefone}`)
+    return false
+  }
+  let history: Message[] = []
   try {
     history = JSON.parse(session.historico)
   } catch {
@@ -46,10 +52,13 @@ export async function appendHistory(
   }
   history.push({ role, content })
   const trimmed = history.slice(-10) // keep last 10 messages
+  const expiresAt = new Date()
+  expiresAt.setHours(expiresAt.getHours() + SESSION_TTL_HOURS)
   await db.chatSession.update({
     where: { telefone },
-    data: { historico: JSON.stringify(trimmed) },
+    data: { historico: JSON.stringify(trimmed), expiresAt },
   })
+  return true
 }
 
 export async function blockSession(telefone: string) {
