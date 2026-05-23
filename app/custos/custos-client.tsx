@@ -19,6 +19,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
+import { toast } from "sonner"
 import { createCusto, updateCusto, deleteCusto, gerarCustosRecorrentes } from "@/app/actions/custos"
 import { RefreshCw } from "lucide-react"
 
@@ -93,12 +94,13 @@ function CustoFormDialog({
     setLoading(true)
     try {
       const payload = { ...values, valor: Number(values.valor) }
-      if (custo) {
-        await updateCusto(custo.id, payload)
-      } else {
-        await createCusto(payload)
-        form.reset()
+      const result = custo ? await updateCusto(custo.id, payload) : await createCusto(payload)
+      if ("error" in result) {
+        toast.error(result.error)
+        return
       }
+      toast.success(custo ? "Custo atualizado" : "Custo registrado")
+      if (!custo) form.reset()
       setOpen(false)
       router.refresh()
     } finally {
@@ -263,21 +265,28 @@ export function CustosClient({
 
   async function handleDelete(id: number) {
     if (!confirm("Excluir este custo? Esta ação não pode ser desfeita.")) return
-    await deleteCusto(id)
+    const result = await deleteCusto(id)
+    if ("error" in result) { toast.error(result.error); return }
+    toast.success("Custo excluído")
     router.refresh()
   }
 
   function handleGerarRecorrentes() {
     const ativos = recorrentes.filter((r) => r.ativo)
     if (ativos.length === 0) {
-      alert("Nenhum modelo recorrente ativo cadastrado. Acesse a aba Recorrentes para cadastrar.")
+      toast.warning("Nenhum modelo recorrente ativo cadastrado.")
       return
     }
     if (!confirm(`Gerar ${ativos.length} custo(s) recorrente(s) para ${mes}?`)) return
     setGeradoMsg(null)
     startGerando(async () => {
       const r = await gerarCustosRecorrentes(mes)
-      setGeradoMsg(`✅ ${r.criados} custo(s) gerado(s) para ${mes}`)
+      if ("error" in r) {
+        toast.error(r.error)
+      } else {
+        setGeradoMsg(`${r.criados} custo(s) gerado(s)`)
+        toast.success(`${r.criados} custo(s) recorrente(s) gerado(s) para ${mes}`)
+      }
       router.refresh()
     })
   }

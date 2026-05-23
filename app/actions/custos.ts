@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 
+type ActionResult = { success: true } | { error: string }
+
 export async function createCusto(data: {
   data: string
   categoria: string
@@ -12,21 +14,25 @@ export async function createCusto(data: {
   formaPagamento: string
   comprovante: boolean
   observacoes?: string
-}) {
-  await db.custo.create({
-    data: {
-      data: new Date(data.data),
-      categoria: data.categoria,
-      descricao: data.descricao,
-      fornecedor: data.fornecedor,
-      valor: data.valor,
-      formaPagamento: data.formaPagamento,
-      comprovante: data.comprovante,
-      observacoes: data.observacoes ?? null,
-    },
-  })
-
-  revalidatePath("/custos")
+}): Promise<ActionResult> {
+  try {
+    await db.custo.create({
+      data: {
+        data: new Date(data.data),
+        categoria: data.categoria,
+        descricao: data.descricao,
+        fornecedor: data.fornecedor,
+        valor: data.valor,
+        formaPagamento: data.formaPagamento,
+        comprovante: data.comprovante,
+        observacoes: data.observacoes ?? null,
+      },
+    })
+    revalidatePath("/custos")
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao criar custo" }
+  }
 }
 
 export async function updateCusto(id: number, data: {
@@ -38,27 +44,36 @@ export async function updateCusto(id: number, data: {
   formaPagamento: string
   comprovante: boolean
   observacoes?: string
-}) {
-  await db.custo.update({
-    where: { id },
-    data: {
-      data: new Date(data.data),
-      categoria: data.categoria,
-      descricao: data.descricao,
-      fornecedor: data.fornecedor,
-      valor: data.valor,
-      formaPagamento: data.formaPagamento,
-      comprovante: data.comprovante,
-      observacoes: data.observacoes ?? null,
-    },
-  })
-
-  revalidatePath("/custos")
+}): Promise<ActionResult> {
+  try {
+    await db.custo.update({
+      where: { id },
+      data: {
+        data: new Date(data.data),
+        categoria: data.categoria,
+        descricao: data.descricao,
+        fornecedor: data.fornecedor,
+        valor: data.valor,
+        formaPagamento: data.formaPagamento,
+        comprovante: data.comprovante,
+        observacoes: data.observacoes ?? null,
+      },
+    })
+    revalidatePath("/custos")
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao atualizar custo" }
+  }
 }
 
-export async function deleteCusto(id: number) {
-  await db.custo.delete({ where: { id } })
-  revalidatePath("/custos")
+export async function deleteCusto(id: number): Promise<ActionResult> {
+  try {
+    await db.custo.delete({ where: { id } })
+    revalidatePath("/custos")
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao excluir custo" }
+  }
 }
 
 export async function getCustosRecorrentes() {
@@ -71,9 +86,14 @@ export async function createCustoRecorrente(data: {
   fornecedor: string
   valor: number
   formaPagamento: string
-}) {
-  await db.custoRecorrente.create({ data })
-  revalidatePath("/custos")
+}): Promise<ActionResult> {
+  try {
+    await db.custoRecorrente.create({ data })
+    revalidatePath("/custos")
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao criar custo recorrente" }
+  }
 }
 
 export async function updateCustoRecorrente(id: number, data: {
@@ -83,37 +103,51 @@ export async function updateCustoRecorrente(id: number, data: {
   valor: number
   formaPagamento: string
   ativo: boolean
-}) {
-  await db.custoRecorrente.update({ where: { id }, data })
-  revalidatePath("/custos")
+}): Promise<ActionResult> {
+  try {
+    await db.custoRecorrente.update({ where: { id }, data })
+    revalidatePath("/custos")
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao atualizar custo recorrente" }
+  }
 }
 
-export async function deleteCustoRecorrente(id: number) {
-  await db.custoRecorrente.delete({ where: { id } })
-  revalidatePath("/custos")
+export async function deleteCustoRecorrente(id: number): Promise<ActionResult> {
+  try {
+    await db.custoRecorrente.delete({ where: { id } })
+    revalidatePath("/custos")
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao excluir custo recorrente" }
+  }
 }
 
-export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: number }> {
-  const [ano, mesNum] = mes.split("-").map(Number)
-  const dataRef = new Date(ano, mesNum - 1, 1)
+export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: number } | { error: string }> {
+  try {
+    const [ano, mesNum] = mes.split("-").map(Number)
+    const dataRef = new Date(ano, mesNum - 1, 1)
 
-  const modelos = await db.custoRecorrente.findMany({ where: { ativo: true } })
+    const modelos = await db.custoRecorrente.findMany({ where: { ativo: true } })
 
-  await db.custo.createMany({
-    data: modelos.map((m) => ({
-      data: dataRef,
-      categoria: m.categoria,
-      descricao: m.descricao,
-      fornecedor: m.fornecedor,
-      valor: m.valor,
-      formaPagamento: m.formaPagamento,
-      comprovante: false,
-    })),
-  })
+    await db.custo.createMany({
+      data: modelos.map((m) => ({
+        data: dataRef,
+        categoria: m.categoria,
+        descricao: m.descricao,
+        fornecedor: m.fornecedor,
+        valor: m.valor,
+        formaPagamento: m.formaPagamento,
+        comprovante: false,
+      })),
+    })
 
-  revalidatePath("/custos")
-  revalidatePath("/relatorio")
-  revalidatePath("/")
+    revalidatePath("/custos")
+    revalidatePath("/relatorio")
+    revalidatePath("/")
 
-  return { criados: modelos.length }
+    return { criados: modelos.length }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao gerar custos recorrentes" }
+  }
 }

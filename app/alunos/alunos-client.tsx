@@ -1,11 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download } from "lucide-react"
+import { useDebounce } from "@/hooks/use-debounce"
+import { Pagination } from "@/components/ui/pagination"
+import { TURMAS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -21,6 +24,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
+import { toast } from "sonner"
 import { createAluno, updateAluno, inativarAluno, reativarAluno } from "@/app/actions/alunos"
 
 type Aluno = {
@@ -52,7 +56,6 @@ type FormValues = {
   observacoes: string
 }
 
-const TURMAS = ["Sub-7", "Sub-9", "Sub-11", "Sub-13", "Sub-15", "Sub-17"]
 const HORARIOS = ["Seg/Qua 08h", "Seg/Qua 10h", "Seg/Qua 14h", "Ter/Qui 08h", "Ter/Qui 10h", "Ter/Qui 14h"]
 
 export function AlunoFormDialog({
@@ -86,11 +89,12 @@ export function AlunoFormDialog({
     setLoading(true)
     try {
       const payload = { ...values, mensalidade: Number(values.mensalidade) }
-      if (aluno) {
-        await updateAluno(aluno.id, payload)
-      } else {
-        await createAluno(payload)
+      const result = aluno ? await updateAluno(aluno.id, payload) : await createAluno(payload)
+      if ("error" in result) {
+        toast.error(result.error)
+        return
       }
+      toast.success(aluno ? "Aluno atualizado" : "Aluno cadastrado")
       setOpen(false)
       form.reset()
       router.refresh()
@@ -242,35 +246,41 @@ export function AlunoFormDialog({
   )
 }
 
-const PAGE_SIZE = 15
+type AlunosClientProps = {
+  alunos: Aluno[]
+  total: number
+  page: number
+  totalPages: number
+  filters: { q: string; turma: string; status: string }
+}
 
-export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
-  const [search, setSearch] = useState("")
-  const [turmaFilter, setTurmaFilter] = useState("Todas")
-  const [statusFilter, setStatusFilter] = useState("Todos")
-  const [page, setPage] = useState(1)
+export function AlunosClient({ alunos, total, page, totalPages, filters }: AlunosClientProps) {
+  const [search, setSearch] = useState(filters.q)
+  const debouncedSearch = useDebounce(search, 350)
   const router = useRouter()
 
-  const filtered = alunos.filter((a) => {
-    const matchSearch = a.nome.toLowerCase().includes(search.toLowerCase())
-    const matchTurma = turmaFilter === "Todas" || a.turma === turmaFilter
-    const matchStatus = statusFilter === "Todos" || a.status === statusFilter
-    return matchSearch && matchTurma && matchStatus
-  })
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (debouncedSearch) params.set("q", debouncedSearch)
+    if (filters.turma !== "Todas") params.set("turma", filters.turma)
+    if (filters.status !== "Todos") params.set("status", filters.status)
+    router.push(`/alunos?${params.toString()}`)
+  }, [debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
-
-  function handleFilterChange(fn: () => void) {
-    fn()
-    setPage(1)
+  function pushFilter(key: string, value: string, defaultVal: string) {
+    const params = new URLSearchParams()
+    if (debouncedSearch) params.set("q", debouncedSearch)
+    if (filters.turma !== "Todas") params.set("turma", filters.turma)
+    if (filters.status !== "Todos") params.set("status", filters.status)
+    if (value !== defaultVal) params.set(key, value)
+    else params.delete(key)
+    router.push(`/alunos?${params.toString()}`)
   }
 
   function exportarCSV() {
     const linhas = [
       ["Nome", "Turma", "Horário", "Responsável", "Telefone", "Email", "Mensalidade", "Status"],
-      ...filtered.map((a) => [
+      ...alunos.map((a) => [
         a.nome, a.turma, a.horario, a.responsavel, a.telefone, a.email,
         a.mensalidade.toFixed(2), a.status,
       ]),
@@ -287,14 +297,27 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
 
   async function handleInativar(id: number) {
     if (!confirm("Inativar este aluno?")) return
-    await inativarAluno(id)
+    const result = await inativarAluno(id)
+    if ("error" in result) { toast.error(result.error); return }
+    toast.success("Aluno inativado")
     router.refresh()
   }
 
   async function handleReativar(id: number) {
     if (!confirm("Reativar este aluno?")) return
-    await reativarAluno(id)
+    const result = await reativarAluno(id)
+    if ("error" in result) { toast.error(result.error); return }
+    toast.success("Aluno reativado")
     router.refresh()
+  }
+
+  function handlePageChange(p: number) {
+    const params = new URLSearchParams()
+    if (filters.q) params.set("q", filters.q)
+    if (filters.turma !== "Todas") params.set("turma", filters.turma)
+    if (filters.status !== "Todos") params.set("status", filters.status)
+    if (p > 1) params.set("page", String(p))
+    router.push(`/alunos?${params.toString()}`)
   }
 
   return (
@@ -303,21 +326,21 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
         <Input
           placeholder="Buscar por nome..."
           value={search}
-          onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
+          onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
         />
-        <Select value={turmaFilter} onValueChange={(v) => handleFilterChange(() => setTurmaFilter(v ?? "Todas"))}>
+        <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Todas">Todas as turmas</SelectItem>
-            {["Sub-7", "Sub-9", "Sub-11", "Sub-13", "Sub-15", "Sub-17"].map((t) => (
+            {TURMAS.map((t) => (
               <SelectItem key={t} value={t}>{t}</SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={(v) => handleFilterChange(() => setStatusFilter(v ?? "Todos"))}>
+        <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -327,37 +350,15 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
             <SelectItem value="Inativo">Inativo</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={exportarCSV} disabled={filtered.length === 0} className="ml-auto">
+        <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0} className="ml-auto">
           <Download className="size-4" />
           Exportar CSV
         </Button>
       </div>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{filtered.length} aluno(s) encontrado(s)</span>
-        {totalPages > 1 && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Anterior
-            </Button>
-            <span className="text-xs">
-              {currentPage} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Próxima
-            </Button>
-          </div>
-        )}
+        <span>{total} aluno(s) encontrado(s)</span>
+        <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
       <div className="rounded-xl border bg-white">
@@ -374,14 +375,14 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginated.length === 0 && (
+            {alunos.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground">
                   Nenhum aluno encontrado
                 </TableCell>
               </TableRow>
             )}
-            {paginated.map((aluno) => (
+            {alunos.map((aluno) => (
               <TableRow key={aluno.id}>
                 <TableCell className="font-medium">
                   <Link

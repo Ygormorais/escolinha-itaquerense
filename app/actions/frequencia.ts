@@ -3,21 +3,27 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 
+type ActionResult = { success: true } | { error: string }
+
 export async function salvarFrequencia(
   registros: { alunoId: number; data: string; presenca: string }[]
-) {
-  await Promise.all(
-    registros.map((r) =>
-      db.frequencia.upsert({
-        where: { alunoId_data: { alunoId: r.alunoId, data: new Date(r.data) } },
-        update: { presenca: r.presenca },
-        create: { alunoId: r.alunoId, data: new Date(r.data), presenca: r.presenca },
-      })
+): Promise<ActionResult> {
+  try {
+    await Promise.all(
+      registros.map((r) =>
+        db.frequencia.upsert({
+          where: { alunoId_data: { alunoId: r.alunoId, data: new Date(r.data) } },
+          update: { presenca: r.presenca },
+          create: { alunoId: r.alunoId, data: new Date(r.data), presenca: r.presenca },
+        })
+      )
     )
-  )
-
-  revalidatePath("/frequencia")
-  revalidatePath("/")
+    revalidatePath("/frequencia")
+    revalidatePath("/")
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao salvar frequência" }
+  }
 }
 
 export async function getFrequenciaPorTurmaData(turma: string, data: string) {

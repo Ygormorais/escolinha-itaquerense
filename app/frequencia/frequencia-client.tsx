@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, PrinterIcon, CheckCircle2 } from "lucide-react"
+import { SaveIcon, PrinterIcon } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,11 +13,11 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { salvarFrequencia, getFrequenciaPorTurmaData } from "@/app/actions/frequencia"
+import { TURMAS } from "@/lib/constants"
 
 type AlunoFrequencia = { id: number; nome: string; presenca: string | null }
 type PresencaValue = "Presente" | "Ausente" | "Justificado"
 
-const TURMAS = ["Sub-7", "Sub-9", "Sub-11", "Sub-13", "Sub-15", "Sub-17"]
 const OPCOES: PresencaValue[] = ["Presente", "Ausente", "Justificado"]
 
 export function FrequenciaClient() {
@@ -28,7 +29,6 @@ export function FrequenciaClient() {
   const [saving, startSaving] = useTransition()
   const [loading, startLoading] = useTransition()
   const [presencas, setPresencas] = useState<Record<number, PresencaValue>>({})
-  const [saved, setSaved] = useState(false)
 
   function handleLoad() {
     startLoading(async () => {
@@ -53,11 +53,13 @@ export function FrequenciaClient() {
       data,
       presenca: presencas[a.id] ?? "Ausente",
     }))
-    setSaved(false)
     startSaving(async () => {
-      await salvarFrequencia(registros)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
+      const result = await salvarFrequencia(registros)
+      if ("error" in result) {
+        toast.error(result.error)
+      } else {
+        toast.success("Frequência salva")
+      }
     })
   }
 
@@ -135,10 +137,10 @@ export function FrequenciaClient() {
               <Button
                 onClick={handleSalvar}
                 disabled={saving || alunos.length === 0}
-                className={saved ? "bg-success-600 text-white hover:bg-success-600/90" : "bg-brand-800 text-white hover:bg-brand-900"}
+                className="bg-brand-800 text-white hover:bg-brand-900"
               >
-                {saved ? <CheckCircle2 className="size-4" /> : <SaveIcon className="size-4" />}
-                {saving ? "Salvando..." : saved ? "Salvo!" : "Salvar Frequência"}
+                <SaveIcon className="size-4" />
+                {saving ? "Salvando..." : "Salvar Frequência"}
               </Button>
             </div>
           </div>

@@ -20,6 +20,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
+import { toast } from "sonner"
 import { registrarPagamento, gerarMensalidadesMes, deletePagamento } from "@/app/actions/pagamentos"
 
 type Pagamento = {
@@ -65,11 +66,15 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
   async function onSubmit(values: { dataPagamento: string; formaPagamento: string; valorRecebido: string }) {
     setLoading(true)
     try {
-      await registrarPagamento(pagamento.id, {
+      const result = await registrarPagamento(pagamento.id, {
         dataPagamento: values.dataPagamento,
         formaPagamento: values.formaPagamento,
         valorRecebido: Number(values.valorRecebido),
       })
+      if ("error" in result) {
+        toast.error(result.error)
+        return
+      }
       const params = new URLSearchParams({
         aluno: pagamento.aluno.nome,
         referencia: pagamento.mesReferencia,
@@ -184,7 +189,12 @@ export function PagamentosClient({
   function handleGerar() {
     startGerando(async () => {
       const r = await gerarMensalidadesMes(mes)
-      setResultado(r)
+      if ("error" in r) {
+        toast.error(r.error)
+      } else {
+        setResultado(r)
+        toast.success(`${r.criados} mensalidade(s) gerada(s)`)
+      }
       setConfirmOpen(false)
       router.refresh()
     })
