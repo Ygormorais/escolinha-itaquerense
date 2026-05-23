@@ -22,25 +22,19 @@ export async function POST(req: NextRequest) {
 
       if (!texto) return NextResponse.json({ ok: true })
 
-      const aluno = await db.aluno.findFirst({
-        where: { telefone: { contains: telefone.replace(/\D/g, "") } },
+      await db.whatsAppMensagem.create({
+        data: {
+          telefone,
+          mensagem: texto,
+          direcao: "incoming",
+          status: "received",
+          instancia: instance ?? "escolinha",
+          origem: "webhook",
+          messageId,
+        },
       })
 
-      if (aluno) {
-        await routeMessage(aluno.id, texto, telefone)
-      } else {
-        await db.whatsAppMensagem.create({
-          data: {
-            telefone,
-            mensagem: texto,
-            direcao: "incoming",
-            status: "received",
-            instancia: instance ?? "escolinha",
-            origem: "webhook",
-            messageId,
-          },
-        })
-      }
+      await routeMessage(telefone, texto)
     }
 
     if (event === "MESSAGE_STATUS" && data?.key?.id && data?.status) {
