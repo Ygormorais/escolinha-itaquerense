@@ -221,6 +221,11 @@ model TransacaoMaquina {
   createdAt      DateTime   @default(now())
 }
 
+model Configuracao {
+  chave String @id
+  valor String
+}
+
 model WhatsAppMensagem {
   id         Int      @id @default(autoincrement())
   alunoId    Int?

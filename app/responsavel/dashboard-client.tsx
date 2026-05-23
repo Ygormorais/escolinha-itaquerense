@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   User, CreditCard, TrendingUp, TrendingDown,
@@ -39,6 +40,14 @@ export function ResponsavelDashboardClient({
     await fetch("/api/responsavel/logout", { method: "POST" })
     router.push("/responsavel/login")
   }
+
+  const [whatsappNumber, setWhatsappNumber] = useState("5511999999999")
+  useEffect(() => {
+    fetch("/api/config/public")
+      .then((r) => r.json())
+      .then((d) => { if (d.whatsapp) setWhatsappNumber(d.whatsapp) })
+      .catch(() => {})
+  }, [])
 
   function statusPagamento(aluno: Aluno): { label: string; variant: "default" | "secondary" | "outline" | "destructive" } {
     const mesAtual = format(new Date(), "yyyy-MM")
@@ -149,7 +158,7 @@ export function ResponsavelDashboardClient({
             Entre em contato com a escolinha pelo WhatsApp:
           </p>
           <a
-            href="https://wa.me/5511999999999"
+            href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"

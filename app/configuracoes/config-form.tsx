@@ -73,6 +73,22 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
             </div>
 
             <div className="border-t pt-4 space-y-4">
+              <p className="text-sm font-semibold text-foreground">WhatsApp</p>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Número da Escolinha</label>
+                <Input
+                  name="whatsapp"
+                  value={form.whatsapp ?? ""}
+                  onChange={handleChange}
+                  placeholder="5511999999999"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Número usado no card "Fale Conosco" do portal do responsável
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t pt-4 space-y-4">
               <p className="text-sm font-semibold text-foreground">Metas & Capacidade</p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">

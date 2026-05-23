@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache"
 import { requireAuth } from "@/lib/auth"
-import { getConfig, saveConfig, type ClubConfig } from "@/lib/config"
+import { getConfig as getFileConfig, saveConfig, type ClubConfig } from "@/lib/config"
 
 export async function getClubConfig() {
-  return getConfig()
+  return getFileConfig()
 }
 
 export async function updateClubConfig(data: ClubConfig) {
