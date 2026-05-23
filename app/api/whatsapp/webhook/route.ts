@@ -34,7 +34,9 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      await routeMessage(telefone, texto)
+      routeMessage(telefone, texto).catch((err) => {
+        console.error("Failed to route message:", err)
+      })
     }
 
     if (event === "MESSAGE_STATUS" && data?.key?.id && data?.status) {
