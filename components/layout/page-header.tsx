@@ -10,9 +10,9 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, action, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex items-start justify-between", className)}>
+    <div className={cn("flex items-start justify-between border-b border-border pb-4", className)}>
       <div>
-        <h1 className="font-heading text-2xl font-bold text-foreground">{title}</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">{title}</h1>
         {description && (
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}

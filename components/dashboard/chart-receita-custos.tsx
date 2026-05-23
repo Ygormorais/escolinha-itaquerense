@@ -17,15 +17,16 @@ export function ChartReceitaCustos({ data }: { data: ChartData[] }) {
       <CardContent>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={data} barGap={4}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
+            <XAxis dataKey="mes" tick={{ fontSize: 12, fill: "#6B6363" }} />
             <YAxis
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 12, fill: "#6B6363" }}
               tickFormatter={(v: number) =>
                 v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`
               }
             />
             <Tooltip
+              contentStyle={{ borderRadius: 8, border: "1px solid #EFE6E6", boxShadow: "0 4px 12px -2px rgba(127,0,0,0.08)" }}
               formatter={(v) =>
                 typeof v === "number"
                   ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -34,7 +35,7 @@ export function ChartReceitaCustos({ data }: { data: ChartData[] }) {
             />
             <Legend />
             <Bar dataKey="recebido" name="Recebido" fill="#C62828" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="custos" name="Custos" fill="#94A3B8" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="custos" name="Custos" fill="#6B6363" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

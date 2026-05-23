@@ -3,8 +3,8 @@ import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck } from "lucide-react"
-import { format, startOfMonth, endOfMonth, subMonths } from "date-fns"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, TrendingDown } from "lucide-react"
+import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
 
@@ -25,6 +25,8 @@ export default async function DashboardPage() {
     inadimplentes,
     pagamentosChart,
     custosChart,
+    aniversariantes,
+    vencendoSemana,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -60,6 +62,19 @@ export default async function DashboardPage() {
       where: { data: { gte: sixMonthsAgo } },
       select: { data: true, valor: true },
     }),
+    db.aluno.findMany({
+      where: { status: "Ativo" },
+      select: { id: true, nome: true, dataNascimento: true, turma: true },
+      orderBy: { dataNascimento: "asc" },
+    }),
+    db.pagamento.findMany({
+      where: {
+        dataPagamento: null,
+        dataVencimento: { gte: now, lte: addDays(now, 7) },
+      },
+      include: { aluno: { select: { nome: true, turma: true } } },
+      orderBy: { dataVencimento: "asc" },
+    }),
   ])
 
   const last6Months = Array.from({ length: 6 }, (_, i) => {
@@ -79,6 +94,11 @@ export default async function DashboardPage() {
     return { mes: label, recebido, custos }
   })
 
+  const mesAtualNum = now.getMonth() + 1
+  const aniversariantesMes = aniversariantes.filter(
+    (a) => new Date(a.dataNascimento).getMonth() + 1 === mesAtualNum
+  ).sort((a, b) => new Date(a.dataNascimento).getDate() - new Date(b.dataNascimento).getDate())
+
   const receitaMes = pagamentosMes.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
   const presencaMedia = totalFrequencias > 0
     ? Math.round((frequenciasMes / totalFrequencias) * 100)
@@ -96,29 +116,109 @@ export default async function DashboardPage() {
           title="Alunos Ativos"
           value={totalAtivos}
           icon={Users}
-          accent
+          variant="brand"
+          borderAccent
+          href="/alunos"
         />
         <StatCard
           title="Receita do Mês"
           value={`R$ ${receitaMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           icon={TrendingUp}
-          accent
+          variant="brand"
+          borderAccent
+          href="/caixa"
         />
         <StatCard
           title="Inadimplentes"
           value={inadimplentes.length}
           description="Mensalidades vencidas"
           icon={AlertCircle}
+          variant={inadimplentes.length > 0 ? "danger" : "success"}
+          href="/inadimplencia"
         />
         <StatCard
           title="Presença Média"
           value={`${presencaMedia}%`}
           description="No mês atual"
           icon={CalendarCheck}
+          variant={presencaMedia >= 75 ? "success" : presencaMedia >= 50 ? "warning" : "danger"}
+          href="/frequencia"
         />
       </div>
 
       <ChartReceitaCustos data={chartData} />
+
+      {vencendoSemana.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-warning-600">
+              <AlertCircle className="size-4" />
+              Mensalidades vencendo nos próximos 7 dias ({vencendoSemana.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Aluno</TableHead>
+                  <TableHead>Turma</TableHead>
+                  <TableHead>Vencimento</TableHead>
+                  <TableHead>Mês Ref.</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {vencendoSemana.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                    <TableCell>{p.aluno.turma}</TableCell>
+                    <TableCell className="text-warning-600 font-medium">
+                      {format(p.dataVencimento, "dd/MM/yyyy")}
+                    </TableCell>
+                    <TableCell>{p.mesReferencia}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {aniversariantesMes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Cake className="size-4 text-brand-800" />
+              Aniversariantes de {format(now, "MMMM", { locale: ptBR })}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Aluno</TableHead>
+                  <TableHead>Turma</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Idade</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {aniversariantesMes.map((a) => {
+                  const nasc = new Date(a.dataNascimento)
+                  const idade = now.getFullYear() - nasc.getFullYear()
+                  return (
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">{a.nome}</TableCell>
+                      <TableCell>{a.turma}</TableCell>
+                      <TableCell>{format(nasc, "dd/MM")}</TableCell>
+                      <TableCell>{idade} anos</TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
@@ -183,7 +283,7 @@ export default async function DashboardPage() {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.aluno.nome}</TableCell>
                     <TableCell>{p.aluno.turma}</TableCell>
-                    <TableCell className="text-red-600">
+                    <TableCell className="text-danger-600">
                       {format(p.dataVencimento, "dd/MM/yyyy")}
                     </TableCell>
                   </TableRow>
