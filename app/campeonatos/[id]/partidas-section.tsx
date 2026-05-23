@@ -196,10 +196,8 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
             <Swords className="size-4" /> Partidas
           </CardTitle>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" }) } }}>
-            <DialogTrigger>
-              <Button size="sm">
-                <Plus className="size-4" /> Partida
-              </Button>
+            <DialogTrigger render={<Button size="sm" />}>
+              <Plus className="size-4" /> Partida
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>

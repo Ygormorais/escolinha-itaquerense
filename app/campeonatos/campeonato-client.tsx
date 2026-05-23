@@ -144,10 +144,8 @@ export function CampeonatoClient({
 
       <div className="flex justify-end">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger>
-            <Button>
-              <Plus className="size-4" /> Novo Campeonato
-            </Button>
+          <DialogTrigger render={<Button />}>
+            <Plus className="size-4" /> Novo Campeonato
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
             <DialogHeader>
