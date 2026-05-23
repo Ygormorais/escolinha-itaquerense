@@ -13,7 +13,11 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
   const [saving, setSaving] = useState(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev: ClubConfig) => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value, type } = e.target
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "number" ? Number(value) : value,
+    }))
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -30,33 +34,68 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
   }
 
   return (
-    <Card className="max-w-lg">
-      <CardHeader>
-        <CardTitle>Dados do Clube</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSave} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Nome do Clube</label>
-            <Input name="nome" value={form.nome} onChange={handleChange} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Endereço</label>
-            <Input name="endereco" value={form.endereco} onChange={handleChange} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Cidade/UF</label>
-            <Input name="cidade" value={form.cidade} onChange={handleChange} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Telefone</label>
-            <Input name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
-          </div>
-          <Button type="submit" disabled={saving} className="bg-brand-800 text-white hover:bg-brand-900">
-            {saving ? "Salvando..." : "Salvar"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="space-y-6 max-w-lg">
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados do Clube</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Nome do Clube</label>
+              <Input name="nome" value={form.nome} onChange={handleChange} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Endereço</label>
+              <Input name="endereco" value={form.endereco} onChange={handleChange} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Cidade/UF</label>
+              <Input name="cidade" value={form.cidade} onChange={handleChange} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Telefone</label>
+              <Input name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
+            </div>
+
+            <div className="border-t pt-4 space-y-4">
+              <p className="text-sm font-semibold text-foreground">Metas & Capacidade</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Meta mensal (R$)</label>
+                  <Input
+                    type="number"
+                    name="metaMensal"
+                    value={form.metaMensal || ""}
+                    onChange={handleChange}
+                    placeholder="Ex: 5000"
+                    min={0}
+                    step={100}
+                  />
+                  <p className="text-xs text-muted-foreground">Receita alvo por mês</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Capacidade por turma</label>
+                  <Input
+                    type="number"
+                    name="capacidadeTurma"
+                    value={form.capacidadeTurma || ""}
+                    onChange={handleChange}
+                    placeholder="Ex: 20"
+                    min={1}
+                    step={1}
+                  />
+                  <p className="text-xs text-muted-foreground">Máximo de alunos por turma</p>
+                </div>
+              </div>
+            </div>
+
+            <Button type="submit" disabled={saving} className="bg-brand-800 text-white hover:bg-brand-900">
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

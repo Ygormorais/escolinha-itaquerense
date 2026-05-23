@@ -16,14 +16,15 @@ interface StatCardProps {
   href?: string
   borderAccent?: boolean
   trend?: { value: number; label?: string }
+  progress?: { value: number; max: number; label?: string }
 }
 
-const variantStyles: Record<StatVariant, { icon: string }> = {
-  default:  { icon: "bg-muted text-muted-foreground" },
-  brand:    { icon: "bg-brand-100 text-brand-800" },
-  success:  { icon: "bg-success-50 text-success-600" },
-  warning:  { icon: "bg-warning-50 text-warning-600" },
-  danger:   { icon: "bg-danger-50 text-danger-600" },
+const variantStyles: Record<StatVariant, { icon: string; bar: string }> = {
+  default:  { icon: "bg-muted text-muted-foreground",    bar: "bg-muted-foreground" },
+  brand:    { icon: "bg-brand-100 text-brand-800",       bar: "bg-brand-600" },
+  success:  { icon: "bg-success-50 text-success-600",    bar: "bg-success-600" },
+  warning:  { icon: "bg-warning-50 text-warning-600",    bar: "bg-warning-600" },
+  danger:   { icon: "bg-danger-50 text-danger-600",      bar: "bg-danger-600" },
 }
 
 export function StatCard({
@@ -36,8 +37,13 @@ export function StatCard({
   href,
   borderAccent,
   trend,
+  progress,
 }: StatCardProps) {
-  const { icon: iconCls } = variantStyles[variant]
+  const { icon: iconCls, bar: barCls } = variantStyles[variant]
+
+  const progressPct = progress
+    ? Math.min(100, Math.round((progress.value / Math.max(1, progress.max)) * 100))
+    : null
 
   const inner = (
     <Card className={cn(
@@ -70,8 +76,21 @@ export function StatCard({
             <span>{trend.value >= 0 ? "+" : ""}{trend.value}%{trend.label ? ` ${trend.label}` : ""}</span>
           </div>
         )}
-        {description && !trend && (
+        {description && !trend && !progress && (
           <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+        )}
+        {progress && progressPct !== null && (
+          <div className="mt-3 space-y-1">
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className={cn("h-full rounded-full transition-all duration-500", barCls)}
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {progressPct}%{progress.label ? ` ${progress.label}` : " da meta"}
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>

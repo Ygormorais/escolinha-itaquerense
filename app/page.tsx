@@ -8,6 +8,8 @@ import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
 import { MonthPicker } from "@/app/caixa/month-picker"
+import { getConfig } from "@/lib/config"
+import { TURMAS } from "@/lib/constants"
 
 export default async function DashboardPage({
   searchParams,
@@ -26,6 +28,8 @@ export default async function DashboardPage({
 
   const sixMonthsAgo = subMonths(startOfMonth(dataRef), 5)
 
+  const config = getConfig()
+
   const [
     totalAtivos,
     pagamentosMes,
@@ -37,6 +41,7 @@ export default async function DashboardPage({
     custosChart,
     aniversariantes,
     vencendoSemana,
+    ocupacaoTurmas,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -85,6 +90,12 @@ export default async function DashboardPage({
       include: { aluno: { select: { nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
     }),
+    Promise.all(
+      TURMAS.map(async (turma) => {
+        const count = await db.aluno.count({ where: { turma, status: "Ativo" } })
+        return { turma, count }
+      })
+    ),
   ])
 
   const last6Months = Array.from({ length: 6 }, (_, i) => {
@@ -134,9 +145,14 @@ export default async function DashboardPage({
           title="Receita do Mês"
           value={`R$ ${receitaMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           icon={TrendingUp}
-          variant="brand"
+          variant={config.metaMensal > 0 && receitaMes >= config.metaMensal ? "success" : "brand"}
           borderAccent
           href="/caixa"
+          progress={config.metaMensal > 0 ? {
+            value: receitaMes,
+            max: config.metaMensal,
+            label: `de R$ ${config.metaMensal.toLocaleString("pt-BR")}`,
+          } : undefined}
         />
         <StatCard
           title="Inadimplentes"
@@ -157,6 +173,43 @@ export default async function DashboardPage({
       </div>
 
       <ChartReceitaCustos data={chartData} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="size-4 text-brand-800" />
+            Ocupação das Turmas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {ocupacaoTurmas.map(({ turma, count }) => {
+              const pct = config.capacidadeTurma > 0
+                ? Math.min(100, Math.round((count / config.capacidadeTurma) * 100))
+                : 0
+              const barColor =
+                pct >= 90 ? "bg-danger-600" :
+                pct >= 70 ? "bg-warning-600" :
+                "bg-success-600"
+              return (
+                <div key={turma} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">{turma}</span>
+                    <span className="text-xs text-muted-foreground">{count}/{config.capacidadeTurma}</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">{pct}% ocupado</p>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {vencendoSemana.length > 0 && (
         <Card>

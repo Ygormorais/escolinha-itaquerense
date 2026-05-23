@@ -6,6 +6,8 @@ export type ClubConfig = {
   endereco: string
   telefone: string
   cidade: string
+  metaMensal: number
+  capacidadeTurma: number
 }
 
 const CONFIG_PATH = path.join(process.cwd(), "club.config.json")
@@ -15,6 +17,8 @@ const DEFAULT: ClubConfig = {
   endereco: "Rua das Palmeiras, 123 — Vila Futebol",
   telefone: "",
   cidade: "São Paulo/SP",
+  metaMensal: 0,
+  capacidadeTurma: 20,
 }
 
 export function getConfig(): ClubConfig {

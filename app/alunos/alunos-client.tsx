@@ -252,9 +252,11 @@ type AlunosClientProps = {
   page: number
   totalPages: number
   filters: { q: string; turma: string; status: string }
+  frequenciaBaixa?: number[]
 }
 
-export function AlunosClient({ alunos, total, page, totalPages, filters }: AlunosClientProps) {
+export function AlunosClient({ alunos, total, page, totalPages, filters, frequenciaBaixa = [] }: AlunosClientProps) {
+  const baixaSet = new Set(frequenciaBaixa)
   const [search, setSearch] = useState(filters.q)
   const debouncedSearch = useDebounce(search, 350)
   const router = useRouter()
@@ -385,12 +387,22 @@ export function AlunosClient({ alunos, total, page, totalPages, filters }: Aluno
             {alunos.map((aluno) => (
               <TableRow key={aluno.id}>
                 <TableCell className="font-medium">
-                  <Link
-                    href={`/alunos/${aluno.id}`}
-                    className="hover:underline hover:text-brand-800"
-                  >
-                    {aluno.nome}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/alunos/${aluno.id}`}
+                      className="hover:underline hover:text-brand-800"
+                    >
+                      {aluno.nome}
+                    </Link>
+                    {baixaSet.has(aluno.id) && (
+                      <span
+                        title="Frequência abaixo de 75% este mês"
+                        className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-danger-50 text-danger-600"
+                      >
+                        Freq. baixa
+                      </span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>{aluno.turma}</TableCell>
                 <TableCell>{aluno.horario}</TableCell>

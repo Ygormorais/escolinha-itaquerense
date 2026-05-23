@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { AlunosClient, NovoAlunoButton } from "./alunos-client"
 import { PAGE_SIZE } from "@/lib/constants"
+import { startOfMonth, endOfMonth } from "date-fns"
 
 export default async function AlunosPage({
   searchParams,
@@ -20,6 +21,10 @@ export default async function AlunosPage({
     ...(status !== "Todos" ? { status } : {}),
   }
 
+  const now = new Date()
+  const inicioMes = startOfMonth(now)
+  const fimMes = endOfMonth(now)
+
   const [alunos, total, totalAtivos] = await Promise.all([
     db.aluno.findMany({
       where,
@@ -32,6 +37,41 @@ export default async function AlunosPage({
   ])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+
+  // Calcular frequência do mês corrente apenas para os alunos ativos na página
+  const idsAtivos = alunos.filter((a) => a.status === "Ativo").map((a) => a.id)
+  const frequenciasBaixa = new Set<number>()
+
+  if (idsAtivos.length > 0) {
+    const freqs = await db.frequencia.groupBy({
+      by: ["alunoId"],
+      where: {
+        alunoId: { in: idsAtivos },
+        data: { gte: inicioMes, lte: fimMes },
+      },
+      _count: { id: true },
+    })
+    const presentes = await db.frequencia.groupBy({
+      by: ["alunoId"],
+      where: {
+        alunoId: { in: idsAtivos },
+        data: { gte: inicioMes, lte: fimMes },
+        presenca: "Presente",
+      },
+      _count: { id: true },
+    })
+
+    const totalMap = new Map(freqs.map((f) => [f.alunoId, f._count.id]))
+    const presentesMap = new Map(presentes.map((f) => [f.alunoId, f._count.id]))
+
+    for (const id of idsAtivos) {
+      const total = totalMap.get(id) ?? 0
+      const pres = presentesMap.get(id) ?? 0
+      if (total >= 3 && pres / total < 0.75) {
+        frequenciasBaixa.add(id)
+      }
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -46,6 +86,7 @@ export default async function AlunosPage({
         page={page}
         totalPages={totalPages}
         filters={{ q, turma, status }}
+        frequenciaBaixa={[...frequenciasBaixa]}
       />
     </div>
   )
