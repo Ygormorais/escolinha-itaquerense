@@ -24,6 +24,7 @@ model Aluno {
   pagamentos     Pagamento[]
   frequencias    Frequencia[]
   uniformes      Uniforme[]
+  whatsapp       WhatsAppMensagem[]
   createdAt      DateTime     @default(now())
 }
 
@@ -127,4 +128,22 @@ model Recibo {
   formaPagamento String
   dataPagamento  DateTime
   createdAt      DateTime @default(now())
+}
+
+model WhatsAppMensagem {
+  id         Int      @id @default(autoincrement())
+  alunoId    Int?
+  aluno      Aluno?   @relation(fields: [alunoId], references: [id])
+  telefone   String
+  mensagem   String
+  tipo       String   @default("text")        // text, template, image, document
+  direcao    String   @default("outgoing")    // outgoing, incoming
+  status     String   @default("sent")        // sent, delivered, read, failed, received
+  instancia  String   @default("escolinha")
+  origem     String   @default("manual")      // manual, cobranca, comunicado, ai-router, webhook
+  intent     String?                           // classificacao AI: cobranca, frequencia, etc
+  confidence Float?                            // confianca da classificacao AI
+  messageId  String?                           // ID da mensagem no WhatsApp
+  lida       Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
