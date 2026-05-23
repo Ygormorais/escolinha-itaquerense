@@ -1,0 +1,72 @@
+"use server"
+
+import { revalidatePath } from "next/cache"
+import bcrypt from "bcryptjs"
+import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
+
+export async function listarResponsaveis() {
+  await requireAuth()
+  return db.responsavel.findMany({
+    include: { _count: { select: { alunos: true } } },
+    orderBy: { nome: "asc" },
+  })
+}
+
+export async function criarResponsavel(data: {
+  nome: string
+  email: string
+  telefone: string
+  senha: string
+  alunoIds?: number[]
+}) {
+  await requireAuth()
+  const existing = await db.responsavel.findUnique({ where: { email: data.email } })
+  if (existing) return { error: "Email já cadastrado" }
+
+  const senha = bcrypt.hashSync(data.senha, 10)
+  const responsavel = await db.responsavel.create({
+    data: {
+      nome: data.nome,
+      email: data.email,
+      telefone: data.telefone,
+      senha,
+      alunos: data.alunoIds?.length
+        ? { connect: data.alunoIds.map((id) => ({ id })) }
+        : undefined,
+    },
+  })
+  revalidatePath("/configuracoes/responsaveis")
+  return { success: true, id: responsavel.id }
+}
+
+export async function editarResponsavel(
+  id: number,
+  data: { nome?: string; email?: string; telefone?: string; ativo?: boolean }
+) {
+  await requireAuth()
+  await db.responsavel.update({ where: { id }, data })
+  revalidatePath("/configuracoes/responsaveis")
+  return { success: true }
+}
+
+export async function deletarResponsavel(id: number) {
+  await requireAuth()
+  await db.responsavel.delete({ where: { id } })
+  revalidatePath("/configuracoes/responsaveis")
+  return { success: true }
+}
+
+export async function vincularAluno(responsavelId: number, alunoId: number) {
+  await requireAuth()
+  await db.aluno.update({ where: { id: alunoId }, data: { responsavelId } })
+  revalidatePath("/configuracoes/responsaveis")
+  return { success: true }
+}
+
+export async function desvincularAluno(alunoId: number) {
+  await requireAuth()
+  await db.aluno.update({ where: { id: alunoId }, data: { responsavelId: null } })
+  revalidatePath("/configuracoes/responsaveis")
+  return { success: true }
+}

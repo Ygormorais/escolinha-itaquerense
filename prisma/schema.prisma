@@ -27,6 +27,8 @@ model Aluno {
   whatsapp       WhatsAppMensagem[]
   transacoes     TransacaoMaquina[]
   inscricoes     InscricaoCampeonato[]
+  responsavelId  Int?
+  responsavelRef Responsavel?  @relation(fields: [responsavelId], references: [id])
   createdAt      DateTime     @default(now())
 }
 
@@ -95,6 +97,17 @@ model Log {
   tipo      String
   descricao String
   meta      String?
+  createdAt DateTime @default(now())
+}
+
+model Responsavel {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  telefone  String
+  senha     String
+  ativo     Boolean  @default(true)
+  alunos    Aluno[]
   createdAt DateTime @default(now())
 }
 
