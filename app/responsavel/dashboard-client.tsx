@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   User, CreditCard, TrendingUp, TrendingDown,
-  CalendarCheck, Shirt, MessageSquare, LogOut,
+  CalendarCheck, Shirt, MessageSquare, LogOut, Phone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -137,6 +137,27 @@ export function ResponsavelDashboardClient({
           </Card>
         )
       })}
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Phone className="size-4" /> Fale Conosco
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-2">
+            Entre em contato com a escolinha pelo WhatsApp:
+          </p>
+          <a
+            href="https://wa.me/5511999999999"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
+          >
+            <MessageSquare className="size-4" /> Falar no WhatsApp
+          </a>
+        </CardContent>
+      </Card>
 
       {comunicados.length > 0 && (
         <Card>

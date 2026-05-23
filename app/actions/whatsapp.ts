@@ -156,3 +156,88 @@ export async function marcarMensagemLida(id: number) {
     data: { lida: true },
   })
 }
+
+export async function enviarWhatsAppResponsavel(
+  responsavelId: number,
+  mensagem: string
+): Promise<ActionResult> {
+  await requireAuth()
+  try {
+    const responsavel = await db.responsavel.findUnique({ where: { id: responsavelId } })
+    if (!responsavel) return { error: "Responsável não encontrado" }
+
+    const telefone = responsavel.telefone?.replace(/\D/g, "")
+    if (!telefone || telefone.length < 10) return { error: "Telefone inválido" }
+
+    const provider = getWhatsAppProvider()
+    const result = await provider.sendText({ telefone, mensagem })
+
+    await db.whatsAppMensagem.create({
+      data: {
+        telefone,
+        mensagem,
+        tipo: "text",
+        direcao: "outgoing",
+        status: result.success ? "sent" : "failed",
+        origem: "manual",
+        messageId: result.messageId ?? null,
+      },
+    })
+
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao enviar WhatsApp" }
+  }
+}
+
+export async function enviarComunicadoResponsaveis(mensagem: string): Promise<{
+  enviados: number
+  erros: number
+  semTelefone: number
+} | { error: string }> {
+  await requireAuth()
+  try {
+    const responsaveis = await db.responsavel.findMany({
+      where: { ativo: true },
+      select: { id: true, nome: true, telefone: true },
+    })
+
+    let enviados = 0
+    let erros = 0
+    let semTelefone = 0
+
+    const provider = getWhatsAppProvider()
+
+    for (const r of responsaveis) {
+      const telefone = r.telefone?.replace(/\D/g, "")
+      if (!telefone || telefone.length < 10) {
+        semTelefone++
+        continue
+      }
+
+      try {
+        const msgPersonalizada = mensagem.replace(/\{nome\}/g, r.nome)
+        const result = await provider.sendText({ telefone, mensagem: msgPersonalizada })
+        enviados++
+
+        await db.whatsAppMensagem.create({
+          data: {
+            telefone,
+            mensagem: msgPersonalizada,
+            tipo: "text",
+            direcao: "outgoing",
+            status: result.success ? "sent" : "failed",
+            origem: "comunicado",
+            messageId: result.messageId ?? null,
+          },
+        })
+      } catch {
+        erros++
+      }
+    }
+
+    return { enviados, erros, semTelefone }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao enviar comunicado" }
+  }
+}

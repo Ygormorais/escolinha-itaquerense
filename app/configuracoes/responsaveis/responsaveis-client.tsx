@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Users, Search, KeyRound } from "lucide-react"
+import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Users, Search, KeyRound, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -21,6 +21,7 @@ import {
   criarResponsavel, editarResponsavel,
   deletarResponsavel, vincularAluno, desvincularAluno,
 } from "@/app/actions/responsaveis"
+import { enviarWhatsAppResponsavel } from "@/app/actions/whatsapp"
 
 type Aluno = { id: number; nome: string; turma: string }
 
@@ -46,6 +47,8 @@ export function ResponsaveisClient({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [vincularOpen, setVincularOpen] = useState<Responsavel | null>(null)
+  const [whatsOpen, setWhatsOpen] = useState<Responsavel | null>(null)
+  const [whatsMsg, setWhatsMsg] = useState("")
   const [form, setForm] = useState({
     nome: "", email: "", telefone: "", senha: "",
   })
@@ -108,6 +111,18 @@ export function ResponsaveisClient({
     await desvincularAluno(alunoId)
     toast.success("Aluno desvinculado")
     router.refresh()
+  }
+
+  async function handleWhatsAppEnviar() {
+    if (!whatsOpen || !whatsMsg.trim()) {
+      toast.error("Digite uma mensagem")
+      return
+    }
+    const result = await enviarWhatsAppResponsavel(whatsOpen.id, whatsMsg.trim())
+    if ("error" in result) { toast.error(result.error); return }
+    toast.success("WhatsApp enviado!")
+    setWhatsOpen(null)
+    setWhatsMsg("")
   }
 
   return (
@@ -243,6 +258,9 @@ export function ResponsaveisClient({
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button size="icon-sm" variant="ghost" onClick={() => { setWhatsOpen(r); setWhatsMsg("") }} title="Enviar WhatsApp">
+                        <MessageSquare className="size-3.5 text-brand-600" />
+                      </Button>
                       <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)}>
                         <Pencil className="size-3.5" />
                       </Button>
@@ -257,6 +275,34 @@ export function ResponsaveisClient({
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!whatsOpen} onOpenChange={(o) => { if (!o) setWhatsOpen(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="size-4" /> WhatsApp — {whatsOpen?.nome}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Mensagem</Label>
+            <textarea
+              className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={whatsMsg}
+              onChange={(e) => setWhatsMsg(e.target.value)}
+              placeholder="Digite a mensagem para enviar via WhatsApp..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Telefone: {whatsOpen?.telefone || "—"}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setWhatsOpen(null)}>Cancelar</Button>
+            <Button onClick={handleWhatsAppEnviar}>
+              <MessageSquare className="size-4" /> Enviar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
