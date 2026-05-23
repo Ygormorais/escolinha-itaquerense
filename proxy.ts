@@ -36,7 +36,7 @@ async function verify(signed: string): Promise<boolean> {
   return value.startsWith("auth:")
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (
