@@ -6,7 +6,7 @@ import Link from "next/link"
 import {
   Trophy, ArrowLeft, Pencil, Trash2, Plus, UserPlus,
   CheckCircle, XCircle, CircleDollarSign, Percent,
-  CreditCard, Calendar, MapPin, Users, AlertTriangle,
+  CreditCard, Calendar, MapPin, Users, AlertTriangle, Swords,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,11 +25,12 @@ import { toast } from "sonner"
 import {
   editarCampeonato, deletarCampeonato,
   inscreverAluno, removerInscricao, registrarPagamentoInscricao,
-  calcularTaxaTotal,
+  calcularTaxaTotal, criarPartida, editarPartida, deletarPartida,
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
+import { PartidasSection } from "./partidas-section"
 
 type AlunoInfo = { id: number; nome: string; turma: string; responsavel: string; telefone: string }
 
@@ -64,6 +65,20 @@ type Campeonato = {
   status: string
   createdAt: Date
   inscricoes: Inscricao[]
+  partidas: PartidaItem[]
+}
+
+type PartidaItem = {
+  id: number
+  campeonatoId: number
+  rodada: number
+  data: Date
+  adversario: string
+  local: string
+  golsPro: number | null
+  golsContra: number | null
+  resultado: string | null
+  observacoes: string | null
 }
 
 const STATUS_OPCOES = ["aberto", "andamento", "encerrado"]
@@ -547,6 +562,8 @@ export function CampeonatoDetailClient({
           </Table>
         </CardContent>
       </Card>
+
+      <PartidasSection partidas={campeonato.partidas as any} campeonatoId={campeonato.id} />
 
       <Dialog open={inscreverOpen} onOpenChange={setInscreverOpen}>
         <DialogContent>

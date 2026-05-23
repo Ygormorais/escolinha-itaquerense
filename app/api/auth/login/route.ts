@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
 import { checkCredentials, createSession, cookieName, cookieMaxAge } from "@/lib/session"
 import { checkDbCredentials } from "@/app/actions/usuarios"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export async function POST(request: Request) {
   const { username, password } = await request.json()
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+  const limit = checkRateLimit(`login:${ip}`)
+  if (!limit.ok) {
+    return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 })
+  }
 
   // Check DB users first, then fall back to env vars
   const dbResult = await checkDbCredentials(username ?? "", password ?? "")

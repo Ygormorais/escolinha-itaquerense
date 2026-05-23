@@ -148,7 +148,23 @@ model Campeonato {
   observacoes   String?
   status        String               @default("aberto") // aberto, andamento, encerrado
   inscricoes    InscricaoCampeonato[]
+  partidas      Partida[]
   createdAt     DateTime             @default(now())
+}
+
+model Partida {
+  id            Int        @id @default(autoincrement())
+  campeonatoId  Int
+  campeonato    Campeonato @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  rodada        Int        @default(1)
+  data          DateTime
+  adversario    String
+  local         String     @default("Casa")  // Casa, Fora, Neutro
+  golsPro       Int?
+  golsContra    Int?
+  resultado     String?    // Vitoria, Derrota, Empate — null se não realizada
+  observacoes   String?
+  createdAt     DateTime   @default(now())
 }
 
 model InscricaoCampeonato {

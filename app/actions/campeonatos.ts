@@ -161,3 +161,74 @@ export async function calcularTaxaTotal(campeonato: {
     campeonato.custoUniforme
   return Math.max(0, total - (desconto ?? 0))
 }
+
+// Partidas
+
+export async function criarPartida(data: {
+  campeonatoId: number
+  rodada: number
+  data: string
+  adversario: string
+  local?: string
+  golsPro?: number | null
+  golsContra?: number | null
+  observacoes?: string
+}) {
+  await requireAuth()
+  let resultado: string | null = null
+  if (data.golsPro != null && data.golsContra != null) {
+    resultado = data.golsPro > data.golsContra ? "Vitoria" : data.golsPro < data.golsContra ? "Derrota" : "Empate"
+  }
+  const partida = await db.partida.create({
+    data: {
+      campeonatoId: data.campeonatoId,
+      rodada: data.rodada,
+      data: new Date(data.data + "T12:00:00"),
+      adversario: data.adversario,
+      local: data.local ?? "Casa",
+      golsPro: data.golsPro,
+      golsContra: data.golsContra,
+      resultado,
+      observacoes: data.observacoes || null,
+    },
+  })
+  revalidatePath(`/campeonatos/${data.campeonatoId}`)
+  return partida
+}
+
+export async function editarPartida(id: number, data: {
+  rodada: number
+  data: string
+  adversario: string
+  local?: string
+  golsPro?: number | null
+  golsContra?: number | null
+  observacoes?: string
+}) {
+  await requireAuth()
+  let resultado: string | null = null
+  if (data.golsPro != null && data.golsContra != null) {
+    resultado = data.golsPro > data.golsContra ? "Vitoria" : data.golsPro < data.golsContra ? "Derrota" : "Empate"
+  }
+  await db.partida.update({
+    where: { id },
+    data: {
+      rodada: data.rodada,
+      data: new Date(data.data + "T12:00:00"),
+      adversario: data.adversario,
+      local: data.local ?? "Casa",
+      golsPro: data.golsPro,
+      golsContra: data.golsContra,
+      resultado,
+      observacoes: data.observacoes || null,
+    },
+  })
+}
+
+export async function deletarPartida(id: number, campeonatoId: number) {
+  await requireAuth()
+  await db.partida.delete({ where: { id } })
+  revalidatePath(`/campeonatos/${campeonatoId}`)
+}
+
+

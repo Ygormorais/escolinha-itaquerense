@@ -19,6 +19,7 @@ export default async function CampeonatoDetailPage({
         },
         orderBy: { createdAt: "asc" },
       },
+      partidas: { orderBy: [{ rodada: "asc" }, { data: "asc" }] },
     },
   })
 
