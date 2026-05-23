@@ -1,0 +1,187 @@
+"use server"
+
+import { revalidatePath } from "next/cache"
+import { db } from "@/lib/db"
+import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
+import { requireAuth } from "@/lib/auth"
+
+export async function importarCSV(
+  texto: string,
+  nomeArquivo: string
+): Promise<{ importadas: number; ignoradas: number; formato: string; transacoes: any[] } | { error: string }> {
+  await requireAuth()
+  try {
+    const { cabecalho, linhas } = parseCSV(texto)
+    if (linhas.length === 0) return { error: "Nenhuma transação encontrada no CSV" }
+
+    const formato = detectarFormato(linhas)
+    const transacoes = parseTransacoes(linhas)
+    if (transacoes.length === 0) return { error: "Não foi possível interpretar as transações. Verifique o formato do CSV." }
+
+    let importadas = 0
+    let ignoradas = 0
+
+    for (const t of transacoes) {
+      const existente = await db.transacaoMaquina.findFirst({
+        where: {
+          dataTransacao: t.dataTransacao,
+          valor: t.valor,
+          nomeNoCartao: t.nomeNoCartao,
+        },
+      })
+      if (existente) { ignoradas++; continue }
+
+      await db.transacaoMaquina.create({
+        data: {
+          dataTransacao: t.dataTransacao,
+          valor: t.valor,
+          parcelas: t.parcelas,
+          bandeira: t.bandeira,
+          tipo: t.tipo,
+          nomeNoCartao: t.nomeNoCartao,
+          parcela: t.parcela || null,
+          autorizacao: t.autorizacao || null,
+          nsu: t.nsu || null,
+          custoTaxa: t.custoTaxa ?? null,
+          valorLiquido: t.valorLiquido ?? null,
+          previsao: t.previsao ?? null,
+          arquivo: nomeArquivo,
+          status: "pendente",
+        },
+      })
+      importadas++
+    }
+
+    revalidatePath("/caixa/maquina")
+    return { importadas, ignoradas, formato, transacoes }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao importar CSV" }
+  }
+}
+
+export async function getTransacoes(status?: string) {
+  const where = status && status !== "todas" ? { status } : {}
+  return db.transacaoMaquina.findMany({
+    where,
+    include: { aluno: { select: { id: true, nome: true, turma: true } } },
+    orderBy: { dataTransacao: "desc" },
+  })
+}
+
+export async function reconciliarTransacao(
+  id: number,
+  alunoId: number,
+  mesReferencia: string,
+  dataVencimento: string,
+  observacoes?: string
+) {
+  await requireAuth()
+  const transacao = await db.transacaoMaquina.findUnique({ where: { id } })
+  if (!transacao) return { error: "Transação não encontrada" }
+
+  const pagamento = await db.pagamento.create({
+    data: {
+      alunoId,
+      mesReferencia,
+      dataVencimento: new Date(dataVencimento),
+      dataPagamento: transacao.dataTransacao,
+      formaPagamento: `Cartão ${transacao.tipo} (${transacao.bandeira})`,
+      valorRecebido: transacao.valor,
+      observacoes: observacoes || `Reconciliado via maquininha - ${transacao.nomeNoCartao}`,
+    },
+  })
+
+  await db.transacaoMaquina.update({
+    where: { id },
+    data: { status: "reconciliado", alunoId, pagamentoId: pagamento.id },
+  })
+
+  revalidatePath("/caixa/maquina")
+  revalidatePath("/caixa/recebimentos")
+  return { success: true }
+}
+
+export async function reconciliarAuto() {
+  await requireAuth()
+  const pendentes = await db.transacaoMaquina.findMany({
+    where: { status: "pendente" },
+  })
+
+  let reconciliados = 0
+  let naoEncontrados = 0
+
+  for (const t of pendentes) {
+    const nome = t.nomeNoCartao.toLowerCase().trim()
+    const alunos = await db.aluno.findMany({
+      where: {
+        OR: [
+          { nome: { contains: nome } },
+          { responsavel: { contains: nome } },
+        ],
+        status: "Ativo",
+      },
+      take: 1,
+    })
+
+    if (alunos.length === 0) {
+      const partes = nome.split(" ")
+      const aluno = await db.aluno.findFirst({
+        where: {
+          OR: partes.map((p) => ({
+            OR: [
+              { nome: { contains: p } },
+              { responsavel: { contains: p } },
+            ],
+          })),
+          status: "Ativo",
+        },
+      })
+      if (!aluno) { naoEncontrados++; continue }
+      alunos.push(aluno)
+    }
+
+    const mes = `${t.dataTransacao.getFullYear()}-${String(t.dataTransacao.getMonth() + 1).padStart(2, "0")}`
+    const dataVenc = new Date(t.dataTransacao.getFullYear(), t.dataTransacao.getMonth(), 10)
+
+    await db.pagamento.create({
+      data: {
+        alunoId: alunos[0].id,
+        mesReferencia: mes,
+        dataVencimento: dataVenc,
+        dataPagamento: t.dataTransacao,
+        formaPagamento: `Cartão ${t.tipo} (${t.bandeira})`,
+        valorRecebido: t.valor,
+        observacoes: `Reconciliado automático - ${t.nomeNoCartao}`,
+      },
+    })
+
+    await db.transacaoMaquina.update({
+      where: { id: t.id },
+      data: { status: "reconciliado", alunoId: alunos[0].id },
+    })
+    reconciliados++
+  }
+
+  revalidatePath("/caixa/maquina")
+  revalidatePath("/caixa/recebimentos")
+  return { reconciliados, naoEncontrados }
+}
+
+export async function ignorarTransacao(id: number) {
+  await requireAuth()
+  await db.transacaoMaquina.update({
+    where: { id },
+    data: { status: "ignorado" },
+  })
+  revalidatePath("/caixa/maquina")
+}
+
+export async function getResumoMaquina() {
+  const transacoes = await db.transacaoMaquina.findMany()
+  const total = transacoes.reduce((s, t) => s + t.valor, 0)
+  const pendentes = transacoes.filter((t) => t.status === "pendente")
+  const totalPendente = pendentes.reduce((s, t) => s + t.valor, 0)
+  const reconciliados = transacoes.filter((t) => t.status === "reconciliado")
+  const totalReconciliado = reconciliados.reduce((s, t) => s + t.valor, 0)
+  return { total, totalPendente, totalReconciliado, pendentes: pendentes.length, reconciliados: reconciliados.length, totalTransacoes: transacoes.length }
+}

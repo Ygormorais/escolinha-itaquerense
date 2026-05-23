@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 export async function getEventosMes(ano: number, mes: number) {
   const inicio = new Date(ano, mes - 1, 1)
@@ -22,6 +23,7 @@ export async function criarEvento(data: {
   turmas?: string
   descricao?: string
 }) {
+  await requireAuth()
   await db.evento.create({
     data: {
       titulo: data.titulo,
@@ -47,6 +49,7 @@ export async function editarEvento(id: number, data: {
   turmas?: string
   descricao?: string
 }) {
+  await requireAuth()
   await db.evento.update({
     where: { id },
     data: {
@@ -64,6 +67,7 @@ export async function editarEvento(id: number, data: {
 }
 
 export async function deletarEvento(id: number) {
+  await requireAuth()
   await db.evento.delete({ where: { id } })
   revalidatePath("/agenda")
 }

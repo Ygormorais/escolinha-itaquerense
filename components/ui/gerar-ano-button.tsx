@@ -31,7 +31,7 @@ export function GerarAnoButton() {
         min={2020}
         max={2099}
         onChange={(e) => setAno(Number(e.target.value))}
-        className="w-24 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
+        className="w-24 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <Button
         onClick={handleGerar}

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -17,6 +18,7 @@ export async function adicionarUniforme(alunoId: number, data: {
   tamanho?: string
   observacoes?: string
 }): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.uniforme.create({
       data: { alunoId, item: data.item, tamanho: data.tamanho ?? null, observacoes: data.observacoes ?? null },
@@ -29,6 +31,7 @@ export async function adicionarUniforme(alunoId: number, data: {
 }
 
 export async function marcarEntregue(id: number, alunoId: number): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.uniforme.update({
       where: { id },
@@ -42,6 +45,7 @@ export async function marcarEntregue(id: number, alunoId: number): Promise<Actio
 }
 
 export async function removerUniforme(id: number, alunoId: number): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.uniforme.delete({ where: { id } })
     revalidatePath(`/alunos/${alunoId}`)

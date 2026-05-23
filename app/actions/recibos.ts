@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
 
 export async function salvarRecibo(data: {
@@ -11,6 +12,7 @@ export async function salvarRecibo(data: {
   formaPagamento: string
   dataPagamento: string
 }): Promise<{ numero: string }> {
+  await requireAuth()
   const count = await db.recibo.count()
   const numero = String(count + 1).padStart(3, "0")
 
@@ -31,10 +33,12 @@ export async function salvarRecibo(data: {
 }
 
 export async function getRecibos() {
+  await requireAuth()
   return db.recibo.findMany({ orderBy: { createdAt: "desc" } })
 }
 
 export async function deleteRecibo(id: number) {
+  await requireAuth()
   await db.recibo.delete({ where: { id } })
   revalidatePath("/recibos")
 }

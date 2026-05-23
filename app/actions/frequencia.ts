@@ -2,12 +2,14 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 type ActionResult = { success: true } | { error: string }
 
 export async function salvarFrequencia(
   registros: { alunoId: number; data: string; presenca: string }[]
 ): Promise<ActionResult> {
+  await requireAuth()
   try {
     await Promise.all(
       registros.map((r) =>
