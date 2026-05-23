@@ -131,7 +131,7 @@ export function ResumoFrequenciaClient() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="turma" tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
-                <Tooltip formatter={(v: number) => `${v}%`} />
+                <Tooltip formatter={(v: unknown) => (typeof v === "number" ? `${v}%` : String(v))} />
                 <Bar dataKey="pct" name="% Presença" radius={[4, 4, 0, 0]}>
                   {porTurma.map((entry, idx) => (
                     <Cell

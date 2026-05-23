@@ -306,7 +306,7 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
           onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
           className="max-w-xs"
         />
-        <Select value={turmaFilter} onValueChange={(v) => handleFilterChange(() => setTurmaFilter(v))}>
+        <Select value={turmaFilter} onValueChange={(v) => handleFilterChange(() => setTurmaFilter(v ?? "Todas"))}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -317,7 +317,7 @@ export function AlunosClient({ alunos }: { alunos: Aluno[] }) {
             ))}
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={(v) => handleFilterChange(() => setStatusFilter(v))}>
+        <Select value={statusFilter} onValueChange={(v) => handleFilterChange(() => setStatusFilter(v ?? "Todos"))}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

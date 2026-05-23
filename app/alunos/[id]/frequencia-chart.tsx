@@ -31,7 +31,7 @@ export function FrequenciaChart({ alunoId }: { alunoId: number }) {
             <XAxis dataKey="label" tick={{ fontSize: 12 }} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
             <Tooltip
-              formatter={(v: number | null) => (v !== null ? `${v}%` : "Sem dados")}
+              formatter={(v: unknown) => (typeof v === "number" ? `${v}%` : "Sem dados")}
               labelFormatter={(l) => `Mês: ${l}`}
             />
             <Bar dataKey="pct" name="% Presença" radius={[4, 4, 0, 0]}>

@@ -80,20 +80,21 @@ export default async function RelatorioPage({
           value={`R$ ${totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           description={`Ano ${ano}`}
           icon={TrendingUp}
-          accent
+          variant="brand"
         />
         <StatCard
           title="Custos Totais"
           value={`R$ ${totalCustos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           description={`Ano ${ano}`}
           icon={TrendingDown}
+          variant="danger"
         />
         <StatCard
           title="Saldo do Ano"
           value={`R$ ${totalSaldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           description="Receita menos custos"
           icon={Wallet}
-          accent={totalSaldo >= 0}
+          variant={totalSaldo >= 0 ? "success" : "danger"}
         />
         <StatCard
           title="Inadimplentes Atuais"

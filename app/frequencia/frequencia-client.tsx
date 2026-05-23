@@ -90,7 +90,7 @@ export function FrequenciaClient() {
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="text-sm font-medium text-muted-foreground">Turma</label>
-          <Select value={turma} onValueChange={(v) => { setTurma(v); setLoaded(false) }}>
+          <Select value={turma} onValueChange={(v) => { setTurma(v ?? turma); setLoaded(false) }}>
             <SelectTrigger className="mt-1 w-36">
               <SelectValue />
             </SelectTrigger>

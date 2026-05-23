@@ -75,27 +75,28 @@ export default async function CaixaPage({
           value={`R$ ${receitaPrevista.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           description="Soma das mensalidades ativas"
           icon={DollarSign}
-          accent
+          variant="brand"
         />
         <StatCard
           title="Total Recebido"
           value={`R$ ${totalRecebido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           description="Pagamentos confirmados no mês"
           icon={TrendingUp}
-          accent
+          variant="brand"
         />
         <StatCard
           title="Total Custos"
           value={`R$ ${totalCustos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           description="Despesas do mês"
           icon={TrendingDown}
+          variant="danger"
         />
         <StatCard
           title="Saldo"
           value={`R$ ${saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
           description="Recebido menos custos"
           icon={Wallet}
-          accent={saldo >= 0}
+          variant={saldo >= 0 ? "success" : "danger"}
         />
       </div>
 

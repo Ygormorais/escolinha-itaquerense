@@ -13,12 +13,13 @@ export default function NotFound() {
       <p className="max-w-sm text-sm text-muted-foreground">
         A página que você está procurando não existe ou foi movida.
       </p>
-      <Button asChild className="bg-brand-800 text-white hover:bg-brand-900">
-        <Link href="/">
-          <Home className="size-4" />
-          Voltar ao Dashboard
-        </Link>
-      </Button>
+      <Link
+        href="/"
+        className="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900 transition-colors"
+      >
+        <Home className="size-4" />
+        Voltar ao Dashboard
+      </Link>
     </div>
   )
 }
