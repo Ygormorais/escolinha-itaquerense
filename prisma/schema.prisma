@@ -25,20 +25,22 @@ model Aluno {
   frequencias    Frequencia[]
   uniformes      Uniforme[]
   whatsapp       WhatsAppMensagem[]
+  transacoes     TransacaoMaquina[]
   createdAt      DateTime     @default(now())
 }
 
 model Pagamento {
-  id             Int       @id @default(autoincrement())
+  id             Int               @id @default(autoincrement())
   alunoId        Int
-  aluno          Aluno     @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  aluno          Aluno             @relation(fields: [alunoId], references: [id], onDelete: Cascade)
   mesReferencia  String
   dataVencimento DateTime
   dataPagamento  DateTime?
   formaPagamento String?
   valorRecebido  Float?
   observacoes    String?
-  createdAt      DateTime  @default(now())
+  transacoes     TransacaoMaquina[]
+  createdAt      DateTime          @default(now())
 }
 
 model Custo {
@@ -128,6 +130,29 @@ model Recibo {
   formaPagamento String
   dataPagamento  DateTime
   createdAt      DateTime @default(now())
+}
+
+model TransacaoMaquina {
+  id             Int       @id @default(autoincrement())
+  dataTransacao  DateTime
+  valor          Float
+  parcelas       Int       @default(1)
+  bandeira       String    @default("")          // Visa, Mastercard, Elo
+  tipo           String    @default("credito")    // credito, debito
+  nomeNoCartao   String    @default("")           // nome do portador
+  parcela        String?                           // "1/3", "2/3"... raw do CSV
+  autorizacao    String?                           // codigo de autorizacao
+  nsu            String?                           // NSU da transacao
+  custoTaxa      Float?                            // taxa descontada
+  valorLiquido   Float?                            // valor a receber
+  previsao       DateTime?                         // data prevista para recebimento
+  arquivo        String    @default("")            // nome do CSV importado
+  status         String    @default("pendente")    // pendente, reconciliado, ignorado
+  alunoId        Int?
+  aluno          Aluno?     @relation(fields: [alunoId], references: [id])
+  pagamentoId    Int?
+  pagamento      Pagamento? @relation(fields: [pagamentoId], references: [id])
+  createdAt      DateTime   @default(now())
 }
 
 model WhatsAppMensagem {
