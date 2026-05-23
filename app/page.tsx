@@ -126,7 +126,7 @@ export default async function DashboardPage({
     : 0
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Dashboard"
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}
@@ -138,7 +138,7 @@ export default async function DashboardPage({
           }
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
         <StatCard
           title="Alunos Ativos"
           value={totalAtivos}
