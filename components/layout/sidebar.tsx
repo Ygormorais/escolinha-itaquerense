@@ -20,6 +20,7 @@ import {
   History,
   LogOut,
   ClipboardList,
+  Trophy,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -57,6 +58,7 @@ const navGroups = [
       { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
       { href: "/agenda",        label: "Agenda",         icon: Calendar },
       { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
+      { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },
       { href: "/custos",        label: "Custos",        icon: Receipt },
       { href: "/comunicados",   label: "Comunicados",   icon: Send },
       { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },

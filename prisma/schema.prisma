@@ -26,6 +26,7 @@ model Aluno {
   uniformes      Uniforme[]
   whatsapp       WhatsAppMensagem[]
   transacoes     TransacaoMaquina[]
+  inscricoes     InscricaoCampeonato[]
   createdAt      DateTime     @default(now())
 }
 
@@ -130,6 +131,42 @@ model Recibo {
   formaPagamento String
   dataPagamento  DateTime
   createdAt      DateTime @default(now())
+}
+
+model Campeonato {
+  id            Int                  @id @default(autoincrement())
+  nome          String
+  descricao     String?
+  dataInicio    DateTime
+  dataFim       DateTime?
+  local         String?
+  taxaInscricao Float                @default(0)
+  taxaJogo      Float                @default(0)      // taxa por jogo/rodada
+  taxaArbitragem Float               @default(0)
+  custoTransporte Float              @default(0)
+  custoUniforme  Float               @default(0)
+  observacoes   String?
+  status        String               @default("aberto") // aberto, andamento, encerrado
+  inscricoes    InscricaoCampeonato[]
+  createdAt     DateTime             @default(now())
+}
+
+model InscricaoCampeonato {
+  id             Int        @id @default(autoincrement())
+  campeonatoId   Int
+  campeonato     Campeonato @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  alunoId        Int
+  aluno          Aluno      @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  bolsa          Boolean    @default(false)            // bolsa integral (isento)
+  desconto       Float      @default(0)                // desconto em R$ sobre a taxa total
+  taxaPaga       Boolean    @default(false)
+  valorPago      Float?                                // valor efetivamente pago
+  dataPagamento  DateTime?
+  formaPagamento String?
+  observacoes    String?
+  createdAt      DateTime   @default(now())
+
+  @@unique([campeonatoId, alunoId])
 }
 
 model TransacaoMaquina {
