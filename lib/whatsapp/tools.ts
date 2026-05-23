@@ -69,78 +69,91 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
 type ToolInput = Record<string, unknown>
 
 export async function executeTool(name: string, input: ToolInput): Promise<string> {
-  switch (name) {
-    case "buscar_pagamentos": {
-      const alunoId = input.alunoId as number
-      const pagamentos = await db.pagamento.findMany({
-        where: { alunoId },
-        orderBy: { dataVencimento: "desc" },
-        take: 6,
-      })
-      if (!pagamentos.length) return "Nenhuma mensalidade encontrada para este aluno."
-      return pagamentos
-        .map((p) => {
-          const status = p.dataPagamento ? "✅ Pago" : "⏳ Pendente"
-          const venc = p.dataVencimento.toLocaleDateString("pt-BR")
-          const valor = p.valorRecebido ?? 0
-          return `• ${p.mesReferencia} — ${status} — Vencimento: ${venc} — R$ ${valor.toFixed(2)}`
+  try {
+    switch (name) {
+      case "buscar_pagamentos": {
+        const alunoId = input.alunoId as number
+        const pagamentos = await db.pagamento.findMany({
+          where: { alunoId },
+          orderBy: { dataVencimento: "desc" },
+          take: 6,
         })
-        .join("\n")
-    }
+        if (!pagamentos.length) return "Nenhuma mensalidade encontrada para este aluno."
+        return pagamentos
+          .map((p) => {
+            const status = p.dataPagamento ? "✅ Pago" : "⏳ Pendente"
+            const venc = p.dataVencimento.toLocaleDateString("pt-BR")
+            const valor = p.valorRecebido ?? 0
+            return `• ${p.mesReferencia} — ${status} — Vencimento: ${venc} — R$ ${valor.toFixed(2)}`
+          })
+          .join("\n")
+      }
 
-    case "buscar_frequencia": {
-      const alunoId = input.alunoId as number
-      const periodo = (input.periodo as string) ?? "mes_atual"
-      const now = new Date()
-      const start = new Date(now.getFullYear(), periodo === "mes_atual" ? now.getMonth() : now.getMonth() - 1, 1)
-      const end = new Date(now.getFullYear(), periodo === "mes_atual" ? now.getMonth() + 1 : now.getMonth(), 0)
+      case "buscar_frequencia": {
+        const alunoId = input.alunoId as number
+        const periodo = (input.periodo as string) ?? "mes_atual"
+        const now = new Date()
+        const start = new Date(now)
+        start.setDate(1)
+        if (periodo !== "mes_atual") start.setMonth(start.getMonth() - 1)
+        start.setHours(0, 0, 0, 0)
 
-      const frequencias = await db.frequencia.findMany({
-        where: { alunoId, data: { gte: start, lte: end } },
-      })
-      const total = frequencias.length
-      const presencas = frequencias.filter((f) => f.presenca === "presente").length
-      const faltas = total - presencas
-      const pct = total > 0 ? Math.round((presencas / total) * 100) : 0
-      const label = periodo === "mes_atual" ? "este mês" : "mês passado"
-      return `Frequência ${label}: ${presencas} presenças, ${faltas} faltas (${pct}% de presença).`
-    }
+        const end = new Date(start)
+        end.setMonth(end.getMonth() + 1)
+        end.setDate(0)
+        end.setHours(23, 59, 59, 999)
 
-    case "buscar_eventos": {
-      const turma = input.turma as string
-      const eventos = await db.evento.findMany({
-        where: {
-          data: { gte: new Date() },
-          OR: [{ turmas: { contains: turma } }, { turmas: "Todas" }],
-        },
-        orderBy: { data: "asc" },
-        take: 5,
-      })
-      if (!eventos.length) return "Nenhum evento programado para a turma nos próximos dias."
-      return eventos
-        .map((e) => {
-          const data = e.data.toLocaleDateString("pt-BR")
-          const hora = e.horaInicio ?? ""
-          return `• ${e.tipo} — ${e.titulo} — ${data}${hora ? ` às ${hora}` : ""}${e.local ? ` — ${e.local}` : ""}`
+        const frequencias = await db.frequencia.findMany({
+          where: { alunoId, data: { gte: start, lte: end } },
         })
-        .join("\n")
+        const total = frequencias.length
+        const presencas = frequencias.filter((f) => f.presenca === "presente").length
+        const faltas = total - presencas
+        const pct = total > 0 ? Math.round((presencas / total) * 100) : 0
+        const label = periodo === "mes_atual" ? "este mês" : "mês passado"
+        return `Frequência ${label}: ${presencas} presenças, ${faltas} faltas (${pct}% de presença).`
+      }
+
+      case "buscar_eventos": {
+        const turma = input.turma as string
+        const eventos = await db.evento.findMany({
+          where: {
+            data: { gte: new Date() },
+            turmas: { not: null },
+            OR: [{ turmas: { contains: turma } }, { turmas: "Todas" }],
+          },
+          orderBy: { data: "asc" },
+          take: 5,
+        })
+        if (!eventos.length) return "Nenhum evento programado para a turma nos próximos dias."
+        return eventos
+          .map((e) => {
+            const data = e.data.toLocaleDateString("pt-BR")
+            const hora = e.horaInicio ?? ""
+            return `• ${e.tipo} — ${e.titulo} — ${data}${hora ? ` às ${hora}` : ""}${e.local ? ` — ${e.local}` : ""}`
+          })
+          .join("\n")
+      }
+
+      case "buscar_turma": {
+        const turma = input.turma as string
+        const alunos = await db.aluno.findMany({
+          where: { turma, status: "Ativo" },
+          select: { horario: true },
+          take: 1,
+        })
+        if (!alunos.length) return `Nenhuma informação encontrada para a turma ${turma}.`
+        return `Turma: ${turma}\nHorário: ${alunos[0].horario}`
+      }
+
+      case "escalonar_humano":
+        return "__ESCALAR__"
+
+      default:
+        return "Tool desconhecida."
     }
-
-    case "buscar_turma": {
-      const turma = input.turma as string
-      const alunos = await db.aluno.findMany({
-        where: { turma, status: "Ativo" },
-        select: { horario: true },
-        take: 1,
-      })
-      if (!alunos.length) return `Nenhuma informação encontrada para a turma ${turma}.`
-      return `Turma: ${turma}\nHorário: ${alunos[0].horario}`
-    }
-
-    case "escalonar_humano":
-      return "__ESCALAR__"
-
-    default:
-      return "Tool desconhecida."
+  } catch (error) {
+    console.error(`[Tools] executeTool error for ${name}:`, error)
+    return "Desculpe, ocorreu um erro ao buscar as informações. Tente novamente."
   }
 }
