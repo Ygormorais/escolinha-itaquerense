@@ -1,172 +1,82 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
-import { StatCard } from "@/components/ui/stat-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { TrendingUp, TrendingDown, DollarSign, Wallet } from "lucide-react"
+import { Wallet } from "lucide-react"
+import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
-import { MonthPicker } from "./month-picker"
-import { ExportarCaixaButton } from "./exportar-button"
 
-export default async function CaixaPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ mes?: string }>
-}) {
-  const params = await searchParams
+export const metadata = { title: "Caixa — Escolinha Itaquerense" }
+
+export default async function CaixaPage() {
   const now = new Date()
-  const mes =
-    params.mes ??
-    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+  const inicio = startOfMonth(now)
+  const fim = endOfMonth(now)
 
-  const [ano, mesNum] = mes.split("-").map(Number)
-  const dataRef = new Date(ano, mesNum - 1, 1)
-  const inicio = startOfMonth(dataRef)
-  const fim = endOfMonth(dataRef)
-
-  const [alunosAtivos, pagamentosPagos, custosDoMes] = await Promise.all([
-    db.aluno.findMany({ where: { status: "Ativo" }, select: { mensalidade: true } }),
+  const [pagamentosMes, custosMes, transacoesPendentes, alunos] = await Promise.all([
     db.pagamento.findMany({
-      where: {
-        dataPagamento: { gte: inicio, lte: fim },
-        valorRecebido: { not: null },
-      },
-      include: { aluno: { select: { nome: true } } },
+      where: { dataPagamento: { gte: inicio, lte: fim } },
+      include: { aluno: { select: { nome: true, turma: true } } },
+      orderBy: { dataPagamento: "desc" },
     }),
     db.custo.findMany({
       where: { data: { gte: inicio, lte: fim } },
+      orderBy: { data: "desc" },
+    }),
+    db.transacaoMaquina.findMany({
+      where: { status: "pendente" },
+      orderBy: { dataTransacao: "desc" },
+    }),
+    db.aluno.findMany({
+      where: { status: "Ativo" },
+      select: { id: true, nome: true },
     }),
   ])
 
-  const receitaPrevista = alunosAtivos.reduce((sum, a) => sum + a.mensalidade, 0)
-  const totalRecebido = pagamentosPagos.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
-  const totalCustos = custosDoMes.reduce((sum, c) => sum + c.valor, 0)
-  const saldo = totalRecebido - totalCustos
+  const totalRecebido = pagamentosMes.reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+  const totalCustos = custosMes.reduce((s, c) => s + c.valor, 0)
+  const totalPendente = transacoesPendentes.reduce((s, t) => s + t.valor, 0)
 
-  // Group by forma de pagamento
-  const porForma = new Map<string, number>()
-  for (const p of pagamentosPagos) {
-    const forma = p.formaPagamento ?? "Não informado"
-    porForma.set(forma, (porForma.get(forma) ?? 0) + (p.valorRecebido ?? 0))
-  }
-
-  // Group by categoria
-  const porCategoria = new Map<string, number>()
-  for (const c of custosDoMes) {
-    porCategoria.set(c.categoria, (porCategoria.get(c.categoria) ?? 0) + c.valor)
-  }
+  const porForma = pagamentosMes.reduce((acc, p) => {
+    const forma = p.formaPagamento || "Outros"
+    acc[forma] = (acc[forma] || 0) + (p.valorRecebido ?? 0)
+    return acc
+  }, {} as Record<string, number>)
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Caixa"
-        description={`Fluxo financeiro — ${mes}`}
-        action={
-          <div className="flex gap-2">
-            <ExportarCaixaButton mes={mes} pagamentos={pagamentosPagos} custos={custosDoMes} />
-            <MonthPicker mes={mes} />
-          </div>
-        }
+        description="Visão geral financeira"
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard
-          title="Receita Prevista"
-          value={`R$ ${receitaPrevista.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-          description="Soma das mensalidades ativas"
-          icon={DollarSign}
-          variant="brand"
-        />
-        <StatCard
-          title="Total Recebido"
-          value={`R$ ${totalRecebido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-          description="Pagamentos confirmados no mês"
-          icon={TrendingUp}
-          variant="brand"
-        />
-        <StatCard
-          title="Total Custos"
-          value={`R$ ${totalCustos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-          description="Despesas do mês"
-          icon={TrendingDown}
-          variant="danger"
-        />
-        <StatCard
-          title="Saldo"
-          value={`R$ ${saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-          description="Recebido menos custos"
-          icon={Wallet}
-          variant={saldo >= 0 ? "success" : "danger"}
-        />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Recebido (mês)</p>
+          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-success-600">
+            R$ {totalRecebido.toFixed(2)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Custos (mês)</p>
+          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-danger-600">
+            R$ {totalCustos.toFixed(2)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saldo</p>
+          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-foreground">
+            R$ {(totalRecebido - totalCustos).toFixed(2)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Maquininha (pendente)</p>
+          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-warning-600">
+            R$ {totalPendente.toFixed(2)}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">{transacoesPendentes.length} transação(ões)</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Receita por Forma de Pagamento</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Forma</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {porForma.size === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
-                      Nenhum pagamento no período
-                    </TableCell>
-                  </TableRow>
-                )}
-                {Array.from(porForma.entries()).map(([forma, valor]) => (
-                  <TableRow key={forma}>
-                    <TableCell className="font-medium">{forma}</TableCell>
-                    <TableCell className="text-right">
-                      R$ {valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Custos por Categoria</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {porCategoria.size === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
-                      Nenhum custo no período
-                    </TableCell>
-                  </TableRow>
-                )}
-                {Array.from(porCategoria.entries()).map(([cat, valor]) => (
-                  <TableRow key={cat}>
-                    <TableCell className="font-medium">{cat}</TableCell>
-                    <TableCell className="text-right">
-                      R$ {valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+      <CaixaClient pagamentosMes={pagamentosMes as any} custosMes={custosMes as any} porForma={porForma} alunos={alunos as any} />
     </div>
   )
 }

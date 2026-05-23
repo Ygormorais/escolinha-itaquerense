@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { registrarLog } from "@/app/actions/log"
+import { requireAuth } from "@/lib/auth"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -15,6 +16,7 @@ export async function registrarPagamento(
     observacoes?: string
   }
 ): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.pagamento.update({
       where: { id },
@@ -39,6 +41,7 @@ export async function registrarPagamentosLote(
   ids: number[],
   data: { dataPagamento: string; formaPagamento: string }
 ): Promise<{ atualizados: number } | { error: string }> {
+  await requireAuth()
   try {
     const pagamentos = await db.pagamento.findMany({
       where: { id: { in: ids } },
@@ -68,6 +71,7 @@ export async function registrarPagamentosLote(
 export async function gerarMensalidadesMes(
   mes: string
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
+  await requireAuth()
   try {
     const [ano, mesNum] = mes.split("-").map(Number)
 
@@ -104,6 +108,7 @@ export async function gerarMensalidadesMes(
 export async function gerarMensalidadesAno(
   ano: number
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
+  await requireAuth()
   try {
     const alunos = await db.aluno.findMany({ where: { status: "Ativo" } })
     let criados = 0
@@ -140,6 +145,7 @@ export async function gerarMensalidadesAno(
 }
 
 export async function deletePagamento(id: number): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.pagamento.delete({ where: { id } })
     revalidatePath("/pagamentos")
@@ -155,6 +161,7 @@ export async function marcarComoPago(
   id: number,
   data: { dataPagamento: string; formaPagamento: string; valorRecebido: number }
 ): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.pagamento.update({
       where: { id },

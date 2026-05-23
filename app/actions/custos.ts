@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -15,6 +16,7 @@ export async function createCusto(data: {
   comprovante: boolean
   observacoes?: string
 }): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.custo.create({
       data: {
@@ -45,6 +47,7 @@ export async function updateCusto(id: number, data: {
   comprovante: boolean
   observacoes?: string
 }): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.custo.update({
       where: { id },

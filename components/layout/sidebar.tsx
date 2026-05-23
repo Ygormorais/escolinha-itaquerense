@@ -8,6 +8,9 @@ import {
   Users,
   CreditCard,
   CalendarCheck,
+  Calendar,
+  Send,
+  Shirt,
   Receipt,
   AlertTriangle,
   Wallet,
@@ -16,6 +19,9 @@ import {
   Settings,
   History,
   LogOut,
+  ClipboardList,
+  Trophy,
+  UserCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -42,6 +48,7 @@ const navGroups = [
     label: "Visão Geral",
     items: [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
     ],
   },
   {
@@ -50,7 +57,11 @@ const navGroups = [
       { href: "/alunos",        label: "Alunos",        icon: Users },
       { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
       { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
+      { href: "/agenda",        label: "Agenda",         icon: Calendar },
+      { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
+      { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },
       { href: "/custos",        label: "Custos",        icon: Receipt },
+      { href: "/comunicados",   label: "Comunicados",   icon: Send },
       { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
       { href: "/caixa",         label: "Caixa",         icon: Wallet },
     ],
@@ -62,6 +73,7 @@ const navGroups = [
       { href: "/relatorio",     label: "Relatório",     icon: BarChart3 },
       { href: "/historico",     label: "Histórico",     icon: History },
       { href: "/configuracoes", label: "Configurações", icon: Settings },
+      { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
     ],
   },
 ]
