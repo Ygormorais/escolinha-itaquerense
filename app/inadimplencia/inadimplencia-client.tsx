@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { marcarComoPago } from "@/app/actions/pagamentos"
+import { PixButton } from "@/components/ui/pix-modal"
 
 type Pagamento = {
   id: number
@@ -152,7 +153,17 @@ function gerarLinkWA(a: Inadimplente) {
   return `https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`
 }
 
-export function InadimplenciaClient({ inadimplentes }: { inadimplentes: Inadimplente[] }) {
+export function InadimplenciaClient({
+  inadimplentes,
+  chavePix,
+  nomeClube,
+  cidade,
+}: {
+  inadimplentes: Inadimplente[]
+  chavePix?: string
+  nomeClube?: string
+  cidade?: string
+}) {
   const now = new Date()
   const [dialogAluno, setDialogAluno] = useState<Inadimplente | null>(null)
   const [search, setSearch] = useState("")
@@ -308,14 +319,28 @@ export function InadimplenciaClient({ inadimplentes }: { inadimplentes: Inadimpl
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      title="Registrar pagamento"
-                      onClick={() => setDialogAluno(a)}
-                    >
-                      <CheckCircle className="size-4 text-success-600" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        title="Registrar pagamento"
+                        onClick={() => setDialogAluno(a)}
+                      >
+                        <CheckCircle className="size-4 text-success-600" />
+                      </Button>
+                      {chavePix && nomeClube && cidade && (
+                        <PixButton
+                          chave={chavePix}
+                          nomeClube={nomeClube}
+                          cidade={cidade}
+                          valor={a.mensalidade * a.pagamentos.length}
+                          descricao={`${a.pagamentos.length}x mensalidade ${a.nome.split(" ")[0]}`}
+                          telefoneResponsavel={a.telefone}
+                          nomeResponsavel={a.nome}
+                          size="sm"
+                        />
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               )

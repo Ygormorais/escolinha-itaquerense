@@ -14,6 +14,8 @@ import { PagamentoButton } from "./pagamento-button"
 import { EditarAlunoButton } from "./editar-button"
 import { FrequenciaChart } from "./frequencia-chart"
 import { PaginacaoAluno } from "./paginacao-aluno"
+import { PixButton } from "@/components/ui/pix-modal"
+import { getConfig } from "@/lib/config"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
@@ -42,6 +44,8 @@ export default async function AlunoDetailPage({
   if (!Number.isInteger(numId)) notFound()
 
   const pagina = Math.max(1, Number(sp.pagina ?? 1))
+
+  const config = getConfig()
 
   const [aluno, totalPagamentos] = await Promise.all([
     db.aluno.findUnique({
@@ -195,7 +199,20 @@ export default async function AlunoDetailPage({
                     </TableCell>
                     <TableCell>
                       {!p.dataPagamento && (
-                        <PagamentoButton pagamentoId={p.id} mensalidade={aluno.mensalidade} />
+                        <div className="flex items-center gap-1">
+                          <PagamentoButton pagamentoId={p.id} mensalidade={aluno.mensalidade} />
+                          {config.chavePix && (
+                            <PixButton
+                              chave={config.chavePix}
+                              nomeClube={config.nome}
+                              cidade={config.cidade}
+                              valor={aluno.mensalidade}
+                              descricao={`Mensalidade ${p.mesReferencia}`}
+                              telefoneResponsavel={aluno.telefone}
+                              nomeResponsavel={aluno.responsavel}
+                            />
+                          )}
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>

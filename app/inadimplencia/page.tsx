@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { AlertTriangle, DollarSign } from "lucide-react"
 import { InadimplenciaClient } from "./inadimplencia-client"
+import { getConfig } from "@/lib/config"
 
 export default async function InadimplenciaPage() {
   const now = new Date()
@@ -51,6 +52,7 @@ export default async function InadimplenciaPage() {
   }
 
   const inadimplentes = Array.from(porAluno.values())
+  const config = getConfig()
 
   const totalInadimplentes = inadimplentes.length
   const valorTotalAberto = inadimplentes.reduce(
@@ -95,7 +97,12 @@ export default async function InadimplenciaPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Alunos Inadimplentes</h2>
-        <InadimplenciaClient inadimplentes={inadimplentes} />
+        <InadimplenciaClient
+          inadimplentes={inadimplentes}
+          chavePix={config.chavePix}
+          nomeClube={config.nome}
+          cidade={config.cidade}
+        />
       </div>
     </div>
   )

@@ -8,6 +8,7 @@ export type ClubConfig = {
   cidade: string
   metaMensal: number
   capacidadeTurma: number
+  chavePix: string
 }
 
 const CONFIG_PATH = path.join(process.cwd(), "club.config.json")
@@ -19,6 +20,7 @@ const DEFAULT: ClubConfig = {
   cidade: "São Paulo/SP",
   metaMensal: 0,
   capacidadeTurma: 20,
+  chavePix: "ygorcamisa1@gmail.com",
 }
 
 export function getConfig(): ClubConfig {

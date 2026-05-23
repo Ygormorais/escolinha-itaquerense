@@ -59,6 +59,20 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
             </div>
 
             <div className="border-t pt-4 space-y-4">
+              <p className="text-sm font-semibold text-foreground">PIX</p>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Chave PIX</label>
+                <Input
+                  name="chavePix"
+                  value={form.chavePix ?? ""}
+                  onChange={handleChange}
+                  placeholder="email, CPF, CNPJ, telefone ou chave aleatória"
+                />
+                <p className="text-xs text-muted-foreground">Usada para gerar QR codes de cobrança</p>
+              </div>
+            </div>
+
+            <div className="border-t pt-4 space-y-4">
               <p className="text-sm font-semibold text-foreground">Metas & Capacidade</p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
