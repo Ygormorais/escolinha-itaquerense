@@ -138,7 +138,7 @@ export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number 
                     {label}
                     {badge != null && badge > 0 && (
                       <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
-                        {badge}
+                        {badge > 99 ? "99+" : badge}
                       </span>
                     )}
                   </Link>
