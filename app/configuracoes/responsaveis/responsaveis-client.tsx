@@ -65,9 +65,13 @@ export function ResponsaveisClient({
       return
     }
     if (editId) {
-      await editarResponsavel(editId, {
-        nome: form.nome, email: form.email, telefone: form.telefone, cpf: form.cpf || null,
+      const result = await editarResponsavel(editId, {
+        nome: form.nome,
+        email: form.email,
+        telefone: form.telefone,
+        cpf: form.cpf || null,
       })
+      if (result && "error" in result) { toast.error(result.error); return }
       toast.success("Responsável atualizado!")
     } else {
       if (!form.senha) { toast.error("Defina uma senha"); return }
@@ -89,7 +93,7 @@ export function ResponsaveisClient({
 
   function handleEdit(r: Responsavel) {
     setEditId(r.id)
-    setForm({ nome: r.nome, email: r.email, telefone: r.telefone, senha: "", cpf: r.cpf ?? "" })
+    setForm({ nome: r.nome, email: r.email, telefone: r.telefone, senha: "", cpf: r.cpf ? r.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4") : "" })
     setDialogOpen(true)
   }
 
