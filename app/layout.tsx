@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { getSession } from "@/lib/session"
+import { db } from "@/lib/db"
 
 export const metadata: Metadata = {
   title: "Escolinha Itaquerense",
@@ -17,13 +18,17 @@ export default async function RootLayout({
 }>) {
   const session = await getSession()
 
+  const pendingEscalacoes = session.authenticated
+    ? await db.chatSession.count({ where: { bloqueado: true } })
+    : 0
+
   return (
     <html lang="pt-BR" className="h-full antialiased" suppressHydrationWarning>
       <body className={`flex h-full ${session.authenticated ? "bg-background" : "bg-background"}`}>
         <Providers>
           {session.authenticated ? (
             <>
-              <Sidebar />
+              <Sidebar pendingEscalacoes={pendingEscalacoes} />
               <main className="flex flex-1 flex-col overflow-auto">
                 {children}
               </main>

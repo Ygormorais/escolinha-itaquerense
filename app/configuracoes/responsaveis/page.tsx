@@ -7,7 +7,9 @@ export default async function ResponsaveisPage() {
   const responsaveis = await db.responsavel.findMany({
     include: {
       _count: { select: { alunos: true } },
-      alunos: { select: { id: true, nome: true, turma: true } },
+      alunos: {
+        select: { id: true, nome: true, turma: true },
+      },
     },
     orderBy: { nome: "asc" },
   })
@@ -18,5 +20,5 @@ export default async function ResponsaveisPage() {
     orderBy: { nome: "asc" },
   })
 
-  return <ResponsaveisClient responsaveis={responsaveis as any} alunosDisponiveis={alunos as any} />
+  return <ResponsaveisClient responsaveis={responsaveis} alunosDisponiveis={alunos} />
 }

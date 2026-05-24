@@ -22,6 +22,7 @@ import {
   ClipboardList,
   Trophy,
   UserCircle,
+  MessageSquareWarning,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -43,43 +44,55 @@ function LogoutButton() {
   )
 }
 
-const navGroups = [
-  {
-    label: "Visão Geral",
-    items: [
-      { href: "/", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
-    ],
-  },
-  {
-    label: "Operação",
-    items: [
-      { href: "/alunos",        label: "Alunos",        icon: Users },
-      { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
-      { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
-      { href: "/agenda",        label: "Agenda",         icon: Calendar },
-      { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
-      { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },
-      { href: "/custos",        label: "Custos",        icon: Receipt },
-      { href: "/comunicados",   label: "Comunicados",   icon: Send },
-      { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
-      { href: "/caixa",         label: "Caixa",         icon: Wallet },
-    ],
-  },
-  {
-    label: "Documentos & Config",
-    items: [
-      { href: "/recibos",       label: "Recibos",       icon: FileText },
-      { href: "/relatorio",     label: "Relatório",     icon: BarChart3 },
-      { href: "/historico",     label: "Histórico",     icon: History },
-      { href: "/configuracoes", label: "Configurações", icon: Settings },
-      { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
-    ],
-  },
-]
+type NavItem = {
+  href: string
+  label: string
+  icon: React.ElementType
+  badge?: number
+}
+type NavGroup = {
+  label: string
+  items: NavItem[]
+}
 
-export function Sidebar() {
+export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number }) {
   const pathname = usePathname()
+
+  const navGroups: NavGroup[] = [
+    {
+      label: "Visão Geral",
+      items: [
+        { href: "/", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
+      ],
+    },
+    {
+      label: "Operação",
+      items: [
+        { href: "/alunos",        label: "Alunos",        icon: Users },
+        { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
+        { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
+        { href: "/agenda",        label: "Agenda",         icon: Calendar },
+        { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
+        { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },
+        { href: "/custos",        label: "Custos",        icon: Receipt },
+        { href: "/comunicados",   label: "Comunicados",   icon: Send },
+        { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
+        { href: "/caixa",         label: "Caixa",         icon: Wallet },
+      ],
+    },
+    {
+      label: "Documentos & Config",
+      items: [
+        { href: "/recibos",       label: "Recibos",       icon: FileText },
+        { href: "/relatorio",     label: "Relatório",     icon: BarChart3 },
+        { href: "/historico",     label: "Histórico",     icon: History },
+        { href: "/configuracoes", label: "Configurações", icon: Settings },
+        { href: "/configuracoes/escalacoes", label: "Escalações", icon: MessageSquareWarning, badge: pendingEscalacoes },
+        { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
+      ],
+    },
+  ]
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-border bg-card">
@@ -107,7 +120,7 @@ export function Sidebar() {
               {group.label}
             </p>
             <div className="flex flex-col gap-0.5">
-              {group.items.map(({ href, label, icon: Icon }) => {
+              {group.items.map(({ href, label, icon: Icon, badge }) => {
                 const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href)
                 return (
                   <Link
@@ -123,6 +136,11 @@ export function Sidebar() {
                   >
                     <Icon className="size-4 shrink-0" />
                     {label}
+                    {badge != null && badge > 0 && (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+                        {badge > 99 ? "99+" : badge}
+                      </span>
+                    )}
                   </Link>
                 )
               })}
