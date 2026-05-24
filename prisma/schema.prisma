@@ -101,14 +101,16 @@ model Log {
 }
 
 model Responsavel {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String   @unique
-  telefone  String
-  senha     String
-  ativo     Boolean  @default(true)
-  alunos    Aluno[]
-  createdAt DateTime @default(now())
+  id           Int           @id @default(autoincrement())
+  nome         String
+  email        String        @unique
+  telefone     String
+  senha        String
+  cpf          String?       @unique
+  ativo        Boolean       @default(true)
+  alunos       Aluno[]
+  chatSessions ChatSession[]
+  createdAt    DateTime      @default(now())
 }
 
 model Evento {
@@ -242,4 +244,17 @@ model WhatsAppMensagem {
   messageId  String?                           // ID da mensagem no WhatsApp
   lida       Boolean  @default(false)
   createdAt  DateTime @default(now())
+}
+
+model ChatSession {
+  id            Int          @id @default(autoincrement())
+  telefone      String       @unique
+  responsavelId Int?
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+  identificado  Boolean      @default(false)
+  bloqueado     Boolean      @default(false)
+  historico     String       @default("[]")
+  expiresAt     DateTime
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }

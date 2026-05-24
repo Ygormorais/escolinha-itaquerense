@@ -22,25 +22,26 @@ export async function POST(req: NextRequest) {
 
       if (!texto) return NextResponse.json({ ok: true })
 
-      const aluno = await db.aluno.findFirst({
-        where: { telefone: { contains: telefone.replace(/\D/g, "") } },
+      if (messageId) {
+        const existing = await db.whatsAppMensagem.findFirst({ where: { messageId } })
+        if (existing) return NextResponse.json({ ok: true })
+      }
+
+      await db.whatsAppMensagem.create({
+        data: {
+          telefone,
+          mensagem: texto,
+          direcao: "incoming",
+          status: "received",
+          instancia: instance ?? "escolinha",
+          origem: "webhook",
+          messageId,
+        },
       })
 
-      if (aluno) {
-        await routeMessage(aluno.id, texto, telefone)
-      } else {
-        await db.whatsAppMensagem.create({
-          data: {
-            telefone,
-            mensagem: texto,
-            direcao: "incoming",
-            status: "received",
-            instancia: instance ?? "escolinha",
-            origem: "webhook",
-            messageId,
-          },
-        })
-      }
+      routeMessage(telefone, texto).catch((err) => {
+        console.error("Failed to route message:", err)
+      })
     }
 
     if (event === "MESSAGE_STATUS" && data?.key?.id && data?.status) {
