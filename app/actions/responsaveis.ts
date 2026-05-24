@@ -46,7 +46,9 @@ export async function editarResponsavel(
 ) {
   await requireAuth()
 
-  if (data.cpf !== undefined && data.cpf !== null && data.cpf !== "") {
+  if (data.cpf === "") data = { ...data, cpf: null }
+
+  if (data.cpf !== undefined && data.cpf !== null) {
     const cpfLimpo = data.cpf.replace(/\D/g, "")
     if (cpfLimpo.length !== 11) return { error: "CPF deve ter 11 dígitos" }
     const duplicado = await db.responsavel.findFirst({
@@ -55,8 +57,6 @@ export async function editarResponsavel(
     if (duplicado) return { error: "CPF já cadastrado para outro responsável" }
     data = { ...data, cpf: cpfLimpo }
   }
-
-  if (data.cpf === "") data = { ...data, cpf: null }
 
   await db.responsavel.update({ where: { id }, data })
   revalidatePath("/configuracoes/responsaveis")
