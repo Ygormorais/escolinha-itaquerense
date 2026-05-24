@@ -18,36 +18,42 @@ export default async function EscalacoesPage() {
     orderBy: { updatedAt: "desc" },
   })
 
-  const sessoesCom = await Promise.all(
-    sessoes.map(async (s) => {
-      const log = await db.log.findFirst({
-        where: {
-          tipo: "escalacao_chatbot",
-          meta: { contains: s.telefone },
-        },
+  // fetch all escalation logs for the blocked sessions in one query
+  const telefones = sessoes.map((s) => s.telefone)
+  const logs = telefones.length > 0
+    ? await db.log.findMany({
+        where: { tipo: "escalacao_chatbot" },
         orderBy: { id: "desc" },
       })
-      let motivo = "—"
-      if (log?.meta) {
-        try {
-          const meta = JSON.parse(log.meta) as { motivo?: string }
-          if (meta.motivo) motivo = meta.motivo
-        } catch {
-          // meta inválido
-        }
+    : []
+
+  // build a telefone → motivo map (first matching log per telefone wins)
+  const motivoMap = new Map<string, string>()
+  for (const log of logs) {
+    if (!log.meta) continue
+    try {
+      const meta = JSON.parse(log.meta) as { motivo?: string; telefone?: string }
+      if (meta.telefone && meta.motivo && !motivoMap.has(meta.telefone)) {
+        motivoMap.set(meta.telefone, meta.motivo)
       }
-      return { ...s, motivo }
-    })
-  )
+    } catch {
+      // meta inválido
+    }
+  }
+
+  const sessoesCom = sessoes.map((s) => ({
+    ...s,
+    motivo: motivoMap.get(s.telefone) ?? "—",
+  }))
 
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold">Escalações Pendentes</h1>
-        <Badge variant="destructive">{sessoes.length}</Badge>
+        <Badge variant="destructive">{sessoesCom.length}</Badge>
       </div>
 
-      {sessoes.length === 0 ? (
+      {sessoesCom.length === 0 ? (
         <p className="text-muted-foreground">Nenhuma escalação pendente.</p>
       ) : (
         <Table>
