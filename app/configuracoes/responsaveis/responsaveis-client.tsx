@@ -30,6 +30,7 @@ type Responsavel = {
   nome: string
   email: string
   telefone: string
+  cpf: string | null
   ativo: boolean
   _count: { alunos: number }
   alunos: Aluno[]
@@ -50,7 +51,7 @@ export function ResponsaveisClient({
   const [whatsOpen, setWhatsOpen] = useState<Responsavel | null>(null)
   const [whatsMsg, setWhatsMsg] = useState("")
   const [form, setForm] = useState({
-    nome: "", email: "", telefone: "", senha: "",
+    nome: "", email: "", telefone: "", senha: "", cpf: "",
   })
 
   const filtered = responsaveis.filter((r) =>
@@ -65,7 +66,7 @@ export function ResponsaveisClient({
     }
     if (editId) {
       await editarResponsavel(editId, {
-        nome: form.nome, email: form.email, telefone: form.telefone,
+        nome: form.nome, email: form.email, telefone: form.telefone, cpf: form.cpf || null,
       })
       toast.success("Responsável atualizado!")
     } else {
@@ -83,12 +84,12 @@ export function ResponsaveisClient({
 
   function resetForm() {
     setEditId(null)
-    setForm({ nome: "", email: "", telefone: "", senha: "" })
+    setForm({ nome: "", email: "", telefone: "", senha: "", cpf: "" })
   }
 
   function handleEdit(r: Responsavel) {
     setEditId(r.id)
-    setForm({ nome: r.nome, email: r.email, telefone: r.telefone, senha: "" })
+    setForm({ nome: r.nome, email: r.email, telefone: r.telefone, senha: "", cpf: r.cpf ?? "" })
     setDialogOpen(true)
   }
 
@@ -155,6 +156,25 @@ export function ResponsaveisClient({
                 <Label>Telefone</Label>
                 <Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
               </div>
+              {editId && (
+                <div className="space-y-2">
+                  <Label>CPF</Label>
+                  <Input
+                    value={form.cpf}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "").slice(0, 11)
+                      const fmt = raw
+                        .replace(/(\d{3})(\d)/, "$1.$2")
+                        .replace(/(\d{3})(\d)/, "$1.$2")
+                        .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
+                      setForm({ ...form, cpf: fmt })
+                    }}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                  />
+                  <p className="text-xs text-muted-foreground">Necessário para identificação no chatbot WhatsApp</p>
+                </div>
+              )}
               {!editId && (
                 <div className="space-y-2">
                   <Label>Senha *</Label>
@@ -182,6 +202,7 @@ export function ResponsaveisClient({
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Contato</TableHead>
+                <TableHead>CPF</TableHead>
                 <TableHead>Alunos</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-32" />
@@ -190,7 +211,7 @@ export function ResponsaveisClient({
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     Nenhum responsável cadastrado
                   </TableCell>
                 </TableRow>
@@ -208,6 +229,14 @@ export function ResponsaveisClient({
                       <Phone className="size-3 text-muted-foreground" />
                       {r.telefone || <span className="text-muted-foreground">—</span>}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {r.cpf
+                      ? <span className="text-sm font-mono">
+                          {r.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}
+                        </span>
+                      : <Badge variant="secondary" className="text-[10px]">sem CPF</Badge>
+                    }
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1 items-center">
