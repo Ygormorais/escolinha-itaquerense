@@ -5,7 +5,14 @@ export const metadata = { title: "Responsáveis — Configurações — Escolinh
 
 export default async function ResponsaveisPage() {
   const responsaveis = await db.responsavel.findMany({
-    include: {
+    select: {
+      id: true,
+      nome: true,
+      email: true,
+      telefone: true,
+      cpf: true,
+      ativo: true,
+      createdAt: true,
       _count: { select: { alunos: true } },
       alunos: { select: { id: true, nome: true, turma: true } },
     },
