@@ -6,10 +6,14 @@ import { requireAuth } from "@/lib/auth"
 
 export async function reativarEscalacao(telefone: string) {
   await requireAuth()
-  await db.chatSession.update({
-    where: { telefone },
-    data: { bloqueado: false },
-  })
-  revalidatePath("/configuracoes/escalacoes")
-  return { success: true }
+  try {
+    await db.chatSession.update({
+      where: { telefone },
+      data: { bloqueado: false },
+    })
+    revalidatePath("/configuracoes/escalacoes")
+    return { success: true }
+  } catch {
+    return { error: "Erro ao reativar escalação" }
+  }
 }
