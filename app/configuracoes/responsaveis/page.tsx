@@ -8,7 +8,7 @@ export default async function ResponsaveisPage() {
     include: {
       _count: { select: { alunos: true } },
       alunos: {
-        select: { id: true, nome: true, status: true },
+        select: { id: true, nome: true, turma: true },
       },
     },
     orderBy: { nome: "asc" },
@@ -20,5 +20,5 @@ export default async function ResponsaveisPage() {
     orderBy: { nome: "asc" },
   })
 
-  return <ResponsaveisClient responsaveis={responsaveis as any} alunosDisponiveis={alunos as any} />
+  return <ResponsaveisClient responsaveis={responsaveis} alunosDisponiveis={alunos} />
 }
