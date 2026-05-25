@@ -15,6 +15,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { toast } from "sonner"
@@ -149,8 +153,8 @@ function exportarCSV(inadimplentes: Inadimplente[]) {
   URL.revokeObjectURL(url)
 }
 
-function gerarLinkWA(a: Inadimplente) {
-  const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${a.pagamentos.length} mensalidade(s) em aberto na Escolinha Itaquerense.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
+function gerarLinkWA(a: Inadimplente, nomeClube = "Escolinha Itaquerense") {
+  const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${a.pagamentos.length} mensalidade(s) em aberto na ${nomeClube}.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
   return `https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`
 }
 
@@ -171,6 +175,7 @@ export function InadimplenciaClient({
   const [turmaFilter, setTurmaFilter] = useState("Todas")
   const [nivelFilter, setNivelFilter] = useState("Todos")
   const [enviando, setEnviando] = useState(false)
+  const [confirmNotificar, setConfirmNotificar] = useState(false)
 
   const TURMAS = [...new Set(inadimplentes.map((a) => a.turma))].sort()
 
@@ -184,12 +189,10 @@ export function InadimplenciaClient({
     return nivelFilter === "Crítico" ? isCritico : !isCritico
   })
 
-  async function handleNotificarEmLote() {
-    if (filtered.length === 0) return
-    if (!confirm(`Abrir WhatsApp para ${filtered.length} inadimplente(s)? Os links serão abertos um a um.`)) return
+  async function executeNotificar() {
     setEnviando(true)
     for (let i = 0; i < filtered.length; i++) {
-      window.open(gerarLinkWA(filtered[i]), "_blank")
+      window.open(gerarLinkWA(filtered[i], nomeClube), "_blank")
       if (i < filtered.length - 1) await new Promise((r) => setTimeout(r, 800))
     }
     setEnviando(false)
@@ -231,7 +234,7 @@ export function InadimplenciaClient({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={handleNotificarEmLote}
+            onClick={() => { if (filtered.length > 0) setConfirmNotificar(true) }}
             disabled={filtered.length === 0 || enviando}
             className="text-success-600 border-success-600/30 hover:bg-success-50"
           >
@@ -250,7 +253,7 @@ export function InadimplenciaClient({
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -292,7 +295,7 @@ export function InadimplenciaClient({
                         {a.telefone}
                       </a>
                       <a
-                        href={gerarLinkWA(a)}
+                        href={gerarLinkWA(a, nomeClube)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs font-medium text-success-600 hover:underline"
@@ -356,6 +359,22 @@ export function InadimplenciaClient({
           <PagarDialog inadimplente={dialogAluno} onClose={() => setDialogAluno(null)} />
         )}
       </Dialog>
+
+      <AlertDialog open={confirmNotificar} onOpenChange={setConfirmNotificar}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Notificar inadimplentes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Serão enviadas mensagens via WhatsApp para {filtered.length} aluno(s) inadimplente(s).
+              Os links serão abertos um a um no navegador.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={executeNotificar}>Notificar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
