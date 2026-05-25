@@ -2,9 +2,14 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt } from "lucide-react"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -23,6 +28,7 @@ import {
 import { toast } from "sonner"
 import { registrarPagamento, gerarMensalidadesMes, deletePagamento, registrarPagamentosLote } from "@/app/actions/pagamentos"
 import { PixButton } from "@/components/ui/pix-modal"
+import { FORMAS_PAGAMENTO } from "@/lib/constants"
 
 type Pagamento = {
   id: number
@@ -31,7 +37,7 @@ type Pagamento = {
   dataPagamento: Date | null
   formaPagamento: string | null
   valorRecebido: number | null
-  aluno: { nome: string; turma: string; mensalidade: number; telefone: string }
+  aluno: { nome: string; turma: string; mensalidade: number; desconto: number; telefone: string }
 }
 
 type StatusPagamento = "Pago" | "Pendente" | "Vencido"
@@ -42,7 +48,6 @@ function getPagamentoStatus(p: Pagamento): StatusPagamento {
   return "Pendente"
 }
 
-const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
 
 function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
   const [open, setOpen] = useState(false)
@@ -55,7 +60,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
     defaultValues: {
       dataPagamento: format(new Date(), "yyyy-MM-dd"),
       formaPagamento: "PIX",
-      valorRecebido: String(pagamento.aluno.mensalidade),
+      valorRecebido: String(pagamento.aluno.mensalidade - pagamento.aluno.desconto),
       observacoes: "",
     },
   })
@@ -107,7 +112,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
           <div className="flex flex-col items-center gap-4 py-4">
             <p className="text-sm font-medium text-success-600">✅ Pagamento registrado!</p>
             <div className="flex gap-2">
-              <a
+              <Link
                 href={reciboUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -115,7 +120,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
               >
                 <Printer className="size-4" />
                 Imprimir Recibo
-              </a>
+              </Link>
               <Button variant="outline" onClick={() => { setOpen(false); setDone(false) }}>
                 Fechar
               </Button>
@@ -206,6 +211,8 @@ export function PagamentosClient({
   const [bulkForma, setBulkForma] = useState("PIX")
   const [bulkData, setBulkData] = useState(format(new Date(), "yyyy-MM-dd"))
   const [bulkPending, startBulk] = useTransition()
+  const [confirmNotificar, setConfirmNotificar] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   function handleGerar() {
     startGerando(async () => {
@@ -247,12 +254,15 @@ export function PagamentosClient({
     return venc >= now && venc <= em7dias
   })
 
-  async function handleNotificarVencendo() {
+  function handleNotificarVencendo() {
     if (vencendoSemana.length === 0) {
       toast.info("Nenhuma mensalidade vencendo nos próximos 7 dias")
       return
     }
-    if (!confirm(`Abrir WhatsApp para ${vencendoSemana.length} responsável(is)?`)) return
+    setConfirmNotificar(true)
+  }
+
+  async function executeNotificar() {
     for (let i = 0; i < vencendoSemana.length; i++) {
       const p = vencendoSemana[i]
       const fone = (p.aluno.telefone ?? "").replace(/\D/g, "")
@@ -261,7 +271,7 @@ export function PagamentosClient({
       const msg = [
         `Olá! 👋 Passando para lembrar que a mensalidade de *${p.aluno.nome}* (${p.aluno.turma}) vence em *${venc}*.`,
         ``,
-        `Valor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*`,
+        `Valor: *R$ ${(p.aluno.mensalidade - p.aluno.desconto).toFixed(2).replace(".", ",")}*`,
         chavePix ? `\nChave PIX: *${chavePix}*` : "",
         ``,
         `Qualquer dúvida estamos à disposição. Obrigado! ⚽`,
@@ -441,7 +451,49 @@ export function PagamentosClient({
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <AlertDialog open={confirmNotificar} onOpenChange={setConfirmNotificar}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Notificar alunos vencendo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Serão abertas {vencendoSemana.length} janela(s) do WhatsApp para notificar os responsáveis com mensalidades vencendo nos próximos 7 dias.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setConfirmNotificar(false); executeNotificar() }}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir pagamento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O registro de pagamento será removido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (confirmDeleteId === null) return
+                await deletePagamento(confirmDeleteId)
+                setConfirmDeleteId(null)
+                router.refresh()
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -493,7 +545,7 @@ export function PagamentosClient({
                     {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"}
                   </TableCell>
                   <TableCell className="text-right">
-                    R$ {(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}
+                    R$ {(p.valorRecebido ?? (p.aluno.mensalidade - p.aluno.desconto)).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 items-center">
@@ -503,7 +555,7 @@ export function PagamentosClient({
                           chave={chavePix}
                           nomeClube={nomeClube}
                           cidade={cidade}
-                          valor={p.aluno.mensalidade}
+                          valor={p.aluno.mensalidade - p.aluno.desconto}
                           descricao={`Mensalidade ${p.mesReferencia} ${p.aluno.nome.split(" ")[0]}`}
                           telefoneResponsavel={p.aluno.telefone}
                           nomeResponsavel={p.aluno.nome}
@@ -511,7 +563,7 @@ export function PagamentosClient({
                       )}
                       {status !== "Pago" && p.aluno.telefone && (
                         <a
-                          href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
+                          href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${(p.aluno.mensalidade - p.aluno.desconto).toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Cobrar via WhatsApp"
@@ -521,8 +573,8 @@ export function PagamentosClient({
                         </a>
                       )}
                       {status === "Pago" && (
-                        <a
-                          href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
+                        <Link
+                          href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? (p.aluno.mensalidade - p.aluno.desconto)}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Imprimir recibo"
@@ -530,18 +582,14 @@ export function PagamentosClient({
                         >
                           <Receipt className="size-3" />
                           Recibo
-                        </a>
+                        </Link>
                       )}
                       {status !== "Pago" && (
                         <Button
                           variant="ghost"
                           size="icon-sm"
                           title="Excluir pagamento"
-                          onClick={async () => {
-                            if (!confirm("Excluir este registro de pagamento?")) return
-                            await deletePagamento(p.id)
-                            router.refresh()
-                          }}
+                          onClick={() => setConfirmDeleteId(p.id)}
                         >
                           <Trash2Icon className="size-3.5 text-danger-600" />
                         </Button>
