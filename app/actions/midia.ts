@@ -15,6 +15,11 @@ export async function adicionarMidia(data: {
 
   if (!data.titulo.trim()) return { error: "Título obrigatório" }
   if (!data.url.trim()) return { error: "URL obrigatória" }
+  try {
+    new URL(data.url)
+  } catch {
+    return { error: "URL inválida" }
+  }
   if (!data.partidaId && !data.campeonatoId) return { error: "Vincule a uma partida ou campeonato" }
   if (data.partidaId && data.campeonatoId) return { error: "Vincule a apenas uma partida ou campeonato" }
 
@@ -22,8 +27,8 @@ export async function adicionarMidia(data: {
     await db.media.create({ data })
     revalidatePath("/configuracoes/midia")
     return { success: true }
-  } catch {
-    return { error: "Erro ao salvar mídia" }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao salvar mídia" }
   }
 }
 
@@ -33,7 +38,7 @@ export async function removerMidia(id: number) {
     await db.media.delete({ where: { id } })
     revalidatePath("/configuracoes/midia")
     return { success: true }
-  } catch {
-    return { error: "Erro ao remover mídia" }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao remover mídia" }
   }
 }
