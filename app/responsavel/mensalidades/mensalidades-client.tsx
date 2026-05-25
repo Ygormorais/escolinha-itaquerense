@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { ArrowLeft, CreditCard, CheckCircle, AlertTriangle, Search } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,6 +30,7 @@ type Aluno = {
 
 export function MensalidadesClient({ responsavel }: { responsavel: { nome: string; alunos: Aluno[] } }) {
   const [search, setSearch] = useState("")
+  const pathname = usePathname()
 
   const filtered = responsavel.alunos.filter((a) =>
     a.nome.toLowerCase().includes(search.toLowerCase())
@@ -39,8 +41,30 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
     "2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12",
   ]
 
+  const navLinks = [
+    { href: "/responsavel", label: "Dashboard" },
+    { href: "/responsavel/galeria", label: "Galeria" },
+  ]
+
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
+      <nav className="flex items-center gap-2 -m-6 mb-6 px-6 py-4 border-b bg-muted/40">
+        {navLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={cn(
+              "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+              pathname === link.href
+                ? "bg-brand-600 text-white"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
+
       <div className="flex items-center gap-3">
         <Link href="/responsavel" className="inline-flex items-center justify-center size-9 rounded-md hover:bg-muted transition-colors">
           <ArrowLeft className="size-5" />

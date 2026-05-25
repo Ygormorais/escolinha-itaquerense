@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
@@ -35,11 +35,17 @@ export function ResponsavelDashboardClient({
   comunicados: Comunicado[]
 }) {
   const router = useRouter()
+  const pathname = usePathname()
 
   async function handleLogout() {
     await fetch("/api/responsavel/logout", { method: "POST" })
     router.push("/responsavel/login")
   }
+
+  const navLinks = [
+    { href: "/responsavel", label: "Dashboard" },
+    { href: "/responsavel/galeria", label: "Galeria" },
+  ]
 
   const [whatsappNumber, setWhatsappNumber] = useState("5511999999999")
   useEffect(() => {
@@ -65,6 +71,23 @@ export function ResponsavelDashboardClient({
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
+      <nav className="flex items-center gap-2 -m-6 mb-6 px-6 py-4 border-b bg-muted/40">
+        {navLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={cn(
+              "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+              pathname === link.href
+                ? "bg-brand-600 text-white"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold font-heading">Olá, {responsavel.nome}</h1>
