@@ -164,6 +164,7 @@ model Campeonato {
   status        String               @default("aberto") // aberto, andamento, encerrado
   inscricoes    InscricaoCampeonato[]
   partidas      Partida[]
+  media         Media[]
   createdAt     DateTime             @default(now())
 }
 
@@ -179,6 +180,7 @@ model Partida {
   golsContra    Int?
   resultado     String?    // Vitoria, Derrota, Empate — null se não realizada
   observacoes   String?
+  media         Media[]
   createdAt     DateTime   @default(now())
 }
 
@@ -257,4 +259,16 @@ model ChatSession {
   expiresAt     DateTime
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+}
+
+model Media {
+  id           Int         @id @default(autoincrement())
+  tipo         String      // "video" | "fotos"
+  titulo       String
+  url          String
+  partidaId    Int?
+  partida      Partida?    @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  campeonatoId Int?
+  campeonato   Campeonato? @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
 }
