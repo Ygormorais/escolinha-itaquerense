@@ -17,6 +17,10 @@ import { Input } from "@/components/ui/input"
 
 import { toast } from "sonner"
 import { criarCampeonato, deletarCampeonato } from "@/app/actions/campeonatos"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -51,6 +55,7 @@ export function CampeonatoClient({
 }) {
   const router = useRouter()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [form, setForm] = useState({
     nome: "",
     descricao: "",
@@ -98,14 +103,32 @@ export function CampeonatoClient({
     router.refresh()
   }
 
-  async function handleDelete(id: number, nome: string) {
-    if (!confirm(`Deletar "${nome}"? Todas as inscrições serão removidas.`)) return
+  async function executeDelete() {
+    if (confirmDeleteId === null) return
+    const id = confirmDeleteId
+    setConfirmDeleteId(null)
     await deletarCampeonato(id)
     toast.success("Campeonato deletado")
     router.refresh()
   }
 
   return (
+    <>
+    <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
@@ -261,5 +284,6 @@ export function CampeonatoClient({
         })}
       </div>
     </div>
+    </>
   )
 }
