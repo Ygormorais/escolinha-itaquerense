@@ -414,7 +414,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
