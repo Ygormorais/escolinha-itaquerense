@@ -375,7 +375,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           className="max-w-xs"
         />
         <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-          <SelectTrigger>
+          <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -386,7 +386,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           </SelectContent>
         </Select>
         <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-          <SelectTrigger>
+          <SelectTrigger className="w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
