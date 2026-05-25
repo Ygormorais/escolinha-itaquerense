@@ -30,6 +30,10 @@ model Aluno {
   responsavelId  Int?
   responsavelRef Responsavel?  @relation(fields: [responsavelId], references: [id])
   createdAt      DateTime     @default(now())
+
+  @@index([status])
+  @@index([turma])
+  @@index([status, turma])
 }
 
 model Pagamento {
@@ -44,6 +48,11 @@ model Pagamento {
   observacoes    String?
   transacoes     TransacaoMaquina[]
   createdAt      DateTime          @default(now())
+
+  @@index([alunoId])
+  @@index([mesReferencia])
+  @@index([dataPagamento])
+  @@index([alunoId, mesReferencia])
 }
 
 model Custo {
@@ -57,6 +66,8 @@ model Custo {
   comprovante    Boolean  @default(false)
   observacoes    String?
   createdAt      DateTime @default(now())
+
+  @@index([data])
 }
 
 model CustoRecorrente {
@@ -78,6 +89,8 @@ model Frequencia {
   presenca  String
 
   @@unique([alunoId, data])
+  @@index([data])
+  @@index([alunoId])
 }
 
 model Uniforme {
