@@ -111,6 +111,7 @@ export function MidiaClient({
   campeonatos: Campeonato[]
 }) {
   const [open, setOpen] = useState(false)
+  const [isPending, setIsPending] = useState(false)
   const [form, setForm] = useState({
     tipo: "video" as "video" | "fotos",
     titulo: "",
@@ -122,17 +123,22 @@ export function MidiaClient({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const result = await adicionarMidia({
-      tipo: form.tipo,
-      titulo: form.titulo,
-      url: form.url,
-      partidaId: form.vinculo === "partida" && form.partidaId ? Number(form.partidaId) : undefined,
-      campeonatoId: form.vinculo === "campeonato" && form.campeonatoId ? Number(form.campeonatoId) : undefined,
-    })
-    if (result && "error" in result) { toast.error(result.error); return }
-    toast.success("Mídia adicionada!")
-    setOpen(false)
-    setForm({ tipo: "video", titulo: "", url: "", vinculo: "", partidaId: "", campeonatoId: "" })
+    setIsPending(true)
+    try {
+      const result = await adicionarMidia({
+        tipo: form.tipo,
+        titulo: form.titulo,
+        url: form.url,
+        partidaId: form.vinculo === "partida" && form.partidaId ? Number(form.partidaId) : undefined,
+        campeonatoId: form.vinculo === "campeonato" && form.campeonatoId ? Number(form.campeonatoId) : undefined,
+      })
+      if (result && "error" in result) { toast.error(result.error); return }
+      toast.success("Mídia adicionada!")
+      setOpen(false)
+      setForm({ tipo: "video", titulo: "", url: "", vinculo: "", partidaId: "", campeonatoId: "" })
+    } finally {
+      setIsPending(false)
+    }
   }
 
   async function handleRemover(id: number) {
@@ -219,7 +225,7 @@ export function MidiaClient({
                   </Select>
                 </div>
               )}
-              <Button type="submit" className="w-full">Adicionar</Button>
+              <Button type="submit" className="w-full" disabled={isPending}>Adicionar</Button>
             </form>
           </DialogContent>
         </Dialog>

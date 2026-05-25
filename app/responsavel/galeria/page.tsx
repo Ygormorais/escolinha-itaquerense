@@ -21,12 +21,6 @@ export default async function GaleriaPage() {
     partidasComMidia: Map<number, { partida: NonNullable<(typeof midias)[0]["partida"]>; midias: typeof midias }>
   }>()
 
-  // Partidas avulsas: partidas with media but no campeonato
-  const partidasAvulsasMap = new Map<number, {
-    partida: NonNullable<(typeof midias)[0]["partida"]>
-    midias: typeof midias
-  }>()
-
   for (const m of midias) {
     if (m.campeonatoId && m.campeonato) {
       if (!campeonatoMap.has(m.campeonatoId)) {
@@ -38,32 +32,23 @@ export default async function GaleriaPage() {
       }
       campeonatoMap.get(m.campeonatoId)!.midiasCampeonato.push(m)
     } else if (m.partidaId && m.partida) {
-      if (m.partida.campeonatoId === null) {
-        // Partida avulsa — no campeonato
-        if (!partidasAvulsasMap.has(m.partidaId)) {
-          partidasAvulsasMap.set(m.partidaId, { partida: m.partida, midias: [] })
-        }
-        partidasAvulsasMap.get(m.partidaId)!.midias.push(m)
-      } else {
-        const campId = m.partida.campeonatoId
-        if (!campeonatoMap.has(campId)) {
-          campeonatoMap.set(campId, {
-            campeonato: m.partida.campeonato!,
-            midiasCampeonato: [],
-            partidasComMidia: new Map(),
-          })
-        }
-        const grupo = campeonatoMap.get(campId)!
-        if (!grupo.partidasComMidia.has(m.partidaId)) {
-          grupo.partidasComMidia.set(m.partidaId, { partida: m.partida, midias: [] })
-        }
-        grupo.partidasComMidia.get(m.partidaId)!.midias.push(m)
+      const campId = m.partida.campeonatoId
+      if (!campeonatoMap.has(campId)) {
+        campeonatoMap.set(campId, {
+          campeonato: m.partida.campeonato!,
+          midiasCampeonato: [],
+          partidasComMidia: new Map(),
+        })
       }
+      const grupo = campeonatoMap.get(campId)!
+      if (!grupo.partidasComMidia.has(m.partidaId)) {
+        grupo.partidasComMidia.set(m.partidaId, { partida: m.partida, midias: [] })
+      }
+      grupo.partidasComMidia.get(m.partidaId)!.midias.push(m)
     }
   }
 
   const grupos = Array.from(campeonatoMap.values())
-  const partidasAvulsas = Array.from(partidasAvulsasMap.values())
 
   const navLinks = [
     { href: "/responsavel", label: "Dashboard" },
@@ -90,7 +75,7 @@ export default async function GaleriaPage() {
       </nav>
       <h1 className="text-2xl font-bold">Galeria</h1>
 
-      {grupos.length === 0 && partidasAvulsas.length === 0 && (
+      {grupos.length === 0 && (
         <p className="text-muted-foreground">Nenhuma mídia disponível ainda.</p>
       )}
 
@@ -147,39 +132,6 @@ export default async function GaleriaPage() {
         </div>
       ))}
 
-      {partidasAvulsas.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">⚽ Partidas Avulsas</h2>
-          {partidasAvulsas.map(({ partida, midias: midiasPartida }) => {
-            const resultado = partida.golsPro != null && partida.golsContra != null
-              ? ` ${partida.golsPro}×${partida.golsContra}`
-              : ""
-            const data = new Date(partida.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
-            return (
-              <div key={partida.id} className="pl-4 space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">
-                  ⚽ {partida.adversario}{resultado} — {data}
-                </p>
-                <div className="flex flex-wrap gap-2 pl-4">
-                  {midiasPartida.map((m) => (
-                    <a
-                      key={m.id}
-                      href={m.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted transition-colors"
-                    >
-                      {m.tipo === "video" ? <Film className="size-3.5" /> : <ImageIcon className="size-3.5" />}
-                      {m.titulo}
-                      <ExternalLink className="size-3 text-muted-foreground" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
     </div>
   )
 }

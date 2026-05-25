@@ -26,6 +26,7 @@ export async function adicionarMidia(data: {
   try {
     await db.media.create({ data })
     revalidatePath("/configuracoes/midia")
+    revalidatePath("/responsavel/galeria")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao salvar mídia" }
@@ -37,6 +38,7 @@ export async function removerMidia(id: number) {
   try {
     await db.media.delete({ where: { id } })
     revalidatePath("/configuracoes/midia")
+    revalidatePath("/responsavel/galeria")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao remover mídia" }
