@@ -21,6 +21,10 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { TURMAS } from "@/lib/constants"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 type Evento = {
   id: number
@@ -46,6 +50,7 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvento, setEditingEvento] = useState<Evento | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const router = useRouter()
 
   const [form, setForm] = useState({
@@ -123,8 +128,10 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
     }
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm("Excluir este evento?")) return
+  async function executeDelete() {
+    if (confirmDeleteId === null) return
+    const id = confirmDeleteId
+    setConfirmDeleteId(null)
     try {
       await deletarEvento(id)
       toast.success("Evento excluído")
@@ -138,6 +145,22 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
   return (
+    <>
+    <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -247,7 +270,7 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)}>
                       <Pencil className="size-3" />
                     </Button>
-                    <Button variant="ghost" size="icon-sm" onClick={() => handleDelete(ev.id)}>
+                    <Button variant="ghost" size="icon-sm" onClick={() => setConfirmDeleteId(ev.id)}>
                       <Trash2 className="size-3 text-danger-600" />
                     </Button>
                   </div>
@@ -347,7 +370,7 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
           </div>
           <DialogFooter showCloseButton>
             {editingEvento && (
-              <Button variant="destructive" onClick={() => handleDelete(editingEvento.id)} className="gap-2">
+              <Button variant="destructive" onClick={() => setConfirmDeleteId(editingEvento.id)} className="gap-2">
                 <Trash2 className="size-4" /> Excluir
               </Button>
             )}
@@ -358,5 +381,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
         </DialogContent>
       </Dialog>
     </div>
+    </>
   )
 }
