@@ -154,8 +154,8 @@
   }
   body {
     font-family: var(--font-body);
-    background-color: #FAFAF8;
-    color: #1A1A1A;
+    background-color: var(--background);
+    color: var(--foreground);
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
