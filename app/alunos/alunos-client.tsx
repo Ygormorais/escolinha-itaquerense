@@ -396,12 +396,12 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           </SelectContent>
         </Select>
         <div className="ml-auto flex gap-2">
-          <a href="/alunos/importar">
+          <Link href="/alunos/importar">
             <Button variant="outline">
               <Upload className="size-4" />
               Importar CSV
             </Button>
-          </a>
+          </Link>
           <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0}>
             <Download className="size-4" />
             Exportar CSV
