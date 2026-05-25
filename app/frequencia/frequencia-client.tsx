@@ -72,8 +72,9 @@ export function FrequenciaClient() {
   }
 
   function handleImprimir() {
+    const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     const dataFormatada = new Date(data + "T12:00:00").toLocaleDateString("pt-BR")
-    const linhas = alunos.map((a) => `<tr><td>${a.nome}</td><td style="width:80px"></td><td style="width:80px"></td><td style="width:80px"></td></tr>`).join("")
+    const linhas = alunos.map((a) => `<tr><td>${esc(a.nome)}</td><td style="width:80px"></td><td style="width:80px"></td><td style="width:80px"></td></tr>`).join("")
     const html = `<html><head><style>
       body{font-family:sans-serif;padding:24px}
       h2{margin-bottom:4px}p{margin:0 0 16px;color:#666}
@@ -169,7 +170,7 @@ export function FrequenciaClient() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-white">
+          <div className="rounded-xl border bg-card">
             <Table>
               <TableHeader>
                 <TableRow>
