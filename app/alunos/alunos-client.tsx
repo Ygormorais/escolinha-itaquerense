@@ -288,7 +288,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
     if (filters.turma !== "Todas") params.set("turma", filters.turma)
     if (filters.status !== "Todos") params.set("status", filters.status)
     router.push(`/alunos?${params.toString()}`)
-  }, [debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, filters.turma, filters.status, router])
 
   function pushFilter(key: string, value: string, defaultVal: string) {
     const params = new URLSearchParams()
