@@ -8,13 +8,23 @@ import { format } from "date-fns"
 import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Pagination } from "@/components/ui/pagination"
-import { TURMAS } from "@/lib/constants"
+import { TURMAS, HORARIOS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
@@ -58,7 +68,6 @@ type FormValues = {
   observacoes: string
 }
 
-const HORARIOS = ["Seg/Qua 08h", "Seg/Qua 10h", "Seg/Qua 14h", "Ter/Qui 08h", "Ter/Qui 10h", "Ter/Qui 14h"]
 
 export function AlunoFormDialog({
   aluno,
@@ -269,6 +278,7 @@ type AlunosClientProps = {
 export function AlunosClient({ alunos, total, page, totalPages, filters, frequenciaBaixa = [] }: AlunosClientProps) {
   const baixaSet = new Set(frequenciaBaixa)
   const [search, setSearch] = useState(filters.q)
+  const [confirmAction, setConfirmAction] = useState<{ type: "inativar" | "reativar"; id: number } | null>(null)
   const debouncedSearch = useDebounce(search, 350)
   const router = useRouter()
 
@@ -308,19 +318,16 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
     URL.revokeObjectURL(url)
   }
 
-  async function handleInativar(id: number) {
-    if (!confirm("Inativar este aluno?")) return
-    const result = await inativarAluno(id)
-    if ("error" in result) { toast.error(result.error); return }
-    toast.success("Aluno inativado")
-    router.refresh()
-  }
-
-  async function handleReativar(id: number) {
-    if (!confirm("Reativar este aluno?")) return
-    const result = await reativarAluno(id)
-    if ("error" in result) { toast.error(result.error); return }
-    toast.success("Aluno reativado")
+  async function executeAction() {
+    if (!confirmAction) return
+    const { type, id } = confirmAction
+    setConfirmAction(null)
+    const result = type === "inativar" ? await inativarAluno(id) : await reativarAluno(id)
+    if ("error" in result) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(type === "inativar" ? "Aluno inativado" : "Aluno reativado")
     router.refresh()
   }
 
@@ -334,7 +341,32 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction?.type === "inativar" ? "Inativar aluno?" : "Reativar aluno?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction?.type === "inativar"
+                ? "O aluno será marcado como inativo e não aparecerá nas listas principais."
+                : "O aluno voltará a aparecer como ativo no sistema."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={executeAction}
+              className={confirmAction?.type === "inativar" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            >
+              {confirmAction?.type === "inativar" ? "Inativar" : "Reativar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         <Input
           placeholder="Buscar por nome..."
@@ -446,7 +478,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                         variant="ghost"
                         size="icon-sm"
                         title="Inativar aluno"
-                        onClick={() => handleInativar(aluno.id)}
+                        onClick={() => setConfirmAction({ type: "inativar", id: aluno.id })}
                       >
                         <UserXIcon className="size-3.5" />
                       </Button>
@@ -455,7 +487,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                         variant="ghost"
                         size="icon-sm"
                         title="Reativar aluno"
-                        onClick={() => handleReativar(aluno.id)}
+                        onClick={() => setConfirmAction({ type: "reativar", id: aluno.id })}
                       >
                         <UserCheckIcon className="size-3.5 text-success-600" />
                       </Button>
@@ -468,6 +500,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         </Table>
       </div>
     </div>
+    </>
   )
 }
 
