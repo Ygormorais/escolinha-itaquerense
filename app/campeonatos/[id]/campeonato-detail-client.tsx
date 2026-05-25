@@ -23,6 +23,10 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   editarCampeonato, deletarCampeonato,
   inscreverAluno, removerInscricao, registrarPagamentoInscricao,
   calcularTaxaTotal, criarPartida, editarPartida, deletarPartida,
@@ -31,6 +35,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { PartidasSection } from "./partidas-section"
+import { FORMAS_PAGAMENTO } from "@/lib/constants"
 
 type AlunoInfo = { id: number; nome: string; turma: string; responsavel: string; telefone: string }
 
@@ -83,8 +88,6 @@ type PartidaItem = {
 
 const STATUS_OPCOES = ["aberto", "andamento", "encerrado"]
 
-const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
-
 export function CampeonatoDetailClient({
   campeonato,
   alunosDisponiveis,
@@ -96,6 +99,8 @@ export function CampeonatoDetailClient({
   const [editOpen, setEditOpen] = useState(false)
   const [inscreverOpen, setInscreverOpen] = useState(false)
   const [pagamentoOpen, setPagamentoOpen] = useState<Inscricao | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  const [confirmRemoverId, setConfirmRemoverId] = useState<{ id: number; nome: string } | null>(null)
 
   const [form, setForm] = useState({
     nome: campeonato.nome,
@@ -164,8 +169,9 @@ export function CampeonatoDetailClient({
     router.refresh()
   }
 
-  async function handleDelete() {
-    if (!confirm(`Deletar "${campeonato.nome}" permanentemente?`)) return
+  async function executeDelete() {
+    if (confirmDeleteId === null) return
+    setConfirmDeleteId(null)
     await deletarCampeonato(campeonato.id)
     toast.success("Campeonato deletado")
     router.push("/campeonatos")
@@ -187,9 +193,11 @@ export function CampeonatoDetailClient({
     router.refresh()
   }
 
-  async function handleRemover(inscricaoId: number, alunoNome: string) {
-    if (!confirm(`Remover ${alunoNome} do campeonato?`)) return
-    await removerInscricao(inscricaoId, campeonato.id)
+  async function executeRemover() {
+    if (!confirmRemoverId) return
+    const { id } = confirmRemoverId
+    setConfirmRemoverId(null)
+    await removerInscricao(id, campeonato.id)
     toast.success("Inscrição removida")
     router.refresh()
   }
@@ -227,6 +235,36 @@ export function CampeonatoDetailClient({
 
   return (
     <>
+      <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmRemoverId !== null} onOpenChange={(open) => { if (!open) setConfirmRemoverId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar remoção?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={executeRemover} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center gap-3">
         <Link
           href="/campeonatos"
@@ -322,7 +360,7 @@ export function CampeonatoDetailClient({
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
+          <Button variant="destructive" size="sm" onClick={() => setConfirmDeleteId(campeonato.id)}>
             <Trash2 className="size-4" />
           </Button>
         </div>
@@ -549,7 +587,7 @@ export function CampeonatoDetailClient({
                         <Button
                           size="icon-sm"
                           variant="ghost"
-                          onClick={() => handleRemover(insc.id, insc.aluno.nome)}
+                          onClick={() => setConfirmRemoverId({ id: insc.id, nome: insc.aluno.nome })}
                         >
                           <XCircle className="size-4 text-danger-600" />
                         </Button>
