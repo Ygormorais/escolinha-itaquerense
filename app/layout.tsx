@@ -24,7 +24,7 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR" className="h-full antialiased" suppressHydrationWarning>
-      <body className={`flex h-full ${session.authenticated ? "bg-background" : "bg-background"}`}>
+      <body className="flex h-full bg-background">
         <Providers>
           {session.authenticated ? (
             <>
