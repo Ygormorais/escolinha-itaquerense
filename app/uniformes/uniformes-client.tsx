@@ -18,6 +18,10 @@ import {
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { adicionarUniforme, marcarEntregue, removerUniforme } from "@/app/actions/uniformes"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 
@@ -42,6 +46,7 @@ const ITENS_PADRAO = ["Camisa", "Short", "Meião", "Agasalho", "Chuteira"]
 
 export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   const router = useRouter()
+  const [confirmRemoverId, setConfirmRemoverId] = useState<{ id: number; alunoId: number } | null>(null)
   const [search, setSearch] = useState("")
   const [turmaFilter, setTurmaFilter] = useState("Todas")
   const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null)
@@ -86,8 +91,10 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
     }
   }
 
-  async function handleRemover(id: number, alunoId: number) {
-    if (!confirm("Remover item?")) return
+  async function executeRemover() {
+    if (!confirmRemoverId) return
+    const { id, alunoId } = confirmRemoverId
+    setConfirmRemoverId(null)
     const result = await removerUniforme(id, alunoId)
     if ("success" in result) {
       toast.success("Item removido")
@@ -98,6 +105,22 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   }
 
   return (
+    <>
+    <AlertDialog open={confirmRemoverId !== null} onOpenChange={(open) => { if (!open) setConfirmRemoverId(null) }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={executeRemover} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
@@ -234,7 +257,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                                       <CheckCircle className="size-4 text-success-600" />
                                     </Button>
                                   )}
-                                  <Button size="icon-sm" variant="ghost" onClick={() => handleRemover(u.id, aluno.id)}>
+                                  <Button size="icon-sm" variant="ghost" onClick={() => setConfirmRemoverId({ id: u.id, alunoId: aluno.id })}>
                                     <XCircle className="size-4 text-danger-600" />
                                   </Button>
                                 </div>
@@ -282,5 +305,6 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
         </Table>
       </div>
     </div>
+    </>
   )
 }
