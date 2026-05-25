@@ -19,5 +19,5 @@ export default async function MidiaPage() {
     orderBy: { dataInicio: "desc" },
   })
 
-  return <MidiaClient midias={midias as any} partidas={partidas} campeonatos={campeonatos} />
+  return <MidiaClient midias={midias} partidas={partidas} campeonatos={campeonatos} />
 }

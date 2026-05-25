@@ -38,8 +38,36 @@ type Midia = {
   url: string
   partidaId: number | null
   campeonatoId: number | null
-  partida: { adversario: string; data: Date; golsPro: number | null; golsContra: number | null } | null
-  campeonato: { nome: string } | null
+  createdAt: Date
+  partida: {
+    id: number
+    campeonatoId: number
+    rodada: number
+    data: Date
+    adversario: string
+    local: string
+    golsPro: number | null
+    golsContra: number | null
+    resultado: string | null
+    observacoes: string | null
+    createdAt: Date
+  } | null
+  campeonato: {
+    id: number
+    nome: string
+    descricao: string | null
+    dataInicio: Date
+    dataFim: Date | null
+    local: string | null
+    taxaInscricao: number
+    taxaJogo: number
+    taxaArbitragem: number
+    custoTransporte: number
+    custoUniforme: number
+    observacoes: string | null
+    status: string
+    createdAt: Date
+  } | null
 }
 
 type Partida = {
@@ -108,6 +136,7 @@ export function MidiaClient({
   }
 
   async function handleRemover(id: number) {
+    if (!confirm("Remover esta mídia?")) return
     const result = await removerMidia(id)
     if (result && "error" in result) { toast.error(result.error); return }
     toast.success("Mídia removida!")
@@ -118,7 +147,8 @@ export function MidiaClient({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Mídia</h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button size="sm"><Plus className="size-4 mr-1" /> Nova Mídia</Button>}>
+          <DialogTrigger render={<Button size="sm" />}>
+            <Plus className="size-4 mr-1" /> Nova Mídia
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
