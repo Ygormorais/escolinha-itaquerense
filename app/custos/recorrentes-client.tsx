@@ -9,6 +9,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
 import {
@@ -22,9 +26,7 @@ import {
 } from "@/app/actions/custos"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-
-const CATEGORIAS = ["Aluguel de campo", "Salário técnico", "Material esportivo", "Uniforme", "Outros"]
-const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
+import { CATEGORIAS, FORMAS_PAGAMENTO } from "@/lib/constants"
 
 type Recorrente = {
   id: number
@@ -164,20 +166,36 @@ function RecorrenteFormDialog({ recorrente, trigger }: { recorrente?: Recorrente
 export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }) {
   const [deleting, startDelete] = useTransition()
   const router = useRouter()
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
 
-  function handleDelete(id: number) {
-    if (!confirm("Excluir este modelo recorrente?")) return
-    startDelete(async () => {
-      const result = await deleteCustoRecorrente(id)
-      if ("error" in result) { toast.error(result.error); return }
-      toast.success("Modelo excluído")
-      router.refresh()
-    })
+  async function executeDelete() {
+    if (confirmDelete === null) return
+    const id = confirmDelete
+    setConfirmDelete(null)
+    const result = await deleteCustoRecorrente(id)
+    if ("error" in result) { toast.error(result.error); return }
+    toast.success("Removido com sucesso")
+    router.refresh()
   }
 
   const total = recorrentes.filter((r) => r.ativo).reduce((s, r) => s + r.valor, 0)
 
   return (
+    <>
+    <AlertDialog open={confirmDelete !== null} onOpenChange={(open) => { if (!open) setConfirmDelete(null) }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
@@ -198,7 +216,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
         />
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -247,7 +265,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
                       variant="ghost"
                       size="icon-sm"
                       disabled={deleting}
-                      onClick={() => handleDelete(r.id)}
+                      onClick={() => setConfirmDelete(r.id)}
                     >
                       <Trash2Icon className="size-3.5 text-danger-600" />
                     </Button>
@@ -259,5 +277,6 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
         </Table>
       </div>
     </div>
+    </>
   )
 }
