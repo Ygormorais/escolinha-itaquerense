@@ -11,6 +11,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
 import {
@@ -22,15 +26,7 @@ import {
 import { toast } from "sonner"
 import { createCusto, updateCusto, deleteCusto, gerarCustosRecorrentes } from "@/app/actions/custos"
 import { RefreshCw } from "lucide-react"
-
-const CATEGORIAS = [
-  "Aluguel de campo",
-  "Salário técnico",
-  "Material esportivo",
-  "Uniforme",
-  "Outros",
-]
-const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
+import { CATEGORIAS, FORMAS_PAGAMENTO } from "@/lib/constants"
 
 type Custo = {
   id: number
@@ -258,16 +254,19 @@ export function CustosClient({
   const router = useRouter()
   const [gerando, startGerando] = useTransition()
   const [geradoMsg, setGeradoMsg] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
 
   function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
     router.push(`/custos?mes=${e.target.value}`)
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm("Excluir este custo? Esta ação não pode ser desfeita.")) return
+  async function executeDelete() {
+    if (confirmDelete === null) return
+    const id = confirmDelete
+    setConfirmDelete(null)
     const result = await deleteCusto(id)
     if ("error" in result) { toast.error(result.error); return }
-    toast.success("Custo excluído")
+    toast.success("Removido com sucesso")
     router.refresh()
   }
 
@@ -292,6 +291,21 @@ export function CustosClient({
   }
 
   return (
+    <>
+    <AlertDialog open={confirmDelete !== null} onOpenChange={(open) => { if (!open) setConfirmDelete(null) }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4">
         <div>
@@ -335,7 +349,7 @@ export function CustosClient({
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -383,7 +397,7 @@ export function CustosClient({
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      onClick={() => handleDelete(c.id)}
+                      onClick={() => setConfirmDelete(c.id)}
                     >
                       <Trash2Icon className="size-3.5 text-danger-600" />
                     </Button>
@@ -395,5 +409,6 @@ export function CustosClient({
         </Table>
       </div>
     </div>
+    </>
   )
 }
