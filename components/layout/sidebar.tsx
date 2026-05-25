@@ -23,6 +23,7 @@ import {
   Trophy,
   UserCircle,
   MessageSquareWarning,
+  Film,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -87,8 +88,9 @@ export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number 
         { href: "/recibos",       label: "Recibos",       icon: FileText },
         { href: "/relatorio",     label: "Relatório",     icon: BarChart3 },
         { href: "/historico",     label: "Histórico",     icon: History },
+        { href: "/configuracoes/midia", label: "Mídia", icon: Film },
         { href: "/configuracoes", label: "Configurações", icon: Settings },
-        { href: "/configuracoes/escalacoes", label: "Escalações", icon: MessageSquareWarning, badge: pendingEscalacoes },
+        { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
       ],
     },
