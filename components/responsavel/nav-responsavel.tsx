@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
 
 const links = [
-  { href: "/responsavel", label: "Dashboard" },
+  { href: "/responsavel", label: "Portal" },
   { href: "/responsavel/galeria", label: "Mural" },
   { href: "/responsavel/jogos", label: "Jogos" },
   { href: "/responsavel/classificacao", label: "Classificação" },

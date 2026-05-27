@@ -120,6 +120,23 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
               </div>
             </div>
 
+            <div className="border-t pt-4 space-y-4">
+              <p className="text-sm font-semibold text-foreground">Google Calendar</p>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">ID do Google Calendar</label>
+                <Input
+                  name="googleCalendarId"
+                  value={form.googleCalendarId ?? ""}
+                  onChange={handleChange}
+                  placeholder="ex: escolinha.itaquerense@gmail.com"
+                />
+                <p className="text-xs text-muted-foreground">
+                  ID do calendário (geralmente o email) usado no embed da agenda no portal do responsável.
+                  Deixe vazio para desabilitar.
+                </p>
+              </div>
+            </div>
+
             <Button type="submit" disabled={saving} className="bg-brand-800 text-white hover:bg-brand-900">
               {saving ? "Salvando..." : "Salvar"}
             </Button>
