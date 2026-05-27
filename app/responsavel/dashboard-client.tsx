@@ -1,18 +1,16 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   User, CreditCard,
-  CalendarCheck, Shirt, MessageSquare, LogOut, Phone,
+  CalendarCheck, Shirt, MessageSquare, Phone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
 
 type Aluno = {
   id: number
@@ -34,7 +32,6 @@ export function ResponsavelDashboardClient({
   responsavel: { nome: string; alunos: Aluno[] }
   comunicados: Comunicado[]
 }) {
-  const router = useRouter()
   const [whatsappNumber, setWhatsappNumber] = useState("5511999999999")
   useEffect(() => {
     fetch("/api/config/public")
@@ -42,11 +39,6 @@ export function ResponsavelDashboardClient({
       .then((d) => { if (d.whatsapp) setWhatsappNumber(d.whatsapp) })
       .catch(() => {})
   }, [])
-
-  async function handleLogout() {
-    await fetch("/api/responsavel/logout", { method: "POST" })
-    router.push("/responsavel/login")
-  }
 
   function statusPagamento(aluno: Aluno): { label: string; variant: "default" | "secondary" | "outline" | "destructive" } {
     const mesAtual = format(new Date(), "yyyy-MM")
@@ -64,17 +56,9 @@ export function ResponsavelDashboardClient({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold font-heading">Olá, {responsavel.nome}</h1>
-          <p className="text-sm text-muted-foreground">Portal do Responsável</p>
-        </div>
-        <div className="flex items-center gap-1">
-          <NotificacaoBell />
-          <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
-            <LogOut className="size-4" />
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold font-heading">Olá, {responsavel.nome}</h1>
+        <p className="text-sm text-muted-foreground">Portal do Responsável</p>
       </div>
 
       {responsavel.alunos.length === 0 && (

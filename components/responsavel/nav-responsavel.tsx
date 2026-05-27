@@ -1,8 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
 
 const links = [
   { href: "/responsavel", label: "Dashboard" },
@@ -17,6 +20,13 @@ const links = [
 
 export function NavResponsavel() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    await fetch("/api/responsavel/logout", { method: "POST" })
+    router.push("/responsavel/login")
+  }
+
   return (
     <nav className="flex items-center gap-2 overflow-x-auto -m-6 mb-6 px-6 py-4 border-b bg-muted/40">
       {links.map((link) => (
@@ -33,6 +43,12 @@ export function NavResponsavel() {
           {link.label}
         </Link>
       ))}
+      <div className="ml-auto flex items-center gap-1 shrink-0">
+        <NotificacaoBell />
+        <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
+          <LogOut className="size-4" />
+        </Button>
+      </div>
     </nav>
   )
 }
