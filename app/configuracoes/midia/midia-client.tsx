@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { Film, Image as ImageIcon, Trash2, Plus } from "lucide-react"
+import { Film, Image as ImageIcon, Trash2, Plus, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { adicionarMidia, removerMidia } from "@/app/actions/midia"
+import { extractYoutubeId, getYoutubeThumbnail } from "@/lib/youtube"
+import { VideoModal } from "@/components/responsavel/video-modal"
 
 type Midia = {
   id: number
@@ -112,6 +114,7 @@ export function MidiaClient({
 }) {
   const [open, setOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
+  const [videoPlayer, setVideoPlayer] = useState<string | null>(null)
   const [form, setForm] = useState({
     tipo: "video" as "video" | "fotos",
     titulo: "",
@@ -234,9 +237,11 @@ export function MidiaClient({
       {midias.length === 0 ? (
         <p className="text-muted-foreground">Nenhuma mídia cadastrada.</p>
       ) : (
+        <>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[100px]">Prévia</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Título</TableHead>
               <TableHead>URL</TableHead>
@@ -245,33 +250,67 @@ export function MidiaClient({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {midias.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell>
-                  {m.tipo === "video"
-                    ? <Badge variant="secondary" className="gap-1"><Film className="size-3" />Vídeo</Badge>
-                    : <Badge variant="secondary" className="gap-1"><ImageIcon className="size-3" />Fotos</Badge>
-                  }
-                </TableCell>
-                <TableCell className="font-medium">{m.titulo}</TableCell>
-                <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
-                  <a href={m.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{m.url}</a>
-                </TableCell>
-                <TableCell className="text-sm">{formatVinculo(m)}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemover(m.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {midias.map((m) => {
+              const youtubeId = m.tipo === "video" ? extractYoutubeId(m.url) : null
+              return (
+                <TableRow key={m.id}>
+                  <TableCell>
+                    {youtubeId ? (
+                      <button
+                        onClick={() => setVideoPlayer(youtubeId)}
+                        className="group relative block size-16 shrink-0 overflow-hidden rounded-md bg-muted"
+                      >
+                        <img
+                          src={getYoutubeThumbnail(youtubeId)}
+                          alt=""
+                          className="size-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                          <Play className="size-6 text-white" />
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="flex size-16 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                        <ImageIcon className="size-6" />
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {m.tipo === "video"
+                      ? <Badge variant="secondary" className="gap-1"><Film className="size-3" />Vídeo</Badge>
+                      : <Badge variant="secondary" className="gap-1"><ImageIcon className="size-3" />Fotos</Badge>
+                    }
+                  </TableCell>
+                  <TableCell className="font-medium">{m.titulo}</TableCell>
+                  <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
+                    <a href={m.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{m.url}</a>
+                  </TableCell>
+                  <TableCell className="text-sm">{formatVinculo(m)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemover(m.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
+
+        {videoPlayer && (
+          <VideoModal
+            videoId={videoPlayer}
+            titulo=""
+            onClose={() => setVideoPlayer(null)}
+          />
+        )}
+        </>
       )}
     </div>
   )
