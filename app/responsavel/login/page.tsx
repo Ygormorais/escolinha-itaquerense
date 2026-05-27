@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
+import Link from "next/link"
 
 export default function ResponsavelLoginPage() {
   const router = useRouter()
@@ -60,6 +61,11 @@ export default function ResponsavelLoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               <LogIn className="size-4" /> {loading ? "Entrando..." : "Entrar"}
             </Button>
+            <div className="text-center">
+              <Link href="/responsavel/recuperar-senha" className="text-sm text-muted-foreground hover:text-brand-600 underline underline-offset-2">
+                Esqueceu a senha?
+              </Link>
+            </div>
           </form>
         </CardContent>
       </Card>

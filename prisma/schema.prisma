@@ -110,7 +110,18 @@ model Responsavel {
   ativo        Boolean       @default(true)
   alunos       Aluno[]
   chatSessions ChatSession[]
+  resetTokens  ResetToken[]
   createdAt    DateTime      @default(now())
+}
+
+model ResetToken {
+  id            Int         @id @default(autoincrement())
+  token         String      @unique
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id])
+  usado         Boolean     @default(false)
+  expiresAt     DateTime
+  createdAt     DateTime    @default(now())
 }
 
 model Evento {
