@@ -6,15 +6,22 @@ import { ptBR } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin } from "lucide-react"
+import { AgendarReuniao } from "@/components/responsavel/agendar-reuniao"
 
 export default async function ReunioesPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")
 
-  const reunioes = await db.evento.findMany({
-    where: { tipo: "Reunião" },
-    orderBy: { data: "desc" },
-  })
+  const [reunioes, responsavel] = await Promise.all([
+    db.evento.findMany({
+      where: { tipo: "Reunião" },
+      orderBy: { data: "desc" },
+    }),
+    db.responsavel.findUnique({
+      where: { id: session.responsavelId },
+      include: { alunos: { select: { id: true, nome: true } } },
+    }),
+  ])
 
   return (
     <>
@@ -59,6 +66,10 @@ export default async function ReunioesPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className="mt-8 max-w-md">
+        <AgendarReuniao alunos={responsavel?.alunos ?? []} />
       </div>
     </>
   )
