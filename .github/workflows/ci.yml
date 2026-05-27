@@ -24,7 +24,9 @@ jobs:
         env:
             PRISMA_CONFIG_PATH: prisma.config.ts
 
-      - run: npm run lint || echo "Lint not configured"
+      - run: npm run lint || echo "Lint warnings (non-blocking)"
+
+      - run: npm test
 
       - run: npm run build
         env:
