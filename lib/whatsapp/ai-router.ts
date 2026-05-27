@@ -6,6 +6,7 @@ import { TOOL_DEFINITIONS, executeTool } from "./tools"
 import { getWhatsAppProvider as getProvider } from "./provider"
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const MODEL = process.env.CLAUDE_MODEL ?? "claude-sonnet-4-20250514"
 
 const SYSTEM_PROMPT = `Você é o assistente virtual da Escolinha Itaquerense de Futebol.
 Responda sempre em português brasileiro, de forma clara e amigável.
@@ -51,7 +52,15 @@ async function identificarResponsavel(telefone: string, texto: string): Promise<
     }
 
     await identifySession(telefone, responsavel.id)
-    return `Olá, ${responsavel.nome.split(" ")[0]}! Identificação confirmada. Como posso te ajudar? Posso consultar mensalidades, frequência, horários e próximos eventos do seu filho(a).`
+    const primeiroNome = responsavel.nome.split(" ")[0]
+    const nomesFilhos = await db.aluno.findMany({
+      where: { responsavelId: responsavel.id, status: "Ativo" },
+      select: { nome: true },
+    })
+    const filhosTexto = nomesFilhos.length
+      ? ` do(s) seu(s) filho(s): ${nomesFilhos.map(a => a.nome).join(", ")}`
+      : ""
+    return `Olá, ${primeiroNome}! Identificação confirmada${filhosTexto}. Como posso te ajudar? Posso consultar mensalidades, frequência, horários e próximos eventos.`
   }
 
   return ""
@@ -114,7 +123,7 @@ export async function routeMessage(telefone: string, texto: string) {
   let response
   try {
     response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: MODEL,
       max_tokens: 1024,
       system: [
         {
@@ -128,9 +137,27 @@ export async function routeMessage(telefone: string, texto: string) {
     })
   } catch (err) {
     console.error("[AI Router] Claude API error:", err)
-    const provider = getProvider()
-    await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
-    return
+    // Retry once on transient error
+    try {
+      response = await anthropic.messages.create({
+        model: MODEL,
+        max_tokens: 1024,
+        system: [
+          {
+            type: "text",
+            text: SYSTEM_PROMPT + contexto,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        tools: TOOL_DEFINITIONS,
+        messages,
+      })
+    } catch (retryErr) {
+      console.error("[AI Router] Retry also failed:", retryErr)
+      const provider = getProvider()
+      await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
+      return
+    }
   }
 
   let iterations = 0
@@ -190,7 +217,7 @@ export async function routeMessage(telefone: string, texto: string) {
 
     try {
       response = await anthropic.messages.create({
-        model: "claude-sonnet-4-6",
+        model: MODEL,
         max_tokens: 1024,
         system: [
           {
@@ -204,9 +231,27 @@ export async function routeMessage(telefone: string, texto: string) {
       })
     } catch (err) {
       console.error("[AI Router] Claude API error (loop):", err)
-      const provider = getProvider()
-      await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
-      break
+      // Retry once
+      try {
+        response = await anthropic.messages.create({
+          model: MODEL,
+          max_tokens: 1024,
+          system: [
+            {
+              type: "text",
+              text: SYSTEM_PROMPT + contexto,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          tools: TOOL_DEFINITIONS,
+          messages,
+        })
+      } catch (retryErr) {
+        console.error("[AI Router] Loop retry also failed:", retryErr)
+        const provider = getProvider()
+        await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
+        break
+      }
     }
   }
 

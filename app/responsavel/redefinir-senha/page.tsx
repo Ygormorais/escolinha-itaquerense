@@ -12,7 +12,6 @@ import { toast } from "sonner"
 
 export default function RedefinirSenhaPage() {
   const searchParams = useSearchParams()
-  const searchParams = useSearchParams()
   const token = searchParams.get("token")
 
   const [senha, setSenha] = useState("")

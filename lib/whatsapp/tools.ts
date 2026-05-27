@@ -64,6 +64,25 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
       required: ["motivo"],
     },
   },
+  {
+    name: "buscar_uniformes",
+    description: "Busca os uniformes e taxas associadas ao aluno.",
+    input_schema: {
+      type: "object",
+      properties: {
+        alunoId: { type: "number", description: "ID do aluno" },
+      },
+      required: ["alunoId"],
+    },
+  },
+  {
+    name: "encerrar_atendimento",
+    description: "Finaliza o atendimento educadamente quando o responsável indicar que não precisa mais de ajuda.",
+    input_schema: {
+      type: "object",
+      properties: {},
+    },
+  },
 ]
 
 type ToolInput = Record<string, unknown>
@@ -150,6 +169,23 @@ export async function executeTool(name: string, input: ToolInput): Promise<strin
       // This branch should never be reached in practice.
       case "escalonar_humano":
         return ""
+
+      case "buscar_uniformes": {
+        const alunoId = input.alunoId as number
+        const uniformes = await db.uniforme.findMany({
+          where: { alunoId },
+        })
+        if (!uniformes.length) return "Nenhum uniforme cadastrado para este aluno."
+        return uniformes
+          .map((u) => {
+            const status = u.entregue ? "✅ Entregue" : "⏳ Pendente"
+            return `• ${u.item}${u.tamanho ? ` (Tam. ${u.tamanho})` : ""} — ${status}`
+          })
+          .join("\n")
+      }
+
+      case "encerrar_atendimento":
+        return "Foi um prazer ajudar! Se precisar de algo é só chamar. Tenha um ótimo dia! 😊"
 
       default:
         return "Tool desconhecida."
