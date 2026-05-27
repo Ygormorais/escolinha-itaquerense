@@ -98,11 +98,6 @@ export function LoginForm({ next }: { next?: string }) {
           )}
         </Button>
       </form>
-
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        Credenciais definidas em{" "}
-        <code className="rounded bg-muted px-1 font-mono">.env.local</code>
-      </p>
     </div>
   )
 }
