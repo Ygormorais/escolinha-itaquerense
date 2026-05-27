@@ -13,6 +13,8 @@ const links = [
   { href: "/responsavel/jogos", label: "Jogos" },
   { href: "/responsavel/classificacao", label: "Classificação" },
   { href: "/responsavel/desempenho", label: "Desempenho" },
+  { href: "/responsavel/boletim", label: "Boletim" },
+  { href: "/responsavel/carteirinha", label: "Carteirinha" },
   { href: "/responsavel/reunioes", label: "Reuniões" },
   { href: "/responsavel/historia", label: "História" },
   { href: "/responsavel/lojinha", label: "Lojinha" },

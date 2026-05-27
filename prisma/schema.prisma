@@ -29,6 +29,7 @@ model Aluno {
   inscricoes     InscricaoCampeonato[]
   responsavelId  Int?
   responsavelRef Responsavel?  @relation(fields: [responsavelId], references: [id])
+  avaliacoes     Avaliacao[]
   createdAt      DateTime     @default(now())
 }
 
@@ -134,6 +135,7 @@ model Evento {
   local      String?
   turmas     String?  // "Todas" ou turmas separadas por vírgula
   descricao  String?
+  status     String   @default("pendente") // pendente, confirmado, cancelado, realizado
   createdAt  DateTime @default(now())
 }
 
@@ -282,4 +284,31 @@ model Media {
   campeonatoId Int?
   campeonato   Campeonato? @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   createdAt    DateTime    @default(now())
+}
+
+model Produto {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  descricao  String?
+  preco      Float    @default(0)
+  categoria  String   @default("uniforme") // uniforme, acessorio, outro
+  tamanhos   String?  // "P,M,G,GG" ou "Único"
+  ativo      Boolean  @default(true)
+  imagem     String?  // URL da imagem
+  createdAt  DateTime @default(now())
+}
+
+model Avaliacao {
+  id                Int      @id @default(autoincrement())
+  alunoId           Int
+  aluno             Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  periodo           String   // "2026-1S", "2026-2S" (semestre)
+  notaTecnica       Float?   // 0-10
+  notaFisica        Float?   // 0-10
+  notaComportamento Float?   // 0-10
+  frequencia        Float?   // % presença no período
+  observacoes       String?
+  createdAt         DateTime @default(now())
+
+  @@unique([alunoId, periodo])
 }

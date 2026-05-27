@@ -24,6 +24,8 @@ import {
   UserCircle,
   MessageSquareWarning,
   Film,
+  ShoppingBag,
+  Award,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -80,6 +82,9 @@ export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number 
         { href: "/comunicados",   label: "Comunicados",   icon: Send },
         { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
         { href: "/caixa",         label: "Caixa",         icon: Wallet },
+        { href: "/reunioes",      label: "Reuniões",      icon: ClipboardList },
+        { href: "/produtos",      label: "Produtos",      icon: ShoppingBag },
+        { href: "/avaliacoes",    label: "Avaliações",    icon: Award },
       ],
     },
     {
