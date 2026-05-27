@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation"
-import Link from "next/link"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
-import { cn } from "@/lib/utils"
 import { GaleriaMural } from "@/components/responsavel/galeria-mural"
 
 export default async function GaleriaPage() {
@@ -49,31 +47,10 @@ export default async function GaleriaPage() {
 
   const grupos = Array.from(campeonatoMap.values())
 
-  const navLinks = [
-    { href: "/responsavel", label: "Dashboard" },
-    { href: "/responsavel/galeria", label: "Galeria" },
-  ]
-
   return (
-    <div className="p-8 space-y-8">
-      <nav className="flex items-center gap-2 -m-8 mb-8 px-8 py-4 border-b bg-muted/40">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              link.href === "/responsavel/galeria"
-                ? "bg-brand-600 text-white"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-      <h1 className="text-2xl font-bold">Mural</h1>
+    <>
+      <h1 className="text-2xl font-bold mb-6">Mural</h1>
       <GaleriaMural grupos={grupos} />
-    </div>
+    </>
   )
 }

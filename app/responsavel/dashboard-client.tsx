@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { cn } from "@/lib/utils"
 import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
 
 type Aluno = {
@@ -36,18 +35,6 @@ export function ResponsavelDashboardClient({
   comunicados: Comunicado[]
 }) {
   const router = useRouter()
-  const pathname = usePathname()
-
-  async function handleLogout() {
-    await fetch("/api/responsavel/logout", { method: "POST" })
-    router.push("/responsavel/login")
-  }
-
-  const navLinks = [
-    { href: "/responsavel", label: "Dashboard" },
-    { href: "/responsavel/galeria", label: "Galeria" },
-  ]
-
   const [whatsappNumber, setWhatsappNumber] = useState("5511999999999")
   useEffect(() => {
     fetch("/api/config/public")
@@ -55,6 +42,11 @@ export function ResponsavelDashboardClient({
       .then((d) => { if (d.whatsapp) setWhatsappNumber(d.whatsapp) })
       .catch(() => {})
   }, [])
+
+  async function handleLogout() {
+    await fetch("/api/responsavel/logout", { method: "POST" })
+    router.push("/responsavel/login")
+  }
 
   function statusPagamento(aluno: Aluno): { label: string; variant: "default" | "secondary" | "outline" | "destructive" } {
     const mesAtual = format(new Date(), "yyyy-MM")
@@ -71,24 +63,7 @@ export function ResponsavelDashboardClient({
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <nav className="flex items-center gap-2 -m-6 mb-6 px-6 py-4 border-b bg-muted/40">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              pathname === link.href
-                ? "bg-brand-600 text-white"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold font-heading">Olá, {responsavel.nome}</h1>
@@ -161,7 +136,7 @@ export function ResponsavelDashboardClient({
                     {aluno.pagamentos.slice(0, 3).map((p, i) => (
                       <div key={i} className="flex items-center justify-between text-xs">
                         <span>{p.mesReferencia}</span>
-                        <span className={cn(p.dataPagamento ? "text-success-600" : "text-muted-foreground")}>
+                        <span className={p.dataPagamento ? "text-success-600" : "text-muted-foreground"}>
                           {p.dataPagamento ? `R$ ${p.valorRecebido?.toFixed(2)}` : "Pendente"}
                         </span>
                       </div>
