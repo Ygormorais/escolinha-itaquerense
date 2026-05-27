@@ -43,3 +43,7 @@ next-env.d.ts
 # database
 prisma/dev.db
 .prisma/
+
+# IDE backup files
+.superpowers/
+docs/superpowers/

@@ -8,7 +8,7 @@ import { requireAuth } from "@/lib/auth"
 export async function importarCSV(
   texto: string,
   nomeArquivo: string
-): Promise<{ importadas: number; ignoradas: number; formato: string; transacoes: any[] } | { error: string }> {
+): Promise<{ importadas: number; ignoradas: number; formato: string; transacoes: Array<{ dataTransacao: Date; valor: number; parcelas: number; bandeira: string; tipo: string; nomeNoCartao: string; parcela: string; autorizacao?: string; nsu?: string; custoTaxa?: number; valorLiquido?: number; previsao?: Date; linha: number }> } | { error: string }> {
   await requireAuth()
   try {
     const { cabecalho, linhas } = parseCSV(texto)

@@ -94,11 +94,10 @@ export function RelatorioChart({
   meses: MesData[]
   categorias: [string, number][]
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fmtCurrency = (v: any) =>
+  const fmtCurrency = (v: unknown) =>
     typeof v === "number"
       ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-      : v
+      : String(v)
 
   const pieData = categorias.map(([name, value]) => ({ name, value }))
 
