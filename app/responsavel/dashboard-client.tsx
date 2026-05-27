@@ -4,7 +4,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
-  User, CreditCard, TrendingUp, TrendingDown,
+  User, CreditCard,
   CalendarCheck, Shirt, MessageSquare, LogOut, Phone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
+import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
 
 type Aluno = {
   id: number
@@ -93,9 +94,12 @@ export function ResponsavelDashboardClient({
           <h1 className="text-2xl font-bold font-heading">Olá, {responsavel.nome}</h1>
           <p className="text-sm text-muted-foreground">Portal do Responsável</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
-          <LogOut className="size-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <NotificacaoBell />
+          <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
+            <LogOut className="size-4" />
+          </Button>
+        </div>
       </div>
 
       {responsavel.alunos.length === 0 && (
