@@ -21,6 +21,7 @@ type Aluno = { id: number; nome: string }
 export function AgendarReuniao({ alunos }: { alunos: Aluno[] }) {
   const [step, setStep] = useState<"form" | "success">("form")
   const [loading, setLoading] = useState(false)
+  const [googleEventLink, setGoogleEventLink] = useState<string | null>(null)
   const [form, setForm] = useState({
     alunoId: "",
     data: "",
@@ -65,6 +66,7 @@ export function AgendarReuniao({ alunos }: { alunos: Aluno[] }) {
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error); return }
+      setGoogleEventLink(data.googleEventLink ?? null)
       setStep("success")
       toast.success("Reunião solicitada com sucesso!")
     } finally {
@@ -85,12 +87,12 @@ export function AgendarReuniao({ alunos }: { alunos: Aluno[] }) {
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href={googleCalendarUrl}
+              href={googleEventLink || googleCalendarUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
             >
-              <Calendar className="size-4" /> Adicionar ao Google Agenda
+              <Calendar className="size-4" /> {googleEventLink ? "Ver no Google Agenda" : "Adicionar ao Google Agenda"}
               <ExternalLink className="size-3" />
             </a>
             <Button variant="outline" onClick={() => { setStep("form"); setForm({ alunoId: "", data: "", horaInicio: "", horaFim: "", motivo: "" }) }}>
