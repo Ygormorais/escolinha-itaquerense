@@ -47,3 +47,10 @@ prisma/dev.db
 # IDE backup files
 .superpowers/
 docs/superpowers/
+
+# dev logs
+.next-dev-*.log
+
+# design artifacts
+AUDIT.md
+DESIGN_SYSTEM.md
