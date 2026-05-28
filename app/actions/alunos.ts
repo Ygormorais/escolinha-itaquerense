@@ -120,6 +120,7 @@ export async function updateAluno(
       },
     })
 
+    await registrarLog("aluno_editado", `Aluno atualizado — ${data.nome}`, { turma: data.turma })
     revalidatePath("/alunos")
     revalidatePath("/")
     return { success: true }
