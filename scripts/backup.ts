@@ -1,13 +1,14 @@
+import { execSync } from "child_process"
 import fs from "fs"
 import path from "path"
 
-const DB_PATH = path.join(process.cwd(), "prisma", "dev.db")
 const BACKUP_DIR = path.join(process.cwd(), "backups")
 const MAX_BACKUPS = 30
 
 function main() {
-  if (!fs.existsSync(DB_PATH)) {
-    console.error("❌ Banco de dados não encontrado:", DB_PATH)
+  const dbUrl = process.env.DATABASE_URL
+  if (!dbUrl) {
+    console.error("❌ DATABASE_URL não configurada")
     process.exit(1)
   }
 
@@ -17,10 +18,20 @@ function main() {
 
   const now = new Date()
   const timestamp = now.toISOString().replace(/[:.]/g, "-").slice(0, 19)
-  const backupName = `dev-${timestamp}.db`
+  const backupName = `prod-${timestamp}.sql`
   const backupPath = path.join(BACKUP_DIR, backupName)
 
-  fs.copyFileSync(DB_PATH, backupPath)
+  try {
+    execSync(`pg_dump "${dbUrl}" -F p -f "${backupPath}" --no-owner --no-acl`, {
+      stdio: "pipe",
+    })
+  } catch (e) {
+    console.error("❌ Erro ao executar pg_dump. Instale o PostgreSQL client.")
+    console.error("   Ubuntu: sudo apt install postgresql-client")
+    console.error("   macOS: brew install postgresql")
+    console.error("   Windows: https://www.postgresql.org/download/windows/")
+    process.exit(1)
+  }
 
   const stats = fs.statSync(backupPath)
   const sizeKB = (stats.size / 1024).toFixed(1)
@@ -29,7 +40,7 @@ function main() {
 
   // Rotacionar: manter apenas MAX_BACKUPS
   const backups = fs.readdirSync(BACKUP_DIR)
-    .filter((f) => f.startsWith("dev-") && f.endsWith(".db"))
+    .filter((f) => f.startsWith("prod-") && f.endsWith(".sql"))
     .sort()
     .reverse()
 
