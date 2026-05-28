@@ -204,7 +204,7 @@ export async function editarPartida(id: number, data: {
   golsPro?: number | null
   golsContra?: number | null
   observacoes?: string
-}) {
+}, campeonatoId?: number) {
   await requireAuth()
   let resultado: string | null = null
   if (data.golsPro != null && data.golsContra != null) {
@@ -223,6 +223,9 @@ export async function editarPartida(id: number, data: {
       observacoes: data.observacoes || null,
     },
   })
+  if (campeonatoId) {
+    revalidatePath(`/campeonatos/${campeonatoId}`)
+  }
 }
 
 export async function deletarPartida(id: number, campeonatoId: number) {
