@@ -94,11 +94,12 @@ model Uniforme {
 }
 
 model Log {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   tipo      String
   descricao String
+  usuario   String?
   meta      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model Responsavel {

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { registrarLog } from "@/app/actions/log"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -30,6 +31,7 @@ export async function createCusto(data: {
         observacoes: data.observacoes ?? null,
       },
     })
+    await registrarLog("custo_novo", `Custo registrado — ${data.descricao}`, { categoria: data.categoria, valor: `R$ ${data.valor.toFixed(2)}` })
     revalidatePath("/custos")
     return { success: true }
   } catch (e) {

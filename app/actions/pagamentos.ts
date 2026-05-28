@@ -147,7 +147,9 @@ export async function gerarMensalidadesAno(
 export async function deletePagamento(id: number): Promise<ActionResult> {
   await requireAuth()
   try {
+    const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
     await db.pagamento.delete({ where: { id } })
+    await registrarLog("pagamento_excluido", `Pagamento excluído — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "" })
     revalidatePath("/pagamentos")
     revalidatePath("/inadimplencia")
     revalidatePath("/")
@@ -171,6 +173,9 @@ export async function marcarComoPago(
         valorRecebido: data.valorRecebido,
       },
     })
+
+    const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
+    await registrarLog("pagamento_pago", `Pagamento marcado como pago — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: `R$ ${data.valorRecebido.toFixed(2)}` })
     revalidatePath("/inadimplencia")
     revalidatePath("/pagamentos")
     revalidatePath("/")
