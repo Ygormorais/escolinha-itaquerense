@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Trophy, Plus, Pencil, Trash2, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
+import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -16,25 +16,22 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 
 import { toast } from "sonner"
-import { criarCampeonato, deletarCampeonato } from "@/app/actions/campeonatos"
+import { criarCampeonato } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Campeonato = {
   id: number
   nome: string
   descricao: string | null
-  dataInicio: Date
-  dataFim: Date | null
+  dataInicio: RscDate
+  dataFim: RscDate | null
   local: string | null
   taxaInscricao: number
   status: string
-  createdAt: Date
+  createdAt: RscDate
   _count: { inscricoes: number }
 }
-
-type Aluno = { id: number; nome: string; turma: string }
 
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
   aberto: { label: "Aberto", variant: "secondary" },
@@ -44,10 +41,8 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondar
 
 export function CampeonatoClient({
   campeonatos,
-  alunos,
 }: {
   campeonatos: Campeonato[]
-  alunos: Aluno[]
 }) {
   const router = useRouter()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -98,13 +93,6 @@ export function CampeonatoClient({
     router.refresh()
   }
 
-  async function handleDelete(id: number, nome: string) {
-    if (!confirm(`Deletar "${nome}"? Todas as inscrições serão removidas.`)) return
-    await deletarCampeonato(id)
-    toast.success("Campeonato deletado")
-    router.refresh()
-  }
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
@@ -114,6 +102,7 @@ export function CampeonatoClient({
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold font-heading">{campeonatos.length}</p>
+            <p className="text-xs text-muted-foreground mt-1">{encerrados} encerrado(s)</p>
           </CardContent>
         </Card>
         <Card>

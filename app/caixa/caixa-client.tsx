@@ -7,12 +7,12 @@ import {
 } from "@/components/ui/table"
 import { format } from "date-fns"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Pagamento = {
   id: number
   mesReferencia: string
-  dataPagamento: Date
+  dataPagamento: RscDate | null
   formaPagamento: string | null
   valorRecebido: number | null
   aluno: { nome: string; turma: string }
@@ -20,7 +20,7 @@ type Pagamento = {
 
 type Custo = {
   id: number
-  data: Date
+  data: RscDate
   categoria: string
   descricao: string
   valor: number

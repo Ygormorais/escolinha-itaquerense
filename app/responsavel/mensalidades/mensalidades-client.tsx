@@ -8,11 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Pagamento = {
   mesReferencia: string
-  dataVencimento: string
-  dataPagamento: string | null
+  dataVencimento: RscDate
+  dataPagamento: RscDate | null
   valorRecebido: number | null
   formaPagamento: string | null
 }

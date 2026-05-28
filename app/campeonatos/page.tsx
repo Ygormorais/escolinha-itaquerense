@@ -10,16 +10,10 @@ export default async function CampeonatosPage() {
     orderBy: { dataInicio: "desc" },
   })
 
-  const alunos = await db.aluno.findMany({
-    where: { status: "Ativo" },
-    select: { id: true, nome: true, turma: true },
-    orderBy: { nome: "asc" },
-  })
-
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader title="Campeonatos" description="Gerenciamento de campeonatos, taxas e inscrições" />
-      <CampeonatoClient campeonatos={campeonatos as any} alunos={alunos as any} />
+      <CampeonatoClient campeonatos={campeonatos} />
     </div>
   )
 }

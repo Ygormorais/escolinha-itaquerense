@@ -33,5 +33,5 @@ export default async function ResponsavelPage() {
     take: 10,
   })
 
-  return <ResponsavelDashboardClient responsavel={responsavel as any} comunicados={comunicados as any} />
+  return <ResponsavelDashboardClient responsavel={responsavel} comunicados={comunicados} />
 }

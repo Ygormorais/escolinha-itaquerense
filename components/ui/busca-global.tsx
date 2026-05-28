@@ -1,49 +1,61 @@
-import { useState, useEffect, useTransition } from "react"
+import { useState, useEffect, useTransition, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Search, User, Loader2, Trophy, UserCircle } from "lucide-react"
 import { buscarGlobal } from "@/app/actions/busca"
+import { useDebounce } from "@/hooks/use-debounce"
 
 type ResultadoAluno = { id: number; nome: string; turma: string; status: string }
 type ResultadoResponsavel = { id: number; nome: string; email: string }
 type ResultadoCampeonato = { id: number; nome: string; status: string }
 
+const RESULTADO_VAZIO = {
+  alunos: [] as ResultadoAluno[],
+  responsaveis: [] as ResultadoResponsavel[],
+  campeonatos: [] as ResultadoCampeonato[],
+}
+
 export function BuscaGlobal() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const [resultados, setResultados] = useState<{
-    alunos: ResultadoAluno[]
-    responsaveis: ResultadoResponsavel[]
-    campeonatos: ResultadoCampeonato[]
-  }>({ alunos: [], responsaveis: [], campeonatos: [] })
+  const debouncedQuery = useDebounce(query, 300)
+  const [resultados, setResultados] = useState(RESULTADO_VAZIO)
   const [selecionado, setSelecionado] = useState(0)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
-  // Ctrl+K / Cmd+K
+  const fechar = useCallback(() => {
+    setOpen(false)
+    setQuery("")
+    setResultados(RESULTADO_VAZIO)
+    setSelecionado(0)
+  }, [])
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault()
         setOpen((v) => !v)
       }
-      if (e.key === "Escape") setOpen(false)
+      if (e.key === "Escape") fechar()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [])
+  }, [fechar])
 
   useEffect(() => {
-    if (!open) { setQuery(""); setResultados({ alunos: [], responsaveis: [], campeonatos: [] }); setSelecionado(0) }
-  }, [open])
-
-  useEffect(() => {
-    if (query.length < 2) { setResultados({ alunos: [], responsaveis: [], campeonatos: [] }); return }
+    if (!open || debouncedQuery.length < 2) return
+    let cancelled = false
     startTransition(async () => {
-      const r = await buscarGlobal(query)
-      setResultados(r)
-      setSelecionado(0)
+      const r = await buscarGlobal(debouncedQuery)
+      if (!cancelled) {
+        setResultados(r)
+        setSelecionado(0)
+      }
     })
-  }, [query])
+    return () => {
+      cancelled = true
+    }
+  }, [debouncedQuery, open])
 
   const flatList = [
     ...resultados.alunos.map((a) => ({ type: "aluno" as const, id: a.id, label: a.nome, sub: a.turma, status: a.status })),
@@ -52,8 +64,8 @@ export function BuscaGlobal() {
   ]
   const total = flatList.length
 
-  function navegar(item: typeof flatList[0]) {
-    setOpen(false)
+  function navegar(item: (typeof flatList)[0]) {
+    fechar()
     if (item.type === "aluno") router.push(`/alunos/${item.id}`)
     if (item.type === "responsavel") router.push(`/configuracoes/responsaveis`)
     if (item.type === "campeonato") router.push(`/campeonatos/${item.id}`)
@@ -63,6 +75,14 @@ export function BuscaGlobal() {
     if (e.key === "ArrowDown") { e.preventDefault(); setSelecionado((s) => Math.min(s + 1, total - 1)) }
     if (e.key === "ArrowUp") { e.preventDefault(); setSelecionado((s) => Math.max(s - 1, 0)) }
     if (e.key === "Enter" && flatList[selecionado]) navegar(flatList[selecionado])
+  }
+
+  function onQueryChange(value: string) {
+    setQuery(value)
+    if (value.length < 2) {
+      setResultados(RESULTADO_VAZIO)
+      setSelecionado(0)
+    }
   }
 
   return (
@@ -78,7 +98,7 @@ export function BuscaGlobal() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={fechar} />
           <div className="relative z-10 w-full max-w-md rounded-xl border bg-card shadow-2xl overflow-hidden">
             <div className="flex items-center gap-3 border-b px-4 py-3">
               {pending
@@ -88,7 +108,7 @@ export function BuscaGlobal() {
               <input
                 autoFocus
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => onQueryChange(e.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="Buscar pelo nome..."
                 className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
@@ -102,7 +122,7 @@ export function BuscaGlobal() {
                   Digite ao menos 2 caracteres para buscar
                 </p>
               )}
-              {query.length >= 2 && !pending && total === 0 && (
+              {query.length >= 2 && !pending && total === 0 && debouncedQuery.length >= 2 && (
                 <p className="px-4 py-6 text-center text-xs text-muted-foreground">
                   Nenhum resultado encontrado
                 </p>

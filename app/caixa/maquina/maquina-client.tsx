@@ -2,10 +2,10 @@
 
 import { useState, useTransition, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Upload, CheckCircle, XCircle, RefreshCw, Search, FileText, Download, AlertTriangle } from "lucide-react"
+import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -15,10 +15,11 @@ import { toast } from "sonner"
 import { importarCSV, reconciliarTransacao, reconciliarAuto, ignorarTransacao } from "@/app/actions/maquina"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { toDate, type RscDate } from "@/lib/rsc-date"
 
 type Transacao = {
   id: number
-  dataTransacao: Date
+  dataTransacao: RscDate
   valor: number
   parcelas: number
   bandeira: string
@@ -35,11 +36,6 @@ type Transacao = {
 }
 
 type Aluno = { id: number; nome: string; responsavel: string }
-
-const meses = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-]
 
 export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[]; alunos: Aluno[] }) {
   const router = useRouter()
@@ -72,7 +68,8 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
 
   function openReconcile(t: Transacao) {
     setSelectedTransacao(t)
-    const mes = `${t.dataTransacao.getFullYear()}-${String(t.dataTransacao.getMonth() + 1).padStart(2, "0")}`
+    const dt = toDate(t.dataTransacao)
+    const mes = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`
     setMesRef(mes)
     setAlunoId(t.aluno?.id ? String(t.aluno.id) : "")
     setObs(`Reconciliado - ${t.nomeNoCartao}`)

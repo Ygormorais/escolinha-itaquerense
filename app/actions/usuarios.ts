@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { getSessionSecret } from "@/lib/env"
 
 function hashSenha(senha: string): string {
   return bcrypt.hashSync(senha, 10)
@@ -59,7 +60,7 @@ export async function deletarUsuario(id: number) {
 
 async function legacyHashCompare(senha: string, hash: string): Promise<boolean> {
   const { createHmac, timingSafeEqual } = await import("crypto")
-  const secret = process.env.SESSION_SECRET ?? "dev-secret"
+  const secret = getSessionSecret()
   const computed = createHmac("sha256", secret).update(senha).digest("hex")
   try {
     const a = Buffer.from(computed)

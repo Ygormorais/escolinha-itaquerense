@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import Image from "next/image"
 import { Plus, ShoppingBag, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -256,9 +257,12 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                 <TableCell>
                   <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-[12px] border border-border bg-muted">
                     {p.imagem ? (
-                      <img
+                      <Image
                         src={p.imagem}
                         alt={p.nome}
+                        width={56}
+                        height={56}
+                        unoptimized
                         className="h-full w-full object-cover"
                       />
                     ) : (

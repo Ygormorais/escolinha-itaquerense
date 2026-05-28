@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Aluno = {
   id: number
@@ -17,12 +18,17 @@ type Aluno = {
   turma: string
   mensalidade: number
   desconto: number
-  pagamentos: { mesReferencia: string; dataPagamento: string | null; valorRecebido: number | null; formaPagamento: string | null }[]
-  frequencias: { data: string; presenca: string }[]
+  pagamentos: {
+    mesReferencia: string
+    dataPagamento: RscDate | null
+    valorRecebido: number | null
+    formaPagamento: string | null
+  }[]
+  frequencias: { data: RscDate; presenca: string }[]
   uniformes: { item: string; entregue: boolean }[]
 }
 
-type Comunicado = { mensagem: string; createdAt: string }
+type Comunicado = { mensagem: string; createdAt: RscDate }
 
 export function ResponsavelDashboardClient({
   responsavel,

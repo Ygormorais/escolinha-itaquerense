@@ -19,7 +19,9 @@ export async function POST(request: Request) {
 
   const responsavel = await db.responsavel.findUnique({ where: { email: email.toLowerCase() } })
   if (!responsavel) {
-    return NextResponse.json({ error: "Se o email existir, enviaremos um link de recuperação." })
+    return NextResponse.json({
+      message: "Se o email existir, enviaremos um link de recuperação.",
+    })
   }
 
   const token = crypto.randomBytes(32).toString("hex")

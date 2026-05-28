@@ -11,7 +11,7 @@ export async function importarCSV(
 ): Promise<{ importadas: number; ignoradas: number; formato: string; transacoes: Array<{ dataTransacao: Date; valor: number; parcelas: number; bandeira: string; tipo: string; nomeNoCartao: string; parcela: string; autorizacao?: string; nsu?: string; custoTaxa?: number; valorLiquido?: number; previsao?: Date; linha: number }> } | { error: string }> {
   await requireAuth()
   try {
-    const { cabecalho, linhas } = parseCSV(texto)
+    const { linhas } = parseCSV(texto)
     if (linhas.length === 0) return { error: "Nenhuma transação encontrada no CSV" }
 
     const formato = detectarFormato(linhas)

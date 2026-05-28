@@ -8,12 +8,13 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Evento = {
   id: number
   titulo: string
   tipo: string
-  data: Date
+  data: RscDate
   horaInicio: string | null
   horaFim: string | null
   local: string | null
@@ -24,7 +25,7 @@ type Evento = {
 type Aniversariante = {
   id: number
   nome: string
-  dataNascimento: Date
+  dataNascimento: RscDate
   turma: string
 }
 

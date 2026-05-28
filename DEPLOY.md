@@ -108,10 +108,9 @@ npx prisma migrate dev --name init_pg
 
 ## Checklist de Segurança (pré-deploy)
 
-- [ ] `SESSION_SECRET` gerado com `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-- [ ] `ADMIN_PASSWORD` forte (mude o padrão)
-- [ ] `CRON_SECRET` definido
-- [ ] `EVOLUTION_API_KEY` definida
+- [ ] `SESSION_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` definidos (o app recusa defaults em produção)
+- [ ] `CRON_SECRET` definido (cron retorna 401 sem Bearer válido em produção)
+- [ ] `EVOLUTION_API_KEY` definida (webhook WhatsApp retorna 401 em produção sem header `apikey`)
 - [ ] `.env` adicionado ao `.gitignore` (já está)
 - [ ] Backup automático do `prisma/dev.db` configurado
 

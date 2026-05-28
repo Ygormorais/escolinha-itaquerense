@@ -1,6 +1,5 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
-import { Wallet } from "lucide-react"
 import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
 
@@ -76,7 +75,7 @@ export default async function CaixaPage() {
         </div>
       </div>
 
-      <CaixaClient pagamentosMes={pagamentosMes as any} custosMes={custosMes as any} porForma={porForma} alunos={alunos as any} />
+      <CaixaClient pagamentosMes={pagamentosMes} custosMes={custosMes} porForma={porForma} alunos={alunos} />
     </div>
   )
 }

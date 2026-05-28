@@ -19,7 +19,7 @@ export default async function UniformesPage() {
         title="Uniformes"
         description="Controle de entrega de uniformes por aluno"
       />
-      <UniformesClient alunos={alunos as any} />
+      <UniformesClient alunos={alunos} />
     </div>
   )
 }

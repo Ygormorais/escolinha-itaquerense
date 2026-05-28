@@ -28,12 +28,6 @@ const COR: Record<string, string> = {
   Pendente: "#9ca3af",
 }
 
-const LABEL_COR: Record<string, string> = {
-  Pago: "#15803d",
-  Vencido: "#b91c1c",
-  Pendente: "#6b7280",
-}
-
 export function AdimplenciaChart({ pagamentos }: Props) {
   // últimos 12 meses ordenados
   const sorted = [...pagamentos]

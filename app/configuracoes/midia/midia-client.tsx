@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
+import Image from "next/image"
 import { Film, Image as ImageIcon, Trash2, Plus, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -260,11 +261,12 @@ export function MidiaClient({
                         onClick={() => setVideoPlayer(youtubeId)}
                         className="group relative block size-16 shrink-0 overflow-hidden rounded-md bg-muted"
                       >
-                        <img
+                        <Image
                           src={getYoutubeThumbnail(youtubeId)}
                           alt=""
-                          className="size-full object-cover"
-                          loading="lazy"
+                          fill
+                          className="object-cover"
+                          sizes="64px"
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                           <Play className="size-6 text-white" />

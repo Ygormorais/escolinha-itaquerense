@@ -29,9 +29,15 @@ export function NotificacaoBell() {
   }, [])
 
   useEffect(() => {
-    fetchNotificacoes()
-    const interval = setInterval(fetchNotificacoes, 30000)
-    return () => clearInterval(interval)
+    const run = () => {
+      void fetchNotificacoes()
+    }
+    const initial = setTimeout(run, 0)
+    const interval = setInterval(run, 30000)
+    return () => {
+      clearTimeout(initial)
+      clearInterval(interval)
+    }
   }, [fetchNotificacoes])
 
   return (

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getSessionSecret } from "@/lib/env"
 
 const COOKIE_NAME = "escolinha_session"
 
 async function verify(signed: string): Promise<boolean> {
-  const secret = process.env.SESSION_SECRET ?? "dev-secret"
+  const secret = getSessionSecret()
   const lastDot = signed.lastIndexOf(".")
   if (lastDot === -1) return false
 

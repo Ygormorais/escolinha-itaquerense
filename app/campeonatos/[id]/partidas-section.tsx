@@ -18,14 +18,15 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { criarPartida, editarPartida, deletarPartida } from "@/app/actions/campeonatos"
-import { calcularClassificacao, type ClassificacaoItem } from "@/lib/campeonatos"
+import { calcularClassificacao } from "@/lib/campeonatos"
 import { format } from "date-fns"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Partida = {
   id: number
   campeonatoId: number
   rodada: number
-  data: Date
+  data: RscDate
   adversario: string
   local: string
   golsPro: number | null

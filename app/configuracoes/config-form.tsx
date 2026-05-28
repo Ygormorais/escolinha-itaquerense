@@ -83,7 +83,7 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
                   placeholder="5511999999999"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Número usado no card "Fale Conosco" do portal do responsável
+                  Número usado no card &quot;Fale Conosco&quot; do portal do responsável
                 </p>
               </div>
             </div>

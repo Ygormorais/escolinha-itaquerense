@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, IdCard, Shirt } from "lucide-react"
 
@@ -130,9 +131,12 @@ export default async function CarteirinhaPage() {
                   {/* Photo */}
                   <div className="flex h-28 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
                     {aluno.foto ? (
-                      <img
+                      <Image
                         src={aluno.foto}
                         alt={aluno.nome}
+                        width={80}
+                        height={112}
+                        unoptimized
                         className="h-full w-full object-cover"
                       />
                     ) : (
