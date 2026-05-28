@@ -1,6 +1,5 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
-import { FileText } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format } from "date-fns"
 

@@ -1,11 +1,12 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
+import { checkCredentialsFromEnv, getSessionSecret } from "@/lib/env"
 
 const COOKIE_NAME = "escolinha_session"
 const MAX_AGE = 60 * 60 * 24 * 7 // 7 dias
 
 function sign(value: string): string {
-  const secret = process.env.SESSION_SECRET ?? "dev-secret"
+  const secret = getSessionSecret()
   const hmac = createHmac("sha256", secret).update(value).digest("hex")
   return `${value}.${hmac}`
 }
@@ -44,17 +45,5 @@ export function cookieName() { return COOKIE_NAME }
 export function cookieMaxAge() { return MAX_AGE }
 
 export function checkCredentials(username: string, password: string): boolean {
-  const expectedUser = process.env.ADMIN_USERNAME ?? "admin"
-  const expectedPass = process.env.ADMIN_PASSWORD ?? "escolinha123"
-  try {
-    const ua = Buffer.from(expectedUser)
-    const ub = Buffer.from(username)
-    const pa = Buffer.from(expectedPass)
-    const pb = Buffer.from(password)
-    const userMatch = ua.length === ub.length && timingSafeEqual(ua, ub)
-    const passMatch = pa.length === pb.length && timingSafeEqual(pa, pb)
-    return userMatch && passMatch
-  } catch {
-    return false
-  }
+  return checkCredentialsFromEnv(username, password)
 }

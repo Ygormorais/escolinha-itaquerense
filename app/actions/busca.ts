@@ -1,8 +1,10 @@
 "use server"
 
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 export async function buscarGlobal(query: string) {
+  await requireAuth()
   if (query.length < 2) return { alunos: [], responsaveis: [], campeonatos: [] }
 
   const [alunos, responsaveis, campeonatos] = await Promise.all([
@@ -30,6 +32,7 @@ export async function buscarGlobal(query: string) {
 }
 
 export async function buscarAlunos(query: string) {
+  await requireAuth()
   if (query.length < 2) return []
 
   const alunos = await db.aluno.findMany({

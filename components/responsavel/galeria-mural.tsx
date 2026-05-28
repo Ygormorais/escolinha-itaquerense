@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Film, ImageIcon, Play, ExternalLink } from "lucide-react"
+import Image from "next/image"
+import { ImageIcon, Play, ExternalLink } from "lucide-react"
 import { VideoModal } from "@/components/responsavel/video-modal"
 import { extractYoutubeId, getYoutubeThumbnail } from "@/lib/youtube"
 
@@ -120,11 +121,12 @@ function MidiaCard({
           className="block w-full text-left"
         >
           <div className="aspect-video relative overflow-hidden bg-muted">
-            <img
+            <Image
               src={getYoutubeThumbnail(youtubeId)}
               alt={midia.titulo}
-              className="size-full object-cover"
-              loading="lazy"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 33vw"
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
               <div className="flex size-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg">

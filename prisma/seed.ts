@@ -1,11 +1,5 @@
-import { PrismaClient } from "@prisma/client"
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
-import path from "path"
 import { alunosData, custosData } from "../lib/seed-data"
-
-const dbPath = path.join(process.cwd(), "prisma", "dev.db")
-const adapter = new PrismaBetterSqlite3({ url: dbPath })
-const db = new PrismaClient({ adapter } as any)
+import { db } from "../lib/db"
 
 async function main() {
   console.log("🌱 Iniciando seed...")
@@ -15,21 +9,17 @@ async function main() {
   await db.custo.deleteMany()
   await db.aluno.deleteMany()
 
-  // Insert alunos
   for (const aluno of alunosData) {
     await db.aluno.create({ data: aluno })
   }
   console.log(`✅ ${alunosData.length} alunos inseridos`)
 
-  // Insert custos
   await db.custo.createMany({ data: custosData })
   console.log(`✅ ${custosData.length} custos inseridos`)
 
-  // Fetch aluno IDs
   const alunos = await db.aluno.findMany({ orderBy: { id: "asc" } })
   const [lucas, gabriel, matheus, pedro, joao, felipe, arthur, bruno] = alunos
 
-  // Insert pagamentos
   const pagamentos = [
     { alunoId: lucas.id,   mesReferencia: "2025-01", dataVencimento: new Date("2025-01-10"), dataPagamento: new Date("2025-01-08"),  formaPagamento: "PIX",           valorRecebido: 150 },
     { alunoId: gabriel.id, mesReferencia: "2025-01", dataVencimento: new Date("2025-01-10"), dataPagamento: new Date("2025-01-15"),  formaPagamento: "Dinheiro",      valorRecebido: 180 },
@@ -47,7 +37,6 @@ async function main() {
   await db.pagamento.createMany({ data: pagamentos })
   console.log(`✅ ${pagamentos.length} pagamentos inseridos`)
 
-  // Insert frequencias
   const datas = ["2025-03-03","2025-03-05","2025-03-10","2025-03-12","2025-03-17","2025-03-19","2025-03-24","2025-03-26"]
   const presencas: [number, string[]][] = [
     [lucas.id,   ["Presente","Presente","Ausente","Presente","Presente","Presente","Justificado","Presente"]],

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { Users, Phone, MessageCircle, TrendingUp, Search, Filter } from "lucide-react"
+import { Phone, MessageCircle, TrendingUp, Search, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"

@@ -36,7 +36,7 @@ export default async function CampeonatoDetailPage({
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <CampeonatoDetailClient campeonato={campeonato as any} alunosDisponiveis={alunosDisponiveis as any} />
+      <CampeonatoDetailClient campeonato={campeonato} alunosDisponiveis={alunosDisponiveis} />
     </div>
   )
 }

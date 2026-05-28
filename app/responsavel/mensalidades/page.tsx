@@ -21,5 +21,5 @@ export default async function MensalidadesPage() {
 
   if (!responsavel) redirect("/responsavel/login")
 
-  return <MensalidadesClient responsavel={responsavel as any} />
+  return <MensalidadesClient responsavel={responsavel} />
 }

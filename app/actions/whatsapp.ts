@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { getConfig } from "@/lib/config"
-import { format } from "date-fns"
 import { requireAuth } from "@/lib/auth"
 
 type ActionResult = { success: true } | { error: string }

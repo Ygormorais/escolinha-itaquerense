@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Shirt, ShoppingBag, Package, Phone, ArrowLeft, Tags } from "lucide-react"
 import { db } from "@/lib/db"
+import Image from "next/image"
 import Link from "next/link"
 
 function ProdutoIcon({ categoria }: { categoria: string }) {
@@ -80,12 +81,15 @@ export default async function LojinhaPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {produtos.map((p) => (
             <Card key={p.id} className="overflow-hidden">
-              <div className="aspect-[4/3] overflow-hidden border-b border-black/5 bg-[var(--color-paper-100)]">
+              <div className="relative aspect-[4/3] overflow-hidden border-b border-black/5 bg-[var(--color-paper-100)]">
                 {p.imagem ? (
-                  <img
+                  <Image
                     src={p.imagem}
                     alt={p.nome}
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                    fill
+                    unoptimized
+                    className="object-cover transition-transform duration-300 hover:scale-[1.03]"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-brand-600">

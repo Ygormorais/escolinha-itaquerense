@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Swords, Filter, Search } from "lucide-react"
+import { Swords, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -18,13 +18,14 @@ import { PageHeader } from "@/components/layout/page-header"
 import { toast } from "sonner"
 import { editarPartida, deletarPartida } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Partida = {
   id: number
   campeonatoId: number
   campeonato: { id: number; nome: string }
   rodada: number
-  data: Date
+  data: RscDate
   adversario: string
   local: string
   golsPro: number | null
@@ -53,7 +54,6 @@ export function PartidasClient({ campeonatos, partidas }: { campeonatos: Campeon
     })
   }, [partidas, filtroCamp, filtroStatus, search])
 
-  const realizadas = filtradas.filter((p) => p.resultado != null)
   const pendentes = filtradas.filter((p) => p.resultado == null)
 
   function openEdit(p: Partida) {

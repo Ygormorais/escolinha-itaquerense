@@ -1,5 +1,4 @@
 import { PageHeader } from "@/components/layout/page-header"
-import { CreditCard } from "lucide-react"
 import { MaquinaClient } from "./maquina-client"
 import { getTransacoes, getResumoMaquina } from "@/app/actions/maquina"
 import { db } from "@/lib/db"
@@ -47,7 +46,7 @@ export default async function MaquinaPage() {
         </div>
       </div>
 
-      <MaquinaClient transacoes={transacoes as any} alunos={alunos as any} />
+      <MaquinaClient transacoes={transacoes} alunos={alunos} />
     </div>
   )
 }

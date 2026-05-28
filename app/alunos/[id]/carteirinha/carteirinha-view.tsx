@@ -155,9 +155,12 @@ function Carteirinha({
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {aluno.foto ? (
-            <img
+            <Image
               src={aluno.foto}
               alt="Foto"
+              width={72}
+              height={96}
+              unoptimized
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (

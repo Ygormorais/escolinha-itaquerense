@@ -24,5 +24,5 @@ export default async function TurmasPage() {
     orderBy: { nome: "asc" },
   })
 
-  return <TurmasClient alunos={alunos as any} turmas={TURMAS} capacidade={config.capacidadeTurma} />
+  return <TurmasClient alunos={alunos} turmas={TURMAS} capacidade={config.capacidadeTurma} />
 }

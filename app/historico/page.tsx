@@ -91,7 +91,7 @@ export default async function HistoricoPage({
                 </p>
                 <Card>
                   <CardContent className="divide-y p-0">
-                    {items.map((log, i) => {
+                    {items.map((log) => {
                       const cfg = TIPO_CONFIG[log.tipo] ?? {
                         icon: Clock,
                         cor: "text-muted-foreground bg-muted",

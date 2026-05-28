@@ -69,7 +69,7 @@ export function RelatorioHeader({ ano, meses }: { ano: number; meses: MesData[] 
   )
 }
 
-export function RelatorioPrintStyle({ ano, nomeClube }: { ano: number; nomeClube: string }) {
+export function RelatorioPrintStyle() {
   return (
     <style>{`
       @media print {

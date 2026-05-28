@@ -15,5 +15,5 @@ export default async function PartidasPage() {
     }),
   ])
 
-  return <PartidasClient campeonatos={campeonatos as any} partidas={partidas as any} />
+  return <PartidasClient campeonatos={campeonatos} partidas={partidas} />
 }

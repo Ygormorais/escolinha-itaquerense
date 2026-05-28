@@ -5,11 +5,6 @@ import { Camera, Loader2, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { db } from "@/lib/db"
-
-async function removerFoto(alunoId: number) {
-  await fetch(`/api/upload/foto?alunoId=${alunoId}`, { method: "DELETE" })
-}
 
 export function FotoUpload({
   alunoId,

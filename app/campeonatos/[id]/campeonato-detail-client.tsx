@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   Trophy, ArrowLeft, Pencil, Trash2, Plus, UserPlus,
-  CheckCircle, XCircle, CircleDollarSign, Percent,
-  CreditCard, Calendar, MapPin, Users, AlertTriangle, Swords,
+  CheckCircle, XCircle, CircleDollarSign,
+  CreditCard, Calendar, MapPin, Users, AlertTriangle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
-  Card, CardContent, CardHeader, CardTitle, CardDescription,
+  Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -25,12 +25,12 @@ import { toast } from "sonner"
 import {
   editarCampeonato, deletarCampeonato,
   inscreverAluno, removerInscricao, registrarPagamentoInscricao,
-  calcularTaxaTotal, criarPartida, editarPartida, deletarPartida,
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { PartidasSection } from "./partidas-section"
+import type { RscDate } from "@/lib/rsc-date"
 
 type AlunoInfo = { id: number; nome: string; turma: string; responsavel: string; telefone: string }
 
@@ -43,18 +43,18 @@ type Inscricao = {
   desconto: number
   taxaPaga: boolean
   valorPago: number | null
-  dataPagamento: Date | null
+  dataPagamento: RscDate | null
   formaPagamento: string | null
   observacoes: string | null
-  createdAt: Date
+  createdAt: RscDate
 }
 
 type Campeonato = {
   id: number
   nome: string
   descricao: string | null
-  dataInicio: Date
-  dataFim: Date | null
+  dataInicio: RscDate
+  dataFim: RscDate | null
   local: string | null
   taxaInscricao: number
   taxaJogo: number
@@ -63,7 +63,7 @@ type Campeonato = {
   custoUniforme: number
   observacoes: string | null
   status: string
-  createdAt: Date
+  createdAt: RscDate
   inscricoes: Inscricao[]
   partidas: PartidaItem[]
 }
@@ -72,7 +72,7 @@ type PartidaItem = {
   id: number
   campeonatoId: number
   rodada: number
-  data: Date
+  data: RscDate
   adversario: string
   local: string
   golsPro: number | null
@@ -563,7 +563,7 @@ export function CampeonatoDetailClient({
         </CardContent>
       </Card>
 
-      <PartidasSection partidas={campeonato.partidas as any} campeonatoId={campeonato.id} />
+      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} />
 
       <Dialog open={inscreverOpen} onOpenChange={setInscreverOpen}>
         <DialogContent>

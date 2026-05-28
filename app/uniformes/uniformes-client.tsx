@@ -13,22 +13,22 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { adicionarUniforme, marcarEntregue, removerUniforme } from "@/app/actions/uniformes"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Uniforme = {
   id: number
   item: string
   tamanho: string | null
   entregue: boolean
-  dataEntrega: Date | null
+  dataEntrega: RscDate | null
   observacoes: string | null
-  createdAt: Date
+  createdAt: RscDate
 }
 
 type Aluno = {
