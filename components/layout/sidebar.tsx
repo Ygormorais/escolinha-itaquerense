@@ -91,7 +91,10 @@ export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number 
       label: "Documentos & Config",
       items: [
         { href: "/recibos",       label: "Recibos",       icon: FileText },
-        { href: "/relatorio",     label: "Relatório",     icon: BarChart3 },
+        { href: "/relatorio",     label: "Rel. Financeiro", icon: BarChart3 },
+        { href: "/relatorio/alunos", label: "Rel. Alunos", icon: Users },
+        { href: "/relatorio/pagamentos", label: "Rel. Pagamentos", icon: CreditCard },
+        { href: "/relatorio/frequencia", label: "Rel. Frequência", icon: CalendarCheck },
         { href: "/historico",     label: "Histórico",     icon: History },
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },
         { href: "/configuracoes", label: "Configurações", icon: Settings },

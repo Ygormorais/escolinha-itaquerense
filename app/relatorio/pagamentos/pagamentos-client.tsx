@@ -1,0 +1,169 @@
+"use client"
+
+import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
+import { CreditCard, Download } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { PageHeader } from "@/components/layout/page-header"
+import { format } from "date-fns"
+import type { RscDate } from "@/lib/rsc-date"
+
+type Pagamento = {
+  id: number
+  mesReferencia: string
+  dataVencimento: RscDate
+  dataPagamento: RscDate | null
+  valorRecebido: number | null
+  aluno: { id: number; nome: string; turma: string }
+}
+
+export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pagamento[]; ano: number }) {
+  const router = useRouter()
+  const [filtroStatus, setFiltroStatus] = useState("todos")
+
+  const filtrados = useMemo(() => {
+    return pagamentos.filter((p) => {
+      if (filtroStatus === "pagos" && !p.dataPagamento) return false
+      if (filtroStatus === "pendentes" && p.dataPagamento) return false
+      if (filtroStatus === "atrasados" && (p.dataPagamento || new Date(p.dataVencimento) >= new Date())) return false
+      return true
+    })
+  }, [pagamentos, filtroStatus])
+
+  const totalRecebido = pagamentos.filter((p) => p.dataPagamento).reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+  const totalPendente = pagamentos.filter((p) => !p.dataPagamento).reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+
+  function exportarCSV() {
+    const header = "Aluno;Turma;Mês Ref;Data Vencimento;Data Pagamento;Valor;Status"
+    const rows = filtrados.map((p) => {
+      const status = p.dataPagamento
+        ? "Pago"
+        : new Date(p.dataVencimento) < new Date()
+        ? "Atrasado"
+        : "Pendente"
+      return [
+        p.aluno.nome,
+        p.aluno.turma,
+        p.mesReferencia,
+        format(new Date(p.dataVencimento), "dd/MM/yyyy"),
+        p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "",
+        `R$ ${(p.valorRecebido ?? 0).toFixed(2)}`,
+        status,
+      ].join(";")
+    })
+    const csv = "\uFEFF" + header + "\n" + rows.join("\n")
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `relatorio-pagamentos-${ano}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="flex flex-col gap-6 p-6 lg:p-8">
+      <PageHeader
+        title="Relatório de Pagamentos"
+        description={`${filtrados.length} registros em ${ano}`}
+        action={
+          <Button size="sm" onClick={exportarCSV}>
+            <Download className="size-4 mr-1" /> Exportar CSV
+          </Button>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-success-600">Recebido</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold font-heading text-success-600">
+              R$ {totalRecebido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-warning-600">Pendente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold font-heading text-warning-600">
+              R$ {totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Total Registros</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold font-heading">{pagamentos.length}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex gap-1">
+        {[
+          { key: "todos", label: "Todos" },
+          { key: "pagos", label: "Pagos" },
+          { key: "pendentes", label: "Pendentes" },
+          { key: "atrasados", label: "Atrasados" },
+        ].map((s) => (
+          <Button key={s.key} variant={filtroStatus === s.key ? "default" : "outline"} size="sm" onClick={() => setFiltroStatus(s.key)} className="text-xs">
+            {s.label}
+          </Button>
+        ))}
+      </div>
+
+      <Card>
+        <CardContent className="p-0 pt-3">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Aluno</TableHead>
+                  <TableHead>Turma</TableHead>
+                  <TableHead>Mês Ref</TableHead>
+                  <TableHead>Vencimento</TableHead>
+                  <TableHead>Pagamento</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtrados.map((p) => {
+                  const status = p.dataPagamento
+                    ? "Pago"
+                    : new Date(p.dataVencimento) < new Date()
+                    ? "Atrasado"
+                    : "Pendente"
+                  const variant = status === "Pago" ? "default" : status === "Atrasado" ? "outline" : "secondary"
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell><Badge variant="secondary" className="text-xs">{p.aluno.turma}</Badge></TableCell>
+                      <TableCell className="text-sm">{p.mesReferencia}</TableCell>
+                      <TableCell className="text-sm">{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
+                      <TableCell className="text-sm">
+                        {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}
+                      </TableCell>
+                      <TableCell className="text-right text-sm">R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Badge variant={variant} className="text-xs">{status}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
