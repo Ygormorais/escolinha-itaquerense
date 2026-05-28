@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 import "./globals.css"
-import { Sidebar } from "@/components/layout/sidebar"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { getSession } from "@/lib/session"
 import { db } from "@/lib/db"
+import { AdminShell } from "@/components/layout/admin-shell"
 
 export const metadata: Metadata = {
   title: "Escolinha Itaquerense",
@@ -30,12 +30,9 @@ export default async function RootLayout({
       <body className="flex h-full bg-background">
         <Providers>
           {showAdminShell ? (
-            <>
-              <Sidebar pendingEscalacoes={pendingEscalacoes} />
-              <main className="flex flex-1 flex-col overflow-auto">
-                {children}
-              </main>
-            </>
+            <AdminShell pendingEscalacoes={pendingEscalacoes}>
+              {children}
+            </AdminShell>
           ) : (
             <div className="flex flex-1 flex-col">
               {children}

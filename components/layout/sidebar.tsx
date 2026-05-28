@@ -58,7 +58,7 @@ type NavGroup = {
   items: NavItem[]
 }
 
-export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number }) {
+export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?: number; onClose?: () => void }) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -105,7 +105,7 @@ export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number 
   ]
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-border bg-card">
+    <aside className="hidden md:flex h-screen w-64 flex-col border-r border-border bg-card">
       <div className="flex h-16 items-center gap-3 border-b border-border px-4">
         <Image
           src="/logo.jpg"
@@ -136,6 +136,7 @@ export function Sidebar({ pendingEscalacoes = 0 }: { pendingEscalacoes?: number 
                   <Link
                     key={href}
                     href={href}
+                    onClick={onClose}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
                       "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
