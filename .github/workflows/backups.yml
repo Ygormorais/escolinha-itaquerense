@@ -2,9 +2,9 @@ name: Backup Diário do Banco
 
 on:
   schedule:
-    - cron: "0 3 * * *"  # Todo dia às 3h UTC (00h BRT)
+    - cron: "0 3 * * *"
 
-  workflow_dispatch:  # Permitir trigger manual
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,22 +17,23 @@ jobs:
         with:
           ref: backups
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Instalar PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Copiar banco de dados
+      - name: Executar backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           mkdir -p backups
           TIMESTAMP=$(date -u +%Y-%m-%d-%H%M%S)
-          cp prisma/dev.db "backups/dev-${TIMESTAMP}.db"
-          echo "Backup criado: dev-${TIMESTAMP}.db"
+          pg_dump "$DATABASE_URL" -F p -f "backups/prod-${TIMESTAMP}.sql" --no-owner --no-acl
+          echo "Backup criado: prod-${TIMESTAMP}.sql"
 
       - name: Rotacionar backups (manter últimos 30)
         run: |
           cd backups
-          ls -1t dev-*.db 2>/dev/null | tail -n +31 | xargs -r rm -f
-          echo "Backups restantes: $(ls -1 dev-*.db 2>/dev/null | wc -l)"
+          ls -1t prod-*.sql 2>/dev/null | tail -n +31 | xargs -r rm -f
+          echo "Backups restantes: $(ls -1 prod-*.sql 2>/dev/null | wc -l)"
 
       - name: Commit e push
         run: |

@@ -1,7 +1,7 @@
+import { execSync } from "child_process"
 import fs from "fs"
 import path from "path"
 
-const DB_PATH = path.join(process.cwd(), "prisma", "dev.db")
 const BACKUP_DIR = path.join(process.cwd(), "backups")
 
 function main() {
@@ -13,7 +13,7 @@ function main() {
     console.error("Backups disponíveis:")
     if (fs.existsSync(BACKUP_DIR)) {
       const backups = fs.readdirSync(BACKUP_DIR)
-        .filter((f) => f.startsWith("dev-") && f.endsWith(".db"))
+        .filter((f) => (f.startsWith("prod-") || f.startsWith("dev-")) && (f.endsWith(".sql") || f.endsWith(".db")))
         .sort()
         .reverse()
       if (backups.length === 0) {
@@ -38,24 +38,30 @@ function main() {
     process.exit(1)
   }
 
-  // Verificar integridade básica (arquivo não vazio)
   const stats = fs.statSync(backupPath)
   if (stats.size === 0) {
     console.error("❌ Backup está vazio:", backupPath)
     process.exit(1)
   }
 
-  // Criar backup do estado atual antes de restaurar
-  if (fs.existsSync(DB_PATH)) {
-    const now = new Date()
-    const timestamp = now.toISOString().replace(/[:.]/g, "-").slice(0, 19)
-    const preRestorePath = path.join(BACKUP_DIR, `pre-restore-${timestamp}.db`)
-    fs.copyFileSync(DB_PATH, preRestorePath)
-    console.log(`📋 Backup pré-restauração criado: pre-restore-${timestamp}.db`)
+  const dbUrl = process.env.DATABASE_URL
+  if (!dbUrl) {
+    console.error("❌ DATABASE_URL não configurada")
+    process.exit(1)
   }
 
-  // Restaurar
-  fs.copyFileSync(backupPath, DB_PATH)
+  console.log(`⚠️  Isso vai SUBSTITUIR todos os dados do banco atual!`)
+  console.log(`📁 Restaurando de: ${backupFile}`)
+
+  try {
+    execSync(`psql "${dbUrl}" -f "${backupPath}" --no-owner --no-acl`, {
+      stdio: "pipe",
+    })
+  } catch (e) {
+    console.error("❌ Erro ao executar psql. Instale o PostgreSQL client.")
+    process.exit(1)
+  }
+
   const sizeKB = (stats.size / 1024).toFixed(1)
   console.log(`✅ Banco restaurado de: ${backupFile} (${sizeKB} KB)`)
   console.log(`⚠️  Reinicie o servidor para aplicar as mudanças.`)
