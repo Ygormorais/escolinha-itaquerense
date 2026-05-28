@@ -1,0 +1,21 @@
+name: Cron - Lembretes Diários
+
+on:
+  schedule:
+    - cron: "0 9 * * *"  # Todo dia às 9h (horário de Brasília = 12h UTC)
+
+  workflow_dispatch:  # Permitir trigger manual
+
+jobs:
+  lembretes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aguardar deploy
+        run: sleep 30
+
+      - name: Enviar lembretes (email + WhatsApp)
+        run: |
+          curl -s -X GET \
+            "https://escolinha-itaquerense.vercel.app/api/cron/lembretes" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
