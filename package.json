@@ -10,6 +10,8 @@
     "postinstall": "npx prisma generate",
     "db:migrate": "npx prisma migrate deploy",
     "db:studio": "npx prisma studio",
+    "db:backup": "npx tsx scripts/backup.ts",
+    "db:restore": "npx tsx scripts/restore.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
