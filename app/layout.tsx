@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { headers } from "next/headers"
 import "./globals.css"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Toaster } from "sonner"
@@ -16,17 +17,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const pathname = (await headers()).get("x-pathname") ?? "/"
   const session = await getSession()
+  const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && pathname !== "/login"
 
-  const pendingEscalacoes = session.authenticated
+  const pendingEscalacoes = showAdminShell
     ? await db.chatSession.count({ where: { bloqueado: true } })
     : 0
 
   return (
     <html lang="pt-BR" className="h-full antialiased" suppressHydrationWarning>
-      <body className={`flex h-full ${session.authenticated ? "bg-background" : "bg-background"}`}>
+      <body className="flex h-full bg-background">
         <Providers>
-          {session.authenticated ? (
+          {showAdminShell ? (
             <>
               <Sidebar pendingEscalacoes={pendingEscalacoes} />
               <main className="flex flex-1 flex-col overflow-auto">

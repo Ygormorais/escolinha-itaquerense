@@ -3,10 +3,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Mail, Lock, LogIn } from "lucide-react"
+import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
 import Link from "next/link"
 
@@ -36,39 +35,68 @@ export default function ResponsavelLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-blue-50 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl font-heading">Portal do Responsável</CardTitle>
-          <CardDescription>Acompanhe as informações do seu filho</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-                <Input id="email" type="email" className="pl-9" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" />
-              </div>
+    <AuthShell
+      badge="Portal do Responsável"
+      title="Acompanhe as informações do seu filho com proximidade e clareza."
+      description="Entre no portal para consultar mensalidades, reunioes, comunicados, desempenho e os registros mais importantes da rotina na escolinha."
+      accentLabel="Acesso"
+      accentValue="Informacoes da familia em um ambiente organizado e acolhedor"
+      tone="responsavel"
+      footer={(
+        <Link href="/responsavel/recuperar-senha" className="font-medium text-brand-800 underline underline-offset-4 transition-colors hover:text-brand-900">
+          Esqueceu a senha?
+        </Link>
+      )}
+    >
+      <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+        <div className="mb-6 space-y-2">
+          <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
+            Entrar
+          </h2>
+          <p className="text-sm leading-6 text-[var(--color-ink-700)]">
+            Use seu email e senha para acessar o portal.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-semibold text-[var(--color-ink-900)]">
+              Email
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
+              <Input
+                id="email"
+                type="email"
+                className="pl-11"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                autoComplete="email"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="senha">Senha</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-                <Input id="senha" type="password" className="pl-9" value={senha} onChange={(e) => setSenha(e.target.value)} />
-              </div>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="senha" className="text-sm font-semibold text-[var(--color-ink-900)]">
+              Senha
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
+              <Input
+                id="senha"
+                type="password"
+                className="pl-11"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                autoComplete="current-password"
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              <LogIn className="size-4" /> {loading ? "Entrando..." : "Entrar"}
-            </Button>
-            <div className="text-center">
-              <Link href="/responsavel/recuperar-senha" className="text-sm text-muted-foreground hover:text-brand-600 underline underline-offset-2">
-                Esqueceu a senha?
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+          <Button type="submit" className="w-full" size="lg" disabled={loading}>
+            <LogIn className="size-4" /> {loading ? "Entrando..." : "Entrar"}
+          </Button>
+        </form>
+      </div>
+    </AuthShell>
   )
 }

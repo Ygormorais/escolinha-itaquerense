@@ -7,28 +7,40 @@
 
 @theme {
   /* Brand — vermelho Itaquerense */
+  --color-brand-950: #4A0B0B;
+  --color-brand-700: #9F1D1D;
   --color-brand-900: #7F0000;
   --color-brand-800: #B71C1C;
   --color-brand-600: #C62828;
   --color-brand-500: #E53935;
+  --color-brand-200: #F6CACA;
   --color-brand-300: #EF9A9A;
   --color-brand-100: #FFEBEE;
   --color-brand-50:  #FFF5F5;
 
+  /* Neutros quentes */
+  --color-ink-950: #171312;
+  --color-ink-900: #221C1B;
+  --color-ink-700: #4F4543;
+  --color-ink-500: #7A6F6C;
+  --color-ink-300: #CFC4C1;
+  --color-paper-100: #F6F0EE;
+  --color-paper-50: #FBF8F6;
+
   /* Semânticos */
-  --color-success-50:  #ECFDF5;
-  --color-success-600: #047857;
-  --color-warning-50:  #FFFBEB;
-  --color-warning-600: #B45309;
-  --color-danger-50:   #FEF2F2;
-  --color-danger-600:  #B91C1C;
-  --color-info-50:     #EFF6FF;
-  --color-info-600:    #1D4ED8;
+  --color-success-50:  #EDF9F4;
+  --color-success-600: #0F7A5A;
+  --color-warning-50:  #FFF8ED;
+  --color-warning-600: #A86417;
+  --color-danger-50:   #FEF1F0;
+  --color-danger-600:  #B3261E;
+  --color-info-50:     #EFF5FD;
+  --color-info-600:    #225EA8;
 
   /* Sombras quentes */
-  --shadow-sm: 0 1px 2px 0 rgba(127, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px -2px rgba(127, 0, 0, 0.08), 0 2px 4px -2px rgba(127, 0, 0, 0.06);
-  --shadow-lg: 0 12px 28px -8px rgba(127, 0, 0, 0.12), 0 6px 12px -6px rgba(127, 0, 0, 0.08);
+  --shadow-sm: 0 1px 2px 0 rgba(74, 11, 11, 0.05);
+  --shadow-md: 0 10px 24px rgba(74, 11, 11, 0.08);
+  --shadow-lg: 0 24px 60px rgba(74, 11, 11, 0.12);
 
   --font-heading: "Nunito", sans-serif;
   --font-body: "Inter", sans-serif;
@@ -78,73 +90,73 @@
 }
 
 :root {
-  --background: #FAFAF8;
-  --foreground: #1A1A1A;
+  --background: #FBF8F6;
+  --foreground: #171312;
   --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
+  --card-foreground: #171312;
   --popover: #FFFFFF;
-  --popover-foreground: #1A1A1A;
-  --primary: #C62828;
+  --popover-foreground: #171312;
+  --primary: #7F0000;
   --primary-foreground: #FFFFFF;
-  --secondary: #F5F1F1;
-  --secondary-foreground: #1A1A1A;
-  --muted: #F5F1F1;
-  --muted-foreground: #6B6363;
+  --secondary: #F6F0EE;
+  --secondary-foreground: #221C1B;
+  --muted: #F6F0EE;
+  --muted-foreground: #7A6F6C;
   --accent: #FFEBEE;
-  --accent-foreground: #B71C1C;
-  --destructive: #B71C1C;
+  --accent-foreground: #7F0000;
+  --destructive: #B3261E;
   --destructive-foreground: #FFFFFF;
-  --border: #EFE6E6;
-  --input: #EFE6E6;
+  --border: #E8DEDA;
+  --input: #E8DEDA;
   --ring: #E53935;
-  --chart-1: #C62828;
-  --chart-2: #6B6363;
+  --chart-1: #7F0000;
+  --chart-2: #7A6F6C;
   --chart-3: #EF9A9A;
-  --chart-4: #B45309;
-  --chart-5: #047857;
-  --radius: 0.625rem;
+  --chart-4: #A86417;
+  --chart-5: #0F7A5A;
+  --radius: 0.875rem;
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #1A1A1A;
-  --sidebar-primary: #C62828;
+  --sidebar-foreground: #171312;
+  --sidebar-primary: #7F0000;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FFF5F5;
-  --sidebar-accent-foreground: #B71C1C;
-  --sidebar-border: #EFE6E6;
+  --sidebar-accent: #FFF7F7;
+  --sidebar-accent-foreground: #7F0000;
+  --sidebar-border: #E8DEDA;
   --sidebar-ring: #E53935;
 }
 
 .dark {
-  --background: #1A1214;
-  --foreground: #F5F1F1;
-  --card: #231A1A;
-  --card-foreground: #F5F1F1;
-  --popover: #231A1A;
-  --popover-foreground: #F5F1F1;
+  --background: #171312;
+  --foreground: #F8F2F0;
+  --card: #211A18;
+  --card-foreground: #F8F2F0;
+  --popover: #211A18;
+  --popover-foreground: #F8F2F0;
   --primary: #E53935;
   --primary-foreground: #FFFFFF;
-  --secondary: #2E2222;
-  --secondary-foreground: #F5F1F1;
-  --muted: #2E2222;
-  --muted-foreground: #A89898;
-  --accent: #3D1515;
-  --accent-foreground: #EF9A9A;
+  --secondary: #2B2321;
+  --secondary-foreground: #F8F2F0;
+  --muted: #2B2321;
+  --muted-foreground: #B7A7A1;
+  --accent: #3A1717;
+  --accent-foreground: #F6CACA;
   --destructive: #E53935;
   --destructive-foreground: #FFFFFF;
-  --border: rgba(255,255,255,0.08);
-  --input: rgba(255,255,255,0.10);
+  --border: rgba(255,255,255,0.1);
+  --input: rgba(255,255,255,0.12);
   --ring: #E53935;
   --chart-1: #E53935;
-  --chart-2: #A89898;
-  --chart-3: #EF9A9A;
+  --chart-2: #B7A7A1;
+  --chart-3: #F6CACA;
   --chart-4: #F59E0B;
   --chart-5: #10B981;
-  --sidebar: #1A1214;
-  --sidebar-foreground: #F5F1F1;
+  --sidebar: #171312;
+  --sidebar-foreground: #F8F2F0;
   --sidebar-primary: #E53935;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #3D1515;
-  --sidebar-accent-foreground: #EF9A9A;
-  --sidebar-border: rgba(255,255,255,0.08);
+  --sidebar-accent: #3A1717;
+  --sidebar-accent-foreground: #F6CACA;
+  --sidebar-border: rgba(255,255,255,0.1);
   --sidebar-ring: #E53935;
 }
 
@@ -154,8 +166,9 @@
   }
   body {
     font-family: var(--font-body);
-    background-color: #FAFAF8;
-    color: #1A1A1A;
+    background-color: var(--background);
+    color: var(--foreground);
+    text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);

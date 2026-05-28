@@ -6,8 +6,9 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, MapPin } from "lucide-react"
+import { Calendar, Clock, MapPin, ArrowLeft } from "lucide-react"
 import { AgendarReuniao } from "@/components/responsavel/agendar-reuniao"
+import Link from "next/link"
 
 export default async function ReunioesPage() {
   const session = await getResponsavelSession()
@@ -30,11 +31,43 @@ export default async function ReunioesPage() {
     : null
 
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-6">Reuniões com Treinador</h1>
+    <div className="flex flex-col gap-8">
+      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Reuniões com Treinador
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Consulte encontros agendados, verifique horários disponíveis e solicite novas reuniões para acompanhar o desenvolvimento dos alunos.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Reuniões</p>
+              <p className="mt-2 text-2xl font-bold">{reunioes.length}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
+              <p className="mt-2 text-2xl font-bold">{responsavel?.alunos.length ?? 0}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Agenda</p>
+              <p className="mt-2 text-2xl font-bold">{calendarUrl ? "Ativa" : "Manual"}</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {reunioes.length === 0 && (
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <Calendar className="size-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">Nenhuma reunião agendada no momento.</p>
           <p className="text-xs text-muted-foreground mt-1">
@@ -46,7 +79,7 @@ export default async function ReunioesPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {reunioes.map((r) => (
           <Card key={r.id}>
-            <CardHeader className="pb-2">
+            <CardHeader className="border-b border-black/5 pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">{r.titulo}</CardTitle>
                 <Badge variant="secondary">{r.tipo}</Badge>
@@ -75,9 +108,9 @@ export default async function ReunioesPage() {
       </div>
 
       {calendarUrl && (
-        <Card className="mt-8">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Calendar className="size-4" /> Agenda de Horários
             </CardTitle>
             <CardDescription>
@@ -94,9 +127,9 @@ export default async function ReunioesPage() {
         </Card>
       )}
 
-      <div className="mt-8 max-w-md">
+      <div className="max-w-md">
         <AgendarReuniao alunos={responsavel?.alunos ?? []} />
       </div>
-    </>
+    </div>
   )
 }

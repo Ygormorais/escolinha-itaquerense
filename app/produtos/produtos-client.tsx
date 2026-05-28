@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import {
-  listarProdutos,
   criarProduto,
   atualizarProduto,
   removerProduto,
@@ -242,6 +241,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Preview</TableHead>
               <TableHead>Nome</TableHead>
               <TableHead>Preço</TableHead>
               <TableHead>Categoria</TableHead>
@@ -253,6 +253,19 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
           <TableBody>
             {produtos.map((p) => (
               <TableRow key={p.id}>
+                <TableCell>
+                  <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-[12px] border border-border bg-muted">
+                    {p.imagem ? (
+                      <img
+                        src={p.imagem}
+                        alt={p.nome}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <ShoppingBag className="size-5 text-muted-foreground" />
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="font-medium">{p.nome}</TableCell>
                 <TableCell>R$ {p.preco.toFixed(2)}</TableCell>
                 <TableCell>

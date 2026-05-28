@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import Link from "next/link"
+import { ArrowLeft, IdCard, Shirt } from "lucide-react"
 
 export default async function CarteirinhaPage() {
   const session = await getResponsavelSession()
@@ -28,7 +30,20 @@ export default async function CarteirinhaPage() {
   if (alunos.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="font-heading text-2xl font-bold">Carteirinhas</h1>
+        <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">Carteirinhas</h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Visualize a carteirinha digital dos alunos vinculados a sua conta.
+              </p>
+            </div>
+          </div>
+        </section>
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             Nenhum aluno vinculado à sua conta.
@@ -39,13 +54,38 @@ export default async function CarteirinhaPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl font-bold">Carteirinhas</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Carteirinha digital dos alunos vinculados
-        </p>
-      </div>
+    <div className="space-y-8">
+      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">Carteirinhas</h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Carteirinhas digitais dos alunos vinculados, com dados de identificação e registros de uniforme.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
+              <p className="mt-2 text-2xl font-bold">{alunos.length}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Carteirinhas</p>
+              <p className="mt-2 text-2xl font-bold">{alunos.length}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Uniformes</p>
+              <p className="mt-2 text-2xl font-bold">{alunos.reduce((acc, aluno) => acc + aluno.uniformes.filter((u) => u.entregue).length, 0)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-6 md:grid-cols-2">
         {alunos.map((aluno) => {
@@ -54,7 +94,7 @@ export default async function CarteirinhaPage() {
           const uniformesEntregues = aluno.uniformes.filter((u) => u.entregue)
 
           return (
-            <Card key={aluno.id} className="overflow-hidden border-0 shadow-lg">
+            <Card key={aluno.id} className="overflow-hidden border-0 shadow-[0_18px_40px_rgba(74,11,11,0.12)]">
               {/* Header brand */}
               <div
                 className="relative flex items-center gap-3 px-5 py-4"
@@ -75,6 +115,7 @@ export default async function CarteirinhaPage() {
                     CARTEIRINHA DIGITAL
                   </p>
                 </div>
+                <IdCard className="size-5 text-white/80" />
                 <div className="shrink-0 text-right">
                   <p className="text-[9px] text-white/50 uppercase tracking-wider">Matrícula</p>
                   <p className="font-bold text-xs text-white font-mono tracking-wider">
@@ -130,7 +171,8 @@ export default async function CarteirinhaPage() {
                 {/* Uniform info */}
                 {uniformesEntregues.length > 0 && (
                   <div className="border-t px-5 py-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">
+                    <p className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <Shirt className="size-3.5" />
                       Uniforme
                     </p>
                     <div className="flex flex-wrap gap-1.5">

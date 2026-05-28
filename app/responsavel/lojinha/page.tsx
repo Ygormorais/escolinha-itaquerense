@@ -2,8 +2,9 @@ import { redirect } from "next/navigation"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Shirt, ShoppingBag, Package, Phone } from "lucide-react"
+import { Shirt, ShoppingBag, Package, Phone, ArrowLeft, Tags } from "lucide-react"
 import { db } from "@/lib/db"
+import Link from "next/link"
 
 function ProdutoIcon({ categoria }: { categoria: string }) {
   if (categoria === "uniforme") return <Shirt className="size-7" />
@@ -27,11 +28,44 @@ export default async function LojinhaPage() {
     v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <ShoppingBag className="size-6" />
-        Lojinha
-      </h1>
+    <div className="flex flex-col gap-8">
+      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="flex items-center gap-3 font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+                <ShoppingBag className="size-8" />
+                Lojinha
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Uniformes e acessórios oficiais da escolinha, com valores e tamanhos disponíveis para consulta rápida.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Produtos</p>
+              <p className="mt-2 text-2xl font-bold">{produtos.length}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Categorias</p>
+              <p className="mt-2 text-2xl font-bold">{new Set(produtos.map((produto) => produto.categoria)).size}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pedidos</p>
+              <p className="mt-2 flex items-center gap-2 text-2xl font-bold">
+                <Tags className="size-5" />
+                WhatsApp
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {produtos.length === 0 ? (
         <Card>
@@ -45,9 +79,22 @@ export default async function LojinhaPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {produtos.map((p) => (
-            <Card key={p.id}>
+            <Card key={p.id} className="overflow-hidden">
+              <div className="aspect-[4/3] overflow-hidden border-b border-black/5 bg-[var(--color-paper-100)]">
+                {p.imagem ? (
+                  <img
+                    src={p.imagem}
+                    alt={p.nome}
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-brand-600">
+                    <ProdutoIcon categoria={p.categoria} />
+                  </div>
+                )}
+              </div>
               <CardContent className="p-6">
-                <div className="flex size-14 items-center justify-center rounded-xl bg-brand-100 text-brand-600 mb-4">
+                <div className="mb-4 flex size-14 items-center justify-center rounded-xl bg-brand-100 text-brand-600">
                   <ProdutoIcon categoria={p.categoria} />
                 </div>
                 <h3 className="font-semibold mb-1">{p.nome}</h3>
@@ -89,6 +136,6 @@ export default async function LojinhaPage() {
           </a>
         </CardContent>
       </Card>
-    </>
+    </div>
   )
 }

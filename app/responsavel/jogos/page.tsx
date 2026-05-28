@@ -5,6 +5,8 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
+import { ArrowLeft, Trophy } from "lucide-react"
 
 function resultadoBadge(resultado: string | null) {
   if (!resultado) return <Badge variant="outline">A realizar</Badge>
@@ -31,15 +33,51 @@ export default async function JogosPage() {
   }
 
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-6">Jogos</h1>
+    <div className="flex flex-col gap-8">
+      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Jogos
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Consulte partidas por campeonato, resultados e placares mais recentes da escolinha.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Jogos</p>
+              <p className="mt-2 text-2xl font-bold">{partidas.length}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Campeonatos</p>
+              <p className="mt-2 text-2xl font-bold">{grouped.size}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Temporada</p>
+              <p className="mt-2 flex items-center gap-2 text-2xl font-bold">
+                <Trophy className="size-5" />
+                Ativa
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {grouped.size === 0 && (
         <p className="text-muted-foreground">Nenhum jogo cadastrado ainda.</p>
       )}
       <div className="space-y-8">
         {Array.from(grouped.values()).map(({ campeonato, partidas: pts }) => (
           <div key={campeonato.id}>
-            <h2 className="text-lg font-semibold text-brand-600 mb-4 flex items-center gap-2">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-brand-600">
               <span className="size-2 rounded-full bg-brand-600" />
               {campeonato.nome}
             </h2>
@@ -51,13 +89,13 @@ export default async function JogosPage() {
                   : null
                 return (
                   <Card key={p.id}>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="border-b border-black/5 pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base">{p.adversario}</CardTitle>
                         {resultadoBadge(p.resultado)}
                       </div>
                     </CardHeader>
-                    <CardContent className="text-sm text-muted-foreground space-y-1">
+                    <CardContent className="space-y-1 text-sm text-muted-foreground">
                       <p>{data} · Rodada {p.rodada}</p>
                       <p>{p.local === "Casa" ? "🏠 Casa" : p.local === "Fora" ? "✈️ Fora" : "⚖️ Neutro"}</p>
                       {placar && <p className="text-base font-bold text-foreground">{placar}</p>}
@@ -69,6 +107,6 @@ export default async function JogosPage() {
           </div>
         ))}
       </div>
-    </>
+    </div>
   )
 }

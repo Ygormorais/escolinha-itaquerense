@@ -4,10 +4,9 @@ import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Lock, ArrowLeft, CheckCircle2 } from "lucide-react"
+import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
 
 export default function RedefinirSenhaPage() {
@@ -21,16 +20,28 @@ export default function RedefinirSenhaPage() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-blue-50 p-4">
-        <Card className="w-full max-w-sm">
-          <CardContent className="pt-6 text-center space-y-4">
-            <p className="text-sm text-muted-foreground">Link inválido. Solicite uma nova recuperação de senha.</p>
-            <Link href="/responsavel/recuperar-senha" className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent w-full">
-                <ArrowLeft className="size-4" /> Solicitar link
-              </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthShell
+        badge="Redefinição de Senha"
+        title="Esse link nao esta mais disponivel."
+        description="Solicite um novo link de recuperacao para redefinir a senha com seguranca."
+        accentLabel="Status"
+        accentValue="Link invalido ou expirado"
+        tone="responsavel"
+      >
+        <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+          <div className="space-y-5">
+            <p className="text-sm leading-6 text-[var(--color-ink-700)]">
+              Link inválido. Solicite uma nova recuperação de senha.
+            </p>
+            <Link
+              href="/responsavel/recuperar-senha"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
+            >
+              <ArrowLeft className="size-4" /> Solicitar link
+            </Link>
+          </div>
+        </div>
+      </AuthShell>
     )
   }
 
@@ -55,47 +66,94 @@ export default function RedefinirSenhaPage() {
 
   if (redefinido) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-blue-50 p-4">
-        <Card className="w-full max-w-sm">
-          <CardContent className="pt-6 text-center space-y-4">
-            <CheckCircle2 className="size-12 text-green-600 mx-auto" />
-            <p className="text-sm font-medium">Senha redefinida com sucesso!</p>
-            <Link href="/responsavel/login" className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900 w-full">Fazer login</Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthShell
+        badge="Redefinição de Senha"
+        title="Senha atualizada com sucesso."
+        description="Seu acesso foi restaurado. Agora voce ja pode entrar novamente no portal do responsavel."
+        accentLabel="Status"
+        accentValue="Redefinicao concluida"
+        tone="responsavel"
+      >
+        <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+          <div className="space-y-5 text-center">
+            <CheckCircle2 className="mx-auto size-12 text-success-600" />
+            <p className="text-sm font-semibold text-[var(--color-ink-950)]">
+              Senha redefinida com sucesso!
+            </p>
+            <Link
+              href="/responsavel/login"
+              className="inline-flex h-11 w-full items-center justify-center rounded-[14px] bg-brand-800 px-4 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(127,0,0,0.18)] transition-colors hover:bg-brand-900"
+            >
+              Fazer login
+            </Link>
+          </div>
+        </div>
+      </AuthShell>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-blue-50 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl font-heading">Redefinir senha</CardTitle>
-          <CardDescription>Digite sua nova senha</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="senha">Nova senha</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-                <Input id="senha" type="password" className="pl-9" value={senha} onChange={(e) => setSenha(e.target.value)} />
-              </div>
+    <AuthShell
+      badge="Redefinição de Senha"
+      title="Crie uma nova senha para voltar ao portal."
+      description="Defina uma senha nova para concluir a recuperacao e restabelecer o acesso da familia."
+      accentLabel="Segurança"
+      accentValue="Atualizacao protegida de credenciais"
+      tone="responsavel"
+      footer={(
+        <Link href="/responsavel/login" className="font-medium text-brand-800 underline underline-offset-4 transition-colors hover:text-brand-900">
+          Voltar ao login
+        </Link>
+      )}
+    >
+      <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+        <div className="mb-6 space-y-2">
+          <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
+            Redefinir senha
+          </h2>
+          <p className="text-sm leading-6 text-[var(--color-ink-700)]">
+            Digite sua nova senha.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label htmlFor="senha" className="text-sm font-semibold text-[var(--color-ink-900)]">
+              Nova senha
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
+              <Input
+                id="senha"
+                type="password"
+                className="pl-11"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                autoComplete="new-password"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmar">Confirmar senha</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-                <Input id="confirmar" type="password" className="pl-9" value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
-              </div>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="confirmar" className="text-sm font-semibold text-[var(--color-ink-900)]">
+              Confirmar senha
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
+              <Input
+                id="confirmar"
+                type="password"
+                className="pl-11"
+                value={confirmar}
+                onChange={(e) => setConfirmar(e.target.value)}
+                autoComplete="new-password"
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Salvando..." : "Redefinir senha"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+          <Button type="submit" className="w-full" size="lg" disabled={loading}>
+            {loading ? "Salvando..." : "Redefinir senha"}
+          </Button>
+        </form>
+      </div>
+    </AuthShell>
   )
 }

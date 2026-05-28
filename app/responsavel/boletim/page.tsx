@@ -3,7 +3,8 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Award, BarChart3, Brain, Heart, TrendingUp } from "lucide-react"
+import { Award, BarChart3, Brain, Heart, TrendingUp, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 function notaColor(nota: number | null): string {
   if (nota === null || nota === undefined) return "text-muted-foreground"
@@ -43,10 +44,44 @@ export default async function BoletimPage() {
   if (!responsavel) redirect("/responsavel/login")
 
   const temAvaliacao = responsavel.alunos.some((a) => a.avaliacoes.length > 0)
+  const totalAlunos = responsavel.alunos.length
+  const totalAvaliacoes = responsavel.alunos.reduce((acc, aluno) => acc + aluno.avaliacoes.length, 0)
 
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-6">Boletim</h1>
+    <div className="flex flex-col gap-8">
+      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Boletim
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Consulte avaliações técnicas, físicas, comportamentais e a frequência mais recente de cada atleta.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
+              <p className="mt-2 text-2xl font-bold">{totalAlunos}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Avaliações</p>
+              <p className="mt-2 text-2xl font-bold">{totalAvaliacoes}</p>
+            </div>
+            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Status</p>
+              <p className="mt-2 text-2xl font-bold">{temAvaliacao ? "Ativo" : "Aguardando"}</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {!temAvaliacao && (
         <Card className="py-12">
@@ -68,9 +103,9 @@ export default async function BoletimPage() {
 
           return (
             <section key={aluno.id}>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="mb-4 flex items-center gap-2">
                 <h2 className="text-xl font-semibold">{aluno.nome}</h2>
-                <Badge variant="secondary" className="text-[10px]">{aluno.turma}</Badge>
+                <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -78,16 +113,16 @@ export default async function BoletimPage() {
                   const media = mediaGeral(av)
                   return (
                     <Card key={av.id} size="sm">
-                      <CardHeader className="border-b pb-3">
-                        <CardTitle className="text-sm flex items-center gap-2">
+                      <CardHeader className="border-b border-black/5 pb-3">
+                        <CardTitle className="flex items-center gap-2 text-sm">
                           <BarChart3 className="size-4 text-brand-600" />
                           Período {av.periodo}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4 pt-4">
                         <div className="grid grid-cols-2 gap-3">
-                          <div className={`rounded-lg p-3 ${bgNotaColor(av.notaTecnica)}`}>
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                          <div className={`rounded-[16px] p-3 ${bgNotaColor(av.notaTecnica)}`}>
+                            <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Award className="size-3.5" />
                               Técnica
                             </div>
@@ -96,8 +131,8 @@ export default async function BoletimPage() {
                             </p>
                           </div>
 
-                          <div className={`rounded-lg p-3 ${bgNotaColor(av.notaFisica)}`}>
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                          <div className={`rounded-[16px] p-3 ${bgNotaColor(av.notaFisica)}`}>
+                            <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Brain className="size-3.5" />
                               Física
                             </div>
@@ -106,8 +141,8 @@ export default async function BoletimPage() {
                             </p>
                           </div>
 
-                          <div className={`rounded-lg p-3 ${bgNotaColor(av.notaComportamento)}`}>
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                          <div className={`rounded-[16px] p-3 ${bgNotaColor(av.notaComportamento)}`}>
+                            <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Heart className="size-3.5" />
                               Comportamento
                             </div>
@@ -116,8 +151,8 @@ export default async function BoletimPage() {
                             </p>
                           </div>
 
-                          <div className="rounded-lg p-3 bg-muted">
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                          <div className="rounded-[16px] bg-muted p-3">
+                            <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <TrendingUp className="size-3.5" />
                               Média
                             </div>
@@ -149,7 +184,7 @@ export default async function BoletimPage() {
                         </div>
 
                         {av.observacoes && (
-                          <p className="text-xs text-muted-foreground italic leading-relaxed border-t pt-3 mt-1">
+                          <p className="mt-1 border-t border-black/5 pt-3 text-xs italic leading-relaxed text-muted-foreground">
                             {av.observacoes}
                           </p>
                         )}
@@ -162,6 +197,6 @@ export default async function BoletimPage() {
           )
         })}
       </div>
-    </>
+    </div>
   )
 }

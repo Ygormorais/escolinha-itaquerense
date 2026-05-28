@@ -38,8 +38,18 @@ async function verify(signed: string): Promise<boolean> {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set("x-pathname", pathname)
+
+  const nextResponse = () =>
+    NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    })
 
   if (
+    pathname === "/" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/responsavel") ||
@@ -50,7 +60,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/favicon") ||
     pathname === "/logo.jpg"
   ) {
-    return NextResponse.next()
+    return nextResponse()
   }
 
   const token = request.cookies.get(COOKIE_NAME)?.value
@@ -61,7 +71,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  return NextResponse.next()
+  return nextResponse()
 }
 
 export const config = {

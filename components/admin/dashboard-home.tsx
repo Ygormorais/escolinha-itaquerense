@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, TrendingDown } from "lucide-react"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
@@ -12,7 +12,7 @@ import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
 import { TURMAS } from "@/lib/constants"
 
-export default async function DashboardPage({
+export async function DashboardHome({
   searchParams,
 }: {
   searchParams: Promise<{ mes?: string }>
@@ -130,23 +130,16 @@ export default async function DashboardPage({
       <PageHeader
         title="Dashboard"
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}
-        action={
-            <div className="flex items-center gap-2">
-              <GerarMesButton mes={mesAtual} />
-              <MonthPicker mes={mesSelecionado} basePath="/" />
-            </div>
-          }
+        action={(
+          <div className="flex items-center gap-2">
+            <GerarMesButton mes={mesAtual} />
+            <MonthPicker mes={mesSelecionado} basePath="/" />
+          </div>
+        )}
       />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        <StatCard
-          title="Alunos Ativos"
-          value={totalAtivos}
-          icon={Users}
-          variant="brand"
-          borderAccent
-          href="/alunos"
-        />
+        <StatCard title="Alunos Ativos" value={totalAtivos} icon={Users} variant="brand" borderAccent href="/alunos" />
         <StatCard
           title="Receita do Mês"
           value={`R$ ${receitaMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
@@ -193,21 +186,15 @@ export default async function DashboardPage({
               const pct = config.capacidadeTurma > 0
                 ? Math.min(100, Math.round((count / config.capacidadeTurma) * 100))
                 : 0
-              const barColor =
-                pct >= 90 ? "bg-danger-600" :
-                pct >= 70 ? "bg-warning-600" :
-                "bg-success-600"
+              const barColor = pct >= 90 ? "bg-danger-600" : pct >= 70 ? "bg-warning-600" : "bg-success-600"
               return (
                 <div key={turma} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold">{turma}</span>
                     <span className="text-xs text-muted-foreground">{count}/{config.capacidadeTurma}</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-                      style={{ width: `${pct}%` }}
-                    />
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${pct}%` }} />
                   </div>
                   <p className="text-xs text-muted-foreground">{pct}% ocupado</p>
                 </div>
@@ -240,9 +227,7 @@ export default async function DashboardPage({
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.aluno.nome}</TableCell>
                     <TableCell>{p.aluno.turma}</TableCell>
-                    <TableCell className="text-warning-600 font-medium">
-                      {format(p.dataVencimento, "dd/MM/yyyy")}
-                    </TableCell>
+                    <TableCell className="font-medium text-warning-600">{format(p.dataVencimento, "dd/MM/yyyy")}</TableCell>
                     <TableCell>{p.mesReferencia}</TableCell>
                   </TableRow>
                 ))}
@@ -307,9 +292,7 @@ export default async function DashboardPage({
               <TableBody>
                 {ultimosPagamentos.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                      Nenhum pagamento registrado
-                    </TableCell>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">Nenhum pagamento registrado</TableCell>
                   </TableRow>
                 )}
                 {ultimosPagamentos.map((p) => (
@@ -317,9 +300,7 @@ export default async function DashboardPage({
                     <TableCell className="font-medium">{p.aluno.nome}</TableCell>
                     <TableCell>{p.aluno.turma}</TableCell>
                     <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
-                    <TableCell className="text-right">
-                      R$ {(p.valorRecebido ?? 0).toFixed(2)}
-                    </TableCell>
+                    <TableCell className="text-right">R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -343,18 +324,14 @@ export default async function DashboardPage({
               <TableBody>
                 {inadimplentes.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
-                      Nenhuma mensalidade em atraso
-                    </TableCell>
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">Nenhuma mensalidade em atraso</TableCell>
                   </TableRow>
                 )}
                 {inadimplentes.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.aluno.nome}</TableCell>
                     <TableCell>{p.aluno.turma}</TableCell>
-                    <TableCell className="text-danger-600">
-                      {format(p.dataVencimento, "dd/MM/yyyy")}
-                    </TableCell>
+                    <TableCell className="text-danger-600">{format(p.dataVencimento, "dd/MM/yyyy")}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
