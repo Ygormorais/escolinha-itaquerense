@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { runEnviarLembreteVencendo, runEnviarLembretesInadimplentes } from "@/lib/email-jobs"
+import { runEnviarLembretesWhatsAppInadimplencia, runEnviarLembretesWhatsAppVencendo } from "@/lib/whatsapp-jobs"
 import { getCronSecret, verifyBearerSecret } from "@/lib/env"
 
 export async function GET(request: Request) {
@@ -8,14 +9,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const [inadimplentes, vencendo] = await Promise.all([
+  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo] = await Promise.all([
     runEnviarLembretesInadimplentes(),
     runEnviarLembreteVencendo(),
+    runEnviarLembretesWhatsAppInadimplencia(),
+    runEnviarLembretesWhatsAppVencendo(),
   ])
 
   return NextResponse.json({
-    inadimplentes,
-    vencendo,
+    email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
+    whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo },
     executadoEm: new Date().toISOString(),
   })
 }
