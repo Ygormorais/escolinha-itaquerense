@@ -13,6 +13,7 @@ const DEFAULT: ClubConfig = {
   capacidadeTurma: 20,
   chavePix: "ygorcamisa1@gmail.com",
   whatsapp: "5511999999999",
+  googleCalendarId: "",
 }
 
 describe("lib/config", () => {
