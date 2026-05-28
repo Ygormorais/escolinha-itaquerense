@@ -9,13 +9,13 @@ export async function listarProdutos() {
   return db.produto.findMany({ orderBy: { createdAt: "desc" } })
 }
 
-export async function criarProduto(data: { nome: string; descricao?: string; preco: number; categoria?: string; tamanhos?: string; ativo?: boolean; imagem?: string }) {
+export async function criarProduto(data: { nome: string; descricao?: string; preco: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
   await requireAuth()
   await db.produto.create({ data })
   revalidatePath("/configuracoes/produtos")
 }
 
-export async function atualizarProduto(id: number, data: { nome?: string; descricao?: string; preco?: number; categoria?: string; tamanhos?: string; ativo?: boolean; imagem?: string }) {
+export async function atualizarProduto(id: number, data: { nome?: string; descricao?: string; preco?: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
   await requireAuth()
   await db.produto.update({ where: { id }, data })
   revalidatePath("/configuracoes/produtos")
