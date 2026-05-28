@@ -44,6 +44,7 @@ type Produto = {
   preco: number
   categoria: string
   tamanhos: string | null
+  estoque: number
   ativo: boolean
   imagem: string | null
   createdAt: Date
@@ -55,6 +56,7 @@ type ProdutoForm = {
   preco: string
   categoria: string
   tamanhos: string
+  estoque: string
   ativo: boolean
   imagem: string
 }
@@ -65,6 +67,7 @@ const defaultForm: ProdutoForm = {
   preco: "",
   categoria: "uniforme",
   tamanhos: "",
+  estoque: "0",
   ativo: true,
   imagem: "",
 }
@@ -96,6 +99,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
       preco: String(p.preco),
       categoria: p.categoria,
       tamanhos: p.tamanhos ?? "",
+      estoque: String(p.estoque),
       ativo: p.ativo,
       imagem: p.imagem ?? "",
     })
@@ -112,6 +116,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
         preco: Number(form.preco),
         categoria: form.categoria || undefined,
         tamanhos: form.tamanhos || undefined,
+        estoque: Number(form.estoque),
         ativo: form.ativo,
         imagem: form.imagem || undefined,
       }
@@ -212,13 +217,24 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                 placeholder="Ex: P, M, G, GG ou Único"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Imagem (URL)</Label>
-              <Input
-                value={form.imagem}
-                onChange={(e) => setForm({ ...form, imagem: e.target.value })}
-                placeholder="https://..."
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Estoque</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.estoque}
+                  onChange={(e) => setForm({ ...form, estoque: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Imagem (URL)</Label>
+                <Input
+                  value={form.imagem}
+                  onChange={(e) => setForm({ ...form, imagem: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -246,6 +262,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
               <TableHead>Nome</TableHead>
               <TableHead>Preço</TableHead>
               <TableHead>Categoria</TableHead>
+              <TableHead>Estoque</TableHead>
               <TableHead>Tamanhos</TableHead>
               <TableHead>Ativo</TableHead>
               <TableHead />
@@ -276,6 +293,13 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                   <Badge variant="secondary">
                     {categoriaLabel[p.categoria] ?? p.categoria}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  {p.estoque > 0 ? (
+                    <Badge variant="default" className="bg-success-600">{p.estoque}</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-danger-600">0</Badge>
+                  )}
                 </TableCell>
                 <TableCell>{p.tamanhos ?? "—"}</TableCell>
                 <TableCell>

@@ -293,6 +293,7 @@ model Produto {
   preco      Float    @default(0)
   categoria  String   @default("uniforme") // uniforme, acessorio, outro
   tamanhos   String?  // "P,M,G,GG" ou "Único"
+  estoque    Int      @default(0)
   ativo      Boolean  @default(true)
   imagem     String?  // URL da imagem
   createdAt  DateTime @default(now())
