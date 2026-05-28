@@ -50,3 +50,33 @@ export async function GET() {
     })),
   })
 }
+
+export async function PATCH() {
+  const session = await getResponsavelSession()
+  if (!session.authenticated || !session.responsavelId) {
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+  }
+
+  const responsavel = await db.responsavel.findUnique({
+    where: { id: session.responsavelId },
+    select: { telefone: true },
+  })
+  if (!responsavel) {
+    return NextResponse.json({ error: "Responsável não encontrado" }, { status: 404 })
+  }
+
+  const telefone = responsavel.telefone?.replace(/\D/g, "")
+
+  const where = {
+    origem: "comunicado",
+    lida: false,
+    ...(telefone ? { telefone: { contains: telefone.slice(-8) } } : { telefone: "" }),
+  }
+
+  const updated = await db.whatsAppMensagem.updateMany({
+    where,
+    data: { lida: true },
+  })
+
+  return NextResponse.json({ marked: updated.count })
+}

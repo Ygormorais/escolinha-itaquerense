@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Bell, BellDot, X, MessageSquare } from "lucide-react"
+import { Bell, BellDot, X, MessageSquare, CheckCheck } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -28,6 +28,16 @@ export function NotificacaoBell() {
     }
   }, [])
 
+  const marcarLidas = useCallback(async () => {
+    try {
+      await fetch("/api/responsavel/notificacoes", { method: "PATCH" })
+      setNaoLidas(0)
+      setUltimas((prev) => prev.map((n) => ({ ...n, lida: true })))
+    } catch {
+      // silently fail
+    }
+  }, [])
+
   useEffect(() => {
     const run = () => {
       void fetchNotificacoes()
@@ -39,6 +49,12 @@ export function NotificacaoBell() {
       clearInterval(interval)
     }
   }, [fetchNotificacoes])
+
+  useEffect(() => {
+    if (open && naoLidas > 0) {
+      void marcarLidas()
+    }
+  }, [open, naoLidas, marcarLidas])
 
   return (
     <div className="relative">

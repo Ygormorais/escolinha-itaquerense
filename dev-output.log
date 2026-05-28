@@ -1,0 +1,182 @@
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.55.32:3000
+- Environments: .env.local
+✓ Ready in 406ms
+
+○ Compiling /campeonatos ...
+ GET /campeonatos 200 in 5.7s (next.js: 4.4s, proxy.ts: 261ms, application-code: 972ms)
+ GET /login?next=%2Fcampeonatos%2F1 200 in 959ms (next.js: 650ms, proxy.ts: 5ms, application-code: 304ms)
+ GET /campeonatos/1 200 in 1651ms (next.js: 1252ms, proxy.ts: 12ms, application-code: 387ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <InnerLayoutRouter url="/campeonat..." tree={[...]} params={{id:"1"}} cacheNode={{rsc:{...}, ...}} ...>
+      <SegmentViewNode type="page" pagePath="campeonato...">
+        <SegmentTrieNode>
+        <CampeonatoDetailPage>
+          <div className="flex flex-...">
+            <CampeonatoDetailClient campeonato={{id:1,nome:"Cop...", ...}} alunosDisponiveis={[...]}>
+              <div className="flex items...">
+                <LinkComponent>
+                <div>
+                <div className="flex items...">
+                  <Dialog open={false} onOpenChange={function bound dispatchSetState}>
+                    <DialogRoot data-slot="dialog" open={false} onOpenChange={function bound dispatchSetState}>
+                      <DialogTrigger>
+                        <DialogTrigger data-slot="dialog-tri...">
+>                         <button
+>                           type="button"
+>                           onClick={function}
+>                           onMouseDown={function}
+>                           onKeyDown={function}
+>                           onKeyUp={function}
+>                           onPointerDown={function}
+>                           tabIndex={0}
+>                           disabled={false}
+>                           data-base-ui-click-trigger=""
+>                           id="base-ui-_R_3bj5esnebn6lb_"
+>                           aria-haspopup="dialog"
+>                           aria-expanded={false}
+>                           aria-controls={undefined}
+>                           data-slot="dialog-trigger"
+>                           ref={function}
+>                         >
+                            <Button variant="outline" size="sm">
+                              <Button data-slot="button" className={"group/bu..."}>
+>                               <button
+>                                 type="button"
+>                                 onClick={function}
+>                                 onMouseDown={function}
+>                                 onKeyDown={function}
+>                                 onKeyUp={function}
+>                                 onPointerDown={function}
+>                                 tabIndex={0}
+>                                 disabled={false}
+>                                 data-slot="button"
+>                                 ref={function}
+>                                 className={"group/button inline-flex shrink-0 items-center justify-center border bg..."}
+>                               >
+                      ...
+                  ...
+              ...
+      ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] Uncaught Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+    at <unknown> (https://react.dev/link/hydration-mismatch)
+    at button (<anonymous>)
+    at Button (components/ui/button.tsx:50:5)
+    at CampeonatoDetailClient (app/campeonatos/[id]/campeonato-detail-client.tsx:249:15)
+    at CampeonatoDetailPage (app\campeonatos\[id]\page.tsx:39:7)
+  48 | }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  49 |   return (
+> 50 |     <ButtonPrimitive
+     |     ^
+  51 |       data-slot="button"
+  52 |       className={cn(buttonVariants({ variant, size, className }))}
+  53 |       {...props}
+ GET /campeonatos 200 in 60ms (next.js: 10ms, proxy.ts: 21ms, application-code: 29ms)
+ GET /campeonatos 200 in 68ms (next.js: 9ms, proxy.ts: 9ms, application-code: 50ms)
+ GET /campeonatos 200 in 24ms (next.js: 5ms, proxy.ts: 8ms, application-code: 11ms)
+ GET /campeonatos 200 in 17ms (next.js: 3ms, proxy.ts: 5ms, application-code: 9ms)
+ GET /campeonatos 200 in 37ms (next.js: 6ms, proxy.ts: 6ms, application-code: 25ms)
+ GET /uniformes 200 in 722ms (next.js: 670ms, proxy.ts: 4ms, application-code: 48ms)
+ GET /campeonatos 200 in 45ms (next.js: 5ms, proxy.ts: 9ms, application-code: 32ms)
+ GET /campeonatos/1 200 in 185ms (next.js: 23ms, proxy.ts: 7ms, application-code: 155ms)
+[browser] In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <InnerLayoutRouter url="/campeonat..." tree={[...]} params={{id:"1"}} cacheNode={{rsc:{...}, ...}} ...>
+      <SegmentViewNode type="page" pagePath="campeonato...">
+        <SegmentTrieNode>
+        <CampeonatoDetailPage>
+          <div className="flex flex-...">
+            <CampeonatoDetailClient campeonato={{id:1,nome:"Cop...", ...}} alunosDisponiveis={[...]}>
+              <div className="flex items...">
+                <LinkComponent>
+                <div>
+                <div className="flex items...">
+                  <Dialog open={false} onOpenChange={function bound dispatchSetState}>
+                    <DialogRoot data-slot="dialog" open={false} onOpenChange={function bound dispatchSetState}>
+                      <DialogTrigger>
+                        <DialogTrigger data-slot="dialog-tri...">
+>                         <button
+>                           type="button"
+>                           onClick={function}
+>                           onMouseDown={function}
+>                           onKeyDown={function}
+>                           onKeyUp={function}
+>                           onPointerDown={function}
+>                           tabIndex={0}
+>                           disabled={false}
+>                           data-base-ui-click-trigger=""
+>                           id="base-ui-_R_3bj5esnebn6lb_"
+>                           aria-haspopup="dialog"
+>                           aria-expanded={false}
+>                           aria-controls={undefined}
+>                           data-slot="dialog-trigger"
+>                           ref={function}
+>                         >
+                            <Button variant="outline" size="sm">
+                              <Button data-slot="button" className={"group/bu..."}>
+>                               <button
+>                                 type="button"
+>                                 onClick={function}
+>                                 onMouseDown={function}
+>                                 onKeyDown={function}
+>                                 onKeyUp={function}
+>                                 onPointerDown={function}
+>                                 tabIndex={0}
+>                                 disabled={false}
+>                                 data-slot="button"
+>                                 ref={function}
+>                                 className={"group/button inline-flex shrink-0 items-center justify-center border bg..."}
+>                               >
+                      ...
+                  ...
+              ...
+      ...
+ 
+[browser] <button> cannot contain a nested <button>.
+See this log for the ancestor stack trace. 
+[browser] Uncaught Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+    at <unknown> (https://react.dev/link/hydration-mismatch)
+    at button (<anonymous>)
+    at Button (components/ui/button.tsx:50:5)
+    at CampeonatoDetailClient (app/campeonatos/[id]/campeonato-detail-client.tsx:249:15)
+    at CampeonatoDetailPage (app\campeonatos\[id]\page.tsx:39:7)
+  48 | }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  49 |   return (
+> 50 |     <ButtonPrimitive
+     |     ^
+  51 |       data-slot="button"
+  52 |       className={cn(buttonVariants({ variant, size, className }))}
+  53 |       {...props}
+ GET /campeonatos 200 in 37ms (next.js: 6ms, proxy.ts: 5ms, application-code: 26ms)
+ GET /campeonatos 200 in 32ms (next.js: 4ms, proxy.ts: 5ms, application-code: 23ms)
+ GET /campeonatos 200 in 35ms (next.js: 5ms, proxy.ts: 7ms, application-code: 23ms)
+ GET /campeonatos/1 200 in 82ms (next.js: 36ms, proxy.ts: 11ms, application-code: 34ms)
