@@ -7,6 +7,8 @@ import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, TrendingDown } fro
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
+import { ChartInadimplencia } from "@/components/dashboard/chart-inadimplencia"
+import { ChartReceitaPorTurma } from "@/components/dashboard/chart-receita-turma"
 import { MonthPicker } from "@/app/caixa/month-picker"
 import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
@@ -29,6 +31,11 @@ export default async function DashboardPage({
 
   const sixMonthsAgo = subMonths(startOfMonth(dataRef), 5)
 
+  const last6Months = Array.from({ length: 6 }, (_, i) => {
+    const d = subMonths(dataRef, 5 - i)
+    return format(d, "yyyy-MM")
+  })
+
   const config = getConfig()
 
   const [
@@ -43,6 +50,8 @@ export default async function DashboardPage({
     aniversariantes,
     vencendoSemana,
     ocupacaoTurmas,
+    todosPagamentos6Meses,
+    receitaTurmaRaw,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -97,12 +106,15 @@ export default async function DashboardPage({
         return { turma, count }
       })
     ),
+    db.pagamento.findMany({
+      where: { mesReferencia: { in: last6Months } },
+      select: { mesReferencia: true, dataPagamento: true, valorRecebido: true },
+    }),
+    db.pagamento.findMany({
+      where: { mesReferencia: mesAtual, dataPagamento: { not: null } },
+      select: { valorRecebido: true, aluno: { select: { turma: true } } },
+    }),
   ])
-
-  const last6Months = Array.from({ length: 6 }, (_, i) => {
-    const d = subMonths(now, 5 - i)
-    return format(d, "yyyy-MM")
-  })
 
   const chartData = last6Months.map((mes) => {
     const recebido = pagamentosChart
@@ -115,6 +127,24 @@ export default async function DashboardPage({
     const label = format(new Date(Number(year), Number(month) - 1), "MMM/yy", { locale: ptBR })
     return { mes: label, recebido, custos }
   })
+
+  const inadimplenciaData = last6Months.map((mes) => {
+    const registros = todosPagamentos6Meses.filter((p) => p.mesReferencia === mes)
+    const pagas = registros.filter((p) => p.dataPagamento).length
+    const vencidas = registros.length - pagas
+    const total = registros.length
+    const [year, month] = mes.split("-")
+    const label = format(new Date(Number(year), Number(month) - 1), "MMM/yy", { locale: ptBR })
+    return { mes: label, pagas, vencidas, taxa: total > 0 ? Math.round((vencidas / total) * 100) : 0 }
+  })
+
+  const receitaTurmaData = TURMAS.map((turma) => {
+    const receita = receitaTurmaRaw
+      .filter((p) => p.aluno.turma === turma)
+      .reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+    const alunos = receitaTurmaRaw.filter((p) => p.aluno.turma === turma).length
+    return { turma, receita, alunos }
+  }).filter((t) => t.alunos > 0)
 
   const aniversariantesMes = aniversariantes.filter(
     (a) => new Date(a.dataNascimento).getMonth() + 1 === mesRef
@@ -178,7 +208,12 @@ export default async function DashboardPage({
         />
       </div>
 
-      <ChartReceitaCustos data={chartData} />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <ChartReceitaCustos data={chartData} />
+        <ChartInadimplencia data={inadimplenciaData} />
+      </div>
+
+      <ChartReceitaPorTurma data={receitaTurmaData} />
 
       <Card>
         <CardHeader>
