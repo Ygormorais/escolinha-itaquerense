@@ -13,7 +13,8 @@
     "db:backup": "npx tsx scripts/backup.ts",
     "db:restore": "npx tsx scripts/restore.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
@@ -48,6 +49,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.41",
     "@types/react": "^19",
