@@ -6,13 +6,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ChartReceitaCustos } from "@/components/dashboard/chart-receita-custos"
-import { ChartInadimplencia } from "@/components/dashboard/chart-inadimplencia"
-import { ChartReceitaPorTurma } from "@/components/dashboard/chart-receita-turma"
+import dynamic from "next/dynamic"
 import { MonthPicker } from "@/app/caixa/month-picker"
 import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
 import { TURMAS } from "@/lib/constants"
+
+const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-receita-custos").then(m => ({ default: m.ChartReceitaCustos })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
+const ChartInadimplencia = dynamic(() => import("@/components/dashboard/chart-inadimplencia").then(m => ({ default: m.ChartInadimplencia })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
+const ChartReceitaPorTurma = dynamic(() => import("@/components/dashboard/chart-receita-turma").then(m => ({ default: m.ChartReceitaPorTurma })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 
 export default async function DashboardPage({
   searchParams,

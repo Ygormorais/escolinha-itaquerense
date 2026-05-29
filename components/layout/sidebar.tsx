@@ -112,6 +112,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?
           alt="E.C. Itaquerense"
           width={36}
           height={36}
+          priority
           className="rounded-lg object-contain"
         />
         <span className="font-heading text-sm font-bold leading-tight text-brand-900">
