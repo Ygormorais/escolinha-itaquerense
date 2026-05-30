@@ -17,23 +17,22 @@ jobs:
         with:
           ref: backups
 
-      - name: Instalar PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      - name: Executar backup
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Copiar banco de dados
         run: |
           mkdir -p backups
           TIMESTAMP=$(date -u +%Y-%m-%d-%H%M%S)
-          pg_dump "$DATABASE_URL" -F p -f "backups/prod-${TIMESTAMP}.sql" --no-owner --no-acl
-          echo "Backup criado: prod-${TIMESTAMP}.sql"
+          cp prisma/dev.db "backups/dev-${TIMESTAMP}.db"
+          echo "Backup criado: dev-${TIMESTAMP}.db"
 
       - name: Rotacionar backups (manter últimos 30)
         run: |
           cd backups
-          ls -1t prod-*.sql 2>/dev/null | tail -n +31 | xargs -r rm -f
-          echo "Backups restantes: $(ls -1 prod-*.sql 2>/dev/null | wc -l)"
+          ls -1t dev-*.db 2>/dev/null | tail -n +31 | xargs -r rm -f
+          echo "Backups restantes: $(ls -1 dev-*.db 2>/dev/null | wc -l)"
 
       - name: Commit e push
         run: |

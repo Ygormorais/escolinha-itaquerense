@@ -70,9 +70,14 @@ export default async function RootLayout({
   const session = await getSession()
   const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && pathname !== "/login"
 
-  const pendingEscalacoes = showAdminShell
-    ? await db.chatSession.count({ where: { bloqueado: true } })
-    : 0
+  let pendingEscalacoes = 0
+  if (showAdminShell) {
+    try {
+      pendingEscalacoes = await db.chatSession.count({ where: { bloqueado: true } })
+    } catch {
+      // DB indisponível — ignora
+    }
+  }
 
   return (
     <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
