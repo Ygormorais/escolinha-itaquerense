@@ -37,7 +37,6 @@ const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800 border-brand-300",
   Jogo: "bg-success-50 text-success-600 border-success-300",
   Evento: "bg-info-50 text-info-600 border-info-300",
-  Reunião: "bg-warning-50 text-warning-600 border-warning-300",
 }
 
 export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: number; ano: number }) {
@@ -300,7 +299,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                   <option value="Treino">Treino</option>
                   <option value="Jogo">Jogo</option>
                   <option value="Evento">Evento</option>
-                  <option value="Reunião">Reunião</option>
                 </select>
               </div>
               <div className="space-y-2">

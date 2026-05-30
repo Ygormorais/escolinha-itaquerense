@@ -15,7 +15,6 @@ const links = [
   { href: "/responsavel/desempenho", label: "Desempenho" },
   { href: "/responsavel/boletim", label: "Boletim" },
   { href: "/responsavel/carteirinha", label: "Carteirinha" },
-  { href: "/responsavel/reunioes", label: "Reuniões" },
   { href: "/responsavel/historia", label: "História" },
   { href: "/responsavel/lojinha", label: "Lojinha" },
 ]

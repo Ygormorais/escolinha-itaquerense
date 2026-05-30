@@ -38,7 +38,7 @@ export default function ResponsavelLoginPage() {
     <AuthShell
       badge="Portal do Responsável"
       title="Acompanhe as informações do seu filho com proximidade e clareza."
-      description="Entre no portal para consultar mensalidades, reunioes, comunicados, desempenho e os registros mais importantes da rotina na escolinha."
+      description="Entre no portal para consultar mensalidades, comunicados, desempenho e os registros mais importantes da rotina na escolinha."
       accentLabel="Acesso"
       accentValue="Informacoes da familia em um ambiente organizado e acolhedor"
       tone="responsavel"
