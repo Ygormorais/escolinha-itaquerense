@@ -3,8 +3,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { ConfigForm } from "./config-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { GerarAnoButton } from "@/components/ui/gerar-ano-button"
-import { CalendarRange, Mail } from "lucide-react"
-import { EmailNotifButton } from "@/components/ui/email-notif-button"
+import { CalendarRange } from "lucide-react"
 
 export default async function ConfiguracoesPage() {
   const config = await getClubConfig()
@@ -29,20 +28,6 @@ export default async function ConfiguracoesPage() {
             Meses já existentes são ignorados.
           </p>
           <GerarAnoButton />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="size-4 text-brand-800" />
-            Notificações por E-mail
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Envia e-mails automáticos para os responsáveis com mensalidades vencidas e lembretes de vencimento.
-          </p>
-          <EmailNotifButton />
         </CardContent>
       </Card>
     </div>
