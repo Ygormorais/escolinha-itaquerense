@@ -82,7 +82,6 @@ export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?
         { href: "/comunicados",   label: "Comunicados",   icon: Send },
         { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
         { href: "/caixa",         label: "Caixa",         icon: Wallet },
-        { href: "/reunioes",      label: "Reuniões",      icon: ClipboardList },
         { href: "/produtos",      label: "Produtos",      icon: ShoppingBag },
         { href: "/avaliacoes",    label: "Avaliações",    icon: Award },
       ],

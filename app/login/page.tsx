@@ -17,7 +17,7 @@ export default async function LoginPage({
     <AuthShell
       badge="Painel Administrativo"
       title="Gestao com mais clareza para a rotina da escolinha."
-      description="Acesse o painel para acompanhar alunos, pagamentos, frequencia, reunioes e operacoes do dia a dia em um unico fluxo."
+      description="Acesse o painel para acompanhar alunos, pagamentos, frequencia e operacoes do dia a dia em um unico fluxo."
       accentLabel="Ambiente"
       accentValue="Controle administrativo e acompanhamento operacional"
     >
