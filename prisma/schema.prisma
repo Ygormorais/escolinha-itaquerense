@@ -44,6 +44,12 @@ model Pagamento {
   valorRecebido  Float?
   observacoes    String?
   transacoes     TransacaoMaquina[]
+  canalPrevisto  String?
+  statusCobranca String?
+  externalId     String?
+  linhaDigitavel String?
+  pixCopiaECola  String?
+  externalUrl    String?
   createdAt      DateTime          @default(now())
 }
 
@@ -180,6 +186,10 @@ model Campeonato {
   inscricoes    InscricaoCampeonato[]
   partidas      Partida[]
   media         Media[]
+  classificacao ClassificacaoFpfs[]
+  fpfsEventoId  String?
+  fpfsSyncEm    DateTime?
+  fpfsTimeNome  String?
   createdAt     DateTime             @default(now())
 }
 
@@ -196,7 +206,33 @@ model Partida {
   resultado     String?    // Vitoria, Derrota, Empate — null se não realizada
   observacoes   String?
   media         Media[]
+  fpfsJogoId    String?
+  sumulaUrl     String?
   createdAt     DateTime   @default(now())
+
+  @@unique([campeonatoId, fpfsJogoId])
+}
+
+model ClassificacaoFpfs {
+  id            Int        @id @default(autoincrement())
+  campeonatoId  Int
+  campeonato    Campeonato @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  fase          String
+  grupo         String?
+  posicao       Int
+  timeNome      String
+  pontos        Int        @default(0)
+  jogos         Int        @default(0)
+  vitorias      Int        @default(0)
+  empates       Int        @default(0)
+  derrotas      Int        @default(0)
+  golsPro       Int        @default(0)
+  golsContra    Int        @default(0)
+  saldo         Int        @default(0)
+  ehNosso       Boolean    @default(false)
+  atualizadoEm  DateTime   @default(now())
+
+  @@index([campeonatoId])
 }
 
 model InscricaoCampeonato {
