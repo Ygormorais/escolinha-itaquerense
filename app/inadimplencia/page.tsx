@@ -29,7 +29,7 @@ export default async function InadimplenciaPage() {
       turma: string
       telefone: string
       mensalidade: number
-      pagamentos: { id: number; mesReferencia: string; dataVencimento: Date }[]
+      pagamentos: { id: number; mesReferencia: string; dataVencimento: Date; externalId: string | null; statusCobranca: string | null; canalPrevisto: string | null }[]
     }
   >()
 
@@ -48,6 +48,9 @@ export default async function InadimplenciaPage() {
       id: p.id,
       mesReferencia: p.mesReferencia,
       dataVencimento: p.dataVencimento,
+      externalId: p.externalId,
+      statusCobranca: p.statusCobranca,
+      canalPrevisto: p.canalPrevisto,
     })
   }
 

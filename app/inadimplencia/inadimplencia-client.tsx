@@ -26,6 +26,9 @@ type Pagamento = {
   id: number
   mesReferencia: string
   dataVencimento: Date
+  externalId: string | null
+  statusCobranca: string | null
+  canalPrevisto: string | null
 }
 
 type Inadimplente = {
@@ -258,13 +261,14 @@ export function InadimplenciaClient({
               <TableHead className="text-right">Valor em Aberto</TableHead>
               <TableHead>Vencimento Mais Antigo</TableHead>
               <TableHead>Nível</TableHead>
+              <TableHead>Cobrança</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   {search ? "Nenhum resultado para a busca" : "Nenhum aluno inadimplente"}
                 </TableCell>
               </TableRow>
@@ -315,6 +319,15 @@ export function InadimplenciaClient({
                       <Badge className="inline-flex items-center gap-1 bg-warning-50 text-warning-600">
                         <AlertTriangle className="size-3" /> Atenção
                       </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {a.pagamentos.some((p) => p.externalId) ? (
+                      <span className="text-xs text-muted-foreground">
+                        {a.pagamentos.find((p) => p.externalId)?.canalPrevisto} · {a.pagamentos.find((p) => p.externalId)?.statusCobranca}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-warning-600">Sem cobrança</span>
                     )}
                   </TableCell>
                   <TableCell>
