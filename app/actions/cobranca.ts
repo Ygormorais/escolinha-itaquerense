@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
-import { mpPayment, mpStatusToLocal } from "@/lib/mercadopago"
+import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
 
 type Canal = "PIX" | "Boleto"
 type ActionResult = { success: true } | { error: string }
@@ -40,7 +40,7 @@ export async function emitirCobranca(
 
     const data: Record<string, string | null> = {
       canalPrevisto: canal,
-      statusCobranca: mpStatusToLocal(response.status as never),
+      statusCobranca: mpStatusToLocal(response.status as MpPaymentStatus),
       externalId: String(response.id),
       externalUrl: null,
       linhaDigitavel: null,
@@ -111,7 +111,8 @@ export async function cancelarCobranca(
   if (!pagamento.externalId) return { error: "Nenhuma cobrança emitida." }
 
   try {
-    await mpPayment.cancel({ id: pagamento.externalId })
+    const externalIdAnterior = pagamento.externalId
+    await mpPayment.cancel({ id: externalIdAnterior })
 
     await db.pagamento.update({
       where: { id: pagamentoId },
@@ -127,7 +128,7 @@ export async function cancelarCobranca(
     await registrarLog(
       "cobranca_cancelada",
       `Cobrança cancelada — ${pagamento.aluno.nome}`,
-      {}
+      { externalId: externalIdAnterior }
     )
 
     revalidatePath("/pagamentos")
