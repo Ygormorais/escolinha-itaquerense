@@ -39,8 +39,9 @@ const css = `
   .lp .utility .social{gap:14px;font-size:15px}
   .lp .utility .social a:hover{color:#ffd6d6}
   .lp header.site{position:sticky;top:0;z-index:1000;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.12)}
-  .lp .header-row{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
-  .lp .brand{display:flex;align-items:center;gap:12px}
+  .lp .header-row{display:flex;align-items:center;height:72px;gap:12px;overflow:hidden}
+  .lp .header-row nav.main{flex:1;min-width:0;overflow:hidden}
+  .lp .brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
   .lp .brand .shield{width:50px;height:50px}
   .lp .brand .name{font-family:'Roboto Condensed',sans-serif;text-transform:uppercase;line-height:1}
   .lp .brand .name b{display:block;font-size:21px;color:var(--red);letter-spacing:.5px}
@@ -57,7 +58,6 @@ const css = `
   .lp .mega h4{font-family:'Roboto Condensed',sans-serif;text-transform:uppercase;font-size:13px;color:var(--red);letter-spacing:.5px;margin-bottom:8px;border-bottom:1px solid var(--gray-line);padding-bottom:6px}
   .lp .mega a{display:block;padding:6px 0;font-size:14px;color:#444;transition:.2s}
   .lp .mega a:hover{color:var(--red);padding-left:6px}
-  .lp .search-btn{font-size:22px;color:var(--red);background:none;border:none;cursor:pointer;padding:8px}
   .lp .burger{display:none;font-size:26px;color:var(--red);background:none;border:none;cursor:pointer}
   .lp .hero{background:linear-gradient(120deg,var(--red-deep),var(--red) 55%,var(--red-dark));color:#fff;position:relative;overflow:hidden}
   .lp .hero::after{content:'';position:absolute;right:-120px;top:-120px;width:480px;height:480px;border-radius:50%;background:rgba(255,255,255,.06)}
@@ -193,7 +193,7 @@ const css = `
     .lp .foot-grid{grid-template-columns:1fr}
     .lp .foot-bottom .container{flex-direction:column;text-align:center}
   }
-  .lp .access{display:flex;align-items:center;gap:10px}
+  .lp .access{display:flex;align-items:center;gap:8px;flex-shrink:0}
   .lp .btn-access{font-family:'Roboto Condensed',sans-serif;text-transform:uppercase;letter-spacing:.5px;font-weight:700;font-size:12px;padding:8px 14px;border-radius:4px;border:2px solid var(--red);color:var(--red);display:flex;align-items:center;gap:6px;transition:.2s}
   .lp .btn-access:hover{background:var(--red);color:#fff}
   .lp .btn-access.primary{background:var(--red);color:#fff}
@@ -273,21 +273,6 @@ export default function Landing() {
                   <div><h4>Sócio</h4><a href="#">Sócio Torcedor</a><a href="#">Planos</a><a href="#">Benefícios</a></div>
                 </div>
               </li>
-              <li><a href="#">Transparência</a>
-                <div className="mega small">
-                  <div><h4>Transparência</h4><a href="#">Balanços</a><a href="#">Demonstrações</a><a href="#">Relatórios</a><a href="#">Editais</a></div>
-                </div>
-              </li>
-              <li><a href="#">Negócios</a>
-                <div className="mega small">
-                  <div><h4>Negócios</h4><a href="#">Patrocínios</a><a href="#">Licenciamento</a><a href="#">Hospitalidade</a><a href="#">Parcerias</a></div>
-                </div>
-              </li>
-              <li><a href="#">Imprensa</a>
-                <div className="mega small">
-                  <div><h4>Imprensa</h4><a href="#">Releases</a><a href="#">Credenciamento</a><a href="#">Galeria</a><a href="#">Contato</a></div>
-                </div>
-              </li>
               <li><a href="#">Notícias</a>
                 <div className="mega">
                   <div><h4>Categorias</h4><a href="#">Futebol</a><a href="#">Modalidades</a><a href="#">Clube</a></div>
@@ -303,7 +288,6 @@ export default function Landing() {
             <a href="/login" className="btn-access" aria-label="Área administrativa"><i className="ti ti-lock"></i> Entrar</a>
           </div>
 
-          <button className="search-btn" aria-label="Buscar"><i className="ti ti-search"></i></button>
         </div>
       </header>
 
@@ -508,7 +492,7 @@ export default function Landing() {
           <div className="fcol"><h4>Clube</h4><a href="#">História</a><a href="#">Estatuto</a><a href="#">Gestão</a><a href="#">Arena</a><a href="#">Memória</a></div>
           <div className="fcol"><h4>Futebol</h4><a href="#">Elenco Masculino</a><a href="#">Elenco Feminino</a><a href="/turmas">Turmas</a><a href="#">Comissão</a></div>
           <div className="fcol"><h4>Modalidades</h4><a href="#">Basquete</a><a href="#">Futsal</a><a href="#">Natação</a><a href="#">eSports</a></div>
-          <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a><a href="#">Loja Oficial</a><a href="#">Imprensa</a></div>
+          <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a><a href="#">Loja Oficial</a></div>
         </div>
         <div className="foot-bottom">
           <div className="container">
