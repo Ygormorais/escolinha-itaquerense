@@ -150,7 +150,7 @@ export async function notificarPagamentoConfirmadoEmail(pagamentoId: number): Pr
 
   const html = `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
-      <div style="background:#7F0000;color:white;padding:24px 32px;border-radius:8px 8px 0 0">
+      <div style="background:#1a3c34;color:white;padding:24px 32px;border-radius:8px 8px 0 0">
         <h2 style="margin:0;font-size:18px">${config.nome}</h2>
         <p style="margin:4px 0 0;opacity:.7;font-size:13px">Pagamento confirmado</p>
       </div>

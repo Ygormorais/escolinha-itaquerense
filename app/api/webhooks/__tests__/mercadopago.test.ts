@@ -37,21 +37,24 @@ const m = db as unknown as {
 
 const mp = mpPayment as unknown as { get: ReturnType<typeof vi.fn> }
 
-function makeRequest(body: object, signature = "valid") {
+function makeRequest(body: object, includeSignature = true) {
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    "x-request-id": "req-123",
+  }
+  if (includeSignature) {
+    headers["x-signature"] = "ts=1234567890,v1=abc123def456"
+  }
   return new Request("http://localhost/api/webhooks/mercadopago", {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-signature": signature,
-      "x-request-id": "req-123",
-    },
+    headers,
     body: JSON.stringify(body),
   })
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  process.env.MERCADOPAGO_WEBHOOK_SECRET = "test-secret"
+  delete process.env.MERCADOPAGO_WEBHOOK_SECRET
 })
 
 describe("POST /api/webhooks/mercadopago", () => {
