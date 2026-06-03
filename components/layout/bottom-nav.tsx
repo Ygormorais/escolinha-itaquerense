@@ -25,7 +25,7 @@ export function BottomNav() {
       aria-label="Navegação rápida"
     >
       {items.map(({ href, label, icon: Icon }) => {
-        const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href)
+        const isActive = pathname.startsWith(href)
         return (
           <Link
             key={href}

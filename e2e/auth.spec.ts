@@ -32,7 +32,7 @@ test.describe("Autenticação", () => {
     await expect(page).toHaveURL("/login")
   })
 
-  test("já autenticado redireciona de /login para /", async ({ page }) => {
+  test("já autenticado redireciona de /login para /dashboard", async ({ page }) => {
     // Autentica via API: o cookie de sessão entra no jar do contexto e é enviado
     // nas navegações seguintes. (Logar pelo formulário com fetch in-page não
     // propaga o cookie de forma confiável para a navegação imediata no harness.)
