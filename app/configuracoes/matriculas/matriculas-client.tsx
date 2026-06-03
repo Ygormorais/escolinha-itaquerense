@@ -3,11 +3,18 @@
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Check, X, Trash2, ExternalLink, Search } from "lucide-react"
+import { Check, X, Trash2, ExternalLink, Search, GraduationCap } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { aprovarPreMatricula, recusarPreMatricula, deletarPreMatricula } from "@/app/actions/matricula"
 
 type MatriculaRow = {
@@ -47,11 +54,11 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
     )
   })
 
-  function handleAprovar(id: number) {
+  function handleAprovar(id: number, mensalidade: number, desconto: number) {
     startTransition(async () => {
-      const res = await aprovarPreMatricula(id)
+      const res = await aprovarPreMatricula(id, { mensalidade, desconto })
       if ("error" in res) toast.error((res as { error: string }).error)
-      else toast.success("Pré-matrícula aprovada")
+      else toast.success("Pré-matrícula aprovada — aluno criado")
     })
   }
 
@@ -141,10 +148,10 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
                 <div className="flex items-center gap-2 shrink-0">
                   {m.status === "pendente" && (
                     <>
-                      <Button size="sm" variant="outline" onClick={() => handleAprovar(m.id)} className="text-success-600 border-success-600 hover:bg-success-50">
-                        <Check className="size-4" />
-                        Aprovar
-                      </Button>
+                      <AprovarDialog
+                        nomeAluno={m.nomeAluno}
+                        onConfirm={(mensalidade, desconto) => handleAprovar(m.id, mensalidade, desconto)}
+                      />
                       <Button size="sm" variant="outline" onClick={() => handleRecusar(m.id)} className="text-destructive border-destructive hover:bg-destructive-50">
                         <X className="size-4" />
                         Recusar
@@ -163,5 +170,99 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
         </div>
       </div>
     </div>
+  )
+}
+
+function AprovarDialog({
+  nomeAluno,
+  onConfirm,
+}: {
+  nomeAluno: string
+  onConfirm: (mensalidade: number, desconto: number) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [mensalidade, setMensalidade] = useState("")
+  const [desconto, setDesconto] = useState("")
+
+  const valor = Number(mensalidade)
+  const valido = mensalidade.trim() !== "" && Number.isFinite(valor) && valor >= 0
+
+  function handleConfirm() {
+    if (!valido) return
+    const desc = Number(desconto)
+    onConfirm(valor, Number.isFinite(desc) && desc > 0 ? desc : 0)
+    setOpen(false)
+    setMensalidade("")
+    setDesconto("")
+  }
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="text-success-600 border-success-600 hover:bg-success-50"
+      >
+        <Check className="size-4" />
+        Aprovar
+      </Button>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v)
+          if (!v) {
+            setMensalidade("")
+            setDesconto("")
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GraduationCap className="size-5 text-success-600" />
+              Aprovar matrícula de {nomeAluno}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <label className="grid gap-1.5 text-sm">
+              <span className="font-medium">Mensalidade (R$)</span>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={mensalidade}
+                onChange={(e) => setMensalidade(e.target.value)}
+                placeholder="Ex.: 200"
+                autoFocus
+              />
+            </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="font-medium">Desconto (R$) — opcional</span>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={desconto}
+                onChange={(e) => setDesconto(e.target.value)}
+                placeholder="0"
+              />
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={!valido}
+              className="bg-success-600 text-white hover:bg-success-700"
+            >
+              Criar aluno
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
