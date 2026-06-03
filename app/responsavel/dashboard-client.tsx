@@ -55,7 +55,7 @@ export function ResponsavelDashboardClient({
   function frequenciaUltimos(aluno: Aluno): string {
     const recentes = aluno.frequencias.slice(0, 5)
     if (recentes.length === 0) return "Nenhum registro"
-    const presencas = recentes.filter((f) => f.presenca === "presente").length
+    const presencas = recentes.filter((f) => f.presenca === "Presente").length
     return `${presencas}/${recentes.length} presenças`
   }
 

@@ -167,7 +167,7 @@ export async function executeTool(name: string, input: ToolInput): Promise<strin
           where: { alunoId, data: { gte: start, lte: end } },
         })
         const total = frequencias.length
-        const presencas = frequencias.filter((f) => f.presenca === "presente").length
+        const presencas = frequencias.filter((f) => f.presenca === "Presente").length
         const faltas = total - presencas
         const pct = total > 0 ? Math.round((presencas / total) * 100) : 0
         const label = periodo === "mes_atual" ? "este mês" : "mês passado"
