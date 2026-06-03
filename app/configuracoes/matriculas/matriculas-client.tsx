@@ -207,7 +207,16 @@ function AprovarDialog({
         <Check className="size-4" />
         Aprovar
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v)
+          if (!v) {
+            setMensalidade("")
+            setDesconto("")
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
