@@ -307,7 +307,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                   {p.ativo ? (
                     <Badge
                       variant="default"
-                      className="gap-1 bg-green-600 text-white"
+                      className="gap-1 bg-success-600 text-white"
                     >
                       <CheckCircle className="size-3" /> Sim
                     </Badge>
