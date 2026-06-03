@@ -6,7 +6,7 @@ import { LayoutDashboard, Users, CreditCard, Settings, Wallet } from "lucide-rea
 import { cn } from "@/lib/utils"
 
 const items = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/alunos", label: "Alunos", icon: Users },
   { href: "/caixa", label: "Caixa", icon: Wallet },
   { href: "/pagamentos", label: "Pagamentos", icon: CreditCard },
