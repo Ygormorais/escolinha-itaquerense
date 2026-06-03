@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -22,11 +22,15 @@ const links = [
 
 export function NavResponsavel() {
   const pathname = usePathname()
-  const router = useRouter()
 
   async function handleLogout() {
-    await fetch("/api/responsavel/logout", { method: "POST" })
-    router.push("/responsavel/login")
+    try {
+      await fetch("/api/responsavel/logout", { method: "POST" })
+    } finally {
+      // navegação hard: descarta o cache RSC do cliente e respeita o cookie
+      // apagado, igual ao logout do painel admin.
+      window.location.href = "/responsavel/login"
+    }
   }
 
   return (
