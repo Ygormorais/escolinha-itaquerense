@@ -24,13 +24,15 @@ test.describe("Pré-Matrícula Pública", () => {
 
   test("envio bem-sucedido exibe mensagem de confirmação", async ({ page }) => {
     await page.goto("/matricula")
+    // aguarda hidratação para o handler JS de submit estar ativo
+    await page.waitForLoadState("networkidle")
     await page.fill('input[id="aluno"]', "Teste E2E")
     await page.fill('input[id="dataNasc"]', "2015-06-15")
     await page.fill('input[id="responsavel"]', "Responsável Teste")
     await page.fill('input[id="telefone"]', "(11) 99999-8888")
     await page.fill('input[id="email"]', "teste@email.com")
     await page.click('button[type="submit"]')
-    await expect(page.locator("text=Pré-matrícula enviada")).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole("heading", { name: /Pré-matrícula enviada/ })).toBeVisible({ timeout: 10000 })
   })
 })
 
