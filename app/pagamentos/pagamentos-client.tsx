@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner"
 import { registrarPagamento, gerarMensalidadesMes, deletePagamento, registrarPagamentosLote } from "@/app/actions/pagamentos"
 import { PixButton } from "@/components/ui/pix-modal"
+import { CobrancaDialog } from "@/components/ui/cobranca-dialog"
 
 type Pagamento = {
   id: number
@@ -33,6 +34,12 @@ type Pagamento = {
   formaPagamento: string | null
   valorRecebido: number | null
   aluno: { nome: string; turma: string; mensalidade: number; telefone: string }
+  canalPrevisto: string | null
+  statusCobranca: string | null
+  externalId: string | null
+  pixCopiaECola: string | null
+  linhaDigitavel: string | null
+  externalUrl: string | null
 }
 
 type StatusPagamento = "Pago" | "Pendente" | "Vencido"
@@ -44,6 +51,27 @@ function getPagamentoStatus(p: Pagamento): StatusPagamento {
 }
 
 const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
+
+function CobrancaBadge({ status }: { status: string | null }) {
+  if (!status) return null
+  const styles: Record<string, string> = {
+    pendente: "bg-muted text-muted-foreground",
+    pago: "bg-success-50 text-success-600",
+    vencido: "bg-danger-50 text-danger-600",
+    cancelado: "bg-warning-50 text-warning-600",
+  }
+  const labels: Record<string, string> = {
+    pendente: "Aguardando",
+    pago: "Pago MP",
+    vencido: "Vencido",
+    cancelado: "Cancelado",
+  }
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${styles[status] ?? ""}`}>
+      {labels[status] ?? status}
+    </span>
+  )
+}
 
 function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
   const [open, setOpen] = useState(false)
@@ -456,6 +484,7 @@ export function PagamentosClient({
               <TableHead>Turma</TableHead>
               <TableHead>Vencimento</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Cobrança</TableHead>
               <TableHead>Pagamento</TableHead>
               <TableHead className="text-right">Valor</TableHead>
               <TableHead className="w-28">Ação</TableHead>
@@ -464,7 +493,7 @@ export function PagamentosClient({
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   Nenhum pagamento encontrado
                 </TableCell>
               </TableRow>
@@ -487,6 +516,31 @@ export function PagamentosClient({
                   <TableCell>{p.aluno.turma}</TableCell>
                   <TableCell>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
                   <TableCell><StatusBadge status={status} /></TableCell>
+                  <TableCell>
+                    {p.externalId ? (
+                      <CobrancaDialog
+                        pagamentoId={p.id}
+                        alunoNome={p.aluno.nome}
+                        mesReferencia={p.mesReferencia}
+                        pixCopiaECola={p.pixCopiaECola}
+                        linhaDigitavel={p.linhaDigitavel}
+                        externalUrl={p.externalUrl}
+                        canalPrevisto={p.canalPrevisto}
+                      >
+                        <CobrancaBadge status={p.statusCobranca} />
+                      </CobrancaDialog>
+                    ) : !p.dataPagamento ? (
+                      <CobrancaDialog
+                        pagamentoId={p.id}
+                        alunoNome={p.aluno.nome}
+                        mesReferencia={p.mesReferencia}
+                      >
+                        <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                          <QrCode className="size-3" /> Gerar
+                        </Button>
+                      </CobrancaDialog>
+                    ) : null}
+                  </TableCell>
                   <TableCell>
                     {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"}
                   </TableCell>
