@@ -201,7 +201,7 @@ export function FrequenciaClient() {
                                   ? "bg-success-600 text-white"
                                   : opcao === "Ausente"
                                   ? "bg-danger-600 text-white"
-                                  : "bg-blue-600 text-white"
+                                  : "bg-info-600 text-white"
                                 : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}
                           >

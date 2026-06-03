@@ -29,19 +29,19 @@ const TIPO_CONFIG: Record<string, { icon: React.ElementType; cor: string; label:
   pagamento_pago: { icon: CreditCard, cor: "text-success-600 bg-success-50", label: "Pagamento" },
   pagamento_excluido: { icon: Trash2, cor: "text-danger-600 bg-danger-50", label: "Exclusão" },
   aluno_novo: { icon: UserPlus, cor: "text-brand-600 bg-brand-50", label: "Novo aluno" },
-  aluno_editado: { icon: Pencil, cor: "text-blue-600 bg-blue-50", label: "Edição" },
+  aluno_editado: { icon: Pencil, cor: "text-info-600 bg-info-50", label: "Edição" },
   aluno_inativo: { icon: UserX, cor: "text-danger-600 bg-danger-50", label: "Inativação" },
   aluno_reativo: { icon: UserCheck, cor: "text-success-600 bg-success-50", label: "Reativação" },
-  frequencia: { icon: CalendarCheck, cor: "text-blue-600 bg-blue-50", label: "Frequência" },
+  frequencia: { icon: CalendarCheck, cor: "text-info-600 bg-info-50", label: "Frequência" },
   recibo: { icon: Receipt, cor: "text-violet-600 bg-violet-50", label: "Recibo" },
   config: { icon: Settings, cor: "text-muted-foreground bg-muted", label: "Configuração" },
   inadimplencia: { icon: AlertCircle, cor: "text-warning-600 bg-warning-50", label: "Inadimplência" },
   evento_criado: { icon: CalendarCheck, cor: "text-brand-600 bg-brand-50", label: "Evento" },
-  evento_editado: { icon: Pencil, cor: "text-blue-600 bg-blue-50", label: "Evento" },
+  evento_editado: { icon: Pencil, cor: "text-info-600 bg-info-50", label: "Evento" },
   evento_excluido: { icon: Trash2, cor: "text-danger-600 bg-danger-50", label: "Evento" },
   custo_novo: { icon: Receipt, cor: "text-warning-600 bg-warning-50", label: "Custo" },
   campeonato_criado: { icon: Trophy, cor: "text-brand-600 bg-brand-50", label: "Campeonato" },
-  escalacao_chatbot: { icon: AlertCircle, cor: "text-orange-600 bg-orange-50", label: "Chatbot" },
+  escalacao_chatbot: { icon: AlertCircle, cor: "text-warning-600 bg-warning-50", label: "Chatbot" },
 }
 
 export function HistoricoClient({ logs }: { logs: Log[] }) {

@@ -19,7 +19,7 @@ const toneStyles = {
     panel: "bg-[radial-gradient(circle_at_top,_rgba(127,0,0,0.08),_transparent_55%)]",
   },
   responsavel: {
-    glow: "from-amber-100/80 via-brand-100/50 to-transparent",
+    glow: "from-warning-50/80 via-brand-100/50 to-transparent",
     panel: "bg-[radial-gradient(circle_at_top,_rgba(198,40,40,0.08),_transparent_55%)]",
   },
 }
