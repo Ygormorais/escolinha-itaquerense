@@ -89,9 +89,11 @@ const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Bolet
 export function CampeonatoDetailClient({
   campeonato,
   alunosDisponiveis,
+  nomeClube = "E.C. Itaquerense",
 }: {
   campeonato: Campeonato
   alunosDisponiveis: { id: number; nome: string; turma: string }[]
+  nomeClube?: string
 }) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
@@ -562,7 +564,7 @@ export function CampeonatoDetailClient({
         </CardContent>
       </Card>
 
-      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} />
+      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} nomeClube={nomeClube} />
 
       <Dialog open={inscreverOpen} onOpenChange={setInscreverOpen}>
         <DialogContent>

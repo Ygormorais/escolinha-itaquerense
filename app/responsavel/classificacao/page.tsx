@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
+import { getConfig } from "@/lib/config"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 
 export default async function ClassificacaoPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")
+
+  const config = getConfig()
 
   const campeonatos = await db.campeonato.findMany({
     include: {
@@ -58,7 +61,7 @@ export default async function ClassificacaoPage() {
                     <tr className="border-t hover:bg-muted/50 transition-colors">
                       <td className="px-4 py-3 font-semibold flex items-center gap-2">
                         <span className="size-2 rounded-full bg-brand-600" />
-                        Elite Itaquerense
+                        {config.nome}
                       </td>
                       <td className="px-3 py-3 text-center font-bold text-brand-600">{pontos}</td>
                       <td className="px-3 py-3 text-center">{realizadas.length}</td>

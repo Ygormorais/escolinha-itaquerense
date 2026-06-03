@@ -150,8 +150,8 @@ function exportarCSV(inadimplentes: Inadimplente[]) {
   URL.revokeObjectURL(url)
 }
 
-function gerarLinkWA(a: Inadimplente) {
-  const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${a.pagamentos.length} mensalidade(s) em aberto na Escolinha Itaquerense.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
+function gerarLinkWA(a: Inadimplente, nomeClube: string) {
+  const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${a.pagamentos.length} mensalidade(s) em aberto na ${nomeClube}.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
   return `https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`
 }
 
@@ -189,7 +189,7 @@ export function InadimplenciaClient({
     if (filtered.length === 0) return
     setEnviando(true)
     for (let i = 0; i < filtered.length; i++) {
-      window.open(gerarLinkWA(filtered[i]), "_blank")
+      window.open(gerarLinkWA(filtered[i], nomeClube ?? "Escolinha"), "_blank")
       if (i < filtered.length - 1) await new Promise((r) => setTimeout(r, 800))
     }
     setEnviando(false)
@@ -289,7 +289,7 @@ export function InadimplenciaClient({
                         {a.telefone}
                       </a>
                       <a
-                        href={gerarLinkWA(a)}
+                        href={gerarLinkWA(a, nomeClube ?? "Escolinha")}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs font-medium text-success-600 hover:underline"
