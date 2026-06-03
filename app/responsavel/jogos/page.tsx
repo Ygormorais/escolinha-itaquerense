@@ -81,6 +81,11 @@ export default async function JogosPage() {
               <span className="size-2 rounded-full bg-brand-600" />
               {campeonato.nome}
             </h2>
+            {campeonato.fpfsSyncEm && (
+              <p className="mb-3 -mt-2 text-xs text-muted-foreground">
+                Atualizado da FPFS em {format(new Date(campeonato.fpfsSyncEm), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+              </p>
+            )}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {pts.map((p) => {
                 const data = format(new Date(p.data), "dd/MM/yyyy", { locale: ptBR })
@@ -99,6 +104,16 @@ export default async function JogosPage() {
                       <p>{data} · Rodada {p.rodada}</p>
                       <p>{p.local === "Casa" ? "🏠 Casa" : p.local === "Fora" ? "✈️ Fora" : "⚖️ Neutro"}</p>
                       {placar && <p className="text-base font-bold text-foreground">{placar}</p>}
+                      {p.sumulaUrl && (
+                        <a
+                          href={p.sumulaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block text-xs font-semibold text-brand-600 underline"
+                        >
+                          Ver súmula
+                        </a>
+                      )}
                     </CardContent>
                   </Card>
                 )
