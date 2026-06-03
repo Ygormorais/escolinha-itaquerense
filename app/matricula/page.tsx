@@ -12,7 +12,7 @@ export default function MatriculaPage() {
       <div className="mx-auto max-w-2xl px-4 py-12">
         <div className="mb-8 text-center">
           <Image
-            src="/logo.jpg"
+            src="/logo.png"
             alt="E.C. Itaquerense"
             width={80}
             height={80}

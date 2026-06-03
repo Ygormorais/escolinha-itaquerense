@@ -48,13 +48,13 @@ export const metadata: Metadata = {
     siteName: "Escolinha Itaquerense",
     title: "Escolinha Itaquerense",
     description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos.",
-    images: [{ url: "/logo.jpg", width: 500, height: 500, alt: "E.C. Itaquerense" }],
+    images: [{ url: "/logo.png", width: 500, height: 500, alt: "E.C. Itaquerense" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Escolinha Itaquerense",
     description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos.",
-    images: ["/logo.jpg"],
+    images: ["/logo.png"],
   },
   robots: {
     index: false,
@@ -89,7 +89,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="E.C. Itaquerense" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="Escolinha Itaquerense" />
-        <link rel="apple-touch-icon" href="/logo.jpg" sizes="500x500" />
+        <link rel="apple-touch-icon" href="/logo.png" sizes="500x500" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -98,7 +98,7 @@ export default async function RootLayout({
               "@type": "SportsActivityLocation",
               name: "E.C. Itaquerense — Escolinha de Futebol",
               description: "Escolinha de futebol formando atletas e cidadãos.",
-              image: "/logo.jpg",
+              image: "/logo.png",
               url: baseUrl,
               sport: "Futebol",
               address: {

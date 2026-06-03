@@ -241,7 +241,7 @@ export default function Landing() {
       <header className="site">
         <div className="container header-row">
           <Link className="brand" href="/">
-            <img className="shield" src="/logo.jpg" alt="E.C. Itaquerense" />
+            <img className="shield" src="/logo.png" alt="E.C. Itaquerense" />
             <span className="name"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
           </Link>
 
@@ -328,27 +328,27 @@ export default function Landing() {
           <div className="mb-cell">
             <span className="mb-comp">Último Jogo · 18ª Rodada</span>
             <div className="mb-match">
-              <img className="mb-badge" src="/logo.jpg" alt="E.C. Itaquerense" />
+              <img className="mb-badge" src="/logo.png" alt="E.C. Itaquerense" />
               <span className="mb-score">1 × 0</span>
-              <img className="mb-badge" src="/logo.jpg" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} />
+              <img className="mb-badge" src="/logo.png" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} />
             </div>
             <span className="mb-info">Itaquerense 1 × 0 Vila Real — 01/06/2026</span>
           </div>
           <div className="mb-cell">
             <span className="mb-comp">Copa Regional · Oitavas</span>
             <div className="mb-match">
-              <img className="mb-badge" src="/logo.jpg" alt="E.C. Itaquerense" />
+              <img className="mb-badge" src="/logo.png" alt="E.C. Itaquerense" />
               <span className="mb-score">2 × 1</span>
-              <img className="mb-badge" src="/logo.jpg" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} />
+              <img className="mb-badge" src="/logo.png" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} />
             </div>
             <span className="mb-info">Itaquerense 2 × 1 União EC — 31/05/2026</span>
           </div>
           <div className="mb-cell">
             <span className="mb-comp">Próximo Jogo · 19ª Rodada</span>
             <div className="mb-match">
-              <img className="mb-badge" src="/logo.jpg" alt="E.C. Itaquerense" />
+              <img className="mb-badge" src="/logo.png" alt="E.C. Itaquerense" />
               <span className="mb-score">VS</span>
-              <img className="mb-badge" src="/logo.jpg" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} />
+              <img className="mb-badge" src="/logo.png" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} />
             </div>
             <span className="mb-info">Itaquerense vs Atlético Leste — 07/06/2026 16h</span>
             <a href="/matricula" className="btn btn-white" style={{ padding: "8px 20px", marginTop: "4px" }}>Matrícula</a>
@@ -426,27 +426,27 @@ export default function Landing() {
             <div className="result-card">
               <div className="rc-head">Campeonato · 18ª Rodada</div>
               <div className="rc-body">
-                <div className="rc-team"><img className="mb-badge" src="/logo.jpg" alt="E.C. Itaquerense" /><b>Itaquerense</b></div>
+                <div className="rc-team"><img className="mb-badge" src="/logo.png" alt="E.C. Itaquerense" /><b>Itaquerense</b></div>
                 <span className="rc-score">1 × 0</span>
-                <div className="rc-team"><img className="mb-badge" src="/logo.jpg" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} /><b>Vila Real</b></div>
+                <div className="rc-team"><img className="mb-badge" src="/logo.png" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} /><b>Vila Real</b></div>
               </div>
               <div className="rc-foot"><span className="status done">Encerrado</span><span>01/06/2026</span></div>
             </div>
             <div className="result-card">
               <div className="rc-head">Copa Regional · Oitavas</div>
               <div className="rc-body">
-                <div className="rc-team"><img className="mb-badge" src="/logo.jpg" alt="E.C. Itaquerense" /><b>Itaquerense</b></div>
+                <div className="rc-team"><img className="mb-badge" src="/logo.png" alt="E.C. Itaquerense" /><b>Itaquerense</b></div>
                 <span className="rc-score">2 × 1</span>
-                <div className="rc-team"><img className="mb-badge" src="/logo.jpg" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} /><b>União EC</b></div>
+                <div className="rc-team"><img className="mb-badge" src="/logo.png" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} /><b>União EC</b></div>
               </div>
               <div className="rc-foot"><span className="status done">Encerrado</span><span>31/05/2026</span></div>
             </div>
             <div className="result-card">
               <div className="rc-head">Campeonato · 19ª Rodada</div>
               <div className="rc-body">
-                <div className="rc-team"><img className="mb-badge" src="/logo.jpg" alt="E.C. Itaquerense" /><b>Itaquerense</b></div>
+                <div className="rc-team"><img className="mb-badge" src="/logo.png" alt="E.C. Itaquerense" /><b>Itaquerense</b></div>
                 <span className="rc-score">VS</span>
-                <div className="rc-team"><img className="mb-badge" src="/logo.jpg" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} /><b>Atlético Leste</b></div>
+                <div className="rc-team"><img className="mb-badge" src="/logo.png" alt="Adversário" style={{ filter: "grayscale(1) opacity(.6)" }} /><b>Atlético Leste</b></div>
               </div>
               <div className="rc-foot"><span className="status next">Próximo Jogo</span><span>07/06/2026 16h</span></div>
             </div>
@@ -495,7 +495,7 @@ export default function Landing() {
       <footer>
         <div className="container foot-grid">
           <div className="foot-brand">
-            <img className="shield" src="/logo.jpg" alt="E.C. Itaquerense" />
+            <img className="shield" src="/logo.png" alt="E.C. Itaquerense" />
             <p>E.C. Itaquerense — site oficial. Tradição, paixão e formação esportiva em cada modalidade. Vamos juntos por mais conquistas.</p>
             <div className="foot-social">
               <a href="#" aria-label="Instagram"><i className="ti ti-brand-instagram"></i></a>

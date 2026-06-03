@@ -76,7 +76,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/responsavel") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
-    pathname === "/logo.jpg" ||
+    pathname === "/logo.png" ||
     pathname === "/sw.js" ||
     pathname === "/manifest.json"
   ) {
