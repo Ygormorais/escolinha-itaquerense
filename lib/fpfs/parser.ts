@@ -1,9 +1,11 @@
 import * as cheerio from "cheerio"
 import type { JogoFpfs, LinhaClassificacao } from "./types"
 
-function dataIso(dataBr: string): string {
+function dataIso(dataBr: string, anoTemporada?: number): string {
+  // O site exibe datas como "11/04" (sem ano). Usamos o ano da temporada
+  // (data de inicio do campeonato) quando disponivel; senao o ano corrente.
   const [dia, mes, ano] = dataBr.trim().split("/")
-  const yyyy = ano ?? String(new Date().getFullYear())
+  const yyyy = ano ?? String(anoTemporada ?? new Date().getFullYear())
   return `${yyyy}-${(mes ?? "").padStart(2, "0")}-${(dia ?? "").padStart(2, "0")}`
 }
 
@@ -23,7 +25,7 @@ function num(txt: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
-export function parseJogos(html: string): JogoFpfs[] {
+export function parseJogos(html: string, anoTemporada?: number): JogoFpfs[] {
   const $ = cheerio.load(html)
   const jogos: JogoFpfs[] = []
   $("table.classification_table tbody tr").each((_, el) => {
@@ -42,7 +44,7 @@ export function parseJogos(html: string): JogoFpfs[] {
     jogos.push({
       fpfsJogoId: jogoIdDaSumula(sumulaHref),
       rodada: 1,
-      data: dataIso(dataTxt),
+      data: dataIso(dataTxt, anoTemporada),
       hora: horaTxt || null,
       ginasio,
       mandante,

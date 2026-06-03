@@ -101,7 +101,7 @@ export default async function JogosPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-1 text-sm text-muted-foreground">
-                      <p>{data} · Rodada {p.rodada}</p>
+                      <p>{data}{!p.fpfsJogoId ? ` · Rodada ${p.rodada}` : ""}</p>
                       <p>{p.local === "Casa" ? "🏠 Casa" : p.local === "Fora" ? "✈️ Fora" : "⚖️ Neutro"}</p>
                       {placar && <p className="text-base font-bold text-foreground">{placar}</p>}
                       {p.sumulaUrl && (

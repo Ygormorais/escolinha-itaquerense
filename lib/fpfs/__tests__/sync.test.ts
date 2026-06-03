@@ -81,4 +81,46 @@ describe("syncCampeonato", () => {
     m.campeonato.findUnique.mockResolvedValue({ id: 1, fpfsEventoId: null })
     await expect(syncCampeonato(1)).rejects.toThrow()
   })
+
+  it("usa chave estavel para jogo sem sumula (nao duplica entre syncs)", async () => {
+    ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValue([
+      { fpfsJogoId: null, rodada: 1, data: "2026-04-11", hora: "10:00", ginasio: "G2",
+        mandante: "Time X", visitante: "Time Y", golsMandante: null, golsVisitante: null, sumulaUrl: null },
+    ])
+    // 1a execucao: nao existe -> cria com chave sintetica nao nula
+    m.partida.findFirst.mockResolvedValue(null)
+    await syncCampeonato(1)
+    const criado = m.partida.create.mock.calls[0][0].data
+    expect(criado.fpfsJogoId).toBe("m:2026-04-11|Time X|Time Y")
+    // a busca de idempotencia usa a mesma chave
+    expect(m.partida.findFirst).toHaveBeenCalledWith({
+      where: { campeonatoId: 1, fpfsJogoId: "m:2026-04-11|Time X|Time Y" },
+    })
+
+    // 2a execucao: agora existe -> atualiza, nao duplica
+    vi.clearAllMocks()
+    m.campeonato.findUnique.mockResolvedValue({ id: 1, fpfsEventoId: 920, fpfsTimeNome: "E.C. Itaquerense" })
+    m.campeonato.update.mockResolvedValue({})
+    m.classificacaoFpfs.deleteMany.mockResolvedValue({})
+    m.classificacaoFpfs.createMany.mockResolvedValue({})
+    ;(parseClassificacao as ReturnType<typeof vi.fn>).mockReturnValue([])
+    ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValue([
+      { fpfsJogoId: null, rodada: 1, data: "2026-04-11", hora: "10:00", ginasio: "G2",
+        mandante: "Time X", visitante: "Time Y", golsMandante: null, golsVisitante: null, sumulaUrl: null },
+    ])
+    m.partida.findFirst.mockResolvedValue({ id: 77 })
+    await syncCampeonato(1)
+    expect(m.partida.create).not.toHaveBeenCalled()
+    expect(m.partida.update).toHaveBeenCalledTimes(1)
+  })
+
+  it("grava a data ao meio-dia local (sem shift de fuso)", async () => {
+    m.partida.findFirst.mockResolvedValue(null)
+    await syncCampeonato(1)
+    const data: Date = m.partida.create.mock.calls[0][0].data.data
+    expect(data).toBeInstanceOf(Date)
+    expect(data.getFullYear()).toBe(2026)
+    expect(data.getMonth()).toBe(3) // abril (0-based)
+    expect(data.getDate()).toBe(11)
+  })
 })

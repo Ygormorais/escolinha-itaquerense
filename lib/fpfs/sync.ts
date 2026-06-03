@@ -28,7 +28,8 @@ export async function syncCampeonato(campeonatoId: number): Promise<ResumoSync> 
     fetchHtml(urlJogos(eventoId)),
     fetchHtml(urlClassificacao(eventoId)),
   ])
-  const jogos = parseJogos(htmlJogos)
+  const anoTemporada = camp.dataInicio ? new Date(camp.dataInicio).getFullYear() : undefined
+  const jogos = parseJogos(htmlJogos, anoTemporada)
   const linhas = parseClassificacao(htmlClass)
 
   let jogosNovos = 0
@@ -42,22 +43,25 @@ export async function syncCampeonato(campeonatoId: number): Promise<ResumoSync> 
     const adversario = ehNossoJogo ? (somosMandante ? j.visitante : j.mandante) : `${j.mandante} x ${j.visitante}`
     const local = ehNossoJogo ? (somosMandante ? "Casa" : "Fora") : "Neutro"
 
+    // Muitos jogos ainda nao tem link de sumula (fpfsJogoId null). Como NULLs sao
+    // distintos no indice unico do SQLite, inserir por null duplicaria a cada sync.
+    // Usamos uma chave estavel derivada de data+times para esses casos.
+    const chave = j.fpfsJogoId ?? `m:${j.data}|${j.mandante}|${j.visitante}`
+
     const dados = {
       campeonatoId,
       rodada: j.rodada,
-      data: new Date(j.data),
+      data: new Date(`${j.data}T12:00:00`), // meio-dia local evita shift de fuso (UTC-3)
       adversario,
       local,
       golsPro,
       golsContra,
       resultado: ehNossoJogo ? resultadoDe(golsPro, golsContra) : null,
-      fpfsJogoId: j.fpfsJogoId,
+      fpfsJogoId: chave,
       sumulaUrl: j.sumulaUrl,
     }
 
-    const existente = j.fpfsJogoId
-      ? await db.partida.findFirst({ where: { campeonatoId, fpfsJogoId: j.fpfsJogoId } })
-      : null
+    const existente = await db.partida.findFirst({ where: { campeonatoId, fpfsJogoId: chave } })
 
     if (existente) {
       await db.partida.update({ where: { id: existente.id }, data: dados })

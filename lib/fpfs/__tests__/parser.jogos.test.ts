@@ -36,4 +36,9 @@ describe("parseJogos", () => {
       expect(j.fpfsJogoId).not.toBeNull()
     }
   })
+  it("usa o ano da temporada quando a data nao traz ano", () => {
+    const jogos2025 = parseJogos(html, 2025)
+    expect(jogos2025.length).toBeGreaterThan(0)
+    for (const j of jogos2025) expect(j.data.startsWith("2025-")).toBe(true)
+  })
 })
