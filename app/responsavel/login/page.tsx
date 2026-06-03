@@ -92,7 +92,7 @@ export default function ResponsavelLoginPage() {
               />
             </div>
           </div>
-          <Button type="submit" className="w-full" size="lg" disabled={loading}>
+          <Button type="submit" className="w-full" size="lg" disabled={loading || !email || !senha}>
             <LogIn className="size-4" /> {loading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
