@@ -1,3 +1,5 @@
-export const alunosData: any[] = []
+import type { Prisma } from "@prisma/client"
 
-export const custosData: any[] = []
+export const alunosData: Prisma.AlunoCreateInput[] = []
+
+export const custosData: Prisma.CustoCreateManyInput[] = []

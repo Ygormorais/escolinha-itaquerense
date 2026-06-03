@@ -29,11 +29,16 @@ export function OnboardingProvider({
   const [isCompleted, setIsCompleted] = useState(true)
 
   useEffect(() => {
+    // Deferido para um effect porque localStorage não existe no SSR; o estado
+    // inicial precisa ser o mesmo no servidor e na hidratação (active=false,
+    // isCompleted=true) e só então é ajustado no cliente.
+    /* eslint-disable react-hooks/set-state-in-effect */
     const done = localStorage.getItem(STORAGE_KEY)
     if (!done) {
       setActive(true)
       setIsCompleted(false)
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   const next = useCallback(() => {
