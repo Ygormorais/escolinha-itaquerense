@@ -134,7 +134,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pe
     <aside className="hidden md:flex h-screen w-64 flex-col border-r border-border bg-card">
       <div className="flex h-16 items-center gap-3 border-b border-border px-4">
         <Image
-          src="/logo.jpg"
+          src="/logo.png"
           alt="E.C. Itaquerense"
           width={36}
           height={36}

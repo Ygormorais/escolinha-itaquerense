@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import Image from "next/image"
 
 import { cn } from "@/lib/utils"
 
@@ -46,12 +47,8 @@ export function AuthShell({
           <section className="flex flex-col justify-between gap-10 border-b border-black/5 px-6 py-8 sm:px-8 sm:py-10 lg:border-b-0 lg:border-r lg:px-10 lg:py-12">
             <div className="space-y-8">
               <div className="inline-flex items-center gap-3">
-                <div className="flex size-14 items-center justify-center rounded-[18px] bg-brand-800 text-white shadow-[0_16px_30px_rgba(127,0,0,0.22)]">
-                  <svg viewBox="0 0 24 24" className="size-8 fill-current" aria-hidden>
-                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M12 2 C7 5 5 10 12 12 C19 14 17 19 12 22" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                    <path d="M2 12 C5 7 10 5 12 12 C14 19 19 17 22 12" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                  </svg>
+                <div className="flex size-14 items-center justify-center overflow-hidden rounded-[18px] shadow-[0_16px_30px_rgba(127,0,0,0.22)]">
+                  <Image src="/logo.png" alt="E.C. Itaquerense" width={56} height={56} className="object-contain" />
                 </div>
                 <div className="space-y-1">
                   <span className="inline-flex rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-800">
