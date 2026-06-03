@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -165,7 +166,6 @@ export function CampeonatoDetailClient({
   }
 
   async function handleDelete() {
-    if (!confirm(`Deletar "${campeonato.nome}" permanentemente?`)) return
     await deletarCampeonato(campeonato.id)
     toast.success("Campeonato deletado")
     router.push("/campeonatos")
@@ -187,8 +187,7 @@ export function CampeonatoDetailClient({
     router.refresh()
   }
 
-  async function handleRemover(inscricaoId: number, alunoNome: string) {
-    if (!confirm(`Remover ${alunoNome} do campeonato?`)) return
+  async function handleRemover(inscricaoId: number, ..._args: unknown[]) {
     await removerInscricao(inscricaoId, campeonato.id)
     toast.success("Inscrição removida")
     router.refresh()
@@ -322,9 +321,11 @@ export function CampeonatoDetailClient({
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            <Trash2 className="size-4" />
-          </Button>
+          <ConfirmDialog title="Deletar campeonato?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={handleDelete}>
+            <Button variant="destructive" size="sm">
+              <Trash2 className="size-4" />
+            </Button>
+          </ConfirmDialog>
         </div>
       </div>
 
@@ -546,13 +547,11 @@ export function CampeonatoDetailClient({
                             <CreditCard className="size-3 mr-1" /> Pagar
                           </Button>
                         )}
-                        <Button
-                          size="icon-sm"
-                          variant="ghost"
-                          onClick={() => handleRemover(insc.id, insc.aluno.nome)}
-                        >
-                          <XCircle className="size-4 text-danger-600" />
-                        </Button>
+                        <ConfirmDialog title="Remover inscrição?" description={`Remover ${insc.aluno.nome} do campeonato?`} confirmLabel="Remover" onConfirm={() => handleRemover(insc.id, insc.aluno.nome)}>
+                          <Button size="icon-sm" variant="ghost">
+                            <XCircle className="size-4 text-danger-600" />
+                          </Button>
+                        </ConfirmDialog>
                       </div>
                     </TableCell>
                   </TableRow>

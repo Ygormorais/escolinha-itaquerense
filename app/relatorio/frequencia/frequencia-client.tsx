@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { CalendarCheck, Download } from "lucide-react"
+import { CalendarCheck, Download, PrinterIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
+import { printHTML } from "@/lib/print"
 
 type Stat = {
   id: number
@@ -35,6 +36,20 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
     ? Math.round(stats.reduce((s, a) => s + a.percentual, 0) / stats.length)
     : 0
 
+  function imprimirPDF() {
+    const linhas = filtrados.map((s) =>
+      `<tr><td>${s.nome}</td><td>${s.turma}</td><td>${s.totalAulas}</td><td>${s.totalPresencas}</td><td>${s.percentual}%</td></tr>`
+    ).join("")
+    printHTML(`
+      <h1>Relatório de Frequência — ${mesAtual}</h1>
+      <p>${filtrados.length} alunos · Média ${mediaGeral}%</p>
+      <table>
+        <thead><tr><th>Aluno</th><th>Turma</th><th>Aulas</th><th>Presenças</th><th>Frequência</th></tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    `, `Relatório de Frequência ${mesAtual}`)
+  }
+
   function exportarCSV() {
     const header = "Nome;Turma;Aulas;Presenças;Frequência"
     const rows = filtrados.map((s) =>
@@ -59,9 +74,14 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
         title="Relatório de Frequência"
         description={`${filtrados.length} alunos · Média ${mediaGeral}% · ${mesAtual}`}
         action={
-          <Button size="sm" onClick={exportarCSV}>
-            <Download className="size-4 mr-1" /> Exportar CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={imprimirPDF}>
+              <PrinterIcon className="size-4 mr-1" /> PDF
+            </Button>
+            <Button size="sm" onClick={exportarCSV}>
+              <Download className="size-4 mr-1" /> Exportar CSV
+            </Button>
+          </div>
         }
       />
 

@@ -8,6 +8,7 @@ import { format } from "date-fns"
 import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Pagination } from "@/components/ui/pagination"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { TURMAS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -309,7 +310,6 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   }
 
   async function handleInativar(id: number) {
-    if (!confirm("Inativar este aluno?")) return
     const result = await inativarAluno(id)
     if ("error" in result) { toast.error(result.error); return }
     toast.success("Aluno inativado")
@@ -317,7 +317,6 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   }
 
   async function handleReativar(id: number) {
-    if (!confirm("Reativar este aluno?")) return
     const result = await reativarAluno(id)
     if ("error" in result) { toast.error(result.error); return }
     toast.success("Aluno reativado")
@@ -442,23 +441,17 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                       }
                     />
                     {aluno.status === "Ativo" ? (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Inativar aluno"
-                        onClick={() => handleInativar(aluno.id)}
-                      >
-                        <UserXIcon className="size-3.5" />
-                      </Button>
+                      <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
+                        <Button variant="ghost" size="icon-sm" title="Inativar aluno">
+                          <UserXIcon className="size-3.5" />
+                        </Button>
+                      </ConfirmDialog>
                     ) : (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Reativar aluno"
-                        onClick={() => handleReativar(aluno.id)}
-                      >
-                        <UserCheckIcon className="size-3.5 text-success-600" />
-                      </Button>
+                      <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
+                        <Button variant="ghost" size="icon-sm" title="Reativar aluno">
+                          <UserCheckIcon className="size-3.5 text-success-600" />
+                        </Button>
+                      </ConfirmDialog>
                     )}
                   </div>
                 </TableCell>

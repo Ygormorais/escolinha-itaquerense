@@ -2,14 +2,13 @@ import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { rateLimitResponse } from "@/lib/rate-limit-response"
 
 export async function POST(request: Request) {
   const { token, senha } = await request.json()
   const ip = request.headers.get("x-forwarded-for") ?? "unknown"
   const limit = checkRateLimit(`redefinir-senha:${ip}`)
-  if (!limit.ok) {
-    return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 })
-  }
+  if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
 
   if (!token || typeof token !== "string") {
     return NextResponse.json({ error: "Token inválido" }, { status: 400 })

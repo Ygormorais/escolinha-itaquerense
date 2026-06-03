@@ -113,6 +113,7 @@ model Responsavel {
   alunos       Aluno[]
   chatSessions ChatSession[]
   resetTokens  ResetToken[]
+  solicitacoes Solicitacao[]
   createdAt    DateTime      @default(now())
 }
 
@@ -285,6 +286,33 @@ model Media {
   campeonatoId Int?
   campeonato   Campeonato? @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   createdAt    DateTime    @default(now())
+}
+
+model Solicitacao {
+  id            Int         @id @default(autoincrement())
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  tipo          String      // "uniforme", "horario", "documento", "outro"
+  descricao     String
+  status        String      @default("pendente") // pendente, em_andamento, resolvida, recusada
+  resposta      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model PreMatricula {
+  id              Int      @id @default(autoincrement())
+  nomeAluno       String
+  dataNascimento  DateTime
+  turma           String
+  horario         String
+  nomeResponsavel String
+  telefone        String
+  email           String
+  documentos      String?  // JSON array of file paths
+  observacoes     String?
+  status          String   @default("pendente") // pendente, aprovada, recusada
+  createdAt       DateTime @default(now())
 }
 
 model Produto {

@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -322,7 +323,6 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
   const router = useRouter()
 
   async function handleDelete(avaliacao: Avaliacao) {
-    if (!confirm(`Remover avaliação de ${avaliacao.aluno.nome} (${avaliacao.periodo})?`)) return
     try {
       await removerAvaliacao(avaliacao.id)
       toast.success("Avaliação removida")
@@ -392,14 +392,11 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
                 <TableCell>
                   <div className="flex gap-1">
                     <EditarAvaliacaoDialog key={a.id} avaliacao={a} />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Remover avaliação"
-                      onClick={() => handleDelete(a)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
+                    <ConfirmDialog title="Remover avaliação?" description={`Remover avaliação de ${a.aluno.nome} (${a.periodo})?`} confirmLabel="Remover" onConfirm={() => handleDelete(a)}>
+                      <Button variant="ghost" size="icon-sm" title="Remover avaliação">
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </ConfirmDialog>
                   </div>
                 </TableCell>
               </TableRow>

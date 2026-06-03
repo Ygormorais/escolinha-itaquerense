@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { OnboardingRestart } from "@/components/onboarding/onboarding-restart"
 
 function LogoutButton() {
   async function handleLogout() {
@@ -40,7 +41,7 @@ function LogoutButton() {
     <button
       onClick={handleLogout}
       className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      title="Sair"
+      aria-label="Sair do sistema"
     >
       <LogOut className="size-4" />
     </button>
@@ -58,20 +59,44 @@ type NavGroup = {
   items: NavItem[]
 }
 
-export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?: number; onClose?: () => void }) {
+type SidebarRole = "admin" | "secretaria" | "tecnico"
+
+function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
+  const canAccess = (href: string): boolean => {
+    const restrictedTecnico = [
+      "/pagamentos", "/uniformes", "/custos", "/comunicados",
+      "/inadimplencia", "/caixa", "/produtos", "/recibos",
+      "/relatorio/alunos", "/relatorio/pagamentos",
+      "/historico", "/configuracoes/midia",
+      "/configuracoes", "/configuracoes/escalacoes",
+      "/configuracoes/responsaveis", "/secretaria",
+    ]
+    const restrictedSecretaria = [
+      "/custos", "/caixa", "/produtos", "/campeonatos",
+      "/avaliacoes", "/configuracoes/escalacoes",
+    ]
+    if (role === "admin") return true
+    if (role === "tecnico") return !restrictedTecnico.some((r) => href.startsWith(r))
+    if (role === "secretaria") return !restrictedSecretaria.some((r) => href.startsWith(r))
+    return false
+  }
+  return items.filter((i) => canAccess(i.href))
+}
+
+export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pendingEscalacoes?: number; onClose?: () => void; role?: SidebarRole }) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
     {
       label: "Visão Geral",
-      items: [
+      items: filterByRole([
         { href: "/", label: "Dashboard", icon: LayoutDashboard },
         { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
-      ],
+      ], role),
     },
     {
       label: "Operação",
-      items: [
+      items: filterByRole([
         { href: "/alunos",        label: "Alunos",        icon: Users },
         { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
         { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
@@ -84,11 +109,11 @@ export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?
         { href: "/caixa",         label: "Caixa",         icon: Wallet },
         { href: "/produtos",      label: "Produtos",      icon: ShoppingBag },
         { href: "/avaliacoes",    label: "Avaliações",    icon: Award },
-      ],
+      ], role),
     },
     {
       label: "Documentos & Config",
-      items: [
+      items: filterByRole([
         { href: "/recibos",       label: "Recibos",       icon: FileText },
         { href: "/relatorio",     label: "Rel. Financeiro", icon: BarChart3 },
         { href: "/relatorio/alunos", label: "Rel. Alunos", icon: Users },
@@ -99,7 +124,9 @@ export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?
         { href: "/configuracoes", label: "Configurações", icon: Settings },
         { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
-      ],
+        { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning },
+        { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList },
+      ], role),
     },
   ]
 
@@ -113,6 +140,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?
           height={36}
           priority
           className="rounded-lg object-contain"
+          aria-hidden="true"
         />
         <span className="font-heading text-sm font-bold leading-tight text-brand-900">
           Escolinha<br />Itaquerense
@@ -123,7 +151,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?
         <BuscaGlobal />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-4 overflow-y-auto p-3 pt-4">
+      <nav className="flex flex-1 flex-col gap-4 overflow-y-auto p-3 pt-4" aria-label="Navegação principal">
         {navGroups.map((group) => (
           <div key={group.label}>
             <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -163,6 +191,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose }: { pendingEscalacoes?
       <div className="border-t border-border px-4 py-3 flex items-center justify-between">
         <p className="text-[10px] text-muted-foreground">E.C. Itaquerense · v0.1</p>
         <div className="flex items-center gap-1">
+          <OnboardingRestart />
           <ThemeToggle />
           <LogoutButton />
         </div>

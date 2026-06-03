@@ -4,14 +4,13 @@ import { db } from "@/lib/db"
 import { enviarEmail } from "@/lib/mailer"
 import { getConfig } from "@/lib/config"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { rateLimitResponse } from "@/lib/rate-limit-response"
 
 export async function POST(request: Request) {
   const { email } = await request.json()
   const ip = request.headers.get("x-forwarded-for") ?? "unknown"
   const limit = checkRateLimit(`recuperar-senha:${ip}`)
-  if (!limit.ok) {
-    return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 })
-  }
+  if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
 
   if (!email || typeof email !== "string") {
     return NextResponse.json({ error: "Email inválido" }, { status: 400 })

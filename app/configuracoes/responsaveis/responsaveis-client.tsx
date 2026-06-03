@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Card, CardContent,
 } from "@/components/ui/card"
@@ -97,8 +98,7 @@ export function ResponsaveisClient({
     setDialogOpen(true)
   }
 
-  async function handleDelete(id: number, nome: string) {
-    if (!confirm(`Remover "${nome}"?`)) return
+  async function handleDelete(id: number, _nome: string) {
     await deletarResponsavel(id)
     toast.success("Responsável removido")
     router.refresh()
@@ -111,8 +111,7 @@ export function ResponsaveisClient({
     router.refresh()
   }
 
-  async function handleDesvincular(alunoId: number, alunoNome: string) {
-    if (!confirm(`Desvincular ${alunoNome}?`)) return
+  async function handleDesvincular(alunoId: number, _alunoNome: string) {
     await desvincularAluno(alunoId)
     toast.success("Aluno desvinculado")
     router.refresh()
@@ -248,9 +247,11 @@ export function ResponsaveisClient({
                       {r.alunos.map((a) => (
                         <span key={a.id} className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px]">
                           {a.nome} ({a.turma})
-                          <button onClick={() => handleDesvincular(a.id, a.nome)} className="text-danger-600 hover:text-danger-800">
-                            <UserX className="size-3" />
-                          </button>
+                          <ConfirmDialog title="Desvincular aluno?" description={`Desvincular ${a.nome} do responsável?`} confirmLabel="Desvincular" onConfirm={() => handleDesvincular(a.id, a.nome)}>
+                            <button className="text-danger-600 hover:text-danger-800">
+                              <UserX className="size-3" />
+                            </button>
+                          </ConfirmDialog>
                         </span>
                       ))}
                       <Dialog open={vincularOpen?.id === r.id} onOpenChange={(o) => { if (!o) setVincularOpen(null) }}>
@@ -297,9 +298,11 @@ export function ResponsaveisClient({
                       <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)}>
                         <Pencil className="size-3.5" />
                       </Button>
-                      <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(r.id, r.nome)}>
-                        <Trash2 className="size-3.5 text-danger-600" />
-                      </Button>
+                      <ConfirmDialog title="Remover responsável?" description={`Remover "${r.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleDelete(r.id, r.nome)}>
+                        <Button size="icon-sm" variant="ghost">
+                          <Trash2 className="size-3.5 text-danger-600" />
+                        </Button>
+                      </ConfirmDialog>
                     </div>
                   </TableCell>
                 </TableRow>

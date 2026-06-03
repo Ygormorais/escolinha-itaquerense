@@ -6,6 +6,7 @@ import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-r
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -92,7 +93,6 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
   }
 
   function handleReconcileAuto() {
-    if (!confirm("Reconciliar automaticamente todas as transações pendentes?")) return
     start(async () => {
       const result = await reconciliarAuto()
       toast.success(`${result.reconciliados} reconciliados, ${result.naoEncontrados} não encontrados`)
@@ -117,10 +117,12 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
             Importar CSV
           </Button>
           <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
-          <Button variant="outline" onClick={handleReconcileAuto} disabled={pending} className="gap-2">
-            <RefreshCw className="size-4" />
-            Reconciliar Automático
-          </Button>
+          <ConfirmDialog title="Reconciliar automaticamente?" description="Todas as transações pendentes serão reconciliadas automaticamente." confirmLabel="Reconciliar" variant="warning" onConfirm={handleReconcileAuto}>
+            <Button variant="outline" disabled={pending} className="gap-2">
+              <RefreshCw className="size-4" />
+              Reconciliar Automático
+            </Button>
+          </ConfirmDialog>
         </div>
         <div className="flex gap-1">
           {["todas", "pendente", "reconciliado", "ignorado"].map((f) => (

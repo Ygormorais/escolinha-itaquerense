@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Printer, Trash2 } from "lucide-react"
 import { salvarRecibo, deleteRecibo } from "@/app/actions/recibos"
 import type { ClubConfig } from "@/lib/config"
@@ -311,17 +312,11 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                         >
                           Re-imprimir
                         </button>
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`Excluir recibo #${r.numero}?`)) return
-                            await deleteRecibo(r.id)
-                            router.refresh()
-                          }}
-                          className="text-danger-600 hover:text-danger-600"
-                          title="Excluir recibo"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
+                        <ConfirmDialog title="Excluir recibo?" description={`Excluir recibo #${r.numero}?`} confirmLabel="Excluir" onConfirm={async () => { await deleteRecibo(r.id); router.refresh() }}>
+                          <button className="text-danger-600 hover:text-danger-600" title="Excluir recibo">
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </ConfirmDialog>
                       </div>
                     </td>
                   </tr>

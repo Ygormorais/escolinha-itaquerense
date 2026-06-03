@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -112,7 +113,6 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Deletar partida?")) return
     await deletarPartida(id, campeonatoId)
     toast.success("Partida deletada")
     router.refresh()
@@ -396,9 +396,11 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
                       <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)}>
                         <Pencil className="size-3.5" />
                       </Button>
-                      <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(p.id)}>
-                        <Trash2 className="size-3.5 text-danger-600" />
-                      </Button>
+                      <ConfirmDialog title="Deletar partida?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={() => handleDelete(p.id)}>
+                        <Button size="icon-sm" variant="ghost">
+                          <Trash2 className="size-3.5 text-danger-600" />
+                        </Button>
+                      </ConfirmDialog>
                     </div>
                   </TableCell>
                 </TableRow>

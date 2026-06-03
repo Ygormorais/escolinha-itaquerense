@@ -7,6 +7,7 @@ import { format } from "date-fns"
 import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
@@ -264,7 +265,6 @@ export function CustosClient({
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Excluir este custo? Esta ação não pode ser desfeita.")) return
     const result = await deleteCusto(id)
     if ("error" in result) { toast.error(result.error); return }
     toast.success("Custo excluído")
@@ -277,7 +277,6 @@ export function CustosClient({
       toast.warning("Nenhum modelo recorrente ativo cadastrado.")
       return
     }
-    if (!confirm(`Gerar ${ativos.length} custo(s) recorrente(s) para ${mes}?`)) return
     setGeradoMsg(null)
     startGerando(async () => {
       const r = await gerarCustosRecorrentes(mes)
@@ -307,14 +306,12 @@ export function CustosClient({
         <div className="ml-auto flex flex-col items-end gap-2">
           {geradoMsg && <p className="text-xs text-success-600 font-medium">{geradoMsg}</p>}
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleGerarRecorrentes}
-              disabled={gerando}
-            >
-              <RefreshCw className="size-4" />
-              {gerando ? "Gerando..." : "Gerar Recorrentes"}
-            </Button>
+            <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${recorrentes.filter((r) => r.ativo).length} custo(s) recorrente(s) para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
+              <Button variant="outline" disabled={gerando}>
+                <RefreshCw className="size-4" />
+                {gerando ? "Gerando..." : "Gerar Recorrentes"}
+              </Button>
+            </ConfirmDialog>
             <Button
               variant="outline"
               onClick={() => exportarCSV(custos, mes)}
@@ -380,13 +377,11 @@ export function CustosClient({
                         </Button>
                       }
                     />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleDelete(c.id)}
-                    >
-                      <Trash2Icon className="size-3.5 text-danger-600" />
-                    </Button>
+                    <ConfirmDialog title="Excluir custo?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => handleDelete(c.id)}>
+                      <Button variant="ghost" size="icon-sm">
+                        <Trash2Icon className="size-3.5 text-danger-600" />
+                      </Button>
+                    </ConfirmDialog>
                   </div>
                 </TableCell>
               </TableRow>

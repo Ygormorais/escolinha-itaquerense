@@ -8,6 +8,7 @@ import { EmailNotifButton } from "@/components/ui/email-notif-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -186,7 +187,6 @@ export function InadimplenciaClient({
 
   async function handleNotificarEmLote() {
     if (filtered.length === 0) return
-    if (!confirm(`Abrir WhatsApp para ${filtered.length} inadimplente(s)? Os links serão abertos um a um.`)) return
     setEnviando(true)
     for (let i = 0; i < filtered.length; i++) {
       window.open(gerarLinkWA(filtered[i]), "_blank")
@@ -229,15 +229,12 @@ export function InadimplenciaClient({
           </Select>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleNotificarEmLote}
-            disabled={filtered.length === 0 || enviando}
-            className="text-success-600 border-success-600/30 hover:bg-success-50"
-          >
-            <Send className="size-4" />
-            {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}
-          </Button>
+          <ConfirmDialog title="Notificar inadimplentes?" description={`Abrir WhatsApp para ${filtered.length} inadimplente(s)? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarEmLote}>
+            <Button variant="outline" disabled={filtered.length === 0 || enviando} className="text-success-600 border-success-600/30 hover:bg-success-50">
+              <Send className="size-4" />
+              {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}
+            </Button>
+          </ConfirmDialog>
           <EmailNotifButton />
           <Button
             variant="outline"

@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { useRouter } from "next/navigation"
-import { CreditCard, Download } from "lucide-react"
+import { Download, PrinterIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PageHeader } from "@/components/layout/page-header"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
+import { printHTML } from "@/lib/print"
 
 type Pagamento = {
   id: number
@@ -21,7 +21,6 @@ type Pagamento = {
 }
 
 export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pagamento[]; ano: number }) {
-  const router = useRouter()
   const [filtroStatus, setFiltroStatus] = useState("todos")
 
   const filtrados = useMemo(() => {
@@ -35,6 +34,21 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
 
   const totalRecebido = pagamentos.filter((p) => p.dataPagamento).reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
   const totalPendente = pagamentos.filter((p) => !p.dataPagamento).reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+
+  function imprimirPDF() {
+    const linhas = filtrados.map((p) => {
+      const status = p.dataPagamento ? "Pago" : new Date(p.dataVencimento) < new Date() ? "Atrasado" : "Pendente"
+      return `<tr><td>${p.aluno.nome}</td><td>${p.aluno.turma}</td><td>${p.mesReferencia}</td><td>${format(new Date(p.dataVencimento), "dd/MM/yyyy")}</td><td>${p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</td><td>R$ ${(p.valorRecebido ?? 0).toFixed(2)}</td><td>${status}</td></tr>`
+    }).join("")
+    printHTML(`
+      <h1>Relatório de Pagamentos — ${ano}</h1>
+      <p>${filtrados.length} registros · Recebido: R$ ${totalRecebido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} · Pendente: R$ ${totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+      <table>
+        <thead><tr><th>Aluno</th><th>Turma</th><th>Mês Ref</th><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th></tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    `, `Relatório de Pagamentos ${ano}`)
+  }
 
   function exportarCSV() {
     const header = "Aluno;Turma;Mês Ref;Data Vencimento;Data Pagamento;Valor;Status"
@@ -70,9 +84,14 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
         title="Relatório de Pagamentos"
         description={`${filtrados.length} registros em ${ano}`}
         action={
-          <Button size="sm" onClick={exportarCSV}>
-            <Download className="size-4 mr-1" /> Exportar CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={imprimirPDF}>
+              <PrinterIcon className="size-4 mr-1" /> PDF
+            </Button>
+            <Button size="sm" onClick={exportarCSV}>
+              <Download className="size-4 mr-1" /> Exportar CSV
+            </Button>
+          </div>
         }
       />
 

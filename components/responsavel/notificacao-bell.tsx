@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Bell, BellDot, X, MessageSquare, CheckCheck } from "lucide-react"
+import { Bell, BellDot, X, MessageSquare } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -52,6 +52,7 @@ export function NotificacaoBell() {
 
   useEffect(() => {
     if (open && naoLidas > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void marcarLidas()
     }
   }, [open, naoLidas, marcarLidas])

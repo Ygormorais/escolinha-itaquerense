@@ -3,11 +3,20 @@ import { HistoricoClient } from "./historico-client"
 
 export const metadata = { title: "Histórico — Escolinha Itaquerense" }
 
+type LogRow = {
+  id: number
+  tipo: string
+  descricao: string
+  usuario: string | null
+  meta: string | null
+  createdAt: Date
+}
+
 export default async function HistoricoPage() {
-  const logs = await db.log.findMany({
+  const logs: LogRow[] = await db.log.findMany({
     orderBy: { createdAt: "desc" },
     take: 500,
   })
 
-  return <HistoricoClient logs={logs as any} />
+  return <HistoricoClient logs={logs} />
 }

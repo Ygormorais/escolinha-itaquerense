@@ -4,8 +4,7 @@ import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 
 export async function runEnviarLembretesWhatsAppInadimplencia() {
   const config = getConfig()
-  let enviados = 0
-  let erros = 0
+  const erros = 0
   let semTelefone = 0
 
   const atrasadas = await db.pagamento.findMany({
@@ -48,8 +47,7 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
 
 export async function runEnviarLembretesWhatsAppVencendo() {
   const config = getConfig()
-  let enviados = 0
-  let erros = 0
+  const erros = 0
   let semTelefone = 0
 
   const tresDias = new Date()

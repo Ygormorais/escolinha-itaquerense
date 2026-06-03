@@ -1,15 +1,15 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Users, Download } from "lucide-react"
+import { Users, Download, PrinterIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
+import { printHTML } from "@/lib/print"
 
 type Aluno = {
   id: number
@@ -39,6 +39,20 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
   const totalMensalidade = filtrados
     .filter((a) => a.status === "Ativo")
     .reduce((s, a) => s + a.mensalidade, 0)
+
+  function imprimirPDF() {
+    const linhas = filtrados.map((a) =>
+      `<tr><td>${a.nome}</td><td>${a.turma}</td><td>${a.horario}</td><td>${a.status}</td><td>${a.responsavel ?? "—"}</td><td>${a.telefone ?? "—"}</td><td>R$ ${a.mensalidade.toFixed(2)}</td><td>${format(new Date(a.dataMatricula), "dd/MM/yyyy")}</td></tr>`
+    ).join("")
+    printHTML(`
+      <h1>Relatório de Alunos</h1>
+      <p>${filtrados.length} alunos · Receita mensal R$ ${totalMensalidade.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+      <table>
+        <thead><tr><th>Nome</th><th>Turma</th><th>Horário</th><th>Status</th><th>Responsável</th><th>Telefone</th><th>Mensalidade</th><th>Matrícula</th></tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    `, "Relatório de Alunos")
+  }
 
   function exportarCSV() {
     const header = "Nome;Turma;Horário;Status;Responsável;Telefone;Mensalidade;Data Matrícula"
@@ -70,9 +84,14 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
         title="Relatório de Alunos"
         description={`${filtrados.length} alunos · Receita mensal R$ ${totalMensalidade.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
         action={
-          <Button size="sm" onClick={exportarCSV}>
-            <Download className="size-4 mr-1" /> Exportar CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={imprimirPDF}>
+              <PrinterIcon className="size-4 mr-1" /> PDF
+            </Button>
+            <Button size="sm" onClick={exportarCSV}>
+              <Download className="size-4 mr-1" /> Exportar CSV
+            </Button>
+          </div>
         }
       />
 

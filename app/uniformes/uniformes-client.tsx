@@ -6,6 +6,7 @@ import { Search, CheckCircle, XCircle, Plus, Shirt } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
@@ -87,7 +88,6 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   }
 
   async function handleRemover(id: number, alunoId: number) {
-    if (!confirm("Remover item?")) return
     const result = await removerUniforme(id, alunoId)
     if ("success" in result) {
       toast.success("Item removido")
@@ -234,9 +234,11 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                                       <CheckCircle className="size-4 text-success-600" />
                                     </Button>
                                   )}
-                                  <Button size="icon-sm" variant="ghost" onClick={() => handleRemover(u.id, aluno.id)}>
-                                    <XCircle className="size-4 text-danger-600" />
-                                  </Button>
+                                  <ConfirmDialog title="Remover item?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleRemover(u.id, aluno.id)}>
+                                    <Button size="icon-sm" variant="ghost">
+                                      <XCircle className="size-4 text-danger-600" />
+                                    </Button>
+                                  </ConfirmDialog>
                                 </div>
                               </div>
                             ))}

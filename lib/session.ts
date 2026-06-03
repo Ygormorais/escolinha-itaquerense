@@ -27,18 +27,20 @@ function verify(signed: string): string | null {
   return value
 }
 
-export async function getSession(): Promise<{ authenticated: boolean; user?: string }> {
+export type SessionInfo = { authenticated: boolean; user?: string; role?: string }
+
+export async function getSession(): Promise<SessionInfo> {
   const jar = await cookies()
   const raw = jar.get(COOKIE_NAME)?.value
   if (!raw) return { authenticated: false }
   const value = verify(raw)
   if (!value || !value.startsWith("auth:")) return { authenticated: false }
-  const user = value.slice(5)
-  return { authenticated: true, user }
+  const parts = value.slice(5).split(":")
+  return { authenticated: true, user: parts[0], role: parts[1] ?? "admin" }
 }
 
-export async function createSession(username: string): Promise<string> {
-  return sign(`auth:${username}`)
+export async function createSession(username: string, role = "admin"): Promise<string> {
+  return sign(`auth:${username}:${role}`)
 }
 
 export function cookieName() { return COOKIE_NAME }

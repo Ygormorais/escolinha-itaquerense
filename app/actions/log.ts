@@ -6,7 +6,8 @@ import { requireAuth } from "@/lib/auth"
 export async function registrarLog(tipo: string, descricao: string, meta?: Record<string, unknown>) {
   let usuario: string | null = null
   try {
-    usuario = await requireAuth()
+    const auth = await requireAuth()
+    usuario = auth.user
   } catch {
     // sem autenticação (cron, chatbot, etc)
   }

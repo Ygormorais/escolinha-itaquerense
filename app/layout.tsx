@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import "./globals.css"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
+import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
 import { db } from "@/lib/db"
 import { AdminShell } from "@/components/layout/admin-shell"
@@ -80,8 +81,15 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
+      <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="E.C. Itaquerense" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="Escolinha Itaquerense" />
+        <link rel="apple-touch-icon" href="/logo.jpg" sizes="500x500" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -104,9 +112,10 @@ export default async function RootLayout({
         />
       </head>
       <body className="flex h-full bg-background font-sans">
+        <PWARegister />
         <Providers>
           {showAdminShell ? (
-            <AdminShell pendingEscalacoes={pendingEscalacoes}>
+            <AdminShell pendingEscalacoes={pendingEscalacoes} role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}>
               {children}
             </AdminShell>
           ) : (

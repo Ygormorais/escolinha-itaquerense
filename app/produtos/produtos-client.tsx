@@ -8,6 +8,8 @@ import { Plus, ShoppingBag, Pencil, Trash2, CheckCircle, XCircle } from "lucide-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
@@ -136,8 +138,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
     }
   }
 
-  async function handleRemover(id: number, nome: string) {
-    if (!confirm(`Remover "${nome}"?`)) return
+  async function handleRemover(id: number, _nome: string) {
     try {
       await removerProduto(id)
       toast.success("Produto removido!")
@@ -253,7 +254,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
       </Dialog>
 
       {produtos.length === 0 ? (
-        <p className="text-muted-foreground">Nenhum produto cadastrado.</p>
+        <EmptyState icon={ShoppingBag} title="Nenhum produto cadastrado" description="Adicione produtos para a lojinha." />
       ) : (
         <Table>
           <TableHeader>
@@ -325,14 +326,11 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                     >
                       <Pencil className="size-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleRemover(p.id, p.nome)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <ConfirmDialog title="Remover produto?" description={`Remover "${p.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleRemover(p.id, p.nome)}>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </ConfirmDialog>
                   </div>
                 </TableCell>
               </TableRow>

@@ -5,7 +5,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
   CreditCard, UserPlus, UserX, UserCheck, CalendarCheck,
-  Receipt, Settings, AlertCircle, Clock, Download, Search, Swords,
+  Receipt, Settings, AlertCircle, Clock, Download, Search,
   Trophy, Trash2, Pencil, UserCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"

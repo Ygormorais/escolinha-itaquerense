@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/ui/empty-state"
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card"
@@ -196,12 +197,10 @@ export function CampeonatoClient({
         </Dialog>
       </div>
 
+      {campeonatos.length === 0 && (
+        <EmptyState icon={Trophy} title="Nenhum campeonato cadastrado" description="Crie o primeiro campeonato para começar." />
+      )}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {campeonatos.length === 0 && (
-          <p className="col-span-full text-center text-muted-foreground py-12">
-            Nenhum campeonato cadastrado. Crie o primeiro!
-          </p>
-        )}
         {campeonatos.map((c) => {
           const st = STATUS_MAP[c.status] || STATUS_MAP.aberto
           return (

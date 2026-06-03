@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { PlusIcon, PencilIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
@@ -166,7 +167,6 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
   const router = useRouter()
 
   function handleDelete(id: number) {
-    if (!confirm("Excluir este modelo recorrente?")) return
     startDelete(async () => {
       const result = await deleteCustoRecorrente(id)
       if ("error" in result) { toast.error(result.error); return }
@@ -243,14 +243,11 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
                         </Button>
                       }
                     />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      disabled={deleting}
-                      onClick={() => handleDelete(r.id)}
-                    >
-                      <Trash2Icon className="size-3.5 text-danger-600" />
-                    </Button>
+                    <ConfirmDialog title="Excluir modelo recorrente?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => handleDelete(r.id)}>
+                      <Button variant="ghost" size="icon-sm" disabled={deleting}>
+                        <Trash2Icon className="size-3.5 text-danger-600" />
+                      </Button>
+                    </ConfirmDialog>
                   </div>
                 </TableCell>
               </TableRow>

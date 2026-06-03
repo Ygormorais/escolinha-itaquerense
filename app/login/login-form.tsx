@@ -51,10 +51,11 @@ export function LoginForm({ next }: { next?: string }) {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-[var(--color-ink-900)]">Usuário</label>
+          <label htmlFor="login-usuario" className="text-sm font-semibold text-[var(--color-ink-900)]">Usuário</label>
           <div className="relative">
             <User className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
             <Input
+              id="login-usuario"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -67,10 +68,11 @@ export function LoginForm({ next }: { next?: string }) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-[var(--color-ink-900)]">Senha</label>
+          <label htmlFor="login-senha" className="text-sm font-semibold text-[var(--color-ink-900)]">Senha</label>
           <div className="relative">
             <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
             <Input
+              id="login-senha"
               type={show ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}

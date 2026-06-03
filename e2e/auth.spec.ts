@@ -1,19 +1,14 @@
 import { test, expect } from "@playwright/test"
+import { loginAsAdmin } from "./helpers"
 
 test.describe("Autenticação", () => {
   test("login com sucesso redireciona para dashboard", async ({ page }) => {
-    await page.goto("/login")
-    await page.fill('input[placeholder*="usuario"]', "admin")
-    await page.fill('input[placeholder*="senha"]', "escolinha123")
-    await page.click('button[type="submit"]')
+    await loginAsAdmin(page)
     await expect(page).toHaveURL("/")
   })
 
   test("login com senha errada mostra erro", async ({ page }) => {
-    await page.goto("/login")
-    await page.fill('input[placeholder*="usuario"]', "admin")
-    await page.fill('input[placeholder*="senha"]', "senhaerrada")
-    await page.click('button[type="submit"]')
+    await loginAsAdmin(page, "senhaerrada")
     await expect(page.locator("text=incorretos")).toBeVisible()
   })
 
@@ -24,22 +19,16 @@ test.describe("Autenticação", () => {
   })
 
   test("logout limpa sessão", async ({ page }) => {
-    await page.goto("/login")
-    await page.fill('input[placeholder*="usuario"]', "admin")
-    await page.fill('input[placeholder*="senha"]', "escolinha123")
-    await page.click('button[type="submit"]')
+    await loginAsAdmin(page)
     await expect(page).toHaveURL("/")
 
-    const logoutBtn = page.locator('button[title="Sair"]')
+    const logoutBtn = page.locator('button[aria-label="Sair do sistema"]')
     await logoutBtn.click()
     await expect(page).toHaveURL("/login")
   })
 
   test("já autenticado redireciona de /login para /", async ({ page }) => {
-    await page.goto("/login")
-    await page.fill('input[placeholder*="usuario"]', "admin")
-    await page.fill('input[placeholder*="senha"]', "escolinha123")
-    await page.click('button[type="submit"]')
+    await loginAsAdmin(page)
     await expect(page).toHaveURL("/")
 
     await page.goto("/login")

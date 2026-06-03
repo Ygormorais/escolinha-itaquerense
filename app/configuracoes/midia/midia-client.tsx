@@ -7,6 +7,7 @@ import { Film, Image as ImageIcon, Trash2, Plus, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog,
   DialogContent,
@@ -146,7 +147,6 @@ export function MidiaClient({
   }
 
   async function handleRemover(id: number) {
-    if (!confirm("Remover esta mídia?")) return
     const result = await removerMidia(id)
     if (result && "error" in result) { toast.error(result.error); return }
     toast.success("Mídia removida!")
@@ -290,14 +290,11 @@ export function MidiaClient({
                   </TableCell>
                   <TableCell className="text-sm">{formatVinculo(m)}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemover(m.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <ConfirmDialog title="Remover mídia?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleRemover(m.id)}>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </ConfirmDialog>
                   </TableCell>
                 </TableRow>
               )

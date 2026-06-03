@@ -8,18 +8,17 @@ import {
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Card, CardContent, CardHeader, CardTitle,
-} from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { criarEvento, editarEvento, deletarEvento } from "@/app/actions/eventos"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { TURMAS } from "@/lib/constants"
+import { criarEvento, editarEvento, deletarEvento } from "@/app/actions/eventos"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { TURMAS } from "@/lib/constants"
 
 type Evento = {
   id: number
@@ -122,7 +121,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Excluir este evento?")) return
     try {
       await deletarEvento(id)
       toast.success("Evento excluído")
@@ -245,9 +243,11 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)}>
                       <Pencil className="size-3" />
                     </Button>
-                    <Button variant="ghost" size="icon-sm" onClick={() => handleDelete(ev.id)}>
-                      <Trash2 className="size-3 text-danger-600" />
-                    </Button>
+                    <ConfirmDialog title="Excluir evento?" description="Esta ação não pode ser desfeita." onConfirm={() => handleDelete(ev.id)}>
+                      <Button variant="ghost" size="icon-sm">
+                        <Trash2 className="size-3 text-danger-600" />
+                      </Button>
+                    </ConfirmDialog>
                   </div>
                 </div>
                 {ev.descricao && (
@@ -344,9 +344,11 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
           </div>
           <DialogFooter showCloseButton>
             {editingEvento && (
-              <Button variant="destructive" onClick={() => handleDelete(editingEvento.id)} className="gap-2">
-                <Trash2 className="size-4" /> Excluir
-              </Button>
+              <ConfirmDialog title="Excluir evento?" description="Esta ação não pode ser desfeita." onConfirm={() => handleDelete(editingEvento!.id)}>
+                <Button variant="destructive" className="gap-2">
+                  <Trash2 className="size-4" /> Excluir
+                </Button>
+              </ConfirmDialog>
             )}
             <Button onClick={handleSave} className="gap-2">
               {editingEvento ? "Salvar" : "Criar Evento"}

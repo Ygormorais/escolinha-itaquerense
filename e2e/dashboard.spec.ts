@@ -1,11 +1,8 @@
 import { test, expect } from "@playwright/test"
+import { loginAsAdmin } from "./helpers"
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/login")
-  await page.fill('input[placeholder*="usuario"]', "admin")
-  await page.fill('input[placeholder*="senha"]', "escolinha123")
-  await page.click('button[type="submit"]')
-  await expect(page).toHaveURL("/")
+  await loginAsAdmin(page)
 })
 
 test.describe("Dashboard", () => {

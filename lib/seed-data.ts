@@ -1,21 +1,3 @@
-export const alunosData = [
-  { nome: "Lucas Oliveira",   dataNascimento: new Date("2018-03-15"), turma: "Sub-7",  horario: "Seg/Qua 08h", responsavel: "Carlos Oliveira",  telefone: "(11) 99111-1111", email: "carlos.oliveira@email.com",  dataMatricula: new Date("2024-02-01"), mensalidade: 150, status: "Ativo",   observacoes: null },
-  { nome: "Gabriel Santos",   dataNascimento: new Date("2016-07-22"), turma: "Sub-9",  horario: "Ter/Qui 10h", responsavel: "Ana Santos",       telefone: "(11) 99222-2222", email: "ana.santos@email.com",       dataMatricula: new Date("2024-01-10"), mensalidade: 180, status: "Ativo",   observacoes: "Goleiro" },
-  { nome: "Matheus Costa",    dataNascimento: new Date("2014-11-05"), turma: "Sub-11", horario: "Seg/Qua 10h", responsavel: "Roberto Costa",    telefone: "(11) 99333-3333", email: "roberto.costa@email.com",    dataMatricula: new Date("2023-08-15"), mensalidade: 200, status: "Ativo",   observacoes: null },
-  { nome: "Pedro Almeida",    dataNascimento: new Date("2012-04-18"), turma: "Sub-13", horario: "Ter/Qui 08h", responsavel: "Fernanda Almeida", telefone: "(11) 99444-4444", email: "fernanda.almeida@email.com", dataMatricula: new Date("2023-03-05"), mensalidade: 220, status: "Ativo",   observacoes: "Capitão" },
-  { nome: "João Ferreira",    dataNascimento: new Date("2010-09-30"), turma: "Sub-15", horario: "Seg/Qua 14h", responsavel: "Paulo Ferreira",   telefone: "(11) 99555-5555", email: "paulo.ferreira@email.com",   dataMatricula: new Date("2022-06-20"), mensalidade: 250, status: "Ativo",   observacoes: null },
-  { nome: "Felipe Rodrigues", dataNascimento: new Date("2008-01-12"), turma: "Sub-17", horario: "Ter/Qui 14h", responsavel: "Marta Rodrigues",  telefone: "(11) 99666-6666", email: "marta.rodrigues@email.com",  dataMatricula: new Date("2022-02-01"), mensalidade: 230, status: "Ativo",   observacoes: null },
-  { nome: "Arthur Lima",      dataNascimento: new Date("2016-05-08"), turma: "Sub-9",  horario: "Seg/Qua 08h", responsavel: "Lúcia Lima",       telefone: "(11) 99777-7777", email: "lucia.lima@email.com",       dataMatricula: new Date("2024-03-01"), mensalidade: 180, status: "Inativo", observacoes: "Transferido" },
-  { nome: "Bruno Carvalho",   dataNascimento: new Date("2014-08-25"), turma: "Sub-11", horario: "Ter/Qui 10h", responsavel: "Ricardo Carvalho", telefone: "(11) 99888-8888", email: "ricardo.carvalho@email.com", dataMatricula: new Date("2023-11-01"), mensalidade: 200, status: "Ativo",   observacoes: null },
-]
+export const alunosData: any[] = []
 
-export const custosData = [
-  { data: new Date("2025-01-05"),  categoria: "Aluguel de campo",   descricao: "Campo Sintético Vila Real — Jan", fornecedor: "Campo Sintético Vila Real", valor: 1200, formaPagamento: "Transferência", comprovante: true,  observacoes: null },
-  { data: new Date("2025-01-10"),  categoria: "Salário técnico",    descricao: "Pagamento técnico — Janeiro",    fornecedor: "Prof. Marcelo Souza",       valor:  800, formaPagamento: "PIX",           comprovante: true,  observacoes: null },
-  { data: new Date("2025-01-15"),  categoria: "Material esportivo", descricao: "Bolas de futebol (6 un.)",       fornecedor: "Netshoes",                  valor:  420, formaPagamento: "Cartão",        comprovante: true,  observacoes: null },
-  { data: new Date("2025-02-05"),  categoria: "Aluguel de campo",   descricao: "Campo Sintético Vila Real — Fev",fornecedor: "Campo Sintético Vila Real", valor: 1200, formaPagamento: "Transferência", comprovante: true,  observacoes: null },
-  { data: new Date("2025-02-10"),  categoria: "Salário técnico",    descricao: "Pagamento técnico — Fevereiro",  fornecedor: "Prof. Marcelo Souza",       valor:  800, formaPagamento: "PIX",           comprovante: true,  observacoes: null },
-  { data: new Date("2025-02-20"),  categoria: "Uniforme",           descricao: "Camisas Sub-11 (8 un.)",         fornecedor: "Topper Distribuidora",      valor:  560, formaPagamento: "Boleto",        comprovante: true,  observacoes: null },
-  { data: new Date("2025-03-05"),  categoria: "Aluguel de campo",   descricao: "Campo Sintético Vila Real — Mar",fornecedor: "Campo Sintético Vila Real", valor: 1200, formaPagamento: "Transferência", comprovante: true,  observacoes: null },
-  { data: new Date("2025-03-12"),  categoria: "Outros",             descricao: "Kit primeiros socorros",         fornecedor: "Farmácia Popular",          valor:   85, formaPagamento: "Dinheiro",      comprovante: false, observacoes: null },
-]
+export const custosData: any[] = []

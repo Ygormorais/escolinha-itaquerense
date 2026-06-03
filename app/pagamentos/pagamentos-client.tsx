@@ -8,6 +8,7 @@ import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, Li
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
@@ -252,7 +253,6 @@ export function PagamentosClient({
       toast.info("Nenhuma mensalidade vencendo nos próximos 7 dias")
       return
     }
-    if (!confirm(`Abrir WhatsApp para ${vencendoSemana.length} responsável(is)?`)) return
     for (let i = 0; i < vencendoSemana.length; i++) {
       const p = vencendoSemana[i]
       const fone = (p.aluno.telefone ?? "").replace(/\D/g, "")
@@ -424,15 +424,12 @@ export function PagamentosClient({
           </DialogContent>
         </Dialog>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleNotificarVencendo}
-          className="text-success-600 border-success-600/30 hover:bg-success-50"
-        >
-          <MessageCircle className="size-4" />
-          Notificar vencendo ({vencendoSemana.length})
-        </Button>
+        <ConfirmDialog title="Notificar responsáveis?" description={`Abrir WhatsApp para ${vencendoSemana.length} responsável(is)? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarVencendo}>
+          <Button variant="outline" size="sm" className="text-success-600 border-success-600/30 hover:bg-success-50">
+            <MessageCircle className="size-4" />
+            Notificar vencendo ({vencendoSemana.length})
+          </Button>
+        </ConfirmDialog>
 
         <div className="ml-auto text-right">
           <p className="text-sm text-muted-foreground">Total recebido</p>
@@ -534,18 +531,11 @@ export function PagamentosClient({
                         </a>
                       )}
                       {status !== "Pago" && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="Excluir pagamento"
-                          onClick={async () => {
-                            if (!confirm("Excluir este registro de pagamento?")) return
-                            await deletePagamento(p.id)
-                            router.refresh()
-                          }}
-                        >
-                          <Trash2Icon className="size-3.5 text-danger-600" />
-                        </Button>
+                        <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
+                          <Button variant="ghost" size="icon-sm" title="Excluir pagamento">
+                            <Trash2Icon className="size-3.5 text-danger-600" />
+                          </Button>
+                        </ConfirmDialog>
                       )}
                     </div>
                   </TableCell>

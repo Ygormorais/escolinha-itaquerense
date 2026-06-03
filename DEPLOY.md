@@ -114,6 +114,12 @@ npx prisma migrate dev --name init_pg
 - [ ] `.env` adicionado ao `.gitignore` (já está)
 - [ ] Backup automático do `prisma/dev.db` configurado
 
+### Rate limit (login e recuperação de senha)
+
+O limite de tentativas usa memória do processo Node (5 req/min por IP). Isso é suficiente para **uma instância** (Docker ou PM2 com um worker).
+
+Se subir **várias réplicas** (Kubernetes, vários containers), cada instância terá contador próprio — para proteção global use um backend compartilhado (Redis/Upstash) no futuro.
+
 ---
 
 ## Manutenção
