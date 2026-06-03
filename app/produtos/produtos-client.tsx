@@ -273,7 +273,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
             {produtos.map((p) => (
               <TableRow key={p.id}>
                 <TableCell>
-                  <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-[12px] border border-border bg-muted">
+                  <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-md border border-border bg-muted">
                     {p.imagem ? (
                       <Image
                         src={p.imagem}

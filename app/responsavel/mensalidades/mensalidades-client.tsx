@@ -51,7 +51,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-4">
             <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
@@ -69,15 +69,15 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
               <p className="mt-2 text-2xl font-bold">{totalAlunos}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pagos</p>
               <p className="mt-2 text-2xl font-bold">{totalPagos}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pendentes</p>
               <p className="mt-2 text-2xl font-bold">{totalPendentes}</p>
             </div>
@@ -88,7 +88,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
       <section className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-start gap-3 py-1">
-            <div className="mt-1 rounded-[14px] bg-brand-50 p-2 text-brand-800">
+            <div className="mt-1 rounded-lg bg-brand-50 p-2 text-brand-800">
               <Wallet className="size-4" />
             </div>
             <div>
@@ -101,7 +101,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
         </Card>
         <Card>
           <CardContent className="flex items-start gap-3 py-1">
-            <div className="mt-1 rounded-[14px] bg-success-50 p-2 text-success-600">
+            <div className="mt-1 rounded-lg bg-success-50 p-2 text-success-600">
               <ReceiptText className="size-4" />
             </div>
             <div>
@@ -114,7 +114,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
         </Card>
         <Card>
           <CardContent className="flex items-start gap-3 py-1">
-            <div className="mt-1 rounded-[14px] bg-warning-50 p-2 text-warning-600">
+            <div className="mt-1 rounded-lg bg-warning-50 p-2 text-warning-600">
               <Clock3 className="size-4" />
             </div>
             <div>

@@ -8,9 +8,9 @@ import Link from "next/link"
 
 function notaColor(nota: number | null): string {
   if (nota === null || nota === undefined) return "text-muted-foreground"
-  if (nota >= 7) return "text-green-600"
-  if (nota >= 5) return "text-yellow-600"
-  return "text-red-600"
+  if (nota >= 7) return "text-success-600"
+  if (nota >= 5) return "text-warning-600"
+  return "text-danger-600"
 }
 
 function bgNotaColor(nota: number | null): string {
@@ -49,7 +49,7 @@ export default async function BoletimPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-4">
             <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
@@ -67,15 +67,15 @@ export default async function BoletimPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
               <p className="mt-2 text-2xl font-bold">{totalAlunos}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Avaliações</p>
               <p className="mt-2 text-2xl font-bold">{totalAvaliacoes}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Status</p>
               <p className="mt-2 text-2xl font-bold">{temAvaliacao ? "Ativo" : "Aguardando"}</p>
             </div>
@@ -121,7 +121,7 @@ export default async function BoletimPage() {
                       </CardHeader>
                       <CardContent className="space-y-4 pt-4">
                         <div className="grid grid-cols-2 gap-3">
-                          <div className={`rounded-[16px] p-3 ${bgNotaColor(av.notaTecnica)}`}>
+                          <div className={`rounded-lg p-3 ${bgNotaColor(av.notaTecnica)}`}>
                             <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Award className="size-3.5" />
                               Técnica
@@ -131,7 +131,7 @@ export default async function BoletimPage() {
                             </p>
                           </div>
 
-                          <div className={`rounded-[16px] p-3 ${bgNotaColor(av.notaFisica)}`}>
+                          <div className={`rounded-lg p-3 ${bgNotaColor(av.notaFisica)}`}>
                             <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Brain className="size-3.5" />
                               Física
@@ -141,7 +141,7 @@ export default async function BoletimPage() {
                             </p>
                           </div>
 
-                          <div className={`rounded-[16px] p-3 ${bgNotaColor(av.notaComportamento)}`}>
+                          <div className={`rounded-lg p-3 ${bgNotaColor(av.notaComportamento)}`}>
                             <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Heart className="size-3.5" />
                               Comportamento
@@ -151,7 +151,7 @@ export default async function BoletimPage() {
                             </p>
                           </div>
 
-                          <div className="rounded-[16px] bg-muted p-3">
+                          <div className="rounded-lg bg-muted p-3">
                             <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                               <TrendingUp className="size-3.5" />
                               Média

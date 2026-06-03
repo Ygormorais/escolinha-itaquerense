@@ -39,7 +39,7 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+    <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
       <div className="mb-6 space-y-2">
         <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
           Entrar

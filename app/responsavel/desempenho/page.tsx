@@ -39,7 +39,7 @@ export default async function DesempenhoPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-4">
             <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
@@ -57,15 +57,15 @@ export default async function DesempenhoPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
               <p className="mt-2 text-2xl font-bold">{totalAlunos}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Frequência média</p>
               <p className="mt-2 text-2xl font-bold">{mediaFrequencia}%</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Campeonatos</p>
               <p className="mt-2 text-2xl font-bold">{totalCampeonatos}</p>
             </div>
@@ -89,7 +89,7 @@ export default async function DesempenhoPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 sm:grid-cols-3">
-                  <div className="rounded-[18px] border border-black/5 bg-[var(--color-paper-50)] p-4">
+                  <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
                     <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                       <CalendarCheck className="size-4" />
                       Frequência
@@ -106,7 +106,7 @@ export default async function DesempenhoPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[18px] border border-black/5 bg-[var(--color-paper-50)] p-4">
+                  <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
                     <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                       <CreditCard className="size-4" />
                       Pagamentos
@@ -117,7 +117,7 @@ export default async function DesempenhoPage() {
                     <p className="text-xs text-muted-foreground">últimos meses</p>
                   </div>
 
-                  <div className="rounded-[18px] border border-black/5 bg-[var(--color-paper-50)] p-4">
+                  <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
                     <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                       <Shirt className="size-4" />
                       Uniforme

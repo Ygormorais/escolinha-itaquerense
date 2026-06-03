@@ -65,7 +65,7 @@ export function ResponsavelDashboardClient({
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.95)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.84)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8 sm:py-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.95)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.84)_100%)] px-6 py-7 text-white shadow-lg sm:px-8 sm:py-8">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-4">
             <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
@@ -82,15 +82,15 @@ export function ResponsavelDashboardClient({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos vinculados</p>
               <p className="mt-2 text-2xl font-bold">{totalAlunos}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pendências</p>
               <p className="mt-2 text-2xl font-bold">{pendencias}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Comunicados</p>
               <p className="mt-2 text-2xl font-bold">{totalComunicados}</p>
             </div>
@@ -102,7 +102,7 @@ export function ResponsavelDashboardClient({
         <section className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="flex items-start gap-3 py-1">
-              <div className="mt-1 rounded-[14px] bg-brand-50 p-2 text-brand-800">
+              <div className="mt-1 rounded-lg bg-brand-50 p-2 text-brand-800">
                 <User className="size-4" />
               </div>
               <div>
@@ -115,7 +115,7 @@ export function ResponsavelDashboardClient({
           </Card>
           <Card>
             <CardContent className="flex items-start gap-3 py-1">
-              <div className="mt-1 rounded-[14px] bg-warning-50 p-2 text-warning-600">
+              <div className="mt-1 rounded-lg bg-warning-50 p-2 text-warning-600">
                 <Clock3 className="size-4" />
               </div>
               <div>
@@ -128,7 +128,7 @@ export function ResponsavelDashboardClient({
           </Card>
           <Card>
             <CardContent className="flex items-start gap-3 py-1">
-              <div className="mt-1 rounded-[14px] bg-success-50 p-2 text-success-600">
+              <div className="mt-1 rounded-lg bg-success-50 p-2 text-success-600">
                 <CircleCheck className="size-4" />
               </div>
               <div>
@@ -163,7 +163,7 @@ export function ResponsavelDashboardClient({
           <Card key={aluno.id} className="overflow-hidden">
             <CardHeader className="flex flex-col gap-4 border-b border-black/5 pb-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-start gap-3">
-                <div className="rounded-[16px] bg-brand-50 p-3 text-brand-800">
+                <div className="rounded-lg bg-brand-50 p-3 text-brand-800">
                   <User className="size-5" />
                 </div>
                 <div className="space-y-2">
@@ -187,7 +187,7 @@ export function ResponsavelDashboardClient({
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-[18px] border border-black/5 bg-[var(--color-paper-50)] p-4">
+                <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
                   <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-500)]">
                     <CreditCard className="size-3.5" /> Mensalidade
                   </p>
@@ -196,13 +196,13 @@ export function ResponsavelDashboardClient({
                     {aluno.desconto > 0 && <span className="ml-1 text-xs text-success-600">(-{aluno.desconto.toFixed(2)})</span>}
                   </p>
                 </div>
-                <div className="rounded-[18px] border border-black/5 bg-[var(--color-paper-50)] p-4">
+                <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
                   <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-500)]">
                     <CalendarCheck className="size-3.5" /> Frequência
                   </p>
                   <p className="mt-3 text-sm font-semibold text-[var(--color-ink-950)]">{frequenciaUltimos(aluno)}</p>
                 </div>
-                <div className="rounded-[18px] border border-black/5 bg-[var(--color-paper-50)] p-4">
+                <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
                   <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-500)]">
                     <Shirt className="size-3.5" /> Uniforme
                   </p>
@@ -227,7 +227,7 @@ export function ResponsavelDashboardClient({
                   </p>
                   <div className="space-y-2">
                     {aluno.pagamentos.slice(0, 3).map((p, i) => (
-                      <div key={i} className="flex items-center justify-between rounded-[14px] border border-black/5 bg-[var(--color-paper-50)] px-3 py-2 text-sm">
+                      <div key={i} className="flex items-center justify-between rounded-lg border border-black/5 bg-[var(--color-paper-50)] px-3 py-2 text-sm">
                         <span className="font-medium text-[var(--color-ink-900)]">{p.mesReferencia}</span>
                         <span className={p.dataPagamento ? "font-semibold text-success-600" : "text-[var(--color-ink-500)]"}>
                           {p.dataPagamento ? `R$ ${p.valorRecebido?.toFixed(2)}` : "Pendente"}
@@ -256,7 +256,7 @@ export function ResponsavelDashboardClient({
             href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-11 items-center gap-2 rounded-[14px] bg-brand-800 px-4 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(127,0,0,0.18)] transition-colors hover:bg-brand-900"
+            className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-800 px-4 text-sm font-semibold text-white shadow-md transition-colors hover:bg-brand-900"
           >
             <MessageSquare className="size-4" /> Falar no WhatsApp
           </a>
@@ -272,7 +272,7 @@ export function ResponsavelDashboardClient({
           </CardHeader>
           <CardContent className="space-y-3">
             {comunicados.map((c, i) => (
-              <div key={i} className="rounded-[18px] border border-black/5 bg-[var(--color-paper-50)] p-4">
+              <div key={i} className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
                 <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--color-ink-900)]">{c.mensagem}</p>
                 <p className="mt-2 text-[11px] text-[var(--color-ink-500)]">
                   {format(new Date(c.createdAt), "dd/MM/yyyy 'às' HH:mm")}

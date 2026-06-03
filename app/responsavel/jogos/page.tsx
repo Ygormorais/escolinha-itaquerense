@@ -34,7 +34,7 @@ export default async function JogosPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-[28px] border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-[0_24px_60px_rgba(74,11,11,0.18)] sm:px-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-4">
             <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
@@ -52,15 +52,15 @@ export default async function JogosPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Jogos</p>
               <p className="mt-2 text-2xl font-bold">{partidas.length}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Campeonatos</p>
               <p className="mt-2 text-2xl font-bold">{grouped.size}</p>
             </div>
-            <div className="rounded-[20px] border border-white/14 bg-white/10 p-4 backdrop-blur">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Temporada</p>
               <p className="mt-2 flex items-center gap-2 text-2xl font-bold">
                 <Trophy className="size-5" />

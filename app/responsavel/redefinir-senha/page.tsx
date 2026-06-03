@@ -28,14 +28,14 @@ export default function RedefinirSenhaPage() {
         accentValue="Link invalido ou expirado"
         tone="responsavel"
       >
-        <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+        <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
           <div className="space-y-5">
             <p className="text-sm leading-6 text-[var(--color-ink-700)]">
               Link inválido. Solicite uma nova recuperação de senha.
             </p>
             <Link
               href="/responsavel/recuperar-senha"
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
             >
               <ArrowLeft className="size-4" /> Solicitar link
             </Link>
@@ -74,7 +74,7 @@ export default function RedefinirSenhaPage() {
         accentValue="Redefinicao concluida"
         tone="responsavel"
       >
-        <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+        <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
           <div className="space-y-5 text-center">
             <CheckCircle2 className="mx-auto size-12 text-success-600" />
             <p className="text-sm font-semibold text-[var(--color-ink-950)]">
@@ -82,7 +82,7 @@ export default function RedefinirSenhaPage() {
             </p>
             <Link
               href="/responsavel/login"
-              className="inline-flex h-11 w-full items-center justify-center rounded-[14px] bg-brand-800 px-4 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(127,0,0,0.18)] transition-colors hover:bg-brand-900"
+              className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-800 px-4 text-sm font-semibold text-white shadow-md transition-colors hover:bg-brand-900"
             >
               Fazer login
             </Link>
@@ -106,7 +106,7 @@ export default function RedefinirSenhaPage() {
         </Link>
       )}
     >
-      <div className="rounded-[22px] border border-black/6 bg-white/86 p-6 shadow-[0_18px_40px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7">
+      <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
         <div className="mb-6 space-y-2">
           <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
             Redefinir senha
