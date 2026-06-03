@@ -57,7 +57,7 @@ export async function proxy(request: NextRequest) {
     const token = request.cookies.get(COOKIE_NAME)?.value
     if (token && (await verify(token))) {
       const url = request.nextUrl.clone()
-      url.pathname = "/"
+      url.pathname = "/dashboard"
       url.search = ""
       return NextResponse.redirect(url)
     }

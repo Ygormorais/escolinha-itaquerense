@@ -29,7 +29,7 @@ export function LoginForm({ next }: { next?: string }) {
         setError(data.error ?? "Usuário ou senha incorretos")
         return
       }
-      router.replace(next && next.startsWith("/") ? next : "/")
+      router.replace(next && next.startsWith("/") ? next : "/dashboard")
       router.refresh()
     } catch {
       setError("Erro ao conectar. Tente novamente.")

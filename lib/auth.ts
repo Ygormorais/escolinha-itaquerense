@@ -19,7 +19,7 @@ export function redirectIfNotAuthenticated(allowedRoles?: string[]) {
       redirect("/login")
     }
     if (allowedRoles && session.role && !allowedRoles.includes(session.role)) {
-      redirect("/")
+      redirect("/dashboard")
     }
   }
 }

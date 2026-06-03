@@ -90,7 +90,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pe
     {
       label: "Visão Geral",
       items: filterByRole([
-        { href: "/", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
       ], role),
     },
