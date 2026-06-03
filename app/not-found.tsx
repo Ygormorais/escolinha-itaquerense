@@ -15,11 +15,11 @@ export default function NotFound() {
         A página que você está procurando não existe, foi removida ou está temporariamente indisponível.
       </p>
       <Link
-        href="/dashboard"
+        href="/"
         className="inline-flex items-center gap-2 rounded-xl bg-brand-800 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-brand-900 hover:shadow-xl"
       >
         <Home className="size-4" />
-        Voltar ao Dashboard
+        Voltar ao início
       </Link>
     </div>
   )

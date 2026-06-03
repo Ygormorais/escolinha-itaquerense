@@ -159,7 +159,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pe
             </p>
             <div className="flex flex-col gap-0.5">
               {group.items.map(({ href, label, icon: Icon, badge }) => {
-                const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href)
+                const isActive = pathname.startsWith(href)
                 return (
                   <Link
                     key={href}
