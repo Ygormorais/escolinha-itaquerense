@@ -113,6 +113,12 @@ describe("aprovarPreMatricula", () => {
     expect(res).toEqual({ error: "Pré-matrícula não encontrada" })
     expect(m.aluno.create).not.toHaveBeenCalled()
   })
+
+  it("retorna erro quando a criacao do aluno falha", async () => {
+    m.aluno.create.mockRejectedValue(new Error("UNIQUE constraint failed"))
+    const res = await aprovarPreMatricula(1, { mensalidade: 200 })
+    expect(res).toEqual({ error: "UNIQUE constraint failed" })
+  })
 })
 
 describe("criarPreMatricula", () => {

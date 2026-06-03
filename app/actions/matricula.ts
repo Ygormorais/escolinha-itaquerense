@@ -70,39 +70,43 @@ export async function aprovarPreMatricula(
   if (!pre) return { error: "Pré-matrícula não encontrada" }
   if (pre.status === "aprovada") return { error: "Pré-matrícula já aprovada" }
 
-  const aluno = await db.$transaction(async (tx) => {
-    let responsavelId: number | null = null
-    if (pre.email?.trim()) {
-      const resp = await tx.responsavel.findFirst({ where: { email: pre.email.trim() } })
-      if (resp) responsavelId = resp.id
-    }
-    const novo = await tx.aluno.create({
-      data: {
-        nome: pre.nomeAluno,
-        dataNascimento: pre.dataNascimento,
-        turma: pre.turma,
-        horario: pre.horario,
-        responsavel: pre.nomeResponsavel,
-        telefone: pre.telefone,
-        email: pre.email,
-        dataMatricula: new Date(),
-        mensalidade,
-        desconto,
-        status: "Ativo",
-        observacoes: pre.observacoes,
-        responsavelId,
-      },
+  try {
+    const aluno = await db.$transaction(async (tx) => {
+      let responsavelId: number | null = null
+      if (pre.email?.trim()) {
+        const resp = await tx.responsavel.findFirst({ where: { email: pre.email.trim() } })
+        if (resp) responsavelId = resp.id
+      }
+      const novo = await tx.aluno.create({
+        data: {
+          nome: pre.nomeAluno,
+          dataNascimento: pre.dataNascimento,
+          turma: pre.turma,
+          horario: pre.horario,
+          responsavel: pre.nomeResponsavel,
+          telefone: pre.telefone,
+          email: pre.email,
+          dataMatricula: new Date(),
+          mensalidade,
+          desconto,
+          status: "Ativo",
+          observacoes: pre.observacoes,
+          responsavelId,
+        },
+      })
+      await tx.preMatricula.update({ where: { id }, data: { status: "aprovada" } })
+      return novo
     })
-    await tx.preMatricula.update({ where: { id }, data: { status: "aprovada" } })
-    return novo
-  })
 
-  await registrarLog("matricula", "Pré-matrícula aprovada → aluno criado", {
-    preMatriculaId: id,
-    alunoId: aluno.id,
-  })
-  revalidatePath("/configuracoes/matriculas")
-  return { success: true, alunoId: aluno.id }
+    await registrarLog("matricula", "Pré-matrícula aprovada → aluno criado", {
+      preMatriculaId: id,
+      alunoId: aluno.id,
+    })
+    revalidatePath("/configuracoes/matriculas")
+    return { success: true, alunoId: aluno.id }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao aprovar pré-matrícula" }
+  }
 }
 
 export async function recusarPreMatricula(id: number) {
