@@ -14,18 +14,20 @@ test.describe("Dashboard", () => {
   })
 
   test("mostra gráficos (lazy-loaded)", async ({ page }) => {
-    await expect(page.locator("text=Receita vs Custos")).toBeVisible()
-    await expect(page.locator("text=Inadimplência")).toBeVisible()
+    const main = page.locator("main")
+    await expect(main.locator("text=Receita vs Custos")).toBeVisible()
+    await expect(main.locator("text=Inadimplência")).toBeVisible()
   })
 
   test("mostra ocupação das turmas", async ({ page }) => {
-    await expect(page.locator("text=Ocupação das Turmas")).toBeVisible()
-    await expect(page.locator("text=Sub-7")).toBeVisible()
-    await expect(page.locator("text=Sub-11")).toBeVisible()
+    const main = page.locator("main")
+    await expect(main.locator("text=Ocupação das Turmas")).toBeVisible()
+    await expect(main.locator("text=Sub-7").first()).toBeVisible()
+    await expect(main.locator("text=Sub-11").first()).toBeVisible()
   })
 
   test("MonthPicker está visível", async ({ page }) => {
-    const monthPicker = page.locator('input[type="number"]')
+    const monthPicker = page.locator("main").locator('input[type="month"]')
     await expect(monthPicker.first()).toBeVisible()
   })
 })

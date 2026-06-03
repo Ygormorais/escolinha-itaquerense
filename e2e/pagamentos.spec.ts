@@ -7,9 +7,9 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("Pagamentos", () => {
   test("navega para pagamentos", async ({ page }) => {
-    await page.click('a[href="/pagamentos"]')
+    await page.locator("aside").getByRole("link", { name: "Pagamentos", exact: true }).click()
     await expect(page).toHaveURL("/pagamentos")
-    await expect(page.locator("text=Pagamentos")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Pagamentos", exact: true })).toBeVisible()
   })
 
   test("botão gerar mensalidades existe", async ({ page }) => {
@@ -21,9 +21,9 @@ test.describe("Pagamentos", () => {
 
 test.describe("Custos", () => {
   test("navega para custos", async ({ page }) => {
-    await page.click('a[href="/custos"]')
+    await page.locator("aside").getByRole("link", { name: "Custos", exact: true }).click()
     await expect(page).toHaveURL("/custos")
-    await expect(page.locator("text=Custos")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Custos", exact: true })).toBeVisible()
   })
 })
 

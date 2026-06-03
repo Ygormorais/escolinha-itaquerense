@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test"
 test.describe("Portal do Responsável", () => {
   test("página de login carrega", async ({ page }) => {
     await page.goto("/responsavel/login")
-    await expect(page.locator("text=Entrar")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Entrar", exact: true })).toBeVisible()
   })
 
   test("campo email e senha existem", async ({ page }) => {
