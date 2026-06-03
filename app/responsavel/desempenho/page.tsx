@@ -31,7 +31,7 @@ export default async function DesempenhoPage() {
   const mediaFrequencia = responsavel.alunos.length > 0
     ? Math.round(
         responsavel.alunos.reduce((acc, aluno) => {
-          const presentes = aluno.frequencias.filter((f) => f.presenca === "presente").length
+          const presentes = aluno.frequencias.filter((f) => f.presenca === "Presente").length
           return acc + (aluno.frequencias.length > 0 ? (presentes / aluno.frequencias.length) * 100 : 0)
         }, 0) / responsavel.alunos.length
       )
@@ -75,7 +75,7 @@ export default async function DesempenhoPage() {
 
       <div className="space-y-6">
         {responsavel.alunos.map((aluno) => {
-          const presentes = aluno.frequencias.filter((f) => f.presenca === "presente").length
+          const presentes = aluno.frequencias.filter((f) => f.presenca === "Presente").length
           const totalFreq = aluno.frequencias.length
           const perc = totalFreq > 0 ? Math.round((presentes / totalFreq) * 100) : 0
 
