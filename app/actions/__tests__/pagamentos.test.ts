@@ -22,6 +22,10 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
+vi.mock("@/app/actions/cobranca", () => ({
+  cancelarCobranca: vi.fn().mockResolvedValue({ success: true }),
+}))
+
 import {
   registrarPagamento,
   registrarPagamentosLote,
@@ -29,6 +33,7 @@ import {
   deletePagamento,
 } from "@/app/actions/pagamentos"
 import { db } from "@/lib/db"
+import { cancelarCobranca } from "@/app/actions/cobranca"
 
 const m = db as unknown as {
   pagamento: {
@@ -111,5 +116,19 @@ describe("deletePagamento", () => {
     const res = await deletePagamento(9)
     expect(m.pagamento.delete).toHaveBeenCalledWith({ where: { id: 9 } })
     expect(res).toEqual({ success: true })
+  })
+
+  it("cancela a cobrança no MP antes de deletar quando externalId existe", async () => {
+    m.pagamento.findUnique.mockResolvedValue({
+      id: 3,
+      externalId: "mp-789",
+      aluno: { nome: "Carlos" },
+      mesReferencia: "2026-06",
+    })
+
+    await deletePagamento(3)
+
+    expect(cancelarCobranca).toHaveBeenCalledWith(3)
+    expect(m.pagamento.delete).toHaveBeenCalledWith({ where: { id: 3 } })
   })
 })
