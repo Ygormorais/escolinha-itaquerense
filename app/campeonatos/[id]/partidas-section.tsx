@@ -36,7 +36,7 @@ type Partida = {
   observacoes: string | null
 }
 
-export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[]; campeonatoId: number }) {
+export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense" }: { partidas: Partida[]; campeonatoId: number; nomeClube?: string }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Partida | null>(null)
@@ -420,7 +420,7 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
           {scoreDialog && (
             <div className="grid grid-cols-2 gap-4 py-4">
               <div className="text-center space-y-2">
-                <Label className="text-lg font-bold">E.C. Itaquerense</Label>
+                <Label className="text-lg font-bold">{nomeClube}</Label>
                 <Input
                   type="number" min="0"
                   className="text-center text-2xl h-14"
