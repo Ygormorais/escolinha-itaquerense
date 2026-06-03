@@ -9,7 +9,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>
 }) {
   const session = await getSession()
-  if (session.authenticated) redirect("/")
+  if (session.authenticated) redirect("/dashboard")
 
   const { next } = await searchParams
 
