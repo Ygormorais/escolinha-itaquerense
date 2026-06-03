@@ -44,10 +44,10 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
     0
   )
 
-  const meses = [
-    "2026-01", "2026-02", "2026-03", "2026-04", "2026-05",
-    "2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12",
-  ]
+  const anoAtual = new Date().getFullYear()
+  const meses = Array.from({ length: 12 }, (_, i) =>
+    `${anoAtual}-${String(i + 1).padStart(2, "0")}`
+  )
 
   return (
     <div className="flex flex-col gap-8">
