@@ -88,3 +88,25 @@ export async function runEnviarLembretesWhatsAppVencendo() {
 
   return { enviados: vencendo.length - semTelefone, erros, semTelefone }
 }
+
+export async function notificarPagamentoConfirmado(pagamentoId: number): Promise<void> {
+  const p = await db.pagamento.findUnique({
+    where: { id: pagamentoId },
+    include: { aluno: { select: { nome: true, telefone: true, responsavel: true, mensalidade: true } } },
+  })
+  if (!p) return
+
+  const tel = p.aluno.telefone?.replace(/\D/g, "")
+  if (!tel || tel.length < 8) return
+
+  const msg = [
+    `Olá ${p.aluno.responsavel?.split(" ")[0] ?? "responsável"}!`,
+    ``,
+    `Pagamento confirmado! A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* foi recebida com sucesso.`,
+    ``,
+    `Valor: *R$ ${(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}*`,
+    `Obrigado!`,
+  ].join("\n")
+
+  await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+}

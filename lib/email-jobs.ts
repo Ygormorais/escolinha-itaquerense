@@ -139,3 +139,29 @@ export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { er
     return { error: e instanceof Error ? e.message : "Erro ao enviar lembretes" }
   }
 }
+
+export async function notificarPagamentoConfirmadoEmail(pagamentoId: number): Promise<void> {
+  const config = getConfig()
+  const p = await db.pagamento.findUnique({
+    where: { id: pagamentoId },
+    include: { aluno: { select: { nome: true, email: true, responsavel: true, mensalidade: true } } },
+  })
+  if (!p || !p.aluno.email) return
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+      <div style="background:#7F0000;color:white;padding:24px 32px;border-radius:8px 8px 0 0">
+        <h2 style="margin:0;font-size:18px">${config.nome}</h2>
+        <p style="margin:4px 0 0;opacity:.7;font-size:13px">Pagamento confirmado</p>
+      </div>
+      <div style="background:#f9fafb;padding:24px 32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
+        <p>Olá, ${p.aluno.responsavel?.split(" ")[0] ?? "responsável"}!</p>
+        <p>O pagamento da mensalidade de <strong>${p.aluno.nome}</strong> referente a <strong>${p.mesReferencia}</strong> foi confirmado.</p>
+        <p style="font-size:20px;font-weight:bold;color:#047857">R$ ${(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}</p>
+        <p style="color:#6b7280;font-size:13px">Obrigado por manter as mensalidades em dia.</p>
+      </div>
+    </div>
+  `
+
+  await enviarEmail(p.aluno.email, `Pagamento confirmado — ${p.mesReferencia}`, html)
+}
