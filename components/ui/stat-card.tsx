@@ -83,7 +83,7 @@ export function StatCard({
           <div className="mt-3 space-y-1">
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
               <div
-                className={cn("h-full rounded-full transition-all duration-500", barCls)}
+                className={cn("h-full rounded-full transition-[width] duration-300 ease-out", barCls)}
                 style={{ width: `${progressPct}%` }}
               />
             </div>
