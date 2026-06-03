@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { registrarLog } from "./log"
 
 export type ActionResult = { success: true } | { error: string }
+export type AprovarResult = { success: true; alunoId: number } | { error: string }
 
 export async function criarPreMatricula(data: {
   nomeAluno: string
@@ -51,11 +53,56 @@ export async function listarPreMatriculas(status?: string) {
   })
 }
 
-export async function aprovarPreMatricula(id: number) {
+export async function aprovarPreMatricula(
+  id: number,
+  opts: { mensalidade: number; desconto?: number }
+): Promise<AprovarResult> {
   await requireAuth()
-  await db.preMatricula.update({ where: { id }, data: { status: "aprovada" } })
+
+  const mensalidade = Number(opts?.mensalidade)
+  if (!Number.isFinite(mensalidade) || mensalidade < 0) {
+    return { error: "Informe uma mensalidade válida" }
+  }
+  const descontoRaw = Number(opts?.desconto)
+  const desconto = Number.isFinite(descontoRaw) && descontoRaw > 0 ? descontoRaw : 0
+
+  const pre = await db.preMatricula.findUnique({ where: { id } })
+  if (!pre) return { error: "Pré-matrícula não encontrada" }
+  if (pre.status === "aprovada") return { error: "Pré-matrícula já aprovada" }
+
+  const aluno = await db.$transaction(async (tx) => {
+    let responsavelId: number | null = null
+    if (pre.email?.trim()) {
+      const resp = await tx.responsavel.findFirst({ where: { email: pre.email.trim() } })
+      if (resp) responsavelId = resp.id
+    }
+    const novo = await tx.aluno.create({
+      data: {
+        nome: pre.nomeAluno,
+        dataNascimento: pre.dataNascimento,
+        turma: pre.turma,
+        horario: pre.horario,
+        responsavel: pre.nomeResponsavel,
+        telefone: pre.telefone,
+        email: pre.email,
+        dataMatricula: new Date(),
+        mensalidade,
+        desconto,
+        status: "Ativo",
+        observacoes: pre.observacoes,
+        responsavelId,
+      },
+    })
+    await tx.preMatricula.update({ where: { id }, data: { status: "aprovada" } })
+    return novo
+  })
+
+  await registrarLog("matricula", "Pré-matrícula aprovada → aluno criado", {
+    preMatriculaId: id,
+    alunoId: aluno.id,
+  })
   revalidatePath("/configuracoes/matriculas")
-  return { success: true }
+  return { success: true, alunoId: aluno.id }
 }
 
 export async function recusarPreMatricula(id: number) {
