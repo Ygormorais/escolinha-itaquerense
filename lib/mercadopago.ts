@@ -1,7 +1,8 @@
 import { MercadoPagoConfig, Payment } from "mercadopago"
+import { requireEnv } from "@/lib/env"
 
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
+  accessToken: requireEnv("MERCADOPAGO_ACCESS_TOKEN", "TEST-placeholder"),
 })
 
 export const mpPayment = new Payment(client)
