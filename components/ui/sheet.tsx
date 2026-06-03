@@ -34,7 +34,7 @@ export function Sheet({ open, onClose, children, side = "left" }: SheetProps) {
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div
         className={cn(
-          "fixed inset-y-0 z-50 flex w-72 flex-col bg-card shadow-xl transition-transform",
+          "fixed inset-y-0 z-50 flex w-72 flex-col bg-card shadow-lg transition-transform",
           side === "left" ? "left-0" : "right-0"
         )}
       >
