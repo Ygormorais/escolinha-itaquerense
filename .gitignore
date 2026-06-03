@@ -50,6 +50,7 @@ docs/superpowers/
 
 # dev logs
 .next-dev-*.log
+*.log
 
 # design artifacts
 AUDIT.md
