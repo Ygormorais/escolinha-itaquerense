@@ -69,7 +69,7 @@ export default async function RootLayout({
 }>) {
   const pathname = (await headers()).get("x-pathname") ?? "/"
   const session = await getSession()
-  const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && pathname !== "/login" && pathname !== "/"
+  const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && !pathname.startsWith("/matricula") && pathname !== "/login" && pathname !== "/"
 
   let pendingEscalacoes = 0
   if (showAdminShell) {
