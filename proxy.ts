@@ -49,6 +49,21 @@ export async function proxy(request: NextRequest) {
       },
     })
 
+  // Usuário já autenticado não deve ver a página de login — redireciona para o
+  // painel. Feito aqui (middleware = 307 confiável) porque o redirect() de
+  // Server Component nesta versão do Next emite apenas um meta-refresh que não
+  // dispara de forma confiável após a hidratação.
+  if (pathname === "/login") {
+    const token = request.cookies.get(COOKIE_NAME)?.value
+    if (token && (await verify(token))) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/"
+      url.search = ""
+      return NextResponse.redirect(url)
+    }
+    return nextResponse()
+  }
+
   if (
     pathname === "/" ||
     pathname.startsWith("/login") ||
