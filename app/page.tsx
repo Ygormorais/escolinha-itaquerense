@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake } from "lucide-react"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, MessageSquareWarning, Inbox, CheckCircle2 } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import dynamic from "next/dynamic"
@@ -11,6 +11,10 @@ import { MonthPicker } from "@/app/caixa/month-picker"
 import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
 import { TURMAS } from "@/lib/constants"
+import { AlertBanner } from "@/components/dashboard/alert-banner"
+import { EmptyState } from "@/components/ui/empty-state"
+import { QuickActions } from "@/components/dashboard/quick-actions"
+import { ResumoFinanceiro } from "@/components/dashboard/resumo-financeiro"
 
 const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-receita-custos").then(m => ({ default: m.ChartReceitaCustos })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 const ChartInadimplencia = dynamic(() => import("@/components/dashboard/chart-inadimplencia").then(m => ({ default: m.ChartInadimplencia })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
@@ -54,6 +58,8 @@ export default async function DashboardPage({
     ocupacaoTurmas,
     todosPagamentos6Meses,
     receitaTurmaRaw,
+    mesAnteriorData,
+    mesAnteriorCustos,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -116,6 +122,24 @@ export default async function DashboardPage({
       where: { mesReferencia: mesAtual, dataPagamento: { not: null } },
       select: { valorRecebido: true, aluno: { select: { turma: true } } },
     }),
+    // Previous month data for comparison
+    (() => {
+      const mesAnteriorObj = subMonths(dataRef, 1)
+      const mesAnteriorStr = format(mesAnteriorObj, "yyyy-MM")
+      return db.pagamento.aggregate({
+        where: { mesReferencia: mesAnteriorStr, dataPagamento: { not: null } },
+        _sum: { valorRecebido: true },
+      }).then(r => ({ mes: mesAnteriorStr, receita: r._sum.valorRecebido ?? 0 }))
+    })(),
+    (() => {
+      const mesAnteriorObj = subMonths(dataRef, 1)
+      const inicio = startOfMonth(mesAnteriorObj)
+      const fim = endOfMonth(mesAnteriorObj)
+      return db.custo.aggregate({
+        where: { data: { gte: inicio, lte: fim } },
+        _sum: { valor: true },
+      }).then(r => ({ custos: r._sum.valor ?? 0 }))
+    })(),
   ])
 
   const chartData = last6Months.map((mes) => {
@@ -153,9 +177,36 @@ export default async function DashboardPage({
   ).sort((a, b) => new Date(a.dataNascimento).getDate() - new Date(b.dataNascimento).getDate())
 
   const receitaMes = pagamentosMes.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
+  const custosMes = custosChart
+    .filter((c) => format(c.data, "yyyy-MM") === mesAtual)
+    .reduce((s, c) => s + c.valor, 0)
   const presencaMedia = totalFrequencias > 0
     ? Math.round((frequenciasMes / totalFrequencias) * 100)
     : 0
+
+  const alerts: { type: "danger" | "warning" | "info"; icon: React.ElementType; message: string; detail: string }[] = []
+  if (inadimplentes.length > 5) {
+    alerts.push({ type: "danger", icon: AlertCircle, message: `${inadimplentes.length} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
+  }
+  if (inadimplentes.length > 0 && inadimplentes.length <= 5) {
+    alerts.push({ type: "warning", icon: AlertCircle, message: `${inadimplentes.length} mensalidade(s) em atraso`, detail: "Poucos casos, mas requer atenção." })
+  }
+  if (presencaMedia < 50 && totalFrequencias > 0) {
+    alerts.push({ type: "danger", icon: CalendarCheck, message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.` })
+  }
+  if (presencaMedia >= 50 && presencaMedia < 75 && totalFrequencias > 0) {
+    alerts.push({ type: "warning", icon: CalendarCheck, message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.` })
+  }
+  const temConvocacoes = 0 // Will be computed from pendingEscalacoes in layout
+  if (temConvocacoes) {
+    alerts.push({ type: "info", icon: MessageSquareWarning, message: "Convocação(ões) pendente(s)", detail: "Há convocações aguardando revisão." })
+  }
+  if (vencendoSemana.length > 0) {
+    alerts.push({ type: "info", icon: TrendingUp, message: `${vencendoSemana.length} mensalidade(s) vencem nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
+  }
+
+  const receitaAnterior = mesAnteriorData.receita
+  const custosAnterior = mesAnteriorCustos.custos
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
@@ -168,6 +219,20 @@ export default async function DashboardPage({
               <MonthPicker mes={mesSelecionado} basePath="/" />
             </div>
           }
+      />
+
+      {alerts.length > 0 && <AlertBanner alerts={alerts} />}
+
+      <QuickActions />
+
+      <ResumoFinanceiro
+        receita={receitaMes}
+        custos={custosMes}
+        saldo={receitaMes - custosMes}
+        mesAnterior={receitaAnterior > 0 || custosAnterior > 0 ? {
+          receita: receitaAnterior,
+          custos: custosAnterior,
+        } : undefined}
       />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -332,35 +397,36 @@ export default async function DashboardPage({
             <CardTitle>Últimos Pagamentos</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Aluno</TableHead>
-                  <TableHead>Turma</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ultimosPagamentos.length === 0 && (
+            {ultimosPagamentos.length === 0 ? (
+              <EmptyState
+                icon={Inbox}
+                title="Nenhum pagamento registrado"
+                description="Os pagamentos confirmados aparecerão aqui."
+              />
+            ) : (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                      Nenhum pagamento registrado
-                    </TableCell>
+                    <TableHead>Aluno</TableHead>
+                    <TableHead>Turma</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
                   </TableRow>
-                )}
-                {ultimosPagamentos.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
-                    <TableCell>{p.aluno.turma}</TableCell>
-                    <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
-                    <TableCell className="text-right">
-                      R$ {(p.valorRecebido ?? 0).toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {ultimosPagamentos.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell>{p.aluno.turma}</TableCell>
+                      <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
+                      <TableCell className="text-right">
+                        R$ {(p.valorRecebido ?? 0).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
@@ -369,33 +435,34 @@ export default async function DashboardPage({
             <CardTitle>Mensalidades em Atraso</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Aluno</TableHead>
-                  <TableHead>Turma</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inadimplentes.length === 0 && (
+            {inadimplentes.length === 0 ? (
+              <EmptyState
+                icon={CheckCircle2}
+                title="Nenhuma mensalidade em atraso"
+                description="Tudo em dia neste mês."
+              />
+            ) : (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
-                      Nenhuma mensalidade em atraso
-                    </TableCell>
+                    <TableHead>Aluno</TableHead>
+                    <TableHead>Turma</TableHead>
+                    <TableHead>Vencimento</TableHead>
                   </TableRow>
-                )}
-                {inadimplentes.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
-                    <TableCell>{p.aluno.turma}</TableCell>
-                    <TableCell className="text-danger-600">
-                      {format(p.dataVencimento, "dd/MM/yyyy")}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {inadimplentes.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell>{p.aluno.turma}</TableCell>
+                      <TableCell className="text-danger-600">
+                        {format(p.dataVencimento, "dd/MM/yyyy")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
