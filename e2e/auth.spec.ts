@@ -4,7 +4,7 @@ import { loginAsAdmin } from "./helpers"
 test.describe("Autenticação", () => {
   test("login com sucesso redireciona para dashboard", async ({ page }) => {
     await loginAsAdmin(page)
-    await expect(page).toHaveURL("/")
+    await expect(page).toHaveURL("/dashboard")
   })
 
   test("login com senha errada mostra erro", async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe("Autenticação", () => {
 
   test("logout limpa sessão", async ({ page }) => {
     await loginAsAdmin(page)
-    await expect(page).toHaveURL("/")
+    await expect(page).toHaveURL("/dashboard")
 
     const logoutBtn = page.locator('button[aria-label="Sair do sistema"]')
     await logoutBtn.click()
@@ -42,6 +42,6 @@ test.describe("Autenticação", () => {
     expect(res.ok()).toBeTruthy()
 
     await page.goto("/login")
-    await expect(page).toHaveURL("/")
+    await expect(page).toHaveURL("/dashboard")
   })
 })
