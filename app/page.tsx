@@ -3,7 +3,7 @@ import { useState } from "react"
 import Link from "next/link"
 
 const css = `
-  :root{
+  .lp{
     --red:#C62828;
     --red-dark:#9F1D1D;
     --red-darker:#7F0000;
@@ -245,7 +245,7 @@ export default function Landing() {
             <span className="name"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
           </Link>
 
-          <button className="burger" aria-label="Menu" onClick={() => setNavOpen(o => !o)}><i className="ti ti-menu-2"></i></button>
+          <button className="burger" aria-label="Menu" aria-expanded={navOpen} aria-controls="nav" onClick={() => setNavOpen(o => !o)}><i className="ti ti-menu-2"></i></button>
 
           <nav className={"main" + (navOpen ? " open" : "")} id="nav">
             <ul>
