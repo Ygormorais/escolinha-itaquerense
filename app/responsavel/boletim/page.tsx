@@ -15,9 +15,9 @@ function notaColor(nota: number | null): string {
 
 function bgNotaColor(nota: number | null): string {
   if (nota === null || nota === undefined) return "bg-muted"
-  if (nota >= 7) return "bg-green-100 dark:bg-green-900/30"
-  if (nota >= 5) return "bg-yellow-100 dark:bg-yellow-900/30"
-  return "bg-red-100 dark:bg-red-900/30"
+  if (nota >= 7) return "bg-success-50"
+  if (nota >= 5) return "bg-warning-50"
+  return "bg-danger-50"
 }
 
 function mediaGeral(avaliacao: { notaTecnica: number | null; notaFisica: number | null; notaComportamento: number | null }): number | null {
@@ -172,10 +172,10 @@ export default async function BoletimPage() {
                               className={`h-full rounded-full transition-all ${
                                 av.frequencia !== null
                                   ? av.frequencia >= 75
-                                    ? "bg-green-500"
+                                    ? "bg-success-600"
                                     : av.frequencia >= 50
-                                      ? "bg-yellow-500"
-                                      : "bg-red-500"
+                                      ? "bg-warning-600"
+                                      : "bg-danger-600"
                                   : "bg-muted-foreground/30"
                               }`}
                               style={{ width: av.frequencia !== null ? `${av.frequencia}%` : "0%" }}
