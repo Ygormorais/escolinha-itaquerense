@@ -177,9 +177,13 @@ model Campeonato {
   custoUniforme  Float               @default(0)
   observacoes   String?
   status        String               @default("aberto") // aberto, andamento, encerrado
+  fpfsEventoId  Int?                                   // id do evento na FPFS (ex.: 920)
+  fpfsTimeNome  String?                                // nome do nosso time como aparece na FPFS
+  fpfsSyncEm    DateTime?                              // ultimo sync bem-sucedido
   inscricoes    InscricaoCampeonato[]
   partidas      Partida[]
   media         Media[]
+  classificacaoFpfs ClassificacaoFpfs[]
   createdAt     DateTime             @default(now())
 }
 
@@ -195,8 +199,34 @@ model Partida {
   golsContra    Int?
   resultado     String?    // Vitoria, Derrota, Empate — null se não realizada
   observacoes   String?
+  fpfsJogoId    String?                                // id do jogo na FPFS (link da sumula)
+  sumulaUrl     String?                                // URL da sumula
   media         Media[]
   createdAt     DateTime   @default(now())
+
+  @@unique([campeonatoId, fpfsJogoId])
+}
+
+model ClassificacaoFpfs {
+  id           Int        @id @default(autoincrement())
+  campeonatoId Int
+  campeonato   Campeonato @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  fase         String
+  grupo        String?
+  posicao      Int
+  timeNome     String
+  pontos       Int        @default(0)
+  jogos        Int        @default(0)
+  vitorias     Int        @default(0)
+  empates      Int        @default(0)
+  derrotas     Int        @default(0)
+  golsPro      Int        @default(0)
+  golsContra   Int        @default(0)
+  saldo        Int        @default(0)
+  ehNosso      Boolean    @default(false)
+  atualizadoEm DateTime   @default(now())
+
+  @@index([campeonatoId])
 }
 
 model InscricaoCampeonato {
