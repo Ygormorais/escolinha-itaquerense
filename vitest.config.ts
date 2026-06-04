@@ -6,6 +6,7 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["**/*.test.ts", "**/*.test.tsx"],
+    reporters: ["default", "./vitest.force-exit-reporter.ts"],
   },
   resolve: {
     alias: {
