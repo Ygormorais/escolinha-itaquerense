@@ -274,8 +274,7 @@ export default function Landing() {
               </li>
               <li><a href="#">Modalidades</a>
                 <div className="mega">
-                  <div><h4>Esportes</h4><a href="#">Basquete</a><a href="#">Futsal</a><a href="#">Natação</a></div>
-                  <div><h4>Mais</h4><a href="#">eSports</a><a href="#">Vôlei</a><a href="#">Atletismo</a></div>
+                  <div><h4>Esportes</h4><a href="#">Futebol</a><a href="#">Futsal</a></div>
                 </div>
               </li>
               <li><a href="#">Matrícula/Planos</a>
@@ -464,9 +463,6 @@ export default function Landing() {
           <h2 className="section-title">Modalidades</h2>
           <div className="cat-grid">
             <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futebol</b><span>Masculino &amp; Feminino</span></a>
-            <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-basketball"></i></div><b>Basquete</b><span>Categorias de Base</span></a>
-            <a className="cat" href="#"><div className="circle"><i className="ti ti-device-gamepad-2"></i></div><b>eSports</b><span>Times Itaquerense</span></a>
-            <a className="cat" href="#"><div className="circle"><i className="ti ti-swimming"></i></div><b>Natação</b><span>Iniciação Esportiva</span></a>
             <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal</b><span>Liga Local</span></a>
           </div>
         </div>
@@ -502,7 +498,7 @@ export default function Landing() {
           </div>
           <div className="fcol"><h4>Clube</h4><a href="#">História</a><a href="#">Estatuto</a><a href="#">Gestão</a><a href="#">Arena</a><a href="#">Memória</a></div>
           <div className="fcol"><h4>Futebol</h4><a href="#">Elenco Masculino</a><a href="#">Elenco Feminino</a><a href="/turmas">Turmas</a><a href="#">Comissão</a></div>
-          <div className="fcol"><h4>Modalidades</h4><a href="#">Basquete</a><a href="#">Futsal</a><a href="#">Natação</a><a href="#">eSports</a></div>
+          <div className="fcol"><h4>Modalidades</h4><a href="#">Futebol</a><a href="#">Futsal</a></div>
           <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a><a href="#">Loja Oficial</a></div>
         </div>
         <div className="foot-bottom">

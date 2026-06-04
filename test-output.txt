@@ -1,0 +1,26 @@
+
+ RUN  v4.1.7 C:/Users/Ygor/projetos/elite/escolinha-itaquerense
+
+ ❯ app/__tests__/landing.test.tsx (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  app/__tests__/landing.test.tsx [ app/__tests__/landing.test.tsx ]
+TypeError: Roboto is not a function
+ ❯ app/page.tsx:7:16
+      5| import Link from "next/link"
+      6|
+      7| const roboto = Roboto({
+       |                ^
+      8|   subsets: ["latin"],
+      9|   weight: ["400", "500", "700"],
+ ❯ app/__tests__/landing.test.tsx:3:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 19 passed (20)
+      Tests  122 passed (122)
+   Start at  19:59:59
+   Duration  1.46s (transform 1.26s, setup 0ms, import 1.93s, tests 253ms, environment 4ms)
+

@@ -26,6 +26,7 @@ import { toast } from "sonner"
 import {
   editarCampeonato, deletarCampeonato,
   inscreverAluno, removerInscricao, registrarPagamentoInscricao,
+  sincronizarFpfs,
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -64,6 +65,9 @@ type Campeonato = {
   custoUniforme: number
   observacoes: string | null
   status: string
+  fpfsEventoId: number | null
+  fpfsTimeNome: string | null
+  fpfsSyncEm: RscDate | null
   createdAt: RscDate
   inscricoes: Inscricao[]
   partidas: PartidaItem[]
@@ -113,6 +117,8 @@ export function CampeonatoDetailClient({
     custoUniforme: String(campeonato.custoUniforme),
     observacoes: campeonato.observacoes || "",
     status: campeonato.status,
+    fpfsEventoId: campeonato.fpfsEventoId != null ? String(campeonato.fpfsEventoId) : "",
+    fpfsTimeNome: campeonato.fpfsTimeNome || "",
   })
 
   const [inscForm, setInscForm] = useState({
@@ -161,10 +167,30 @@ export function CampeonatoDetailClient({
       custoUniforme: Number(form.custoUniforme),
       observacoes: form.observacoes || undefined,
       status: form.status,
+      fpfsEventoId: form.fpfsEventoId ? Number(form.fpfsEventoId) : null,
+      fpfsTimeNome: form.fpfsTimeNome || null,
     })
     toast.success("Campeonato atualizado!")
     setEditOpen(false)
     router.refresh()
+  }
+
+  const [sincronizando, setSincronizando] = useState(false)
+  async function handleSincronizarFpfs() {
+    if (campeonato.fpfsEventoId == null) {
+      toast.error("Configure o ID do evento FPFS em Editar antes de sincronizar")
+      return
+    }
+    setSincronizando(true)
+    try {
+      const r = await sincronizarFpfs(campeonato.id)
+      toast.success(`FPFS sincronizada: ${r.jogosNovos} novos, ${r.jogosAtualizados} atualizados, ${r.linhasClassificacao} na classificação`)
+      router.refresh()
+    } catch {
+      toast.error("Falha ao sincronizar com a FPFS")
+    } finally {
+      setSincronizando(false)
+    }
   }
 
   async function handleDelete() {
@@ -243,8 +269,16 @@ export function CampeonatoDetailClient({
           {campeonato.descricao && (
             <p className="text-sm text-muted-foreground mt-0.5">{campeonato.descricao}</p>
           )}
+          {campeonato.fpfsSyncEm && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              FPFS atualizada em {format(new Date(campeonato.fpfsSyncEm), "dd/MM/yyyy HH:mm")}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleSincronizarFpfs} disabled={sincronizando}>
+            {sincronizando ? "Atualizando..." : "Atualizar da FPFS"}
+          </Button>
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <DialogTrigger>
               <Button variant="outline" size="sm">
@@ -277,6 +311,14 @@ export function CampeonatoDetailClient({
                 <div className="col-span-2 space-y-2">
                   <Label>Local</Label>
                   <Input value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>ID Evento FPFS</Label>
+                  <Input type="number" min="0" placeholder="ex.: 920" value={form.fpfsEventoId} onChange={(e) => setForm({ ...form, fpfsEventoId: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome do time na FPFS</Label>
+                  <Input placeholder="igual ao site da FPFS" value={form.fpfsTimeNome} onChange={(e) => setForm({ ...form, fpfsTimeNome: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Status</Label>

@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE "Campeonato" ADD COLUMN "fpfsEventoId" TEXT;
+ALTER TABLE "Campeonato" ADD COLUMN "fpfsEventoId" INTEGER;
 ALTER TABLE "Campeonato" ADD COLUMN "fpfsSyncEm" DATETIME;
 ALTER TABLE "Campeonato" ADD COLUMN "fpfsTimeNome" TEXT;
 
@@ -31,5 +31,5 @@ CREATE TABLE "ClassificacaoFpfs" (
 -- CreateIndex
 CREATE INDEX "ClassificacaoFpfs_campeonatoId_idx" ON "ClassificacaoFpfs"("campeonatoId");
 
--- CreateUniqueIndex
+-- CreateIndex
 CREATE UNIQUE INDEX "Partida_campeonatoId_fpfsJogoId_key" ON "Partida"("campeonatoId", "fpfsJogoId");

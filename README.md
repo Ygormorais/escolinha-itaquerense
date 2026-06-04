@@ -63,6 +63,30 @@ Acesse `http://localhost:3000` — login padrão: `admin` / `escolinha123`
 | `CRON_SECRET` | Secret para endpoints cron |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | SMTP para emails |
 
+## Sincronização FPFS
+
+Cada campeonato pode ser ligado a um evento da Federação Paulista de Futsal preenchendo, na
+tela do campeonato (Editar):
+
+- **ID Evento FPFS** — id do evento, ex.: `920` (de `https://eventos.admfutsal.com.br/evento/920`).
+- **Nome do time na FPFS** — nome do nosso time exatamente como aparece no site (usado para
+  destacar nossa linha na classificação e identificar nossos jogos).
+
+A sincronização busca **classificação** e **jogos** do site oficial e grava no banco; as telas
+do responsável leem sempre do banco (nunca da FPFS ao vivo). Disparo:
+
+- **Manual:** botão "Atualizar da FPFS" na tela do campeonato.
+- **Automático (cron externo):** agende no host uma chamada à rota protegida, reutilizando o
+  `CRON_SECRET` (header `Authorization: Bearer`). Recomendado a cada 3–6 h, mais frequente em
+  dias de rodada:
+
+  ```
+  0 */4 * * * curl -s "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SECRET"
+  ```
+
+  Sincroniza todos os campeonatos com evento FPFS configurado. Para um único campeonato, passe
+  `?campeonatoId=N` na URL.
+
 ## Funcionalidades
 
 ### Admin
