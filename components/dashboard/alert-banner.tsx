@@ -1,10 +1,22 @@
 "use client"
 
+import { AlertCircle, CalendarCheck, MessageSquareWarning, TrendingUp } from "lucide-react"
 import { Card } from "@/components/ui/card"
+
+// Mapa de chave → ícone. A chave (string) é o que vem do server component;
+// o componente do ícone é resolvido aqui no client (não é serializável via RSC).
+const ICONS = {
+  alerta: AlertCircle,
+  frequencia: CalendarCheck,
+  convocacao: MessageSquareWarning,
+  tendencia: TrendingUp,
+} as const
+
+export type AlertIcon = keyof typeof ICONS
 
 interface AlertItem {
   type: "danger" | "warning" | "info"
-  icon: React.ElementType
+  icon: AlertIcon
   message: string
   detail: string
   href?: string
@@ -21,7 +33,7 @@ export function AlertBanner({ alerts }: { alerts: AlertItem[] }) {
           warning: "border-warning-600/30 bg-warning-50 text-warning-600",
           info: "border-info-600/30 bg-info-50 text-info-600",
         }
-        const Icon = alert.icon
+        const Icon = ICONS[alert.icon]
         return (
           <Card
             key={i}

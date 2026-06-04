@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "npx prisma generate",
     "db:migrate": "npx prisma migrate deploy",
+    "db:seed": "npx tsx prisma/seed.ts",
     "db:studio": "npx prisma studio",
     "db:backup": "npx tsx scripts/backup.ts",
     "db:restore": "npx tsx scripts/restore.ts",

@@ -136,7 +136,13 @@ describe("emitirCobranca — Boleto", () => {
       mesReferencia: "2026-06",
       dataVencimento: new Date("2026-06-10"),
       externalId: null,
-      aluno: { nome: "Pedro", mensalidade: 200, email: "pedro@test.com" },
+      aluno: {
+        nome: "Pedro",
+        mensalidade: 200,
+        email: "pedro@test.com",
+        responsavel: "Carlos Souza",
+        responsavelRef: { nome: "Carlos Souza", email: "carlos@test.com", cpf: "191.191.191-00" },
+      },
     })
     mp.create.mockResolvedValue({
       id: "mp-boleto-1",
@@ -148,6 +154,26 @@ describe("emitirCobranca — Boleto", () => {
     const res = await emitirCobranca(3, "Boleto")
 
     expect(res).toEqual({ success: true })
+    // Boleto exige nome completo + CPF do pagador (responsável)
+    expect(mp.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          payment_method_id: "bolbradesco",
+          payer: expect.objectContaining({
+            email: "carlos@test.com",
+            first_name: "Carlos",
+            last_name: "Souza",
+            identification: { type: "CPF", number: "19119119100" },
+            address: expect.objectContaining({
+              zip_code: expect.any(String),
+              street_name: expect.any(String),
+              city: expect.any(String),
+              federal_unit: expect.any(String),
+            }),
+          }),
+        }),
+      })
+    )
     expect(m.pagamento.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 3 },
@@ -158,6 +184,29 @@ describe("emitirCobranca — Boleto", () => {
         }),
       })
     )
+  })
+
+  it("recusa Boleto sem CPF do responsável", async () => {
+    m.pagamento.findUnique.mockResolvedValue({
+      id: 4,
+      mesReferencia: "2026-06",
+      dataVencimento: new Date("2026-06-10"),
+      externalId: null,
+      aluno: {
+        nome: "Ana",
+        mensalidade: 200,
+        email: "ana@test.com",
+        responsavel: "Beatriz",
+        responsavelRef: { nome: "Beatriz", email: "bia@test.com", cpf: null },
+      },
+    })
+
+    const res = await emitirCobranca(4, "Boleto")
+
+    expect(res).toEqual({
+      error: "Boleto requer o CPF do responsável. Cadastre o CPF antes de emitir.",
+    })
+    expect(mp.create).not.toHaveBeenCalled()
   })
 })
 

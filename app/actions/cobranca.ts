@@ -9,6 +9,31 @@ import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadop
 type Canal = "PIX" | "Boleto"
 type ActionResult = { success: true } | { error: string }
 
+/**
+ * O Mercado Pago rejeita date_of_expiration no passado (erro 2194).
+ * Usa o vencimento (fim do dia) se ainda for futuro; senão, hoje + 3 dias.
+ */
+function calcularExpiracao(dataVencimento: Date): string {
+  const venc = new Date(dataVencimento)
+  venc.setHours(23, 59, 59, 0)
+  const minimo = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+  return (venc > minimo ? venc : minimo).toISOString()
+}
+
+/**
+ * Boleto registrado exige endereço completo do pagador. Como o cadastro ainda
+ * não coleta endereço por responsável, usamos o endereço da escola como padrão
+ * (configurável por env). Trocar quando houver endereço no cadastro.
+ */
+const enderecoBoleto = {
+  zip_code: process.env.ESCOLA_CEP ?? "01310100",
+  street_name: process.env.ESCOLA_LOGRADOURO ?? "Avenida Paulista",
+  street_number: process.env.ESCOLA_NUMERO ?? "1000",
+  neighborhood: process.env.ESCOLA_BAIRRO ?? "Bela Vista",
+  city: process.env.ESCOLA_CIDADE ?? "São Paulo",
+  federal_unit: process.env.ESCOLA_UF ?? "SP",
+}
+
 export async function emitirCobranca(
   pagamentoId: number,
   canal: Canal
@@ -17,11 +42,37 @@ export async function emitirCobranca(
 
   const pagamento = await db.pagamento.findUnique({
     where: { id: pagamentoId },
-    include: { aluno: { select: { nome: true, mensalidade: true, email: true } } },
+    include: {
+      aluno: {
+        select: {
+          nome: true,
+          mensalidade: true,
+          email: true,
+          responsavel: true,
+          responsavelRef: { select: { nome: true, email: true, cpf: true } },
+        },
+      },
+    },
   })
 
   if (!pagamento) return { error: "Pagamento não encontrado." }
   if (pagamento.externalId) return { error: "Cobrança já emitida para este pagamento." }
+
+  // O pagador é o responsável; cai para o aluno se não houver vínculo.
+  const pagadorNome = pagamento.aluno.responsavelRef?.nome ?? pagamento.aluno.responsavel
+  const pagadorEmail =
+    pagamento.aluno.responsavelRef?.email ?? pagamento.aluno.email ?? "responsavel@escolinha.com"
+  const cpf = pagamento.aluno.responsavelRef?.cpf?.replace(/\D/g, "") ?? null
+
+  // Boleto registrado exige nome completo e CPF do pagador.
+  if (canal === "Boleto" && !cpf) {
+    return {
+      error: "Boleto requer o CPF do responsável. Cadastre o CPF antes de emitir.",
+    }
+  }
+
+  const [firstName, ...rest] = (pagadorNome ?? "Responsável").trim().split(/\s+/)
+  const lastName = rest.join(" ") || firstName
 
   try {
     const paymentType = canal === "PIX" ? "pix" : "bolbradesco"
@@ -32,9 +83,13 @@ export async function emitirCobranca(
         description: `Mensalidade ${pagamento.mesReferencia} — ${pagamento.aluno.nome}`,
         payment_method_id: paymentType,
         payer: {
-          email: pagamento.aluno.email ?? "responsavel@escolinha.com",
+          email: pagadorEmail,
+          first_name: firstName,
+          last_name: lastName,
+          ...(cpf ? { identification: { type: "CPF", number: cpf } } : {}),
+          ...(canal === "Boleto" ? { address: enderecoBoleto } : {}),
         },
-        date_of_expiration: new Date(pagamento.dataVencimento).toISOString(),
+        date_of_expiration: calcularExpiracao(pagamento.dataVencimento),
       },
     })
 
@@ -52,7 +107,13 @@ export async function emitirCobranca(
       data.pixCopiaECola = txData?.qr_code ?? null
       data.externalUrl = txData?.ticket_url ?? null
     } else {
-      data.linhaDigitavel = response.barcode?.content ?? null
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyResp = response as any
+      data.linhaDigitavel =
+        response.transaction_details?.digitable_line ??
+        response.transaction_details?.barcode?.content ??
+        anyResp.barcode?.content ??
+        null
       data.externalUrl = response.transaction_details?.external_resource_url ?? null
     }
 

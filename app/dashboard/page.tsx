@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, MessageSquareWarning, Inbox, CheckCircle2 } from "lucide-react"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, Inbox, CheckCircle2 } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import dynamic from "next/dynamic"
@@ -11,7 +11,7 @@ import { MonthPicker } from "@/app/caixa/month-picker"
 import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
 import { TURMAS } from "@/lib/constants"
-import { AlertBanner } from "@/components/dashboard/alert-banner"
+import { AlertBanner, type AlertIcon } from "@/components/dashboard/alert-banner"
 import { EmptyState } from "@/components/ui/empty-state"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ResumoFinanceiro } from "@/components/dashboard/resumo-financeiro"
@@ -184,25 +184,25 @@ export default async function DashboardPage({
     ? Math.round((frequenciasMes / totalFrequencias) * 100)
     : 0
 
-  const alerts: { type: "danger" | "warning" | "info"; icon: React.ElementType; message: string; detail: string }[] = []
+  const alerts: { type: "danger" | "warning" | "info"; icon: AlertIcon; message: string; detail: string }[] = []
   if (inadimplentes.length > 5) {
-    alerts.push({ type: "danger", icon: AlertCircle, message: `${inadimplentes.length} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
+    alerts.push({ type: "danger", icon: "alerta", message: `${inadimplentes.length} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
   }
   if (inadimplentes.length > 0 && inadimplentes.length <= 5) {
-    alerts.push({ type: "warning", icon: AlertCircle, message: `${inadimplentes.length} mensalidade(s) em atraso`, detail: "Poucos casos, mas requer atenção." })
+    alerts.push({ type: "warning", icon: "alerta", message: `${inadimplentes.length} mensalidade(s) em atraso`, detail: "Poucos casos, mas requer atenção." })
   }
   if (presencaMedia < 50 && totalFrequencias > 0) {
-    alerts.push({ type: "danger", icon: CalendarCheck, message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.` })
+    alerts.push({ type: "danger", icon: "frequencia", message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.` })
   }
   if (presencaMedia >= 50 && presencaMedia < 75 && totalFrequencias > 0) {
-    alerts.push({ type: "warning", icon: CalendarCheck, message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.` })
+    alerts.push({ type: "warning", icon: "frequencia", message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.` })
   }
   const temConvocacoes = 0 // Will be computed from pendingEscalacoes in layout
   if (temConvocacoes) {
-    alerts.push({ type: "info", icon: MessageSquareWarning, message: "Convocação(ões) pendente(s)", detail: "Há convocações aguardando revisão." })
+    alerts.push({ type: "info", icon: "convocacao", message: "Convocação(ões) pendente(s)", detail: "Há convocações aguardando revisão." })
   }
   if (vencendoSemana.length > 0) {
-    alerts.push({ type: "info", icon: TrendingUp, message: `${vencendoSemana.length} mensalidade(s) vencem nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
+    alerts.push({ type: "info", icon: "tendencia", message: `${vencendoSemana.length} mensalidade(s) vencem nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
   }
 
   const receitaAnterior = mesAnteriorData.receita

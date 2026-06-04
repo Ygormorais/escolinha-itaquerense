@@ -8,6 +8,7 @@ type PagamentoRow = {
   mesReferencia: string
   dataVencimento: Date
   dataPagamento: Date | null
+  formaPagamento: string | null
   valorRecebido: number | null
   aluno: { id: number; nome: string; turma: string }
 }

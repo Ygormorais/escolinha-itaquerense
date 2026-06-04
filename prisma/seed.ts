@@ -1,6 +1,20 @@
 import { alunosData, custosData } from "../lib/seed-data"
 import { db } from "../lib/db"
 
+/** Gera um CPF válido (apenas dígitos) para dados de teste. */
+function geraCpf(): string {
+  const n = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10))
+  const dig = (arr: number[]) => {
+    let s = 0
+    for (let i = 0; i < arr.length; i++) s += arr[i] * (arr.length + 1 - i)
+    const r = (s * 10) % 11
+    return r === 10 ? 0 : r
+  }
+  const d1 = dig(n)
+  const d2 = dig([...n, d1])
+  return [...n, d1, d2].join("")
+}
+
 async function main() {
   console.log("🌱 Iniciando seed...")
 
@@ -8,6 +22,7 @@ async function main() {
   await db.pagamento.deleteMany()
   await db.custo.deleteMany()
   await db.aluno.deleteMany()
+  await db.responsavel.deleteMany()
 
   for (const aluno of alunosData) {
     await db.aluno.create({ data: aluno })
@@ -19,6 +34,22 @@ async function main() {
 
   const alunos = await db.aluno.findMany({ orderBy: { id: "asc" } })
   const [lucas, gabriel, matheus, pedro, joao, felipe, arthur, bruno] = alunos
+
+  // Cria um responsável (pagador) com CPF para cada aluno e vincula.
+  // CPF é exigido pelo Mercado Pago na emissão de boleto.
+  for (const aluno of alunos) {
+    const resp = await db.responsavel.create({
+      data: {
+        nome: aluno.responsavel || `Responsável de ${aluno.nome}`,
+        email: `resp.aluno${aluno.id}@teste.com`,
+        telefone: aluno.telefone || "11999999999",
+        senha: "$2a$10$seedPlaceholderHashNaoUsarParaLogin",
+        cpf: geraCpf(),
+      },
+    })
+    await db.aluno.update({ where: { id: aluno.id }, data: { responsavelId: resp.id } })
+  }
+  console.log(`✅ ${alunos.length} responsáveis criados e vinculados`)
 
   const pagamentos = [
     { alunoId: lucas.id,   mesReferencia: "2025-01", dataVencimento: new Date("2025-01-10"), dataPagamento: new Date("2025-01-08"),  formaPagamento: "PIX",           valorRecebido: 150 },
@@ -34,6 +65,23 @@ async function main() {
     { alunoId: joao.id,    mesReferencia: "2025-04", dataVencimento: new Date("2025-04-10"), dataPagamento: new Date("2025-04-10"),  formaPagamento: "Dinheiro",      valorRecebido: 250 },
     { alunoId: bruno.id,   mesReferencia: "2025-04", dataVencimento: new Date("2025-04-10"), dataPagamento: null, formaPagamento: null, valorRecebido: null },
   ]
+
+  // Pagamentos pendentes no mês atual (dinâmico) — garante que sempre haja
+  // cobranças para testar a emissão de PIX/Boleto, independente de quando rodar.
+  const agora = new Date()
+  const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`
+  const vencimentoAtual = new Date(agora.getFullYear(), agora.getMonth(), 10)
+  for (const aluno of alunos) {
+    pagamentos.push({
+      alunoId: aluno.id,
+      mesReferencia: mesAtual,
+      dataVencimento: vencimentoAtual,
+      dataPagamento: null,
+      formaPagamento: null,
+      valorRecebido: null,
+    })
+  }
+
   await db.pagamento.createMany({ data: pagamentos })
   console.log(`✅ ${pagamentos.length} pagamentos inseridos`)
 

@@ -106,6 +106,10 @@ export function CobrancaDialog({
               <p className="text-sm text-muted-foreground">
                 Escolha o canal para emitir a cobrança de <strong>{mesReferencia}</strong>.
               </p>
+              <p className="rounded-md bg-success-50 px-2 py-1.5 text-[11px] leading-tight text-success-600">
+                ✓ Cobrança via Mercado Pago — o sistema dá <strong>baixa automática</strong> assim
+                que o responsável pagar.
+              </p>
               <Select value={canal} onValueChange={(v) => setCanal(v as Canal)}>
                 <SelectTrigger>
                   <SelectValue />

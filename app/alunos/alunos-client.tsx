@@ -81,7 +81,7 @@ export function AlunoFormDialog({
       responsavel: aluno?.responsavel ?? "",
       telefone: aluno?.telefone ?? "",
       email: aluno?.email ?? "",
-      dataMatricula: aluno ? format(new Date(aluno.dataMatricula), "yyyy-MM-dd") : "",
+      dataMatricula: aluno ? format(new Date(aluno.dataMatricula), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       mensalidade: aluno ? String(aluno.mensalidade) : "",
       desconto: aluno ? String(aluno.desconto ?? 0) : "0",
       status: aluno?.status ?? "Ativo",
