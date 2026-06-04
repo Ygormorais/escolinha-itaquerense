@@ -6,6 +6,7 @@ import { Search, CheckCircle, XCircle, Plus, Shirt } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
@@ -13,26 +14,22 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { adicionarUniforme, marcarEntregue, removerUniforme } from "@/app/actions/uniformes"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Uniforme = {
   id: number
   item: string
   tamanho: string | null
   entregue: boolean
-  dataEntrega: Date | null
+  dataEntrega: RscDate | null
   observacoes: string | null
-  createdAt: Date
+  createdAt: RscDate
 }
 
 type Aluno = {
@@ -46,7 +43,6 @@ const ITENS_PADRAO = ["Camisa", "Short", "Meião", "Agasalho", "Chuteira"]
 
 export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   const router = useRouter()
-  const [confirmRemoverId, setConfirmRemoverId] = useState<{ id: number; alunoId: number } | null>(null)
   const [search, setSearch] = useState("")
   const [turmaFilter, setTurmaFilter] = useState("Todas")
   const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null)
@@ -91,10 +87,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
     }
   }
 
-  async function executeRemover() {
-    if (!confirmRemoverId) return
-    const { id, alunoId } = confirmRemoverId
-    setConfirmRemoverId(null)
+  async function handleRemover(id: number, alunoId: number) {
     const result = await removerUniforme(id, alunoId)
     if ("success" in result) {
       toast.success("Item removido")
@@ -105,22 +98,6 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   }
 
   return (
-    <>
-    <AlertDialog open={confirmRemoverId !== null} onOpenChange={(open) => { if (!open) setConfirmRemoverId(null) }}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={executeRemover} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Excluir
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
@@ -257,9 +234,11 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                                       <CheckCircle className="size-4 text-success-600" />
                                     </Button>
                                   )}
-                                  <Button size="icon-sm" variant="ghost" onClick={() => setConfirmRemoverId({ id: u.id, alunoId: aluno.id })}>
-                                    <XCircle className="size-4 text-danger-600" />
-                                  </Button>
+                                  <ConfirmDialog title="Remover item?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleRemover(u.id, aluno.id)}>
+                                    <Button size="icon-sm" variant="ghost">
+                                      <XCircle className="size-4 text-danger-600" />
+                                    </Button>
+                                  </ConfirmDialog>
                                 </div>
                               </div>
                             ))}
@@ -305,6 +284,5 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
         </Table>
       </div>
     </div>
-    </>
   )
 }

@@ -2,19 +2,18 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { ArrowLeft, CreditCard, CheckCircle, AlertTriangle, Search } from "lucide-react"
+import { ArrowLeft, CheckCircle, AlertTriangle, Search, Wallet, Clock3, ReceiptText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { format, parseISO } from "date-fns"
+import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Pagamento = {
   mesReferencia: string
-  dataVencimento: string
-  dataPagamento: string | null
+  dataVencimento: RscDate
+  dataPagamento: RscDate | null
   valorRecebido: number | null
   formaPagamento: string | null
 }
@@ -30,68 +29,121 @@ type Aluno = {
 
 export function MensalidadesClient({ responsavel }: { responsavel: { nome: string; alunos: Aluno[] } }) {
   const [search, setSearch] = useState("")
-  const pathname = usePathname()
 
   const filtered = responsavel.alunos.filter((a) =>
     a.nome.toLowerCase().includes(search.toLowerCase())
   )
 
-  const meses = [
-    "2026-01", "2026-02", "2026-03", "2026-04", "2026-05",
-    "2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12",
-  ]
+  const totalAlunos = responsavel.alunos.length
+  const totalPagos = responsavel.alunos.reduce(
+    (acc, aluno) => acc + aluno.pagamentos.filter((pagamento) => pagamento.dataPagamento).length,
+    0
+  )
+  const totalPendentes = responsavel.alunos.reduce(
+    (acc, aluno) => acc + aluno.pagamentos.filter((pagamento) => !pagamento.dataPagamento).length,
+    0
+  )
 
-  const navLinks = [
-    { href: "/responsavel", label: "Dashboard" },
-    { href: "/responsavel/galeria", label: "Galeria" },
-  ]
+  const anoAtual = new Date().getFullYear()
+  const meses = Array.from({ length: 12 }, (_, i) =>
+    `${anoAtual}-${String(i + 1).padStart(2, "0")}`
+  )
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <nav className="flex items-center gap-2 -m-6 mb-6 px-6 py-4 border-b bg-muted/40">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              pathname === link.href
-                ? "bg-brand-600 text-white"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
+    <div className="flex flex-col gap-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Mensalidades
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Consulte pagamentos, valores em aberto e o historico recente dos alunos vinculados a {responsavel.nome}.
+              </p>
+            </div>
+          </div>
 
-      <div className="flex items-center gap-3">
-        <Link href="/responsavel" className="inline-flex items-center justify-center size-9 rounded-md hover:bg-muted transition-colors">
-          <ArrowLeft className="size-5" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold font-heading">Mensalidades</h1>
-          <p className="text-sm text-muted-foreground">{responsavel.nome}</p>
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
+              <p className="mt-2 text-2xl font-bold">{totalAlunos}</p>
+            </div>
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pagos</p>
+              <p className="mt-2 text-2xl font-bold">{totalPagos}</p>
+            </div>
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pendentes</p>
+              <p className="mt-2 text-2xl font-bold">{totalPendentes}</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="relative max-w-xs">
-        <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-        <Input className="pl-8" placeholder="Buscar aluno..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <section className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-start gap-3 py-1">
+            <div className="mt-1 rounded-lg bg-brand-50 p-2 text-brand-800">
+              <Wallet className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-ink-950)]">Visão financeira</p>
+              <p className="mt-1 text-sm text-[var(--color-ink-700)]">
+                Veja valores recebidos e o que ainda esta aguardando pagamento.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-start gap-3 py-1">
+            <div className="mt-1 rounded-lg bg-success-50 p-2 text-success-600">
+              <ReceiptText className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-ink-950)]">Histórico recente</p>
+              <p className="mt-1 text-sm text-[var(--color-ink-700)]">
+                Os registros exibem status, forma de pagamento e datas mais recentes.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-start gap-3 py-1">
+            <div className="mt-1 rounded-lg bg-warning-50 p-2 text-warning-600">
+              <Clock3 className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-ink-950)]">Acompanhamento</p>
+              <p className="mt-1 text-sm text-[var(--color-ink-700)]">
+                Use a busca para localizar rapidamente o aluno que voce quer consultar.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <div className="relative max-w-sm">
+        <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
+        <Input className="pl-11" placeholder="Buscar aluno..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       {filtered.map((aluno) => {
         const getPagamento = (mes: string) => aluno.pagamentos.find((p) => p.mesReferencia === mes)
         return (
           <Card key={aluno.id}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
+            <CardHeader className="border-b border-black/5 pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
                 {aluno.nome}
-                <Badge variant="secondary" className="text-[10px]">{aluno.turma}</Badge>
+                <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
               </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-[var(--color-ink-700)]">
                 Mensalidade: R$ {(aluno.mensalidade - aluno.desconto).toFixed(2)}
-                {aluno.desconto > 0 && <span className="text-success-600 ml-1">(desconto de R$ {aluno.desconto.toFixed(2)})</span>}
+                {aluno.desconto > 0 && <span className="ml-1 text-success-600">(desconto de R$ {aluno.desconto.toFixed(2)})</span>}
               </p>
             </CardHeader>
             <CardContent className="p-0">
@@ -102,15 +154,15 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                   const nomeMes = format(new Date(Number(ano), Number(mesNum) - 1), "MMMM", { locale: ptBR })
                   const emDia = p?.dataPagamento
                   return (
-                    <div key={mes} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                      <span className="capitalize">{nomeMes}/{ano}</span>
-                      <div className="flex items-center gap-3">
+                    <div key={mes} className="flex flex-col gap-2 px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+                      <span className="font-medium capitalize text-[var(--color-ink-900)]">{nomeMes}/{ano}</span>
+                      <div className="flex flex-wrap items-center gap-3">
                         {p ? (
                           <>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-[var(--color-ink-500)]">
                               {p.formaPagamento ? `${p.formaPagamento} · ${format(new Date(p.dataPagamento!), "dd/MM")}` : ""}
                             </span>
-                            <span className={cn("font-semibold", emDia ? "text-success-600" : "")}>
+                            <span className={`font-semibold ${emDia ? "text-success-600" : "text-[var(--color-ink-700)]"}`}>
                               R$ {p.valorRecebido?.toFixed(2) ?? "—"}
                             </span>
                             {emDia
@@ -120,8 +172,8 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                           </>
                         ) : (
                           <>
-                            <span className="text-muted-foreground text-xs">Aguardando</span>
-                            <span className="text-muted-foreground">R$ {(aluno.mensalidade - aluno.desconto).toFixed(2)}</span>
+                            <span className="text-xs text-[var(--color-ink-500)]">Aguardando</span>
+                            <span className="text-[var(--color-ink-700)]">R$ {(aluno.mensalidade - aluno.desconto).toFixed(2)}</span>
                             <AlertTriangle className="size-4 text-warning-600" />
                           </>
                         )}
@@ -134,6 +186,14 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
           </Card>
         )
       })}
+
+      {filtered.length === 0 && (
+        <Card>
+          <CardContent className="py-12 text-center text-[var(--color-ink-700)]">
+            Nenhum aluno encontrado para essa busca.
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

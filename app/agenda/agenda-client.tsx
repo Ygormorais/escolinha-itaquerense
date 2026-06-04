@@ -8,23 +8,17 @@ import {
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Card, CardContent, CardHeader, CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { criarEvento, editarEvento, deletarEvento } from "@/app/actions/eventos"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { TURMAS } from "@/lib/constants"
+import { criarEvento, editarEvento, deletarEvento } from "@/app/actions/eventos"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { TURMAS } from "@/lib/constants"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 
 type Evento = {
   id: number
@@ -42,7 +36,6 @@ const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800 border-brand-300",
   Jogo: "bg-success-50 text-success-600 border-success-300",
   Evento: "bg-info-50 text-info-600 border-info-300",
-  Reunião: "bg-warning-50 text-warning-600 border-warning-300",
 }
 
 export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: number; ano: number }) {
@@ -50,7 +43,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvento, setEditingEvento] = useState<Evento | null>(null)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const router = useRouter()
 
   const [form, setForm] = useState({
@@ -128,10 +120,7 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
     }
   }
 
-  async function executeDelete() {
-    if (confirmDeleteId === null) return
-    const id = confirmDeleteId
-    setConfirmDeleteId(null)
+  async function handleDelete(id: number) {
     try {
       await deletarEvento(id)
       toast.success("Evento excluído")
@@ -145,22 +134,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
   return (
-    <>
-    <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Excluir
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -270,9 +243,11 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)}>
                       <Pencil className="size-3" />
                     </Button>
-                    <Button variant="ghost" size="icon-sm" onClick={() => setConfirmDeleteId(ev.id)}>
-                      <Trash2 className="size-3 text-danger-600" />
-                    </Button>
+                    <ConfirmDialog title="Excluir evento?" description="Esta ação não pode ser desfeita." onConfirm={() => handleDelete(ev.id)}>
+                      <Button variant="ghost" size="icon-sm">
+                        <Trash2 className="size-3 text-danger-600" />
+                      </Button>
+                    </ConfirmDialog>
                   </div>
                 </div>
                 {ev.descricao && (
@@ -324,7 +299,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                   <option value="Treino">Treino</option>
                   <option value="Jogo">Jogo</option>
                   <option value="Evento">Evento</option>
-                  <option value="Reunião">Reunião</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -370,9 +344,11 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
           </div>
           <DialogFooter showCloseButton>
             {editingEvento && (
-              <Button variant="destructive" onClick={() => setConfirmDeleteId(editingEvento.id)} className="gap-2">
-                <Trash2 className="size-4" /> Excluir
-              </Button>
+              <ConfirmDialog title="Excluir evento?" description="Esta ação não pode ser desfeita." onConfirm={() => handleDelete(editingEvento!.id)}>
+                <Button variant="destructive" className="gap-2">
+                  <Trash2 className="size-4" /> Excluir
+                </Button>
+              </ConfirmDialog>
             )}
             <Button onClick={handleSave} className="gap-2">
               {editingEvento ? "Salvar" : "Criar Evento"}
@@ -381,6 +357,5 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
         </DialogContent>
       </Dialog>
     </div>
-    </>
   )
 }

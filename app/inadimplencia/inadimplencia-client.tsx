@@ -8,16 +8,13 @@ import { EmailNotifButton } from "@/components/ui/email-notif-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
@@ -29,6 +26,9 @@ type Pagamento = {
   id: number
   mesReferencia: string
   dataVencimento: Date
+  externalId: string | null
+  statusCobranca: string | null
+  canalPrevisto: string | null
 }
 
 type Inadimplente = {
@@ -153,7 +153,7 @@ function exportarCSV(inadimplentes: Inadimplente[]) {
   URL.revokeObjectURL(url)
 }
 
-function gerarLinkWA(a: Inadimplente, nomeClube = "Escolinha Itaquerense") {
+function gerarLinkWA(a: Inadimplente, nomeClube: string) {
   const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${a.pagamentos.length} mensalidade(s) em aberto na ${nomeClube}.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
   return `https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`
 }
@@ -175,7 +175,6 @@ export function InadimplenciaClient({
   const [turmaFilter, setTurmaFilter] = useState("Todas")
   const [nivelFilter, setNivelFilter] = useState("Todos")
   const [enviando, setEnviando] = useState(false)
-  const [confirmNotificar, setConfirmNotificar] = useState(false)
 
   const TURMAS = [...new Set(inadimplentes.map((a) => a.turma))].sort()
 
@@ -189,10 +188,11 @@ export function InadimplenciaClient({
     return nivelFilter === "Crítico" ? isCritico : !isCritico
   })
 
-  async function executeNotificar() {
+  async function handleNotificarEmLote() {
+    if (filtered.length === 0) return
     setEnviando(true)
     for (let i = 0; i < filtered.length; i++) {
-      window.open(gerarLinkWA(filtered[i], nomeClube), "_blank")
+      window.open(gerarLinkWA(filtered[i], nomeClube ?? "Escolinha"), "_blank")
       if (i < filtered.length - 1) await new Promise((r) => setTimeout(r, 800))
     }
     setEnviando(false)
@@ -232,15 +232,12 @@ export function InadimplenciaClient({
           </Select>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => { if (filtered.length > 0) setConfirmNotificar(true) }}
-            disabled={filtered.length === 0 || enviando}
-            className="text-success-600 border-success-600/30 hover:bg-success-50"
-          >
-            <Send className="size-4" />
-            {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}
-          </Button>
+          <ConfirmDialog title="Notificar inadimplentes?" description={`Abrir WhatsApp para ${filtered.length} inadimplente(s)? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarEmLote}>
+            <Button variant="outline" disabled={filtered.length === 0 || enviando} className="text-success-600 border-success-600/30 hover:bg-success-50">
+              <Send className="size-4" />
+              {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}
+            </Button>
+          </ConfirmDialog>
           <EmailNotifButton />
           <Button
             variant="outline"
@@ -253,7 +250,7 @@ export function InadimplenciaClient({
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -264,13 +261,14 @@ export function InadimplenciaClient({
               <TableHead className="text-right">Valor em Aberto</TableHead>
               <TableHead>Vencimento Mais Antigo</TableHead>
               <TableHead>Nível</TableHead>
+              <TableHead>Cobrança</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   {search ? "Nenhum resultado para a busca" : "Nenhum aluno inadimplente"}
                 </TableCell>
               </TableRow>
@@ -295,7 +293,7 @@ export function InadimplenciaClient({
                         {a.telefone}
                       </a>
                       <a
-                        href={gerarLinkWA(a, nomeClube)}
+                        href={gerarLinkWA(a, nomeClube ?? "Escolinha")}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs font-medium text-success-600 hover:underline"
@@ -321,6 +319,15 @@ export function InadimplenciaClient({
                       <Badge className="inline-flex items-center gap-1 bg-warning-50 text-warning-600">
                         <AlertTriangle className="size-3" /> Atenção
                       </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {a.pagamentos.some((p) => p.externalId) ? (
+                      <span className="text-xs text-muted-foreground">
+                        {a.pagamentos.find((p) => p.externalId)?.canalPrevisto} · {a.pagamentos.find((p) => p.externalId)?.statusCobranca}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-warning-600">Sem cobrança</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -359,22 +366,6 @@ export function InadimplenciaClient({
           <PagarDialog inadimplente={dialogAluno} onClose={() => setDialogAluno(null)} />
         )}
       </Dialog>
-
-      <AlertDialog open={confirmNotificar} onOpenChange={setConfirmNotificar}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Notificar inadimplentes?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Serão enviadas mensagens via WhatsApp para {filtered.length} aluno(s) inadimplente(s).
-              Os links serão abertos um a um no navegador.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={executeNotificar}>Notificar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   )
 }

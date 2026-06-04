@@ -2,17 +2,13 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt } from "lucide-react"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
@@ -28,7 +24,7 @@ import {
 import { toast } from "sonner"
 import { registrarPagamento, gerarMensalidadesMes, deletePagamento, registrarPagamentosLote } from "@/app/actions/pagamentos"
 import { PixButton } from "@/components/ui/pix-modal"
-import { FORMAS_PAGAMENTO } from "@/lib/constants"
+import { CobrancaDialog } from "@/components/ui/cobranca-dialog"
 
 type Pagamento = {
   id: number
@@ -37,7 +33,13 @@ type Pagamento = {
   dataPagamento: Date | null
   formaPagamento: string | null
   valorRecebido: number | null
-  aluno: { nome: string; turma: string; mensalidade: number; desconto: number; telefone: string }
+  aluno: { nome: string; turma: string; mensalidade: number; telefone: string }
+  canalPrevisto: string | null
+  statusCobranca: string | null
+  externalId: string | null
+  pixCopiaECola: string | null
+  linhaDigitavel: string | null
+  externalUrl: string | null
 }
 
 type StatusPagamento = "Pago" | "Pendente" | "Vencido"
@@ -48,6 +50,28 @@ function getPagamentoStatus(p: Pagamento): StatusPagamento {
   return "Pendente"
 }
 
+const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
+
+function CobrancaBadge({ status }: { status: string | null }) {
+  if (!status) return null
+  const styles: Record<string, string> = {
+    pendente: "bg-muted text-muted-foreground",
+    pago: "bg-success-50 text-success-600",
+    vencido: "bg-danger-50 text-danger-600",
+    cancelado: "bg-warning-50 text-warning-600",
+  }
+  const labels: Record<string, string> = {
+    pendente: "Aguardando",
+    pago: "Pago MP",
+    vencido: "Vencido",
+    cancelado: "Cancelado",
+  }
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${styles[status] ?? ""}`}>
+      {labels[status] ?? status}
+    </span>
+  )
+}
 
 function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
   const [open, setOpen] = useState(false)
@@ -60,7 +84,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
     defaultValues: {
       dataPagamento: format(new Date(), "yyyy-MM-dd"),
       formaPagamento: "PIX",
-      valorRecebido: String(pagamento.aluno.mensalidade - pagamento.aluno.desconto),
+      valorRecebido: String(pagamento.aluno.mensalidade),
       observacoes: "",
     },
   })
@@ -112,7 +136,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
           <div className="flex flex-col items-center gap-4 py-4">
             <p className="text-sm font-medium text-success-600">✅ Pagamento registrado!</p>
             <div className="flex gap-2">
-              <Link
+              <a
                 href={reciboUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -120,7 +144,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
               >
                 <Printer className="size-4" />
                 Imprimir Recibo
-              </Link>
+              </a>
               <Button variant="outline" onClick={() => { setOpen(false); setDone(false) }}>
                 Fechar
               </Button>
@@ -211,8 +235,6 @@ export function PagamentosClient({
   const [bulkForma, setBulkForma] = useState("PIX")
   const [bulkData, setBulkData] = useState(format(new Date(), "yyyy-MM-dd"))
   const [bulkPending, startBulk] = useTransition()
-  const [confirmNotificar, setConfirmNotificar] = useState(false)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   function handleGerar() {
     startGerando(async () => {
@@ -254,15 +276,11 @@ export function PagamentosClient({
     return venc >= now && venc <= em7dias
   })
 
-  function handleNotificarVencendo() {
+  async function handleNotificarVencendo() {
     if (vencendoSemana.length === 0) {
       toast.info("Nenhuma mensalidade vencendo nos próximos 7 dias")
       return
     }
-    setConfirmNotificar(true)
-  }
-
-  async function executeNotificar() {
     for (let i = 0; i < vencendoSemana.length; i++) {
       const p = vencendoSemana[i]
       const fone = (p.aluno.telefone ?? "").replace(/\D/g, "")
@@ -271,7 +289,7 @@ export function PagamentosClient({
       const msg = [
         `Olá! 👋 Passando para lembrar que a mensalidade de *${p.aluno.nome}* (${p.aluno.turma}) vence em *${venc}*.`,
         ``,
-        `Valor: *R$ ${(p.aluno.mensalidade - p.aluno.desconto).toFixed(2).replace(".", ",")}*`,
+        `Valor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*`,
         chavePix ? `\nChave PIX: *${chavePix}*` : "",
         ``,
         `Qualquer dúvida estamos à disposição. Obrigado! ⚽`,
@@ -287,7 +305,8 @@ export function PagamentosClient({
   function toggleSelect(id: number) {
     setSelected((prev) => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }
@@ -433,15 +452,12 @@ export function PagamentosClient({
           </DialogContent>
         </Dialog>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleNotificarVencendo}
-          className="text-success-600 border-success-600/30 hover:bg-success-50"
-        >
-          <MessageCircle className="size-4" />
-          Notificar vencendo ({vencendoSemana.length})
-        </Button>
+        <ConfirmDialog title="Notificar responsáveis?" description={`Abrir WhatsApp para ${vencendoSemana.length} responsável(is)? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarVencendo}>
+          <Button variant="outline" size="sm" className="text-success-600 border-success-600/30 hover:bg-success-50">
+            <MessageCircle className="size-4" />
+            Notificar vencendo ({vencendoSemana.length})
+          </Button>
+        </ConfirmDialog>
 
         <div className="ml-auto text-right">
           <p className="text-sm text-muted-foreground">Total recebido</p>
@@ -451,49 +467,7 @@ export function PagamentosClient({
         </div>
       </div>
 
-      <AlertDialog open={confirmNotificar} onOpenChange={setConfirmNotificar}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Notificar alunos vencendo?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Serão abertas {vencendoSemana.length} janela(s) do WhatsApp para notificar os responsáveis com mensalidades vencendo nos próximos 7 dias.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { setConfirmNotificar(false); executeNotificar() }}>
-              Confirmar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir pagamento?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. O registro de pagamento será removido permanentemente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={async () => {
-                if (confirmDeleteId === null) return
-                await deletePagamento(confirmDeleteId)
-                setConfirmDeleteId(null)
-                router.refresh()
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -510,6 +484,7 @@ export function PagamentosClient({
               <TableHead>Turma</TableHead>
               <TableHead>Vencimento</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Cobrança</TableHead>
               <TableHead>Pagamento</TableHead>
               <TableHead className="text-right">Valor</TableHead>
               <TableHead className="w-28">Ação</TableHead>
@@ -518,7 +493,7 @@ export function PagamentosClient({
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   Nenhum pagamento encontrado
                 </TableCell>
               </TableRow>
@@ -542,10 +517,35 @@ export function PagamentosClient({
                   <TableCell>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
                   <TableCell><StatusBadge status={status} /></TableCell>
                   <TableCell>
+                    {p.externalId ? (
+                      <CobrancaDialog
+                        pagamentoId={p.id}
+                        alunoNome={p.aluno.nome}
+                        mesReferencia={p.mesReferencia}
+                        pixCopiaECola={p.pixCopiaECola}
+                        linhaDigitavel={p.linhaDigitavel}
+                        externalUrl={p.externalUrl}
+                        canalPrevisto={p.canalPrevisto}
+                      >
+                        <CobrancaBadge status={p.statusCobranca} />
+                      </CobrancaDialog>
+                    ) : !p.dataPagamento ? (
+                      <CobrancaDialog
+                        pagamentoId={p.id}
+                        alunoNome={p.aluno.nome}
+                        mesReferencia={p.mesReferencia}
+                      >
+                        <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                          <QrCode className="size-3" /> Gerar
+                        </Button>
+                      </CobrancaDialog>
+                    ) : null}
+                  </TableCell>
+                  <TableCell>
                     {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"}
                   </TableCell>
                   <TableCell className="text-right">
-                    R$ {(p.valorRecebido ?? (p.aluno.mensalidade - p.aluno.desconto)).toFixed(2)}
+                    R$ {(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 items-center">
@@ -555,7 +555,7 @@ export function PagamentosClient({
                           chave={chavePix}
                           nomeClube={nomeClube}
                           cidade={cidade}
-                          valor={p.aluno.mensalidade - p.aluno.desconto}
+                          valor={p.aluno.mensalidade}
                           descricao={`Mensalidade ${p.mesReferencia} ${p.aluno.nome.split(" ")[0]}`}
                           telefoneResponsavel={p.aluno.telefone}
                           nomeResponsavel={p.aluno.nome}
@@ -563,7 +563,7 @@ export function PagamentosClient({
                       )}
                       {status !== "Pago" && p.aluno.telefone && (
                         <a
-                          href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${(p.aluno.mensalidade - p.aluno.desconto).toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
+                          href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Cobrar via WhatsApp"
@@ -573,8 +573,8 @@ export function PagamentosClient({
                         </a>
                       )}
                       {status === "Pago" && (
-                        <Link
-                          href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? (p.aluno.mensalidade - p.aluno.desconto)}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
+                        <a
+                          href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Imprimir recibo"
@@ -582,17 +582,14 @@ export function PagamentosClient({
                         >
                           <Receipt className="size-3" />
                           Recibo
-                        </Link>
+                        </a>
                       )}
                       {status !== "Pago" && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="Excluir pagamento"
-                          onClick={() => setConfirmDeleteId(p.id)}
-                        >
-                          <Trash2Icon className="size-3.5 text-danger-600" />
-                        </Button>
+                        <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
+                          <Button variant="ghost" size="icon-sm" title="Excluir pagamento">
+                            <Trash2Icon className="size-3.5 text-danger-600" />
+                          </Button>
+                        </ConfirmDialog>
                       )}
                     </div>
                   </TableCell>

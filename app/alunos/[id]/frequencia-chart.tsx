@@ -27,7 +27,7 @@ export function FrequenciaChart({ alunoId }: { alunoId: number }) {
       <CardContent>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={data} barSize={28}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
             <XAxis dataKey="label" tick={{ fontSize: 12 }} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
             <Tooltip
@@ -39,10 +39,10 @@ export function FrequenciaChart({ alunoId }: { alunoId: number }) {
                 <Cell
                   key={idx}
                   fill={
-                    entry.pct === null ? "#e2e8f0"
-                    : entry.pct >= 75 ? "#16a34a"
-                    : entry.pct >= 50 ? "#ca8a04"
-                    : "#dc2626"
+                    entry.pct === null ? "#E8DEDA"
+                    : entry.pct >= 75 ? "#0F7A5A"
+                    : entry.pct >= 50 ? "#A86417"
+                    : "#B3261E"
                   }
                 />
               ))}

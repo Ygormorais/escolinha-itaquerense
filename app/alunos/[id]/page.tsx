@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, IdCard, MessageCircle, Receipt } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +21,7 @@ import { UniformesCard } from "./uniformes-card"
 import { FotoUpload } from "./foto-upload"
 import { getConfig } from "@/lib/config"
 import { getUniformes } from "@/app/actions/uniformes"
-import { IdCard, MessageCircle, Receipt } from "lucide-react"
+import { AlunoPrintButton } from "./print-button"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
@@ -125,6 +125,7 @@ export default async function AlunoDetailPage({
                 Carteirinha
               </Link>
               <EditarAlunoButton aluno={aluno} />
+              <AlunoPrintButton alunoId={aluno.id} />
             </div>
           }
         />

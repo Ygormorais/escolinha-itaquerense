@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import QRCode from "qrcode"
 import { Copy, Check, MessageCircle, QrCode } from "lucide-react"
 import { toast } from "sonner"
@@ -33,18 +33,24 @@ export function PixModal({
   telefoneResponsavel,
   nomeResponsavel,
 }: PixModalProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const [copied, setCopied] = useState(false)
+  const [qrUrl, setQrUrl] = useState("")
 
   const payload = gerarPixPayload({ chave, nome: nomeClube, cidade, valor, descricao })
 
+  // Gera o QR como data URL e renderiza num <img>. Evita a corrida do canvas
+  // (o conteúdo do dialog é montado via portal depois do efeito disparar).
   useEffect(() => {
-    if (!open || !canvasRef.current) return
-    QRCode.toCanvas(canvasRef.current, payload, {
+    if (!open) return
+    let ativo = true
+    QRCode.toDataURL(payload, {
       width: 220,
       margin: 2,
       color: { dark: "#1a0000", light: "#ffffff" },
     })
+      .then((url) => { if (ativo) setQrUrl(url) })
+      .catch(() => { if (ativo) setQrUrl("") })
+    return () => { ativo = false }
   }, [open, payload])
 
   async function handleCopiar() {
@@ -84,8 +90,13 @@ export function PixModal({
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-4 py-2">
-          <div className="rounded-xl border bg-white p-3 shadow-sm">
-            <canvas ref={canvasRef} />
+          <div className="flex size-[244px] items-center justify-center rounded-xl border bg-white p-3 shadow-sm">
+            {qrUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={qrUrl} alt="QR Code PIX" width={220} height={220} />
+            ) : (
+              <span className="text-xs text-muted-foreground">Gerando QR…</span>
+            )}
           </div>
 
           <div className="w-full space-y-1 text-center">
@@ -94,6 +105,11 @@ export function PixModal({
               R$ {valor.toFixed(2).replace(".", ",")}
             </p>
             <p className="text-xs text-muted-foreground">Chave: {chave}</p>
+            <p className="mt-2 rounded-md bg-warning-50 px-2 py-1.5 text-[11px] leading-tight text-warning-600">
+              ⚠️ PIX direto na sua chave — o valor cai na sua conta, mas o sistema
+              <strong> não dá baixa sozinho</strong>. Registre o pagamento manualmente em
+              “Registrar”. Para baixa automática, use “Gerar” (Mercado Pago).
+            </p>
           </div>
 
           <div className="flex w-full flex-col gap-2">
@@ -148,7 +164,7 @@ export function PixButton({
         className="gap-1.5 text-brand-800 border-brand-200 hover:bg-brand-50"
       >
         <QrCode className="size-3.5" />
-        PIX
+        PIX direto
       </Button>
       <PixModal open={open} onOpenChange={setOpen} {...props} />
     </>

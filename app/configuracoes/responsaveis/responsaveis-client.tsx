@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Users, Search, KeyRound, MessageSquare } from "lucide-react"
+import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
-  Card, CardContent, CardHeader, CardTitle,
+  Card, CardContent,
 } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -22,10 +23,6 @@ import {
   deletarResponsavel, vincularAluno, desvincularAluno,
 } from "@/app/actions/responsaveis"
 import { enviarWhatsAppResponsavel } from "@/app/actions/whatsapp"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 
 type Aluno = { id: number; nome: string; turma: string }
 
@@ -54,9 +51,6 @@ export function ResponsaveisClient({
   const [vincularOpen, setVincularOpen] = useState<Responsavel | null>(null)
   const [whatsOpen, setWhatsOpen] = useState<Responsavel | null>(null)
   const [whatsMsg, setWhatsMsg] = useState("")
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
-  const [confirmDesvinculaId, setConfirmDesvinculaId] = useState<number | null>(null)
-  const [confirmDesvinculaNome, setConfirmDesvinculaNome] = useState<string>("")
   const [form, setForm] = useState({
     nome: "", email: "", telefone: "", senha: "", cpf: "",
   })
@@ -104,10 +98,7 @@ export function ResponsaveisClient({
     setDialogOpen(true)
   }
 
-  async function executeDelete() {
-    if (confirmDeleteId === null) return
-    const id = confirmDeleteId
-    setConfirmDeleteId(null)
+  async function handleDelete(id: number, _nome: string) {
     await deletarResponsavel(id)
     toast.success("Responsável removido")
     router.refresh()
@@ -120,11 +111,8 @@ export function ResponsaveisClient({
     router.refresh()
   }
 
-  async function executeDesvincular() {
-    if (confirmDesvinculaId === null) return
-    const id = confirmDesvinculaId
-    setConfirmDesvinculaId(null)
-    await desvincularAluno(id)
+  async function handleDesvincular(alunoId: number, _alunoNome: string) {
+    await desvincularAluno(alunoId)
     toast.success("Aluno desvinculado")
     router.refresh()
   }
@@ -142,37 +130,6 @@ export function ResponsaveisClient({
   }
 
   return (
-    <>
-    <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Excluir
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-
-    <AlertDialog open={confirmDesvinculaId !== null} onOpenChange={(open) => { if (!open) setConfirmDesvinculaId(null) }}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Desvincular responsável?</AlertDialogTitle>
-          <AlertDialogDescription>Desvincular {confirmDesvinculaNome}?</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={executeDesvincular}>
-            Desvincular
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
@@ -290,9 +247,11 @@ export function ResponsaveisClient({
                       {r.alunos.map((a) => (
                         <span key={a.id} className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px]">
                           {a.nome} ({a.turma})
-                          <button onClick={() => { setConfirmDesvinculaId(a.id); setConfirmDesvinculaNome(a.nome) }} className="text-danger-600 hover:text-danger-800">
-                            <UserX className="size-3" />
-                          </button>
+                          <ConfirmDialog title="Desvincular aluno?" description={`Desvincular ${a.nome} do responsável?`} confirmLabel="Desvincular" onConfirm={() => handleDesvincular(a.id, a.nome)}>
+                            <button className="text-danger-600 hover:text-danger-800">
+                              <UserX className="size-3" />
+                            </button>
+                          </ConfirmDialog>
                         </span>
                       ))}
                       <Dialog open={vincularOpen?.id === r.id} onOpenChange={(o) => { if (!o) setVincularOpen(null) }}>
@@ -339,9 +298,11 @@ export function ResponsaveisClient({
                       <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)}>
                         <Pencil className="size-3.5" />
                       </Button>
-                      <Button size="icon-sm" variant="ghost" onClick={() => setConfirmDeleteId(r.id)}>
-                        <Trash2 className="size-3.5 text-danger-600" />
-                      </Button>
+                      <ConfirmDialog title="Remover responsável?" description={`Remover "${r.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleDelete(r.id, r.nome)}>
+                        <Button size="icon-sm" variant="ghost">
+                          <Trash2 className="size-3.5 text-danger-600" />
+                        </Button>
+                      </ConfirmDialog>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -379,6 +340,5 @@ export function ResponsaveisClient({
         </DialogContent>
       </Dialog>
     </div>
-    </>
   )
 }

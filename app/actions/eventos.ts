@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { registrarLog } from "@/app/actions/log"
 
 export async function getEventosMes(ano: number, mes: number) {
   const inicio = new Date(ano, mes - 1, 1)
@@ -36,6 +37,7 @@ export async function criarEvento(data: {
       descricao: data.descricao || null,
     },
   })
+  await registrarLog("evento_criado", `Evento criado — ${data.titulo}`, { tipo: data.tipo, data: data.data })
   revalidatePath("/agenda")
 }
 
@@ -63,11 +65,13 @@ export async function editarEvento(id: number, data: {
       descricao: data.descricao || null,
     },
   })
+  await registrarLog("evento_editado", `Evento atualizado — ${data.titulo}`, { tipo: data.tipo })
   revalidatePath("/agenda")
 }
 
 export async function deletarEvento(id: number) {
   await requireAuth()
   await db.evento.delete({ where: { id } })
+  await registrarLog("evento_excluido", `Evento excluído — ID ${id}`)
   revalidatePath("/agenda")
 }

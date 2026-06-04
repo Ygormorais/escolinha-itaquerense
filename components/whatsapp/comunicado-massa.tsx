@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react"
 import { Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
@@ -68,9 +67,9 @@ export function ComunicadoMassa() {
 
         {resultado && (
           <div className="text-sm text-muted-foreground space-y-1 pt-2 border-t">
-            <p className="text-green-600">✓ {resultado.enviados} mensagem(ns) enviada(s)</p>
-            {resultado.erros > 0 && <p className="text-red-600">✗ {resultado.erros} erro(s)</p>}
-            {resultado.semTelefone > 0 && <p className="text-yellow-600">⚠ {resultado.semTelefone} sem telefone</p>}
+            <p className="text-success-600">✓ {resultado.enviados} mensagem(ns) enviada(s)</p>
+            {resultado.erros > 0 && <p className="text-danger-600">✗ {resultado.erros} erro(s)</p>}
+            {resultado.semTelefone > 0 && <p className="text-warning-600">⚠ {resultado.semTelefone} sem telefone</p>}
           </div>
         )}
       </CardContent>

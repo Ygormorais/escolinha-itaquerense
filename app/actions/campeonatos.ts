@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { syncCampeonato } from "@/lib/fpfs/sync"
 
 export async function listarCampeonatos() {
   return db.campeonato.findMany({
@@ -69,6 +70,8 @@ export async function editarCampeonato(id: number, data: {
   custoUniforme?: number
   observacoes?: string
   status?: string
+  fpfsEventoId?: number | null
+  fpfsTimeNome?: string | null
 }) {
   await requireAuth()
   await db.campeonato.update({
@@ -86,10 +89,21 @@ export async function editarCampeonato(id: number, data: {
       custoUniforme: data.custoUniforme ?? 0,
       observacoes: data.observacoes || null,
       status: data.status || "aberto",
+      fpfsEventoId: data.fpfsEventoId ?? null,
+      fpfsTimeNome: data.fpfsTimeNome || null,
     },
   })
   revalidatePath("/campeonatos")
   revalidatePath(`/campeonatos/${id}`)
+}
+
+export async function sincronizarFpfs(campeonatoId: number) {
+  await requireAuth()
+  const resumo = await syncCampeonato(campeonatoId)
+  revalidatePath(`/campeonatos/${campeonatoId}`)
+  revalidatePath("/responsavel/jogos")
+  revalidatePath("/responsavel/classificacao")
+  return resumo
 }
 
 export async function deletarCampeonato(id: number) {
@@ -204,7 +218,7 @@ export async function editarPartida(id: number, data: {
   golsPro?: number | null
   golsContra?: number | null
   observacoes?: string
-}) {
+}, campeonatoId?: number) {
   await requireAuth()
   let resultado: string | null = null
   if (data.golsPro != null && data.golsContra != null) {
@@ -223,6 +237,9 @@ export async function editarPartida(id: number, data: {
       observacoes: data.observacoes || null,
     },
   })
+  if (campeonatoId) {
+    revalidatePath(`/campeonatos/${campeonatoId}`)
+  }
 }
 
 export async function deletarPartida(id: number, campeonatoId: number) {

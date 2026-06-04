@@ -3,14 +3,13 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { createResponsavelSession, responsavelCookieName, responsavelCookieMaxAge } from "@/lib/responsavel-session"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { rateLimitResponse } from "@/lib/rate-limit-response"
 
 export async function POST(request: Request) {
   const { email, senha } = await request.json()
   const ip = request.headers.get("x-forwarded-for") ?? "unknown"
   const limit = checkRateLimit(`resp-login:${ip}`)
-  if (!limit.ok) {
-    return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 })
-  }
+  if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
 
   const responsavel = await db.responsavel.findUnique({ where: { email } })
   if (!responsavel || !responsavel.ativo) {

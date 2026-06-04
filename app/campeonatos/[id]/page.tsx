@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
+import { getConfig } from "@/lib/config"
 import { CampeonatoDetailClient } from "./campeonato-detail-client"
 
 export const metadata = { title: "Campeonato — Escolinha Itaquerense" }
@@ -25,6 +26,7 @@ export default async function CampeonatoDetailPage({
 
   if (!campeonato) notFound()
 
+  const config = getConfig()
   const alunosDisponiveis = await db.aluno.findMany({
     where: {
       status: "Ativo",
@@ -36,7 +38,7 @@ export default async function CampeonatoDetailPage({
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <CampeonatoDetailClient campeonato={campeonato as any} alunosDisponiveis={alunosDisponiveis as any} />
+      <CampeonatoDetailClient campeonato={campeonato} alunosDisponiveis={alunosDisponiveis} nomeClube={config.nome} />
     </div>
   )
 }

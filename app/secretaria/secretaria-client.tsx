@@ -8,12 +8,13 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Evento = {
   id: number
   titulo: string
   tipo: string
-  data: Date
+  data: RscDate
   horaInicio: string | null
   horaFim: string | null
   local: string | null
@@ -24,7 +25,7 @@ type Evento = {
 type Aniversariante = {
   id: number
   nome: string
-  dataNascimento: Date
+  dataNascimento: RscDate
   turma: string
 }
 
@@ -32,7 +33,6 @@ const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800",
   Jogo: "bg-success-50 text-success-600",
   Evento: "bg-info-50 text-info-600",
-  Reunião: "bg-warning-50 text-warning-600",
 }
 
 export function SecretariaClient({

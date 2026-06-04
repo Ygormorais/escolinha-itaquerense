@@ -1,0 +1,15 @@
+{
+  "name": "Escolinha Itaquerense",
+  "short_name": "E.C. Itaquerense",
+  "description": "Escolinha de futebol E.C. Itaquerense — gestão de alunos, pagamentos, frequência e campeonatos.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF8F6",
+  "theme_color": "#7F0000",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "scope": "/",
+  "icons": [
+    { "src": "/logo.png", "sizes": "500x500", "type": "image/jpeg", "purpose": "any" }
+  ]
+}

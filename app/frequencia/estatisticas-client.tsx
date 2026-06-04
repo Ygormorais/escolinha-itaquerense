@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -78,13 +77,13 @@ export function EstatisticasFrequencia() {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {baixaFrequencia.map((a) => (
-                    <Link
+                    <a
                       key={a.id}
                       href={`/alunos/${a.id}`}
                       className="rounded-full bg-warning-100 px-3 py-1 text-xs font-medium text-warning-800 hover:bg-warning-200 transition-colors"
                     >
                       {a.nome} ({a.pct}%)
-                    </Link>
+                    </a>
                   ))}
                 </div>
               </CardContent>
@@ -99,7 +98,7 @@ export function EstatisticasFrequencia() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={heatmap.filter((d) => d.total > 0)} barSize={32}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
                     <XAxis dataKey="dia" tick={{ fontSize: 12 }} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
                     <Tooltip formatter={(v: unknown) => (typeof v === "number" ? `${v}%` : String(v))} />
@@ -107,7 +106,7 @@ export function EstatisticasFrequencia() {
                       {heatmap.filter((d) => d.total > 0).map((d, i) => (
                         <Cell
                           key={i}
-                          fill={(d.pct ?? 0) >= 75 ? "#16a34a" : (d.pct ?? 0) >= 50 ? "#ca8a04" : "#dc2626"}
+                          fill={(d.pct ?? 0) >= 75 ? "#0F7A5A" : (d.pct ?? 0) >= 50 ? "#A86417" : "#B3261E"}
                         />
                       ))}
                     </Bar>
@@ -124,7 +123,7 @@ export function EstatisticasFrequencia() {
                 {[...ranking].sort((a, b) => a.pct - b.pct).slice(0, 8).map((a) => (
                   <div key={a.id}>
                     <div className="flex items-center justify-between mb-0.5">
-                      <Link href={`/alunos/${a.id}`} className="text-sm font-medium hover:underline truncate max-w-[60%]">{a.nome}</Link>
+                      <a href={`/alunos/${a.id}`} className="text-sm font-medium hover:underline truncate max-w-[60%]">{a.nome}</a>
                       <span className="text-xs text-muted-foreground">{a.turma} · {a.presentes}/{a.total}</span>
                     </div>
                     <PctBar pct={a.pct} />
@@ -145,7 +144,7 @@ export function EstatisticasFrequencia() {
               {ranking.map((a, i) => (
                 <div key={a.id} className="flex items-center gap-3">
                   <span className="w-6 text-xs text-muted-foreground text-right shrink-0">{i + 1}.</span>
-                  <Link href={`/alunos/${a.id}`} className="w-40 text-sm font-medium truncate hover:underline shrink-0">{a.nome}</Link>
+                  <a href={`/alunos/${a.id}`} className="w-40 text-sm font-medium truncate hover:underline shrink-0">{a.nome}</a>
                   <span className="w-20 text-xs text-muted-foreground shrink-0">{a.turma}</span>
                   <div className="flex-1">
                     <PctBar pct={a.pct} />

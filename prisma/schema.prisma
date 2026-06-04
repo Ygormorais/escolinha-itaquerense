@@ -29,11 +29,8 @@ model Aluno {
   inscricoes     InscricaoCampeonato[]
   responsavelId  Int?
   responsavelRef Responsavel?  @relation(fields: [responsavelId], references: [id])
+  avaliacoes     Avaliacao[]
   createdAt      DateTime     @default(now())
-
-  @@index([status])
-  @@index([turma])
-  @@index([status, turma])
 }
 
 model Pagamento {
@@ -47,12 +44,13 @@ model Pagamento {
   valorRecebido  Float?
   observacoes    String?
   transacoes     TransacaoMaquina[]
+  canalPrevisto  String?
+  statusCobranca String?
+  externalId     String?
+  linhaDigitavel String?
+  pixCopiaECola  String?
+  externalUrl    String?
   createdAt      DateTime          @default(now())
-
-  @@index([alunoId])
-  @@index([mesReferencia])
-  @@index([dataPagamento])
-  @@index([alunoId, mesReferencia])
 }
 
 model Custo {
@@ -66,8 +64,6 @@ model Custo {
   comprovante    Boolean  @default(false)
   observacoes    String?
   createdAt      DateTime @default(now())
-
-  @@index([data])
 }
 
 model CustoRecorrente {
@@ -89,8 +85,6 @@ model Frequencia {
   presenca  String
 
   @@unique([alunoId, data])
-  @@index([data])
-  @@index([alunoId])
 }
 
 model Uniforme {
@@ -106,11 +100,12 @@ model Uniforme {
 }
 
 model Log {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   tipo      String
   descricao String
+  usuario   String?
   meta      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model Responsavel {
@@ -123,7 +118,19 @@ model Responsavel {
   ativo        Boolean       @default(true)
   alunos       Aluno[]
   chatSessions ChatSession[]
+  resetTokens  ResetToken[]
+  solicitacoes Solicitacao[]
   createdAt    DateTime      @default(now())
+}
+
+model ResetToken {
+  id            Int         @id @default(autoincrement())
+  token         String      @unique
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id])
+  usado         Boolean     @default(false)
+  expiresAt     DateTime
+  createdAt     DateTime    @default(now())
 }
 
 model Evento {
@@ -136,6 +143,7 @@ model Evento {
   local      String?
   turmas     String?  // "Todas" ou turmas separadas por vírgula
   descricao  String?
+  status     String   @default("pendente") // pendente, confirmado, cancelado, realizado
   createdAt  DateTime @default(now())
 }
 
@@ -175,9 +183,13 @@ model Campeonato {
   custoUniforme  Float               @default(0)
   observacoes   String?
   status        String               @default("aberto") // aberto, andamento, encerrado
+  fpfsEventoId  Int?                                   // id do evento na FPFS (ex.: 920)
+  fpfsTimeNome  String?                                // nome do nosso time como aparece na FPFS
+  fpfsSyncEm    DateTime?                              // ultimo sync bem-sucedido
   inscricoes    InscricaoCampeonato[]
   partidas      Partida[]
   media         Media[]
+  classificacaoFpfs ClassificacaoFpfs[]
   createdAt     DateTime             @default(now())
 }
 
@@ -193,8 +205,34 @@ model Partida {
   golsContra    Int?
   resultado     String?    // Vitoria, Derrota, Empate — null se não realizada
   observacoes   String?
+  fpfsJogoId    String?                                // id do jogo na FPFS (link da sumula)
+  sumulaUrl     String?                                // URL da sumula
   media         Media[]
   createdAt     DateTime   @default(now())
+
+  @@unique([campeonatoId, fpfsJogoId])
+}
+
+model ClassificacaoFpfs {
+  id           Int        @id @default(autoincrement())
+  campeonatoId Int
+  campeonato   Campeonato @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  fase         String
+  grupo        String?
+  posicao      Int
+  timeNome     String
+  pontos       Int        @default(0)
+  jogos        Int        @default(0)
+  vitorias     Int        @default(0)
+  empates      Int        @default(0)
+  derrotas     Int        @default(0)
+  golsPro      Int        @default(0)
+  golsContra   Int        @default(0)
+  saldo        Int        @default(0)
+  ehNosso      Boolean    @default(false)
+  atualizadoEm DateTime   @default(now())
+
+  @@index([campeonatoId])
 }
 
 model InscricaoCampeonato {
@@ -284,4 +322,59 @@ model Media {
   campeonatoId Int?
   campeonato   Campeonato? @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   createdAt    DateTime    @default(now())
+}
+
+model Solicitacao {
+  id            Int         @id @default(autoincrement())
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  tipo          String      // "uniforme", "horario", "documento", "outro"
+  descricao     String
+  status        String      @default("pendente") // pendente, em_andamento, resolvida, recusada
+  resposta      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model PreMatricula {
+  id              Int      @id @default(autoincrement())
+  nomeAluno       String
+  dataNascimento  DateTime
+  turma           String
+  horario         String
+  nomeResponsavel String
+  telefone        String
+  email           String
+  documentos      String?  // JSON array of file paths
+  observacoes     String?
+  status          String   @default("pendente") // pendente, aprovada, recusada
+  createdAt       DateTime @default(now())
+}
+
+model Produto {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  descricao  String?
+  preco      Float    @default(0)
+  categoria  String   @default("uniforme") // uniforme, acessorio, outro
+  tamanhos   String?  // "P,M,G,GG" ou "Único"
+  estoque    Int      @default(0)
+  ativo      Boolean  @default(true)
+  imagem     String?  // URL da imagem
+  createdAt  DateTime @default(now())
+}
+
+model Avaliacao {
+  id                Int      @id @default(autoincrement())
+  alunoId           Int
+  aluno             Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  periodo           String   // "2026-1S", "2026-2S" (semestre)
+  notaTecnica       Float?   // 0-10
+  notaFisica        Float?   // 0-10
+  notaComportamento Float?   // 0-10
+  frequencia        Float?   // % presença no período
+  observacoes       String?
+  createdAt         DateTime @default(now())
+
+  @@unique([alunoId, periodo])
 }

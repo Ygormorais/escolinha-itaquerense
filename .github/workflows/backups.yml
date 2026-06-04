@@ -1,0 +1,44 @@
+name: Backup Diário do Banco
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: backups
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Copiar banco de dados
+        run: |
+          mkdir -p backups
+          TIMESTAMP=$(date -u +%Y-%m-%d-%H%M%S)
+          cp prisma/dev.db "backups/dev-${TIMESTAMP}.db"
+          echo "Backup criado: dev-${TIMESTAMP}.db"
+
+      - name: Rotacionar backups (manter últimos 30)
+        run: |
+          cd backups
+          ls -1t dev-*.db 2>/dev/null | tail -n +31 | xargs -r rm -f
+          echo "Backups restantes: $(ls -1 dev-*.db 2>/dev/null | wc -l)"
+
+      - name: Commit e push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          TIMESTAMP=$(date -u +%Y-%m-%d)
+          git diff --staged --quiet || git commit -m "backup: ${TIMESTAMP}"
+          git push

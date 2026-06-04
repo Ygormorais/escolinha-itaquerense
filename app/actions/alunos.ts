@@ -5,6 +5,8 @@ import { db } from "@/lib/db"
 import { addMonths, setDate } from "date-fns"
 import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
+import { getConfig } from "@/lib/config"
+import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -53,6 +55,26 @@ export async function createAluno(data: {
     await db.pagamento.createMany({ data: pagamentos })
 
     await registrarLog("aluno_novo", `Novo aluno cadastrado — ${data.nome}`, { turma: data.turma })
+
+    const tel = data.telefone?.replace(/\D/g, "")
+    if (tel && tel.length >= 8) {
+      try {
+        const config = getConfig()
+        const msg = [
+          `Olá ${data.responsavel?.split(" ")[0] ?? "responsável"}!`,
+          ``,
+          `Bem-vindo(a) à *${config.nome}*! 🎉`,
+          ``,
+          `O(a) aluno(a) *${data.nome}* foi matriculado(a) na turma *${data.turma}* no horário *${data.horario}*.`,
+          ``,
+          `Qualquer dúvida, estamos à disposição!`,
+        ].join("\n")
+        await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+      } catch {
+        // boas-vindas é opcional, não falha o cadastro
+      }
+    }
+
     revalidatePath("/alunos")
     revalidatePath("/")
     return { success: true }
@@ -98,6 +120,7 @@ export async function updateAluno(
       },
     })
 
+    await registrarLog("aluno_editado", `Aluno atualizado — ${data.nome}`, { turma: data.turma })
     revalidatePath("/alunos")
     revalidatePath("/")
     return { success: true }

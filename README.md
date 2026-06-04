@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Escolinha Itaquerense
 
-## Getting Started
+Sistema de gestão para escolinha de futebol E.C. Itaquerense — cadastro de alunos, pagamentos, frequência, campeonatos, uniformes, comunicados via WhatsApp e portal do responsável.
 
-First, run the development server:
+## Stack
+
+- **Framework:** Next.js 16.2.6 (App Router, React 19)
+- **UI:** Tailwind CSS v4 + shadcn/ui + @base-ui/react
+- **Banco:** Prisma 7 + SQLite (dev) / PostgreSQL (produção)
+- **Auth:** HMAC-SHA256 sessions + bcryptjs
+- **IA:** Claude API (chatbot WhatsApp)
+- **Dashboard:** Recharts
+- **Testes:** Vitest + Playwright
+
+## Pré-requisitos
+
+- Node.js 20+
+- npm 9+
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local  # configure suas variáveis
+npx prisma generate
+npx next dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse `http://localhost:3000` — login padrão: `admin` / `escolinha123`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run start` | Servidor de produção |
+| `npm run lint` | ESLint |
+| `npm test` | Testes unitários (vitest) |
+| `npm run test:e2e` | Testes E2E (Playwright) |
+| `npm run db:backup` | Backup do banco |
+| `npm run db:restore` | Restaura backup |
+| `npm run db:migrate` | Aplica migrations |
+| `npm run db:studio` | Prisma Studio |
+| `npm run housekeeping` | Limpeza de dados antigos |
 
-## Learn More
+## Variáveis de Ambiente
 
-To learn more about Next.js, take a look at the following resources:
+| Variável | Descrição |
+|----------|-----------|
+| `SESSION_SECRET` | Chave para assinar cookies de sessão |
+| `ADMIN_USER` | Usuário admin (fallback env) |
+| `ADMIN_PASS` | Senha admin (fallback env) |
+| `ANTHROPIC_API_KEY` | API key do Claude (chatbot) |
+| `CLAUDE_MODEL` | Modelo Claude (default: claude-sonnet-4-20250514) |
+| `EVOLUTION_API_URL` | URL da Evolution API |
+| `EVOLUTION_API_KEY` | API key da Evolution |
+| `EVOLUTION_INSTANCE` | Instância Evolution |
+| `DATABASE_URL` | PostgreSQL URL (produção) |
+| `NEXT_PUBLIC_APP_URL` | URL pública do app |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Service Account Google |
+| `GOOGLE_PRIVATE_KEY` | Chave privada Google |
+| `CRON_SECRET` | Secret para endpoints cron |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | SMTP para emails |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Sincronização FPFS
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Cada campeonato pode ser ligado a um evento da Federação Paulista de Futsal preenchendo, na
+tela do campeonato (Editar):
 
-## Deploy on Vercel
+- **ID Evento FPFS** — id do evento, ex.: `920` (de `https://eventos.admfutsal.com.br/evento/920`).
+- **Nome do time na FPFS** — nome do nosso time exatamente como aparece no site (usado para
+  destacar nossa linha na classificação e identificar nossos jogos).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+A sincronização busca **classificação** e **jogos** do site oficial e grava no banco; as telas
+do responsável leem sempre do banco (nunca da FPFS ao vivo). Disparo:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Manual:** botão "Atualizar da FPFS" na tela do campeonato.
+- **Automático (cron externo):** agende no host uma chamada à rota protegida, reutilizando o
+  `CRON_SECRET` (header `Authorization: Bearer`). Recomendado a cada 3–6 h, mais frequente em
+  dias de rodada:
+
+  ```
+  0 */4 * * * curl -s "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SECRET"
+  ```
+
+  Sincroniza todos os campeonatos com evento FPFS configurado. Para um único campeonato, passe
+  `?campeonatoId=N` na URL.
+
+## Funcionalidades
+
+### Admin
+- Dashboard com gráficos (receita, inadimplência, ocupação)
+- CRUD completo: alunos, pagamentos, custos, eventos, uniformes
+- Caixa: PIX, boleto, maquininha (import CSV), descontos
+- Campeonatos: inscrições, partidas, classificação
+- Relatórios financeiros, de alunos e frequência (CSV / PDF)
+- Histórico de auditoria
+- Comunicados em massa via WhatsApp
+- Chatbot IA (Claude) com identificação por CPF
+- Controle de acesso por função (admin, secretaria, técnico)
+- Gestão de pré-matrículas online
+- Solicitações dos responsáveis
+
+### Portal do Responsável
+- Dashboard com resumo dos filhos
+- Mensalidades mês a mês
+- Frequência, uniformes, carteirinha digital
+- Boletim com notas técnicas, físicas e comportamentais
+- Jogos, classificação, desempenho
+- Galeria de mídia e vídeos
+- Notificações push
+- Envio de solicitações
+- Recuperação de senha
+
+### WhatsApp / Chatbot
+- Identificação por nome + CPF
+- Consulta de mensalidades, frequência, eventos
+- Informações de uniformes, carteirinha
+- Campeonatos e comunicados
+- Escalação para atendimento humano
+
+## Estrutura do Projeto
+
+```
+app/                    # Next.js App Router
+  actions/              # Server Actions
+  api/                  # API Routes
+  alunos/               # CRUD alunos
+  caixa/                # Caixa financeiro
+  campeonatos/          # Campeonatos
+  configuracoes/        # Configurações
+  frequencia/           # Frequência
+  responsavel/          # Portal do responsável
+  relatorio/            # Relatórios
+  matricula/            # Pré-matrícula pública
+components/            # Componentes React
+  dashboard/            # Dashboard widgets
+  layout/               # Sidebar, header, bottom nav
+  onboarding/           # Tour guiado
+  responsavel/          # Componentes do portal
+  ui/                   # shadcn/ui components
+  whatsapp/             # WhatsApp components
+lib/                   # Utilitários
+  whatsapp/             # Evoluion API, chatbot, tools
+  __tests__/            # Testes unitários
+prisma/                # Schema + migrations
+public/                # Assets estáticos
+scripts/               # Scripts utilitários
+e2e/                   # Testes Playwright
+```

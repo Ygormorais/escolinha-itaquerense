@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { routeMessage } from "@/lib/whatsapp/ai-router"
+import { getEvolutionApiKey, verifyEvolutionAuth } from "@/lib/env"
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.EVOLUTION_API_KEY
-  if (apiKey) {
-    const auth = req.headers.get("apikey") || req.headers.get("authorization")?.replace("Bearer ", "")
-    if (auth !== apiKey) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  const apiKey = getEvolutionApiKey()
+  if (!verifyEvolutionAuth(req, apiKey)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   try {

@@ -1,23 +1,74 @@
 import { NextResponse } from "next/server"
-import { enviarLembretesInadimplentes, enviarLembreteVencendo } from "@/app/actions/email"
+import { runEnviarLembreteVencendo, runEnviarLembretesInadimplentes } from "@/lib/email-jobs"
+import { runEnviarLembretesWhatsAppInadimplencia, runEnviarLembretesWhatsAppVencendo } from "@/lib/whatsapp-jobs"
+import { getCronSecret, verifyBearerSecret } from "@/lib/env"
+import { db } from "@/lib/db"
+import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
+import { revalidatePath } from "next/cache"
 
-export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET
-  if (secret) {
-    const auth = request.headers.get("authorization")
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
+  const pendentes = await db.pagamento.findMany({
+    where: {
+      statusCobranca: "pendente",
+      dataVencimento: { lt: new Date() },
+      externalId: { not: null },
+    },
+    select: { id: true, externalId: true, canalPrevisto: true },
+  })
+
+  let atualizados = 0
+
+  for (const p of pendentes) {
+    try {
+      const mpData = await mpPayment.get({ id: p.externalId! })
+      const statusLocal = mpStatusToLocal(mpData.status as MpPaymentStatus)
+
+      if (statusLocal !== "pendente") {
+        await db.pagamento.update({
+          where: { id: p.id },
+          data: {
+            statusCobranca: statusLocal,
+            ...(statusLocal === "pago"
+              ? {
+                  dataPagamento: new Date(mpData.date_approved as string),
+                  valorRecebido: mpData.transaction_amount,
+                  formaPagamento: p.canalPrevisto,
+                }
+              : {}),
+          },
+        })
+        atualizados++
+      }
+    } catch {
+      console.warn(`[cron] Falha ao sincronizar pagamento ${p.id}`)
     }
   }
 
-  const [inadimplentes, vencendo] = await Promise.all([
-    enviarLembretesInadimplentes(),
-    enviarLembreteVencendo(),
+  revalidatePath("/pagamentos")
+  revalidatePath("/caixa/pix")
+  revalidatePath("/caixa/boleto")
+
+  return { atualizados }
+}
+
+export async function GET(request: Request) {
+  const secret = getCronSecret()
+  if (!verifyBearerSecret(request, secret)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, cobrancas] = await Promise.all([
+    runEnviarLembretesInadimplentes(),
+    runEnviarLembreteVencendo(),
+    runEnviarLembretesWhatsAppInadimplencia(),
+    runEnviarLembretesWhatsAppVencendo(),
+    sincronizarStatusCobrancas(),
   ])
 
   return NextResponse.json({
-    inadimplentes,
-    vencendo,
+    email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
+    whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo },
+    cobrancas,
     executadoEm: new Date().toISOString(),
   })
 }

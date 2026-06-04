@@ -69,7 +69,7 @@ export function RelatorioHeader({ ano, meses }: { ano: number; meses: MesData[] 
   )
 }
 
-export function RelatorioPrintStyle({ ano, nomeClube }: { ano: number; nomeClube: string }) {
+export function RelatorioPrintStyle() {
   return (
     <style>{`
       @media print {
@@ -94,11 +94,10 @@ export function RelatorioChart({
   meses: MesData[]
   categorias: [string, number][]
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fmtCurrency = (v: any) =>
+  const fmtCurrency = (v: unknown) =>
     typeof v === "number"
       ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-      : v
+      : String(v)
 
   const pieData = categorias.map(([name, value]) => ({ name, value }))
 
@@ -111,7 +110,7 @@ export function RelatorioChart({
         <CardContent>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={meses} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
               <XAxis dataKey="label" tick={{ fontSize: 12 }} />
               <YAxis
                 tick={{ fontSize: 12 }}
@@ -122,7 +121,7 @@ export function RelatorioChart({
               <Tooltip formatter={fmtCurrency} />
               <Legend />
               <Bar dataKey="receita" name="Receita" fill="#C62828" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="custo" name="Custos" fill="#94A3B8" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="custo" name="Custos" fill="#6B6363" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

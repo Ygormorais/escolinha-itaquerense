@@ -29,7 +29,7 @@ export function LoginForm({ next }: { next?: string }) {
         setError(data.error ?? "Usuário ou senha incorretos")
         return
       }
-      router.replace(next && next.startsWith("/") ? next : "/")
+      router.replace(next && next.startsWith("/") ? next : "/dashboard")
       router.refresh()
     } catch {
       setError("Erro ao conectar. Tente novamente.")
@@ -39,54 +39,66 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-sm p-8">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Usuário</label>
+    <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
+      <div className="mb-6 space-y-2">
+        <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
+          Entrar
+        </h2>
+        <p className="text-sm leading-6 text-[var(--color-ink-700)]">
+          Use seu usuario e senha para acessar o painel.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <label htmlFor="login-usuario" className="text-sm font-semibold text-[var(--color-ink-900)]">Usuário</label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <User className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
             <Input
+              id="login-usuario"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Digite o usuário..."
-              className="pl-9"
+              className="pl-11"
               autoFocus
               autoComplete="username"
             />
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Senha</label>
+        <div className="space-y-2">
+          <label htmlFor="login-senha" className="text-sm font-semibold text-[var(--color-ink-900)]">Senha</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
             <Input
+              id="login-senha"
               type={show ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Digite a senha..."
-              className="pl-9 pr-10"
+              className="pl-11 pr-12"
               autoComplete="current-password"
             />
             <button
               type="button"
               onClick={() => setShow(!show)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-ink-500)] transition-colors hover:text-[var(--color-ink-900)]"
               tabIndex={-1}
             >
               {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
           {error && (
-            <p className="text-xs text-danger-600 font-medium mt-1">{error}</p>
+            <p className="text-sm font-medium text-danger-600">{error}</p>
           )}
         </div>
 
         <Button
           type="submit"
           disabled={loading || !username || !password}
-          className="w-full bg-brand-800 text-white hover:bg-brand-900"
+          className="w-full"
+          size="lg"
         >
           {loading ? (
             <>
@@ -98,11 +110,6 @@ export function LoginForm({ next }: { next?: string }) {
           )}
         </Button>
       </form>
-
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        Credenciais definidas em{" "}
-        <code className="rounded bg-muted px-1 font-mono">.env.local</code>
-      </p>
     </div>
   )
 }

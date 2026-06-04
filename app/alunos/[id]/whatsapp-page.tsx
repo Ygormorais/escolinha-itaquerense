@@ -36,9 +36,9 @@ export function WhatsAppHistory({ alunoId, alunoNome }: Props) {
     switch (status) {
       case "sent": return <Check className="size-3.5 text-muted-foreground" />
       case "delivered": return <CheckCheck className="size-3.5 text-muted-foreground" />
-      case "read": return <CheckCheck className="size-3.5 text-blue-500" />
-      case "failed": return <XCircle className="size-3.5 text-red-500" />
-      case "received": return <Clock className="size-3.5 text-yellow-500" />
+      case "read": return <CheckCheck className="size-3.5 text-info-600" />
+      case "failed": return <XCircle className="size-3.5 text-danger-600" />
+      case "received": return <Clock className="size-3.5 text-warning-600" />
       default: return <Clock className="size-3.5 text-muted-foreground" />
     }
   }

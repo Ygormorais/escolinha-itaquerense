@@ -8,23 +8,14 @@ import { format } from "date-fns"
 import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Pagination } from "@/components/ui/pagination"
-import { TURMAS, HORARIOS } from "@/lib/constants"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { TURMAS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/ui/status-badge"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
@@ -68,6 +59,7 @@ type FormValues = {
   observacoes: string
 }
 
+const HORARIOS = ["Seg/Qua 08h", "Seg/Qua 10h", "Seg/Qua 14h", "Ter/Qui 08h", "Ter/Qui 10h", "Ter/Qui 14h"]
 
 export function AlunoFormDialog({
   aluno,
@@ -89,7 +81,7 @@ export function AlunoFormDialog({
       responsavel: aluno?.responsavel ?? "",
       telefone: aluno?.telefone ?? "",
       email: aluno?.email ?? "",
-      dataMatricula: aluno ? format(new Date(aluno.dataMatricula), "yyyy-MM-dd") : "",
+      dataMatricula: aluno ? format(new Date(aluno.dataMatricula), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       mensalidade: aluno ? String(aluno.mensalidade) : "",
       desconto: aluno ? String(aluno.desconto ?? 0) : "0",
       status: aluno?.status ?? "Ativo",
@@ -278,7 +270,6 @@ type AlunosClientProps = {
 export function AlunosClient({ alunos, total, page, totalPages, filters, frequenciaBaixa = [] }: AlunosClientProps) {
   const baixaSet = new Set(frequenciaBaixa)
   const [search, setSearch] = useState(filters.q)
-  const [confirmAction, setConfirmAction] = useState<{ type: "inativar" | "reativar"; id: number } | null>(null)
   const debouncedSearch = useDebounce(search, 350)
   const router = useRouter()
 
@@ -288,7 +279,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
     if (filters.turma !== "Todas") params.set("turma", filters.turma)
     if (filters.status !== "Todos") params.set("status", filters.status)
     router.push(`/alunos?${params.toString()}`)
-  }, [debouncedSearch, filters.turma, filters.status, router])
+  }, [debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function pushFilter(key: string, value: string, defaultVal: string) {
     const params = new URLSearchParams()
@@ -318,16 +309,17 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
     URL.revokeObjectURL(url)
   }
 
-  async function executeAction() {
-    if (!confirmAction) return
-    const { type, id } = confirmAction
-    setConfirmAction(null)
-    const result = type === "inativar" ? await inativarAluno(id) : await reativarAluno(id)
-    if ("error" in result) {
-      toast.error(result.error)
-      return
-    }
-    toast.success(type === "inativar" ? "Aluno inativado" : "Aluno reativado")
+  async function handleInativar(id: number) {
+    const result = await inativarAluno(id)
+    if ("error" in result) { toast.error(result.error); return }
+    toast.success("Aluno inativado")
+    router.refresh()
+  }
+
+  async function handleReativar(id: number) {
+    const result = await reativarAluno(id)
+    if ("error" in result) { toast.error(result.error); return }
+    toast.success("Aluno reativado")
     router.refresh()
   }
 
@@ -341,32 +333,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   }
 
   return (
-    <>
-      <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {confirmAction?.type === "inativar" ? "Inativar aluno?" : "Reativar aluno?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirmAction?.type === "inativar"
-                ? "O aluno será marcado como inativo e não aparecerá nas listas principais."
-                : "O aluno voltará a aparecer como ativo no sistema."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={executeAction}
-              className={confirmAction?.type === "inativar" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
-            >
-              {confirmAction?.type === "inativar" ? "Inativar" : "Reativar"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div className="space-y-4">
+    <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         <Input
           placeholder="Buscar por nome..."
@@ -375,7 +342,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           className="max-w-xs"
         />
         <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -386,7 +353,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           </SelectContent>
         </Select>
         <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -414,7 +381,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -474,23 +441,17 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                       }
                     />
                     {aluno.status === "Ativo" ? (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Inativar aluno"
-                        onClick={() => setConfirmAction({ type: "inativar", id: aluno.id })}
-                      >
-                        <UserXIcon className="size-3.5" />
-                      </Button>
+                      <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
+                        <Button variant="ghost" size="icon-sm" title="Inativar aluno">
+                          <UserXIcon className="size-3.5" />
+                        </Button>
+                      </ConfirmDialog>
                     ) : (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Reativar aluno"
-                        onClick={() => setConfirmAction({ type: "reativar", id: aluno.id })}
-                      >
-                        <UserCheckIcon className="size-3.5 text-success-600" />
-                      </Button>
+                      <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
+                        <Button variant="ghost" size="icon-sm" title="Reativar aluno">
+                          <UserCheckIcon className="size-3.5 text-success-600" />
+                        </Button>
+                      </ConfirmDialog>
                     )}
                   </div>
                 </TableCell>
@@ -500,7 +461,6 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         </Table>
       </div>
     </div>
-    </>
   )
 }
 

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation"
-import Link from "next/link"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
-import { Film, Image as ImageIcon, ExternalLink } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { GaleriaMural } from "@/components/responsavel/galeria-mural"
+import Link from "next/link"
+import { ArrowLeft, Images } from "lucide-react"
 
 export default async function GaleriaPage() {
   const session = await getResponsavelSession()
@@ -14,7 +14,6 @@ export default async function GaleriaPage() {
     orderBy: { createdAt: "desc" },
   })
 
-  // Group by campeonato: campeonato-level media + partida-level media per campeonato
   const campeonatoMap = new Map<number, {
     campeonato: { id: number; nome: string }
     midiasCampeonato: typeof midias
@@ -49,89 +48,48 @@ export default async function GaleriaPage() {
   }
 
   const grupos = Array.from(campeonatoMap.values())
-
-  const navLinks = [
-    { href: "/responsavel", label: "Dashboard" },
-    { href: "/responsavel/galeria", label: "Galeria" },
-  ]
+  const totalMidias = midias.length
 
   return (
-    <div className="p-8 space-y-8">
-      <nav className="flex items-center gap-2 -m-8 mb-8 px-8 py-4 border-b bg-muted/40">
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              link.href === "/responsavel/galeria"
-                ? "bg-brand-600 text-white"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-      <h1 className="text-2xl font-bold">Galeria</h1>
-
-      {grupos.length === 0 && (
-        <p className="text-muted-foreground">Nenhuma mídia disponível ainda.</p>
-      )}
-
-      {grupos.map(({ campeonato, midiasCampeonato, partidasComMidia }) => (
-        <div key={campeonato.id} className="space-y-4">
-          <h2 className="text-lg font-semibold">🏆 {campeonato.nome}</h2>
-
-          {midiasCampeonato.length > 0 && (
-            <div className="flex flex-wrap gap-2 pl-4">
-              {midiasCampeonato.map((m) => (
-                <a
-                  key={m.id}
-                  href={m.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted transition-colors"
-                >
-                  {m.tipo === "video" ? <Film className="size-3.5" /> : <ImageIcon className="size-3.5" />}
-                  {m.titulo}
-                  <ExternalLink className="size-3 text-muted-foreground" />
-                </a>
-              ))}
+    <div className="flex flex-col gap-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="space-y-4">
+            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+              <ArrowLeft className="size-4" />
+              Voltar ao portal
+            </Link>
+            <div className="space-y-2">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Mural
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+                Fotos e vídeos organizados por campeonato e partidas, para acompanhar os melhores momentos da escolinha.
+              </p>
             </div>
-          )}
+          </div>
 
-          {Array.from(partidasComMidia.values()).map(({ partida, midias: midiasPartida }) => {
-            const resultado = partida.golsPro != null && partida.golsContra != null
-              ? ` ${partida.golsPro}×${partida.golsContra}`
-              : ""
-            const data = new Date(partida.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
-            return (
-              <div key={partida.id} className="pl-4 space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">
-                  ⚽ {partida.adversario}{resultado} — {data}
-                </p>
-                <div className="flex flex-wrap gap-2 pl-4">
-                  {midiasPartida.map((m) => (
-                    <a
-                      key={m.id}
-                      href={m.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted transition-colors"
-                    >
-                      {m.tipo === "video" ? <Film className="size-3.5" /> : <ImageIcon className="size-3.5" />}
-                      {m.titulo}
-                      <ExternalLink className="size-3 text-muted-foreground" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Mídias</p>
+              <p className="mt-2 text-2xl font-bold">{totalMidias}</p>
+            </div>
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Campeonatos</p>
+              <p className="mt-2 text-2xl font-bold">{grupos.length}</p>
+            </div>
+            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Acervo</p>
+              <p className="mt-2 flex items-center gap-2 text-2xl font-bold">
+                <Images className="size-5" />
+                Ativo
+              </p>
+            </div>
+          </div>
         </div>
-      ))}
+      </section>
 
+      <GaleriaMural grupos={grupos} />
     </div>
   )
 }

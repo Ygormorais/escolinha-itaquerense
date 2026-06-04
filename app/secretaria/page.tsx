@@ -47,8 +47,8 @@ export default async function SecretariaPage() {
         description="Visão geral do dia para a secretaria"
       />
       <SecretariaClient
-        eventosHoje={eventosHoje as any}
-        aniversariantes={aniversariantes as any}
+        eventosHoje={eventosHoje}
+        aniversariantes={aniversariantes}
         matriculasMes={matriculasMes}
         inadimplentes={inadimplentes}
         alunosAtivos={alunosAtivos}

@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   Trophy, ArrowLeft, Pencil, Trash2, Plus, UserPlus,
-  CheckCircle, XCircle, CircleDollarSign, Percent,
-  CreditCard, Calendar, MapPin, Users, AlertTriangle, Swords,
+  CheckCircle, XCircle, CircleDollarSign,
+  CreditCard, Calendar, MapPin, Users, AlertTriangle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
-  Card, CardContent, CardHeader, CardTitle, CardDescription,
+  Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -23,19 +24,15 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import {
   editarCampeonato, deletarCampeonato,
   inscreverAluno, removerInscricao, registrarPagamentoInscricao,
-  calcularTaxaTotal, criarPartida, editarPartida, deletarPartida,
+  sincronizarFpfs,
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { PartidasSection } from "./partidas-section"
-import { FORMAS_PAGAMENTO } from "@/lib/constants"
+import type { RscDate } from "@/lib/rsc-date"
 
 type AlunoInfo = { id: number; nome: string; turma: string; responsavel: string; telefone: string }
 
@@ -48,18 +45,18 @@ type Inscricao = {
   desconto: number
   taxaPaga: boolean
   valorPago: number | null
-  dataPagamento: Date | null
+  dataPagamento: RscDate | null
   formaPagamento: string | null
   observacoes: string | null
-  createdAt: Date
+  createdAt: RscDate
 }
 
 type Campeonato = {
   id: number
   nome: string
   descricao: string | null
-  dataInicio: Date
-  dataFim: Date | null
+  dataInicio: RscDate
+  dataFim: RscDate | null
   local: string | null
   taxaInscricao: number
   taxaJogo: number
@@ -68,7 +65,10 @@ type Campeonato = {
   custoUniforme: number
   observacoes: string | null
   status: string
-  createdAt: Date
+  fpfsEventoId: number | null
+  fpfsTimeNome: string | null
+  fpfsSyncEm: RscDate | null
+  createdAt: RscDate
   inscricoes: Inscricao[]
   partidas: PartidaItem[]
 }
@@ -77,7 +77,7 @@ type PartidaItem = {
   id: number
   campeonatoId: number
   rodada: number
-  data: Date
+  data: RscDate
   adversario: string
   local: string
   golsPro: number | null
@@ -88,19 +88,21 @@ type PartidaItem = {
 
 const STATUS_OPCOES = ["aberto", "andamento", "encerrado"]
 
+const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
+
 export function CampeonatoDetailClient({
   campeonato,
   alunosDisponiveis,
+  nomeClube = "E.C. Itaquerense",
 }: {
   campeonato: Campeonato
   alunosDisponiveis: { id: number; nome: string; turma: string }[]
+  nomeClube?: string
 }) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
   const [inscreverOpen, setInscreverOpen] = useState(false)
   const [pagamentoOpen, setPagamentoOpen] = useState<Inscricao | null>(null)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
-  const [confirmRemoverId, setConfirmRemoverId] = useState<{ id: number; nome: string } | null>(null)
 
   const [form, setForm] = useState({
     nome: campeonato.nome,
@@ -115,6 +117,8 @@ export function CampeonatoDetailClient({
     custoUniforme: String(campeonato.custoUniforme),
     observacoes: campeonato.observacoes || "",
     status: campeonato.status,
+    fpfsEventoId: campeonato.fpfsEventoId != null ? String(campeonato.fpfsEventoId) : "",
+    fpfsTimeNome: campeonato.fpfsTimeNome || "",
   })
 
   const [inscForm, setInscForm] = useState({
@@ -163,15 +167,33 @@ export function CampeonatoDetailClient({
       custoUniforme: Number(form.custoUniforme),
       observacoes: form.observacoes || undefined,
       status: form.status,
+      fpfsEventoId: form.fpfsEventoId ? Number(form.fpfsEventoId) : null,
+      fpfsTimeNome: form.fpfsTimeNome || null,
     })
     toast.success("Campeonato atualizado!")
     setEditOpen(false)
     router.refresh()
   }
 
-  async function executeDelete() {
-    if (confirmDeleteId === null) return
-    setConfirmDeleteId(null)
+  const [sincronizando, setSincronizando] = useState(false)
+  async function handleSincronizarFpfs() {
+    if (campeonato.fpfsEventoId == null) {
+      toast.error("Configure o ID do evento FPFS em Editar antes de sincronizar")
+      return
+    }
+    setSincronizando(true)
+    try {
+      const r = await sincronizarFpfs(campeonato.id)
+      toast.success(`FPFS sincronizada: ${r.jogosNovos} novos, ${r.jogosAtualizados} atualizados, ${r.linhasClassificacao} na classificação`)
+      router.refresh()
+    } catch {
+      toast.error("Falha ao sincronizar com a FPFS")
+    } finally {
+      setSincronizando(false)
+    }
+  }
+
+  async function handleDelete() {
     await deletarCampeonato(campeonato.id)
     toast.success("Campeonato deletado")
     router.push("/campeonatos")
@@ -193,11 +215,8 @@ export function CampeonatoDetailClient({
     router.refresh()
   }
 
-  async function executeRemover() {
-    if (!confirmRemoverId) return
-    const { id } = confirmRemoverId
-    setConfirmRemoverId(null)
-    await removerInscricao(id, campeonato.id)
+  async function handleRemover(inscricaoId: number, ..._args: unknown[]) {
+    await removerInscricao(inscricaoId, campeonato.id)
     toast.success("Inscrição removida")
     router.refresh()
   }
@@ -235,36 +254,6 @@ export function CampeonatoDetailClient({
 
   return (
     <>
-      <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={confirmRemoverId !== null} onOpenChange={(open) => { if (!open) setConfirmRemoverId(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar remoção?</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={executeRemover} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Remover
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <div className="flex items-center gap-3">
         <Link
           href="/campeonatos"
@@ -280,8 +269,16 @@ export function CampeonatoDetailClient({
           {campeonato.descricao && (
             <p className="text-sm text-muted-foreground mt-0.5">{campeonato.descricao}</p>
           )}
+          {campeonato.fpfsSyncEm && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              FPFS atualizada em {format(new Date(campeonato.fpfsSyncEm), "dd/MM/yyyy HH:mm")}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleSincronizarFpfs} disabled={sincronizando}>
+            {sincronizando ? "Atualizando..." : "Atualizar da FPFS"}
+          </Button>
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <DialogTrigger>
               <Button variant="outline" size="sm">
@@ -314,6 +311,14 @@ export function CampeonatoDetailClient({
                 <div className="col-span-2 space-y-2">
                   <Label>Local</Label>
                   <Input value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>ID Evento FPFS</Label>
+                  <Input type="number" min="0" placeholder="ex.: 920" value={form.fpfsEventoId} onChange={(e) => setForm({ ...form, fpfsEventoId: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome do time na FPFS</Label>
+                  <Input placeholder="igual ao site da FPFS" value={form.fpfsTimeNome} onChange={(e) => setForm({ ...form, fpfsTimeNome: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Status</Label>
@@ -360,9 +365,11 @@ export function CampeonatoDetailClient({
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button variant="destructive" size="sm" onClick={() => setConfirmDeleteId(campeonato.id)}>
-            <Trash2 className="size-4" />
-          </Button>
+          <ConfirmDialog title="Deletar campeonato?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={handleDelete}>
+            <Button variant="destructive" size="sm">
+              <Trash2 className="size-4" />
+            </Button>
+          </ConfirmDialog>
         </div>
       </div>
 
@@ -584,13 +591,11 @@ export function CampeonatoDetailClient({
                             <CreditCard className="size-3 mr-1" /> Pagar
                           </Button>
                         )}
-                        <Button
-                          size="icon-sm"
-                          variant="ghost"
-                          onClick={() => setConfirmRemoverId({ id: insc.id, nome: insc.aluno.nome })}
-                        >
-                          <XCircle className="size-4 text-danger-600" />
-                        </Button>
+                        <ConfirmDialog title="Remover inscrição?" description={`Remover ${insc.aluno.nome} do campeonato?`} confirmLabel="Remover" onConfirm={() => handleRemover(insc.id, insc.aluno.nome)}>
+                          <Button size="icon-sm" variant="ghost">
+                            <XCircle className="size-4 text-danger-600" />
+                          </Button>
+                        </ConfirmDialog>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -601,7 +606,7 @@ export function CampeonatoDetailClient({
         </CardContent>
       </Card>
 
-      <PartidasSection partidas={campeonato.partidas as any} campeonatoId={campeonato.id} />
+      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} nomeClube={nomeClube} />
 
       <Dialog open={inscreverOpen} onOpenChange={setInscreverOpen}>
         <DialogContent>

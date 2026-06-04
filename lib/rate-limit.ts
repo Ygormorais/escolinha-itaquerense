@@ -1,25 +1,43 @@
-const attempts = new Map<string, { count: number; resetAt: number }>()
+import { createMemoryRateLimitStore, type RateLimitStore } from "@/lib/rate-limit-store"
 
-export function checkRateLimit(key: string, maxAttempts = 5, windowMs = 60_000): { ok: boolean; remaining: number } {
+const defaultStore = createMemoryRateLimitStore()
+
+let activeStore: RateLimitStore = defaultStore
+
+/** Troca o store (apenas testes). */
+export function setRateLimitStore(store: RateLimitStore): void {
+  activeStore = store
+}
+
+export function resetRateLimitStore(): void {
+  activeStore.clear()
+}
+
+export function checkRateLimit(
+  key: string,
+  maxAttempts = 5,
+  windowMs = 60_000
+): { ok: boolean; remaining: number; retryAfterMs?: number } {
   const now = Date.now()
-  const entry = attempts.get(key)
+  activeStore.prune(now)
+
+  const entry = activeStore.get(key)
 
   if (!entry || now > entry.resetAt) {
-    attempts.set(key, { count: 1, resetAt: now + windowMs })
+    activeStore.set(key, { count: 1, resetAt: now + windowMs })
     return { ok: true, remaining: maxAttempts - 1 }
   }
 
   entry.count++
+  activeStore.set(key, entry)
+
   if (entry.count > maxAttempts) {
-    return { ok: false, remaining: 0 }
+    return {
+      ok: false,
+      remaining: 0,
+      retryAfterMs: Math.max(0, entry.resetAt - now),
+    }
   }
 
   return { ok: true, remaining: maxAttempts - entry.count }
 }
-
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of attempts) {
-    if (now > entry.resetAt) attempts.delete(key)
-  }
-}, 60_000)

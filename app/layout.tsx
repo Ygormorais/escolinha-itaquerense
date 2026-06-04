@@ -1,14 +1,65 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
+import { Inter, Nunito } from "next/font/google"
+import { headers } from "next/headers"
 import "./globals.css"
-import { Sidebar } from "@/components/layout/sidebar"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
+import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
 import { db } from "@/lib/db"
+import { AdminShell } from "@/components/layout/admin-shell"
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+})
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
+  variable: "--font-nunito",
+})
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
+  ],
+}
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
 export const metadata: Metadata = {
-  title: "Escolinha Itaquerense",
-  description: "Painel administrativo da Escolinha Itaquerense",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "Escolinha Itaquerense",
+    template: "%s — Escolinha Itaquerense",
+  },
+  description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos. Painel administrativo para gestão de alunos, pagamentos, frequência e campeonatos.",
+  applicationName: "Escolinha Itaquerense",
+  authors: [{ name: "E.C. Itaquerense" }],
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Escolinha Itaquerense",
+    title: "Escolinha Itaquerense",
+    description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos.",
+    images: [{ url: "/logo.png", width: 500, height: 500, alt: "E.C. Itaquerense" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Escolinha Itaquerense",
+    description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 export default async function RootLayout({
@@ -16,23 +67,57 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const pathname = (await headers()).get("x-pathname") ?? "/"
   const session = await getSession()
+  const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && !pathname.startsWith("/matricula") && pathname !== "/login" && pathname !== "/"
 
-  const pendingEscalacoes = session.authenticated
-    ? await db.chatSession.count({ where: { bloqueado: true } })
-    : 0
+  let pendingEscalacoes = 0
+  if (showAdminShell) {
+    try {
+      pendingEscalacoes = await db.chatSession.count({ where: { bloqueado: true } })
+    } catch {
+      // DB indisponível — ignora
+    }
+  }
 
   return (
-    <html lang="pt-BR" className="h-full antialiased" suppressHydrationWarning>
-      <body className="flex h-full bg-background">
+      <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="E.C. Itaquerense" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="Escolinha Itaquerense" />
+        <link rel="apple-touch-icon" href="/logo.png" sizes="500x500" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SportsActivityLocation",
+              name: "E.C. Itaquerense — Escolinha de Futebol",
+              description: "Escolinha de futebol formando atletas e cidadãos.",
+              image: "/logo.png",
+              url: baseUrl,
+              sport: "Futebol",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "São Paulo",
+                addressRegion: "SP",
+                addressCountry: "BR",
+              },
+            }),
+          }}
+        />
+      </head>
+      <body className="flex h-full bg-background font-sans">
+        <PWARegister />
         <Providers>
-          {session.authenticated ? (
-            <>
-              <Sidebar pendingEscalacoes={pendingEscalacoes} />
-              <main className="flex flex-1 flex-col overflow-auto">
-                {children}
-              </main>
-            </>
+          {showAdminShell ? (
+            <AdminShell pendingEscalacoes={pendingEscalacoes} role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}>
+              {children}
+            </AdminShell>
           ) : (
             <div className="flex flex-1 flex-col">
               {children}

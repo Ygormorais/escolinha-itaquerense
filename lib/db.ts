@@ -4,10 +4,10 @@ import path from "path"
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
-function createPrismaClient() {
+function createPrismaClient(): PrismaClient {
   const dbPath = path.join(process.cwd(), "prisma", "dev.db")
   const adapter = new PrismaBetterSqlite3({ url: dbPath })
-  return new PrismaClient({ adapter, log: ["error"] } as any)
+  return new PrismaClient({ adapter, log: ["error"] })
 }
 
 if (!globalForPrisma.prisma) {

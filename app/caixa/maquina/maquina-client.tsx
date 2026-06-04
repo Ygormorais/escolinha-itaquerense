@@ -2,10 +2,11 @@
 
 import { useState, useTransition, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Upload, CheckCircle, XCircle, RefreshCw, Search, FileText, Download, AlertTriangle } from "lucide-react"
+import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -14,12 +15,12 @@ import { format } from "date-fns"
 import { toast } from "sonner"
 import { importarCSV, reconciliarTransacao, reconciliarAuto, ignorarTransacao } from "@/app/actions/maquina"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
+import { toDate, type RscDate } from "@/lib/rsc-date"
 
 type Transacao = {
   id: number
-  dataTransacao: Date
+  dataTransacao: RscDate
   valor: number
   parcelas: number
   bandeira: string
@@ -37,7 +38,6 @@ type Transacao = {
 
 type Aluno = { id: number; nome: string; responsavel: string }
 
-
 export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[]; alunos: Aluno[] }) {
   const router = useRouter()
   const [filter, setFilter] = useState("todas")
@@ -46,7 +46,6 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
   const [alunoId, setAlunoId] = useState("")
   const [mesRef, setMesRef] = useState("")
   const [obs, setObs] = useState("")
-  const [confirmReconcile, setConfirmReconcile] = useState(false)
   const [pending, start] = useTransition()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -70,7 +69,8 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
 
   function openReconcile(t: Transacao) {
     setSelectedTransacao(t)
-    const mes = `${t.dataTransacao.getFullYear()}-${String(t.dataTransacao.getMonth() + 1).padStart(2, "0")}`
+    const dt = toDate(t.dataTransacao)
+    const mes = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`
     setMesRef(mes)
     setAlunoId(t.aluno?.id ? String(t.aluno.id) : "")
     setObs(`Reconciliado - ${t.nomeNoCartao}`)
@@ -92,7 +92,7 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
     })
   }
 
-  function executeReconcile() {
+  function handleReconcileAuto() {
     start(async () => {
       const result = await reconciliarAuto()
       toast.success(`${result.reconciliados} reconciliados, ${result.naoEncontrados} não encontrados`)
@@ -117,10 +117,12 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
             Importar CSV
           </Button>
           <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
-          <Button variant="outline" onClick={() => setConfirmReconcile(true)} disabled={pending} className="gap-2">
-            <RefreshCw className="size-4" />
-            Reconciliar Automático
-          </Button>
+          <ConfirmDialog title="Reconciliar automaticamente?" description="Todas as transações pendentes serão reconciliadas automaticamente." confirmLabel="Reconciliar" variant="warning" onConfirm={handleReconcileAuto}>
+            <Button variant="outline" disabled={pending} className="gap-2">
+              <RefreshCw className="size-4" />
+              Reconciliar Automático
+            </Button>
+          </ConfirmDialog>
         </div>
         <div className="flex gap-1">
           {["todas", "pendente", "reconciliado", "ignorado"].map((f) => (
@@ -197,21 +199,6 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
           </Table>
         </CardContent>
       </Card>
-
-      <AlertDialog open={confirmReconcile} onOpenChange={setConfirmReconcile}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reconciliar automaticamente?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação irá processar as transações pendentes automaticamente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={executeReconcile}>Confirmar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

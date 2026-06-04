@@ -3,9 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Trophy, Plus, Pencil, Trash2, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
+import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/ui/empty-state"
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card"
@@ -16,29 +17,22 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 
 import { toast } from "sonner"
-import { criarCampeonato, deletarCampeonato } from "@/app/actions/campeonatos"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { criarCampeonato } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Campeonato = {
   id: number
   nome: string
   descricao: string | null
-  dataInicio: Date
-  dataFim: Date | null
+  dataInicio: RscDate
+  dataFim: RscDate | null
   local: string | null
   taxaInscricao: number
   status: string
-  createdAt: Date
+  createdAt: RscDate
   _count: { inscricoes: number }
 }
-
-type Aluno = { id: number; nome: string; turma: string }
 
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
   aberto: { label: "Aberto", variant: "secondary" },
@@ -48,14 +42,11 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondar
 
 export function CampeonatoClient({
   campeonatos,
-  alunos,
 }: {
   campeonatos: Campeonato[]
-  alunos: Aluno[]
 }) {
   const router = useRouter()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [form, setForm] = useState({
     nome: "",
     descricao: "",
@@ -103,32 +94,7 @@ export function CampeonatoClient({
     router.refresh()
   }
 
-  async function executeDelete() {
-    if (confirmDeleteId === null) return
-    const id = confirmDeleteId
-    setConfirmDeleteId(null)
-    await deletarCampeonato(id)
-    toast.success("Campeonato deletado")
-    router.refresh()
-  }
-
   return (
-    <>
-    <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Excluir
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
@@ -137,6 +103,7 @@ export function CampeonatoClient({
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold font-heading">{campeonatos.length}</p>
+            <p className="text-xs text-muted-foreground mt-1">{encerrados} encerrado(s)</p>
           </CardContent>
         </Card>
         <Card>
@@ -230,12 +197,10 @@ export function CampeonatoClient({
         </Dialog>
       </div>
 
+      {campeonatos.length === 0 && (
+        <EmptyState icon={Trophy} title="Nenhum campeonato cadastrado" description="Crie o primeiro campeonato para começar." />
+      )}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {campeonatos.length === 0 && (
-          <p className="col-span-full text-center text-muted-foreground py-12">
-            Nenhum campeonato cadastrado. Crie o primeiro!
-          </p>
-        )}
         {campeonatos.map((c) => {
           const st = STATUS_MAP[c.status] || STATUS_MAP.aberto
           return (
@@ -284,6 +249,5 @@ export function CampeonatoClient({
         })}
       </div>
     </div>
-    </>
   )
 }

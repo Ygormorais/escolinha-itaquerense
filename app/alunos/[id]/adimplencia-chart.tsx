@@ -23,15 +23,9 @@ function getStatus(p: Pagamento): "Pago" | "Vencido" | "Pendente" {
 }
 
 const COR: Record<string, string> = {
-  Pago: "#16a34a",
-  Vencido: "#dc2626",
-  Pendente: "#9ca3af",
-}
-
-const LABEL_COR: Record<string, string> = {
-  Pago: "#15803d",
-  Vencido: "#b91c1c",
-  Pendente: "#6b7280",
+  Pago: "#0F7A5A",
+  Vencido: "#B3261E",
+  Pendente: "#6B6363",
 }
 
 export function AdimplenciaChart({ pagamentos }: Props) {
@@ -75,7 +69,7 @@ export function AdimplenciaChart({ pagamentos }: Props) {
               dataKey="mes"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: "#9ca3af" }}
+              tick={{ fontSize: 11, fill: "#6B6363" }}
             />
             <YAxis hide domain={[0, 1]} />
             <Tooltip
@@ -99,7 +93,7 @@ export function AdimplenciaChart({ pagamentos }: Props) {
               <LabelList
                 dataKey="status"
                 position="top"
-                style={{ fontSize: 9, fill: "#888" }}
+                style={{ fontSize: 9, fill: "#6B6363" }}
                 formatter={(v: unknown) => typeof v === "string" ? v[0] : ""}
               />
             </Bar>

@@ -1,14 +1,11 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
-import { TrendingUp } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format } from "date-fns"
-import { startOfMonth, endOfMonth } from "date-fns"
 
 export const metadata = { title: "Recebimentos — Escolinha Itaquerense" }
 
 export default async function RecebimentosPage() {
-  const now = new Date()
   const pagamentos = await db.pagamento.findMany({
     where: { dataPagamento: { not: null } },
     include: { aluno: { select: { nome: true, turma: true } } },

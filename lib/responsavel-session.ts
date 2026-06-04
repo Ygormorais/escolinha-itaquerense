@@ -1,11 +1,12 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
+import { getSessionSecret } from "@/lib/env"
 
 const COOKIE_NAME = "responsavel_session"
-const MAX_AGE = 60 * 60 * 24 * 7
+const MAX_AGE = 60 * 60 * 24 // 1 dia
 
 function sign(value: string): string {
-  const secret = process.env.SESSION_SECRET ?? "dev-secret"
+  const secret = getSessionSecret()
   const hmac = createHmac("sha256", secret).update(value).digest("hex")
   return `${value}.${hmac}`
 }

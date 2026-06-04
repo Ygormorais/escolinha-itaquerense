@@ -68,7 +68,7 @@ export default async function RelatorioPage({
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <RelatorioPrintStyle ano={ano} nomeClube="Escolinha Itaquerense" />
+      <RelatorioPrintStyle />
       <PageHeader
         title="Relatório Anual"
         description={`Resumo financeiro consolidado — ${ano}`}

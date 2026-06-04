@@ -7,13 +7,10 @@ import { format } from "date-fns"
 import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
@@ -26,7 +23,15 @@ import {
 import { toast } from "sonner"
 import { createCusto, updateCusto, deleteCusto, gerarCustosRecorrentes } from "@/app/actions/custos"
 import { RefreshCw } from "lucide-react"
-import { CATEGORIAS, FORMAS_PAGAMENTO } from "@/lib/constants"
+
+const CATEGORIAS = [
+  "Aluguel de campo",
+  "Salário técnico",
+  "Material esportivo",
+  "Uniforme",
+  "Outros",
+]
+const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
 
 type Custo = {
   id: number
@@ -254,19 +259,15 @@ export function CustosClient({
   const router = useRouter()
   const [gerando, startGerando] = useTransition()
   const [geradoMsg, setGeradoMsg] = useState<string | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
 
   function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
     router.push(`/custos?mes=${e.target.value}`)
   }
 
-  async function executeDelete() {
-    if (confirmDelete === null) return
-    const id = confirmDelete
-    setConfirmDelete(null)
+  async function handleDelete(id: number) {
     const result = await deleteCusto(id)
     if ("error" in result) { toast.error(result.error); return }
-    toast.success("Removido com sucesso")
+    toast.success("Custo excluído")
     router.refresh()
   }
 
@@ -276,7 +277,6 @@ export function CustosClient({
       toast.warning("Nenhum modelo recorrente ativo cadastrado.")
       return
     }
-    if (!confirm(`Gerar ${ativos.length} custo(s) recorrente(s) para ${mes}?`)) return
     setGeradoMsg(null)
     startGerando(async () => {
       const r = await gerarCustosRecorrentes(mes)
@@ -291,21 +291,6 @@ export function CustosClient({
   }
 
   return (
-    <>
-    <AlertDialog open={confirmDelete !== null} onOpenChange={(open) => { if (!open) setConfirmDelete(null) }}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={executeDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Excluir
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4">
         <div>
@@ -321,14 +306,12 @@ export function CustosClient({
         <div className="ml-auto flex flex-col items-end gap-2">
           {geradoMsg && <p className="text-xs text-success-600 font-medium">{geradoMsg}</p>}
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleGerarRecorrentes}
-              disabled={gerando}
-            >
-              <RefreshCw className="size-4" />
-              {gerando ? "Gerando..." : "Gerar Recorrentes"}
-            </Button>
+            <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${recorrentes.filter((r) => r.ativo).length} custo(s) recorrente(s) para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
+              <Button variant="outline" disabled={gerando}>
+                <RefreshCw className="size-4" />
+                {gerando ? "Gerando..." : "Gerar Recorrentes"}
+              </Button>
+            </ConfirmDialog>
             <Button
               variant="outline"
               onClick={() => exportarCSV(custos, mes)}
@@ -349,7 +332,7 @@ export function CustosClient({
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -394,13 +377,11 @@ export function CustosClient({
                         </Button>
                       }
                     />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setConfirmDelete(c.id)}
-                    >
-                      <Trash2Icon className="size-3.5 text-danger-600" />
-                    </Button>
+                    <ConfirmDialog title="Excluir custo?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => handleDelete(c.id)}>
+                      <Button variant="ghost" size="icon-sm">
+                        <Trash2Icon className="size-3.5 text-danger-600" />
+                      </Button>
+                    </ConfirmDialog>
                   </div>
                 </TableCell>
               </TableRow>
@@ -409,6 +390,5 @@ export function CustosClient({
         </Table>
       </div>
     </div>
-    </>
   )
 }

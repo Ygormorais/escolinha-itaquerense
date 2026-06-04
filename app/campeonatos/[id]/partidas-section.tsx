@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, Swords, Trophy } from "lucide-react"
+import { Plus, Pencil, Trash2, Swords, Trophy, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -18,14 +19,15 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { criarPartida, editarPartida, deletarPartida } from "@/app/actions/campeonatos"
-import { calcularClassificacao, type ClassificacaoItem } from "@/lib/campeonatos"
+import { calcularClassificacao } from "@/lib/campeonatos"
 import { format } from "date-fns"
+import type { RscDate } from "@/lib/rsc-date"
 
 type Partida = {
   id: number
   campeonatoId: number
   rodada: number
-  data: Date
+  data: RscDate
   adversario: string
   local: string
   golsPro: number | null
@@ -34,7 +36,7 @@ type Partida = {
   observacoes: string | null
 }
 
-export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[]; campeonatoId: number }) {
+export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense" }: { partidas: Partida[]; campeonatoId: number; nomeClube?: string }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Partida | null>(null)
@@ -42,9 +44,24 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
     rodada: "1", data: "", adversario: "", local: "Casa",
     golsPro: "", golsContra: "", observacoes: "",
   })
+  const [search, setSearch] = useState("")
+  const [filtroStatus, setFiltroStatus] = useState<"todas" | "realizadas" | "pendentes">("todas")
+  const [scoreDialog, setScoreDialog] = useState<Partida | null>(null)
+  const [scoreForm, setScoreForm] = useState({ golsPro: "", golsContra: "" })
 
   const classificacao = calcularClassificacao(partidas)
   const stats = classificacao[0]
+
+  const pendentes = useMemo(() => partidas.filter((p) => p.resultado == null), [partidas])
+
+  const filtradas = useMemo(() => {
+    return partidas.filter((p) => {
+      if (filtroStatus === "realizadas" && p.resultado == null) return false
+      if (filtroStatus === "pendentes" && p.resultado != null) return false
+      if (search && !p.adversario.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
+  }, [partidas, filtroStatus, search])
 
   async function handleSubmit() {
     if (!form.data || !form.adversario.trim()) {
@@ -60,7 +77,7 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
         golsPro: form.golsPro ? Number(form.golsPro) : null,
         golsContra: form.golsContra ? Number(form.golsContra) : null,
         observacoes: form.observacoes || undefined,
-      })
+      }, campeonatoId)
       toast.success("Partida atualizada!")
     } else {
       await criarPartida({
@@ -96,14 +113,39 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Deletar partida?")) return
     await deletarPartida(id, campeonatoId)
     toast.success("Partida deletada")
     router.refresh()
   }
 
+  function openScore(p: Partida) {
+    setScoreDialog(p)
+    setScoreForm({
+      golsPro: p.golsPro != null ? String(p.golsPro) : "",
+      golsContra: p.golsContra != null ? String(p.golsContra) : "",
+    })
+  }
+
+  async function handleSaveScore() {
+    if (!scoreDialog) return
+    const gp = scoreForm.golsPro ? Number(scoreForm.golsPro) : null
+    const gc = scoreForm.golsContra ? Number(scoreForm.golsContra) : null
+    await editarPartida(scoreDialog.id, {
+      rodada: scoreDialog.rodada,
+      data: format(new Date(scoreDialog.data), "yyyy-MM-dd"),
+      adversario: scoreDialog.adversario,
+      local: scoreDialog.local,
+      golsPro: gp,
+      golsContra: gc,
+      observacoes: scoreDialog.observacoes ?? undefined,
+    }, campeonatoId)
+    toast.success("Placar atualizado!")
+    setScoreDialog(null)
+    router.refresh()
+  }
+
   const resultadoBadge = (r: string | null) => {
-    if (!r) return <Badge variant="outline">A realizar</Badge>
+    if (!r) return <Badge variant="outline">Pendente</Badge>
     const map: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
       Vitoria: { label: "Vitória", variant: "default" },
       Empate: { label: "Empate", variant: "secondary" },
@@ -190,61 +232,126 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
         </Card>
       )}
 
+      {pendentes.length > 0 && (
+        <Card className="border-warning-200 bg-warning-50/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm text-warning-600 flex items-center gap-2">
+              <Swords className="size-4" /> Pendentes ({pendentes.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Adversário</TableHead>
+                  <TableHead>Local</TableHead>
+                  <TableHead className="w-32">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendentes.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell>{format(new Date(p.data), "dd/MM/yyyy")}</TableCell>
+                    <TableCell className="font-medium">{p.adversario}</TableCell>
+                    <TableCell><Badge variant="secondary" className="text-[10px]">{p.local}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" onClick={() => openScore(p)}>
+                          Placar
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(p)}>
+                          Editar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Swords className="size-4" /> Partidas
+            <Swords className="size-4" /> Todas as Partidas ({filtradas.length})
           </CardTitle>
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" }) } }}>
-            <DialogTrigger render={<Button size="sm" />}>
-              <Plus className="size-4" /> Partida
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Swords className="size-4" /> {editing ? "Editar" : "Nova"} Partida
-                </DialogTitle>
-              </DialogHeader>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Rodada</Label>
-                  <Input type="number" min="1" value={form.rodada} onChange={(e) => setForm({ ...form, rodada: e.target.value })} />
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+              <Input
+                className="pl-8 h-8 w-48"
+                placeholder="Buscar adversário..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              {(["todas", "realizadas", "pendentes"] as const).map((s) => (
+                <Button
+                  key={s}
+                  variant={filtroStatus === s ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs capitalize h-8"
+                  onClick={() => setFiltroStatus(s)}
+                >
+                  {s === "todas" ? "Todas" : s === "realizadas" ? "Realizadas" : "Pendentes"}
+                </Button>
+              ))}
+            </div>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" }) } }}>
+              <DialogTrigger render={<Button size="sm" className="h-8" />}>
+                <Plus className="size-4" /> Partida
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Swords className="size-4" /> {editing ? "Editar" : "Nova"} Partida
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Rodada</Label>
+                    <Input type="number" min="1" value={form.rodada} onChange={(e) => setForm({ ...form, rodada: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Data *</Label>
+                    <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label>Adversário *</Label>
+                    <Input value={form.adversario} onChange={(e) => setForm({ ...form, adversario: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Local</Label>
+                    <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })}>
+                      <option value="Casa">Casa</option>
+                      <option value="Fora">Fora</option>
+                      <option value="Neutro">Neutro</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Gols Pró</Label>
+                    <Input type="number" min="0" value={form.golsPro} onChange={(e) => setForm({ ...form, golsPro: e.target.value })} placeholder="—" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Gols Contra</Label>
+                    <Input type="number" min="0" value={form.golsContra} onChange={(e) => setForm({ ...form, golsContra: e.target.value })} placeholder="—" />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label>Observações</Label>
+                    <Input value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Data *</Label>
-                  <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Adversário *</Label>
-                  <Input value={form.adversario} onChange={(e) => setForm({ ...form, adversario: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Local</Label>
-                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })}>
-                    <option value="Casa">Casa</option>
-                    <option value="Fora">Fora</option>
-                    <option value="Neutro">Neutro</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Gols Pró</Label>
-                  <Input type="number" min="0" value={form.golsPro} onChange={(e) => setForm({ ...form, golsPro: e.target.value })} placeholder="—" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Gols Contra</Label>
-                  <Input type="number" min="0" value={form.golsContra} onChange={(e) => setForm({ ...form, golsContra: e.target.value })} placeholder="—" />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Observações</Label>
-                  <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => { setOpen(false); setEditing(null) }}>Cancelar</Button>
-                <Button onClick={handleSubmit}>{editing ? "Salvar" : "Criar"}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => { setOpen(false); setEditing(null) }}>Cancelar</Button>
+                  <Button onClick={handleSubmit}>{editing ? "Salvar" : "Criar"}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -260,15 +367,15 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
               </TableRow>
             </TableHeader>
             <TableBody>
-              {partidas.length === 0 && (
+              {filtradas.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Nenhuma partida registrada
+                    Nenhuma partida encontrada
                   </TableCell>
                 </TableRow>
               )}
-              {partidas.map((p) => (
-                <TableRow key={p.id}>
+              {filtradas.map((p) => (
+                <TableRow key={p.id} className={p.resultado == null ? "bg-warning-50/30" : ""}>
                   <TableCell className="text-muted-foreground">{p.rodada}</TableCell>
                   <TableCell>{format(new Date(p.data), "dd/MM")}</TableCell>
                   <TableCell className="font-medium">{p.adversario}</TableCell>
@@ -286,12 +393,14 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
                   <TableCell>{resultadoBadge(p.resultado)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(p)}>
+                      <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)}>
                         <Pencil className="size-3.5" />
                       </Button>
-                      <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(p.id)}>
-                        <Trash2 className="size-3.5 text-danger-600" />
-                      </Button>
+                      <ConfirmDialog title="Deletar partida?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={() => handleDelete(p.id)}>
+                        <Button size="icon-sm" variant="ghost">
+                          <Trash2 className="size-3.5 text-danger-600" />
+                        </Button>
+                      </ConfirmDialog>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -300,6 +409,42 @@ export function PartidasSection({ partidas, campeonatoId }: { partidas: Partida[
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!scoreDialog} onOpenChange={(o) => { if (!o) setScoreDialog(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Swords className="size-4" /> {scoreDialog ? `Placar — ${scoreDialog.adversario}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {scoreDialog && (
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="text-center space-y-2">
+                <Label className="text-lg font-bold">{nomeClube}</Label>
+                <Input
+                  type="number" min="0"
+                  className="text-center text-2xl h-14"
+                  value={scoreForm.golsPro}
+                  onChange={(e) => setScoreForm({ ...scoreForm, golsPro: e.target.value })}
+                />
+              </div>
+              <div className="text-center space-y-2">
+                <Label className="text-lg font-bold">{scoreDialog.adversario}</Label>
+                <Input
+                  type="number" min="0"
+                  className="text-center text-2xl h-14"
+                  value={scoreForm.golsContra}
+                  onChange={(e) => setScoreForm({ ...scoreForm, golsContra: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScoreDialog(null)}>Cancelar</Button>
+            <Button onClick={handleSaveScore}>Salvar Placar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
