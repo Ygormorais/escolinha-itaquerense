@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { CategoriaJogos } from "@/lib/landing/jogos"
@@ -54,7 +55,7 @@ export function JogosCarrossel({ categorias }: { categorias: CategoriaJogos[] })
                 {ativa.categoria} · {j.local === "Casa" ? "🏠 Casa" : j.local === "Fora" ? "✈️ Fora" : "⚖️ Neutro"}
               </div>
               <div className="jc-match">
-                <img className="jc-badge" src="/logo.png" alt="E.C. Itaquerense" />
+                <Image className="jc-badge" src="/logo.png" alt="E.C. Itaquerense" width={34} height={34} />
                 <span className="jc-score">{j.realizado ? j.placar : "VS"}</span>
                 <span className="jc-adv">{j.adversario}</span>
               </div>
