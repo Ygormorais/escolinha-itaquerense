@@ -24,7 +24,15 @@ jobs:
         env:
           PRISMA_CONFIG_PATH: prisma.config.ts
 
-      - run: npm test
+      # vitest pendura no teardown (handle nativo do better-sqlite3 + workers em
+      # fork): os testes terminam e o relatorio e escrito, mas o processo nao sai.
+      # Rodamos com timeout e checamos o relatorio JSON como gate real de pass/fail.
+      - name: Test (watchdog)
+        run: |
+          rm -f vitest-report.json
+          timeout 200 npx vitest run --reporter=dot --reporter=json --outputFile=vitest-report.json || true
+          test -f vitest-report.json || { echo "::error::vitest nao gerou o relatorio (travou antes de reportar)"; exit 1; }
+          node -e "const r=require('./vitest-report.json'); if(!r.success||r.numFailedTests>0||r.numFailedTestSuites>0){console.error('Testes falharam: '+r.numFailedTests+' testes / '+r.numFailedTestSuites+' suites'); process.exit(1)} console.log('Testes OK: '+r.numPassedTests+' passaram')"
 
       - run: npm run lint || echo "Lint warnings (non-blocking)"
 
