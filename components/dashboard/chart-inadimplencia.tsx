@@ -24,8 +24,8 @@ export function ChartInadimplencia({ data }: { data: DataPoint[] }) {
               contentStyle={{ borderRadius: 8, border: "1px solid #EFE6E6" }}
             />
             <Legend />
-            <Bar dataKey="pagas" name="Pagas" fill="#16A34A" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="vencidas" name="Vencidas" fill="#DC2626" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="pagas" name="Pagas" fill="#0F7A5A" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="vencidas" name="Vencidas" fill="#B3261E" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

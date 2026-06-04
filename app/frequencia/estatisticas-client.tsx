@@ -98,7 +98,7 @@ export function EstatisticasFrequencia() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={heatmap.filter((d) => d.total > 0)} barSize={32}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
                     <XAxis dataKey="dia" tick={{ fontSize: 12 }} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
                     <Tooltip formatter={(v: unknown) => (typeof v === "number" ? `${v}%` : String(v))} />
@@ -106,7 +106,7 @@ export function EstatisticasFrequencia() {
                       {heatmap.filter((d) => d.total > 0).map((d, i) => (
                         <Cell
                           key={i}
-                          fill={(d.pct ?? 0) >= 75 ? "#16a34a" : (d.pct ?? 0) >= 50 ? "#ca8a04" : "#dc2626"}
+                          fill={(d.pct ?? 0) >= 75 ? "#0F7A5A" : (d.pct ?? 0) >= 50 ? "#A86417" : "#B3261E"}
                         />
                       ))}
                     </Bar>

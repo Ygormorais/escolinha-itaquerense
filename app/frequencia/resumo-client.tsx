@@ -127,7 +127,7 @@ export function ResumoFrequenciaClient() {
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={porTurma} barSize={32}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
                 <XAxis dataKey="turma" tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
                 <Tooltip formatter={(v: unknown) => (typeof v === "number" ? `${v}%` : String(v))} />
@@ -135,7 +135,7 @@ export function ResumoFrequenciaClient() {
                   {porTurma.map((entry, idx) => (
                     <Cell
                       key={idx}
-                      fill={entry.pct >= 75 ? "#16a34a" : entry.pct >= 50 ? "#ca8a04" : "#dc2626"}
+                      fill={entry.pct >= 75 ? "#0F7A5A" : entry.pct >= 50 ? "#A86417" : "#B3261E"}
                     />
                   ))}
                 </Bar>
