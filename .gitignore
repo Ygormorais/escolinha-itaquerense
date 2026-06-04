@@ -12,7 +12,6 @@
 
 # testing
 /coverage
-vitest-report.json
 
 # next.js
 /.next/
