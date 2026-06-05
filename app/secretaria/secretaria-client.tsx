@@ -51,7 +51,7 @@ export function SecretariaClient({
   const hoje = new Date()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 lg:p-8">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-l-4 border-l-brand-600">
           <CardHeader className="pb-2">

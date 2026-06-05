@@ -86,7 +86,7 @@ export function ResumoFrequenciaClient() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="text-sm font-medium text-muted-foreground">Turma</label>

@@ -102,7 +102,7 @@ export function RelatorioChart({
   const pieData = categorias.map(([name, value]) => ({ name, value }))
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 p-6 lg:p-8">
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Receita × Custos — {ano}</CardTitle>

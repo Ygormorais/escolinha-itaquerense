@@ -365,8 +365,9 @@ export function CampeonatoDetailClient({
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <div className="h-5 w-px bg-border" />
           <ConfirmDialog title="Deletar campeonato?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={handleDelete}>
-            <Button variant="destructive" size="sm">
+            <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-danger-600 hover:bg-danger-50">
               <Trash2 className="size-4" />
             </Button>
           </ConfirmDialog>

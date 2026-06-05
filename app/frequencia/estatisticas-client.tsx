@@ -48,7 +48,7 @@ export function EstatisticasFrequencia() {
   const baixaFrequencia = ranking.filter((a) => a.pct < 75 && a.total >= 3)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6 lg:p-8">
       <div className="flex items-end gap-3">
         <div>
           <label className="text-sm font-medium text-muted-foreground">Mês</label>
