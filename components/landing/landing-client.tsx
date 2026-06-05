@@ -230,6 +230,9 @@ const css = `
   .lp .jc-adv{font-weight:700}
   .lp .jc-foot{display:flex;align-items:center;justify-content:space-between;font-size:13px;opacity:.9}
   .lp .jc-sumula{font-weight:700;text-decoration:underline}
+  .lp .jc-empty{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:18px 0 6px}
+  .lp .jc-empty .jc-badge{width:48px;height:48px;opacity:.95}
+  .lp .jc-empty p{max-width:460px;font-size:15px;opacity:.92;line-height:1.5}
 `
 
 export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) {

@@ -21,7 +21,19 @@ export function JogosCarrossel({ categorias }: { categorias: CategoriaJogos[] })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pausado, categorias.length, JSON.stringify(tamanhos)])
 
-  if (categorias.length === 0) return null
+  if (categorias.length === 0) {
+    return (
+      <div className="jc">
+        <div className="container">
+          <h2 className="section-title">Jogos &amp; Resultados</h2>
+          <div className="jc-empty">
+            <Image className="jc-badge" src="/logo.png" alt="E.C. Itaquerense" width={48} height={48} />
+            <p>Os jogos e resultados do campeonato aparecerão aqui em breve. Fique ligado!</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const abaSegura = Math.min(foco.aba, categorias.length - 1)
   const ativa = categorias[abaSegura]
