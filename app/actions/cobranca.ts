@@ -107,12 +107,12 @@ export async function emitirCobranca(
       data.pixCopiaECola = txData?.qr_code ?? null
       data.externalUrl = txData?.ticket_url ?? null
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const anyResp = response as any
+      type MpBoletoResp = { barcode?: { content?: string | null } }
+      const boletoResp = response as unknown as MpBoletoResp
       data.linhaDigitavel =
         response.transaction_details?.digitable_line ??
         response.transaction_details?.barcode?.content ??
-        anyResp.barcode?.content ??
+        boletoResp.barcode?.content ??
         null
       data.externalUrl = response.transaction_details?.external_resource_url ?? null
     }

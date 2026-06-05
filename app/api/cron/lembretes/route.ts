@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { runEnviarLembreteVencendo, runEnviarLembretesInadimplentes } from "@/lib/email-jobs"
 import { runEnviarLembretesWhatsAppInadimplencia, runEnviarLembretesWhatsAppVencendo } from "@/lib/whatsapp-jobs"
 import { getCronSecret, verifyBearerSecret } from "@/lib/env"
+import { runHousekeeping } from "@/lib/housekeeping"
 import { db } from "@/lib/db"
 import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
 import { revalidatePath } from "next/cache"
@@ -57,6 +58,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const isDomingo = new Date().getDay() === 0
+
   const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, cobrancas] = await Promise.all([
     runEnviarLembretesInadimplentes(),
     runEnviarLembreteVencendo(),
@@ -65,10 +68,13 @@ export async function GET(request: Request) {
     sincronizarStatusCobrancas(),
   ])
 
+  const housekeeping = isDomingo ? await runHousekeeping() : null
+
   return NextResponse.json({
     email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
     whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo },
     cobrancas,
+    housekeeping,
     executadoEm: new Date().toISOString(),
   })
 }
