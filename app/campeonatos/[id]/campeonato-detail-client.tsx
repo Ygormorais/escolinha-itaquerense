@@ -18,7 +18,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -280,9 +280,9 @@ export function CampeonatoDetailClient({
             {sincronizando ? "Atualizando..." : "Atualizar da FPFS"}
           </Button>
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger render={<Button variant="outline" size="sm" />}>
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               <Pencil className="size-4" /> Editar
-            </DialogTrigger>
+            </Button>
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
