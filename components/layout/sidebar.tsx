@@ -68,12 +68,12 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
       "/inadimplencia", "/caixa", "/produtos", "/recibos",
       "/relatorio/alunos", "/relatorio/pagamentos",
       "/historico", "/configuracoes/midia",
-      "/configuracoes", "/configuracoes/escalacoes",
+      "/configuracoes",
       "/configuracoes/responsaveis", "/secretaria",
     ]
     const restrictedSecretaria = [
       "/custos", "/caixa", "/produtos", "/campeonatos",
-      "/avaliacoes", "/configuracoes/escalacoes",
+      "/avaliacoes",
     ]
     if (role === "admin") return true
     if (role === "tecnico") return !restrictedTecnico.some((r) => href.startsWith(r))
@@ -83,7 +83,7 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
   return items.filter((i) => canAccess(i.href))
 }
 
-export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pendingEscalacoes?: number; onClose?: () => void; role?: SidebarRole }) {
+export function Sidebar({ onClose, role = "admin" }: { onClose?: () => void; role?: SidebarRole }) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -122,7 +122,6 @@ export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pe
         { href: "/historico",     label: "Histórico",     icon: History },
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },
         { href: "/configuracoes", label: "Configurações", icon: Settings },
-        { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
         { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning },
         { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList },

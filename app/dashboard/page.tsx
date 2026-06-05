@@ -197,10 +197,6 @@ export default async function DashboardPage({
   if (presencaMedia >= 50 && presencaMedia < 75 && totalFrequencias > 0) {
     alerts.push({ type: "warning", icon: "frequencia", message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.` })
   }
-  const temConvocacoes = 0 // Will be computed from pendingEscalacoes in layout
-  if (temConvocacoes) {
-    alerts.push({ type: "info", icon: "convocacao", message: "Convocação(ões) pendente(s)", detail: "Há convocações aguardando revisão." })
-  }
   if (vencendoSemana.length > 0) {
     alerts.push({ type: "info", icon: "tendencia", message: `${vencendoSemana.length} mensalidade(s) vencem nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
   }

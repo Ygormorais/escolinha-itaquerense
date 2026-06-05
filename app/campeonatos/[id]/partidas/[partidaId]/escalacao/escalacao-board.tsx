@@ -109,7 +109,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
         toast.error(res.error)
         return
       }
-      toast.success("Escalação salva")
+      toast.success("Convocação salva")
       router.refresh()
     })
   }
@@ -122,7 +122,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
             <Button variant="ghost" size="icon-sm"><ArrowLeft className="size-4" /></Button>
           </Link>
           <div>
-            <h1 className="font-heading text-2xl font-bold tracking-tight">Escalação</h1>
+            <h1 className="font-heading text-2xl font-bold tracking-tight">Convocação</h1>
             <p className="text-sm text-muted-foreground">
               Itaquerense x {partida.adversario} · Rodada {partida.rodada} · {format(new Date(partida.data), "dd/MM/yyyy")}
             </p>
@@ -133,7 +133,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
             <Eraser className="size-4" /> Limpar
           </Button>
           <Button onClick={handleSalvar} disabled={salvando} className="bg-brand-800 text-white hover:bg-brand-900">
-            <Save className="size-4" /> {salvando ? "Salvando..." : "Salvar escalação"}
+            <Save className="size-4" /> {salvando ? "Salvando..." : "Salvar convocação"}
           </Button>
         </div>
       </div>

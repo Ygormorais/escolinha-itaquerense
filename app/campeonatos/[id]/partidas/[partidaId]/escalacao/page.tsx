@@ -5,7 +5,7 @@ import { getEscalacao } from "@/app/actions/escalacao-partida"
 import { EscalacaoBoard } from "./escalacao-board"
 import type { Posicao } from "@/lib/escalacao/posicoes"
 
-export const metadata = { title: "Escalação — Escolinha Itaquerense" }
+export const metadata = { title: "Convocação — Escolinha Itaquerense" }
 
 export default async function EscalacaoPage({
   params,

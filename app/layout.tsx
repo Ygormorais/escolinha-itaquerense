@@ -6,7 +6,6 @@ import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
-import { db } from "@/lib/db"
 import { AdminShell } from "@/components/layout/admin-shell"
 
 const inter = Inter({
@@ -71,15 +70,6 @@ export default async function RootLayout({
   const session = await getSession()
   const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && !pathname.startsWith("/matricula") && pathname !== "/login" && pathname !== "/"
 
-  let pendingEscalacoes = 0
-  if (showAdminShell) {
-    try {
-      pendingEscalacoes = await db.chatSession.count({ where: { bloqueado: true } })
-    } catch {
-      // DB indisponível — ignora
-    }
-  }
-
   return (
       <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
       <head>
@@ -115,7 +105,7 @@ export default async function RootLayout({
         <PWARegister />
         <Providers>
           {showAdminShell ? (
-            <AdminShell pendingEscalacoes={pendingEscalacoes} role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}>
+            <AdminShell role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}>
               {children}
             </AdminShell>
           ) : (

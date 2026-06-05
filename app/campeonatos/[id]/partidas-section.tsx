@@ -259,7 +259,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     <TableCell>
                       <div className="flex gap-1">
                         <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
-                          <Button size="sm" variant="outline">Escalação</Button>
+                          <Button size="sm" variant="outline">Convocação</Button>
                         </Link>
                         <Button size="sm" variant="outline" onClick={() => openScore(p)}>
                           Placar
@@ -398,7 +398,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                   <TableCell>
                     <div className="flex gap-1">
                       <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
-                        <Button size="icon-sm" variant="ghost" title="Escalação">
+                        <Button size="icon-sm" variant="ghost" title="Convocação">
                           <Shirt className="size-3.5" />
                         </Button>
                       </Link>
