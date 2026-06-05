@@ -30,6 +30,7 @@ model Aluno {
   responsavelId  Int?
   responsavelRef Responsavel?  @relation(fields: [responsavelId], references: [id])
   avaliacoes     Avaliacao[]
+  escalacoes     EscalacaoJogador[]
   createdAt      DateTime     @default(now())
 }
 
@@ -208,6 +209,7 @@ model Partida {
   fpfsJogoId    String?                                // id do jogo na FPFS (link da sumula)
   sumulaUrl     String?                                // URL da sumula
   media         Media[]
+  escalacao     EscalacaoJogador[]
   createdAt     DateTime   @default(now())
 
   @@unique([campeonatoId, fpfsJogoId])
@@ -390,4 +392,19 @@ model Recebimento {
   createdAt      DateTime @default(now())
 
   @@index([data])
+}
+
+model EscalacaoJogador {
+  id        Int      @id @default(autoincrement())
+  partidaId Int
+  partida   Partida  @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  alunoId   Int
+  aluno     Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  posicao   String   // GOLEIRO, FIXO, ALA_ESQ, ALA_DIR, PIVO, BANCO
+  numero    Int?
+  ordem     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([partidaId, alunoId])
+  @@index([partidaId])
 }
