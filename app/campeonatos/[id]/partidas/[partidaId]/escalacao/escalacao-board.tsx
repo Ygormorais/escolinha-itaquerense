@@ -25,14 +25,15 @@ type Props = {
   escalacaoInicial: Placed[]
 }
 
-// posições na quadra horizontal (grid 4 colunas x 3 linhas).
-// Goleiro à direita; ataque (Pivô) à esquerda; alas empilhados no centro.
-const SLOT_POS: Record<(typeof POSICOES_QUADRA)[number], string> = {
-  PIVO: "col-start-1 row-start-2",
-  ALA_DIR: "col-start-2 row-start-1",
-  ALA_ESQ: "col-start-2 row-start-3",
-  FIXO: "col-start-3 row-start-2",
-  GOLEIRO: "col-start-4 row-start-2",
+// posições na quadra horizontal (losango 1-2-1 do futsal), em % da quadra.
+// Goleiro à direita (próprio gol); Fixo (último homem); Alas nas pontas
+// (cima/baixo); Pivô avançado à esquerda (gol adversário).
+const SLOT_POS: Record<(typeof POSICOES_QUADRA)[number], { left: string; top: string }> = {
+  PIVO: { left: "22%", top: "50%" },
+  ALA_DIR: { left: "45%", top: "24%" },
+  ALA_ESQ: { left: "45%", top: "76%" },
+  FIXO: { left: "64%", top: "50%" },
+  GOLEIRO: { left: "83%", top: "50%" },
 }
 
 export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInicial }: Props) {
@@ -141,7 +142,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
         {/* Quadra */}
         <div className="rounded-xl border border-border p-4">
           <div
-            className="relative grid aspect-[16/10] grid-cols-4 grid-rows-3 gap-2 overflow-hidden rounded-lg border-[6px] border-blue-700 p-4"
+            className="relative aspect-[16/10] overflow-hidden rounded-lg border-[6px] border-blue-700"
             style={{ background: "#e2902f" }}
           >
             {/* linhas externas */}
@@ -159,7 +160,8 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
               return (
                 <div
                   key={pos}
-                  className={`${SLOT_POS[pos]} z-10 flex items-center justify-center`}
+                  className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                  style={{ left: SLOT_POS[pos].left, top: SLOT_POS[pos].top }}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => onDrop(e, pos)}
                 >
@@ -194,7 +196,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
 
         {/* Painel de jogadores disponíveis */}
         <div className="rounded-xl border border-border p-4">
-          <p className="mb-3 text-sm font-semibold">Jogadores inscritos</p>
+          <p className="mb-3 text-sm font-semibold">Jogadores (alunos ativos)</p>
           <div className="mb-3 flex gap-2">
             <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
               <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
