@@ -32,6 +32,9 @@ model Aluno {
   avaliacoes     Avaliacao[]
   escalacoes     EscalacaoJogador[]
   createdAt      DateTime     @default(now())
+
+  @@index([status])
+  @@index([turma])
 }
 
 model Pagamento {
@@ -52,6 +55,12 @@ model Pagamento {
   pixCopiaECola  String?
   externalUrl    String?
   createdAt      DateTime          @default(now())
+
+  @@index([alunoId])
+  @@index([mesReferencia])
+  @@index([dataPagamento])
+  @@index([statusCobranca])
+  @@index([externalId])
 }
 
 model Custo {
@@ -107,6 +116,9 @@ model Log {
   usuario   String?
   meta      String?
   createdAt DateTime  @default(now())
+
+  @@index([tipo])
+  @@index([createdAt])
 }
 
 model Responsavel {
