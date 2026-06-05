@@ -13,7 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -37,7 +37,7 @@ type Partida = {
   observacoes: string | null
 }
 
-export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense" }: { partidas: Partida[]; campeonatoId: number; nomeClube?: string }) {
+export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense", convocacoesMap = new Set() }: { partidas: Partida[]; campeonatoId: number; nomeClube?: string; convocacoesMap?: Set<number> }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Partida | null>(null)
@@ -259,7 +259,11 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     <TableCell>
                       <div className="flex gap-1">
                         <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
-                          <Button size="sm" variant="outline">Convocação</Button>
+                          <Button size="sm" variant="outline" className={convocacoesMap.has(p.id) ? "border-success-600 text-success-600" : ""}>
+                            <Shirt className="size-3.5" />
+                            Convocação
+                            {convocacoesMap.has(p.id) && <span className="ml-1 size-2 rounded-full bg-success-600" />}
+                          </Button>
                         </Link>
                         <Button size="sm" variant="outline" onClick={() => openScore(p)}>
                           Placar
@@ -306,9 +310,9 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
               ))}
             </div>
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" }) } }}>
-              <DialogTrigger render={<Button size="sm" className="h-8" />}>
+              <Button size="sm" className="h-8" onClick={() => setOpen(true)}>
                 <Plus className="size-4" /> Partida
-              </DialogTrigger>
+              </Button>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
@@ -398,7 +402,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                   <TableCell>
                     <div className="flex gap-1">
                       <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
-                        <Button size="icon-sm" variant="ghost" title="Convocação">
+                        <Button size="icon-sm" variant="ghost" title="Convocação" className={convocacoesMap.has(p.id) ? "text-success-600" : ""}>
                           <Shirt className="size-3.5" />
                         </Button>
                       </Link>

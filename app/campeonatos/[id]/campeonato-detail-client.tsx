@@ -94,10 +94,12 @@ export function CampeonatoDetailClient({
   campeonato,
   alunosDisponiveis,
   nomeClube = "E.C. Itaquerense",
+  convocacoesMap = new Set(),
 }: {
   campeonato: Campeonato
   alunosDisponiveis: { id: number; nome: string; turma: string }[]
   nomeClube?: string
+  convocacoesMap?: Set<number>
 }) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
@@ -604,7 +606,7 @@ export function CampeonatoDetailClient({
         </CardContent>
       </Card>
 
-      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} nomeClube={nomeClube} />
+      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} nomeClube={nomeClube} convocacoesMap={convocacoesMap} />
 
       <Dialog open={inscreverOpen} onOpenChange={setInscreverOpen}>
         <DialogContent>

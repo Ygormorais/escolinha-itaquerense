@@ -11,7 +11,7 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -134,9 +134,9 @@ export function CampeonatoClient({
 
       <div className="flex justify-end">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button />}>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="size-4" /> Novo Campeonato
-          </DialogTrigger>
+          </Button>
           <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">

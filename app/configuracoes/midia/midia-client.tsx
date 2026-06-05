@@ -13,7 +13,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Select,
@@ -157,9 +156,9 @@ export function MidiaClient({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Mídia</h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button size="sm" />}>
+          <Button size="sm" onClick={() => setOpen(true)}>
             <Plus className="size-4 mr-1" /> Nova Mídia
-          </DialogTrigger>
+          </Button>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Adicionar Mídia</DialogTitle>

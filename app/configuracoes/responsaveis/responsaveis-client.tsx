@@ -13,7 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -137,9 +137,9 @@ export function ResponsaveisClient({
           <p className="text-sm text-muted-foreground">Gerencie contas de acesso dos pais/responsáveis</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
-          <DialogTrigger render={<Button />}>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="size-4" /> Novo Responsável
-          </DialogTrigger>
+          </Button>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -255,9 +255,9 @@ export function ResponsaveisClient({
                         </span>
                       ))}
                       <Dialog open={vincularOpen?.id === r.id} onOpenChange={(o) => { if (!o) setVincularOpen(null) }}>
-                        <DialogTrigger render={<Button size="icon-sm" variant="ghost" className="size-5" />} onClick={() => setVincularOpen(r)}>
+                        <Button size="icon-sm" variant="ghost" className="size-5" onClick={() => setVincularOpen(r)}>
                           <UserPlus className="size-3" />
-                        </DialogTrigger>
+                        </Button>
                         <DialogContent>
                           <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
