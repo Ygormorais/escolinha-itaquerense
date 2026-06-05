@@ -142,8 +142,8 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
         {/* Quadra */}
         <div className="rounded-xl border border-border p-4">
           <div
-            className="relative aspect-[16/10] overflow-hidden rounded-lg border-[6px] border-blue-700"
-            style={{ background: "#1a56a0" }}
+            className="relative mx-auto w-full overflow-hidden rounded-lg border-[6px] border-blue-700"
+            style={{ background: "#1a56a0", aspectRatio: "4 / 3", maxHeight: "380px" }}
           >
             {/* linhas externas */}
             <div className="pointer-events-none absolute inset-3 rounded-sm border-2 border-white/70" />
@@ -180,11 +180,11 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
 
           {/* Banco */}
           <div
-            className="mt-4 rounded-lg border border-border bg-muted/40 p-3"
+            className="mt-4 min-h-32 rounded-lg border border-border bg-muted/40 p-4"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => onDrop(e, "BANCO")}
           >
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Banco</p>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Banco de Reservas</p>
             <div className="flex flex-wrap gap-2">
               {banco.length === 0 && <span className="text-xs text-muted-foreground">Arraste jogadores para o banco</span>}
               {banco.map((j) => (
