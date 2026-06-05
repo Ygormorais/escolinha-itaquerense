@@ -1,6 +1,6 @@
 "use client"
 
-import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent } from "lucide-react"
+import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent, Banknote } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -42,13 +42,14 @@ export function CaixaClient({
     { href: "/caixa/recebimentos", label: "Recebimentos", icon: TrendingUp, color: "text-success-600 bg-success-50", desc: `${pagamentosMes.length} pagamentos no mês` },
     { href: "/caixa/pix", label: "PIX", icon: Smartphone, color: "text-info-600 bg-info-50", desc: `R$ ${(porForma["PIX"] ?? 0).toFixed(2)}` },
     { href: "/caixa/boleto", label: "Boleto", icon: FileText, color: "text-warning-600 bg-warning-50", desc: `R$ ${(porForma["Boleto"] ?? 0).toFixed(2)}` },
+    { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", desc: `R$ ${(porForma["Dinheiro"] ?? 0).toFixed(2)}` },
     { href: "/caixa/maquina", label: "Maquininha", icon: CreditCard, color: "text-brand-800 bg-brand-100", desc: `Cartão crédito/débito` },
     { href: "/caixa/descontos", label: "Descontos", icon: Percent, color: "text-danger-600 bg-danger-50", desc: `Descontos concedidos` },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {sections.map(({ href, label, icon: Icon, color, desc }) => (
           <Link key={href} href={href}>
             <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-px">

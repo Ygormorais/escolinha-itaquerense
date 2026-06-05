@@ -30,11 +30,26 @@ export async function registrarPagamento(
     const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
     await registrarLog("pagamento", `Pagamento registrado — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: `R$ ${data.valorRecebido.toFixed(2)}`, forma: data.formaPagamento })
     revalidatePath("/pagamentos")
+    revalidatePath("/caixa")
+    revalidatePath("/caixa/dinheiro")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
   }
+}
+
+export async function getPagamentosPendentes(alunoId: number) {
+  return db.pagamento.findMany({
+    where: { alunoId, dataPagamento: null },
+    select: {
+      id: true,
+      mesReferencia: true,
+      dataVencimento: true,
+      aluno: { select: { mensalidade: true } },
+    },
+    orderBy: { dataVencimento: "asc" },
+  })
 }
 
 export async function registrarPagamentosLote(

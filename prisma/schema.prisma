@@ -378,3 +378,16 @@ model Avaliacao {
 
   @@unique([alunoId, periodo])
 }
+
+model Recebimento {
+  id             Int      @id @default(autoincrement())
+  data           DateTime
+  descricao      String
+  categoria      String   // "Uniforme", "Evento", "Doação", "Outros"
+  valor          Float
+  formaPagamento String   // "Dinheiro", "PIX", "Transferência", "Cartão"
+  observacoes    String?
+  createdAt      DateTime @default(now())
+
+  @@index([data])
+}

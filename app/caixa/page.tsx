@@ -10,13 +10,17 @@ export default async function CaixaPage() {
   const inicio = startOfMonth(now)
   const fim = endOfMonth(now)
 
-  const [pagamentosMes, custosMes, transacoesPendentes, alunos] = await Promise.all([
+  const [pagamentosMes, custosMes, recebimentosMes, transacoesPendentes, alunos] = await Promise.all([
     db.pagamento.findMany({
       where: { dataPagamento: { gte: inicio, lte: fim } },
       include: { aluno: { select: { nome: true, turma: true } } },
       orderBy: { dataPagamento: "desc" },
     }),
     db.custo.findMany({
+      where: { data: { gte: inicio, lte: fim } },
+      orderBy: { data: "desc" },
+    }),
+    db.recebimento.findMany({
       where: { data: { gte: inicio, lte: fim } },
       orderBy: { data: "desc" },
     }),
@@ -30,7 +34,9 @@ export default async function CaixaPage() {
     }),
   ])
 
-  const totalRecebido = pagamentosMes.reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+  const totalRecebido =
+    pagamentosMes.reduce((s, p) => s + (p.valorRecebido ?? 0), 0) +
+    recebimentosMes.reduce((s, r) => s + r.valor, 0)
   const totalCustos = custosMes.reduce((s, c) => s + c.valor, 0)
   const totalPendente = transacoesPendentes.reduce((s, t) => s + t.valor, 0)
 
@@ -39,6 +45,9 @@ export default async function CaixaPage() {
     acc[forma] = (acc[forma] || 0) + (p.valorRecebido ?? 0)
     return acc
   }, {} as Record<string, number>)
+  for (const r of recebimentosMes) {
+    porForma[r.formaPagamento] = (porForma[r.formaPagamento] || 0) + r.valor
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
