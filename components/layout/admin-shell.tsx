@@ -9,9 +9,10 @@ import { BottomNav } from "@/components/layout/bottom-nav"
 interface AdminShellProps {
   children: React.ReactNode
   role?: "admin" | "secretaria" | "tecnico"
+  pendingEscalacoes?: number
 }
 
-export function AdminShell({ children, role = "admin" }: AdminShellProps) {
+export function AdminShell({ children, role = "admin", pendingEscalacoes = 0 }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -33,11 +34,11 @@ export function AdminShell({ children, role = "admin" }: AdminShellProps) {
       </header>
 
       <div className="hidden md:flex">
-        <Sidebar role={role} />
+        <Sidebar role={role} pendingEscalacoes={pendingEscalacoes} />
       </div>
 
       <Sheet open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-        <Sidebar role={role} onClose={() => setSidebarOpen(false)} />
+        <Sidebar role={role} onClose={() => setSidebarOpen(false)} pendingEscalacoes={pendingEscalacoes} />
       </Sheet>
 
       <main id="main-content" className="flex flex-1 flex-col overflow-auto pb-16 md:pb-0">

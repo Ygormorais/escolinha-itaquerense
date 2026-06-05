@@ -7,6 +7,7 @@ import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
 import { AdminShell } from "@/components/layout/admin-shell"
+import { db } from "@/lib/db"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -69,6 +70,9 @@ export default async function RootLayout({
   const pathname = (await headers()).get("x-pathname") ?? "/"
   const session = await getSession()
   const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && !pathname.startsWith("/matricula") && pathname !== "/login" && pathname !== "/"
+  const pendingEscalacoes = showAdminShell
+    ? await db.chatSession.count({ where: { bloqueado: true } })
+    : 0
 
   return (
       <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
@@ -105,7 +109,7 @@ export default async function RootLayout({
         <PWARegister />
         <Providers>
           {showAdminShell ? (
-            <AdminShell role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}>
+            <AdminShell role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"} pendingEscalacoes={pendingEscalacoes}>
               {children}
             </AdminShell>
           ) : (

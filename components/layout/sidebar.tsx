@@ -83,7 +83,7 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
   return items.filter((i) => canAccess(i.href))
 }
 
-export function Sidebar({ onClose, role = "admin" }: { onClose?: () => void; role?: SidebarRole }) {
+export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { onClose?: () => void; role?: SidebarRole; pendingEscalacoes?: number }) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -123,6 +123,7 @@ export function Sidebar({ onClose, role = "admin" }: { onClose?: () => void; rol
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },
         { href: "/configuracoes", label: "Configurações", icon: Settings },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
+        { href: "/configuracoes/escalacoes", label: "Escalações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning },
         { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList },
       ], role),
