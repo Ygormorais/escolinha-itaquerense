@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import { NavResponsavel } from "@/components/responsavel/nav-responsavel"
+import { WhatsAppFab } from "@/components/ui/whatsapp-fab"
 
 export default function ResponsavelLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -17,6 +18,7 @@ export default function ResponsavelLayout({ children }: { children: React.ReactN
         <NavResponsavel />
         {children}
       </div>
+      <WhatsAppFab />
     </div>
   )
 }
