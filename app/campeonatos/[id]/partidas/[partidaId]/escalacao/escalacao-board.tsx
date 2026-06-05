@@ -143,18 +143,18 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
         <div className="rounded-xl border border-border p-4">
           <div
             className="relative aspect-[16/10] overflow-hidden rounded-lg border-[6px] border-blue-700"
-            style={{ background: "#e2902f" }}
+            style={{ background: "#1a56a0" }}
           >
             {/* linhas externas */}
             <div className="pointer-events-none absolute inset-3 rounded-sm border-2 border-white/70" />
             {/* linha central vertical */}
             <div className="pointer-events-none absolute bottom-3 top-3 left-1/2 w-0.5 -translate-x-1/2 bg-white/70" />
             {/* círculo central */}
-            <div className="pointer-events-none absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-blue-600/60" />
+            <div className="pointer-events-none absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-white/20" />
             {/* área do gol (esquerda) */}
-            <div className="pointer-events-none absolute left-3 top-1/2 size-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-blue-600/60" />
+            <div className="pointer-events-none absolute left-3 top-1/2 size-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-white/20" />
             {/* área do gol (direita — onde fica o goleiro) */}
-            <div className="pointer-events-none absolute right-3 top-1/2 size-28 translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-blue-600/60" />
+            <div className="pointer-events-none absolute right-3 top-1/2 size-28 translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-white/20" />
             {POSICOES_QUADRA.map((pos) => {
               const j = jogadorEm(pos)
               return (
