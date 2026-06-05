@@ -90,14 +90,6 @@ const css = `
   .lp .thumb:nth-child(2){background:linear-gradient(160deg,var(--red-dark),var(--red-deep))}
   .lp .thumb:nth-child(3){background:linear-gradient(160deg,#d11a1a,var(--red-dark))}
   .lp .thumb:hover .placeholder{transform:scale(1.08);transition:.4s}
-  .lp .matchbar{background:var(--red-deep);color:#fff}
-  .lp .matchbar .container{display:grid;grid-template-columns:repeat(3,1fr)}
-  .lp .mb-cell{padding:22px 24px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border-right:1px solid rgba(255,255,255,.12)}
-  .lp .mb-cell:last-child{border-right:none}
-  .lp .mb-comp{font-family:var(--font-heading),sans-serif;text-transform:uppercase;font-size:12px;letter-spacing:.5px;opacity:.8}
-  .lp .mb-match{display:flex;align-items:center;gap:14px}
-  .lp .mb-score{font-family:var(--font-heading),sans-serif;font-size:30px;font-weight:700}
-  .lp .mb-info{font-size:12px;opacity:.85}
   .lp section{padding:54px 0}
   .lp .news-grid{display:grid;grid-template-columns:2fr 1fr;gap:30px}
   .lp .news-main{display:grid;grid-template-columns:1fr 1fr;gap:22px}
@@ -127,20 +119,6 @@ const css = `
   .lp .mini h4{font-family:var(--font-heading),sans-serif;font-size:14px;font-weight:700;line-height:1.2}
   .lp .mini:hover h4{color:var(--red)}
   .lp .mini .date{font-size:11px;color:#999;margin-top:3px}
-  .lp .squad{background:var(--gray-bg)}
-  .lp .squad-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:26px}
-  .lp .tabs{display:flex;gap:6px}
-  .lp .tab{font-family:var(--font-heading),sans-serif;text-transform:uppercase;letter-spacing:.5px;font-weight:700;font-size:14px;padding:10px 22px;border:2px solid var(--red);background:#fff;color:var(--red);cursor:pointer;border-radius:4px;transition:.2s}
-  .lp .tab.active{background:var(--red);color:#fff}
-  .lp .squad-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
-  .lp .player{background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);transition:.25s;cursor:pointer}
-  .lp .player:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(198,40,40,.18)}
-  .lp .player .top{position:relative;min-height:150px;background:linear-gradient(160deg,var(--red),var(--red-darker));display:flex;align-items:flex-end;justify-content:center}
-  .lp .player .top .placeholder{position:absolute;inset:0;align-items:center;font-size:60px}
-  .lp .player .num{position:absolute;top:10px;right:12px;font-family:var(--font-heading),sans-serif;font-size:34px;font-weight:700;color:rgba(255,255,255,.55);z-index:2}
-  .lp .player .info{padding:12px;text-align:center}
-  .lp .player .info b{font-family:var(--font-heading),sans-serif;text-transform:uppercase;font-size:15px;display:block}
-  .lp .player .info span{font-size:12px;color:#888}
   .lp .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
   .lp .result-card{border:1px solid var(--gray-line);border-radius:6px;overflow:hidden;transition:.25s}
   .lp .result-card:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(198,40,40,.15)}
@@ -157,7 +135,7 @@ const css = `
   .lp .membership{background:linear-gradient(120deg,var(--red),var(--red-darker));color:#fff;text-align:center}
   .lp .membership h2{font-family:var(--font-heading),sans-serif;text-transform:uppercase;font-size:34px;font-weight:700;margin-bottom:12px}
   .lp .membership p{font-size:17px;opacity:.92;margin-bottom:26px;max-width:640px;margin-left:auto;margin-right:auto}
-  .lp .cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:22px}
+  .lp .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
   .lp .cat{text-align:center;padding:24px 10px;border-radius:8px;transition:.25s;cursor:pointer}
   .lp .cat:hover{background:var(--gray-bg);transform:translateY(-6px)}
   .lp .cat .circle{width:84px;height:84px;border-radius:50%;background:linear-gradient(150deg,var(--red),var(--red-darker));display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;margin:0 auto 14px}
@@ -191,18 +169,14 @@ const css = `
     .lp .mega.small{min-width:0}
     .lp .burger{display:block}
     .lp .news-grid{grid-template-columns:1fr}
-    .lp .squad-grid{grid-template-columns:repeat(3,1fr)}
     .lp .results-grid{grid-template-columns:repeat(2,1fr)}
     .lp .cat-grid{grid-template-columns:repeat(3,1fr)}
-    .lp .matchbar .container{grid-template-columns:1fr}
-    .lp .mb-cell{border-right:none;border-bottom:1px solid rgba(255,255,255,.12)}
     .lp .foot-grid{grid-template-columns:1fr 1fr}
     .lp .hero h1{font-size:34px}
   }
   @media(max-width:600px){
     .lp .utility .quick{display:none}
     .lp .news-main{grid-template-columns:1fr}
-    .lp .squad-grid{grid-template-columns:repeat(2,1fr)}
     .lp .results-grid{grid-template-columns:1fr}
     .lp .cat-grid{grid-template-columns:repeat(2,1fr)}
     .lp .thumb-strip{grid-template-columns:1fr}
@@ -237,7 +211,6 @@ const css = `
 
 export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) {
   const [navOpen, setNavOpen] = useState(false)
-  const [squadTab, setSquadTab] = useState<"masc" | "fem">("masc")
 
   return (
     <div className={`${roboto.variable} ${robotoCondensed.variable} lp`}>
@@ -286,18 +259,12 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
                   <div><h4>Estrutura</h4><a href="#">Arena Itaquerense</a><a href="#">Centro de Treinamento</a><a href="#">Sede Social</a><a href="#">Memória</a></div>
                 </div>
               </li>
-              <li><a href="#">Futebol</a>
-                <div className="mega">
-                  <div><h4>Profissional</h4><a href="#">Elenco Masculino</a><a href="#">Elenco Feminino</a><a href="#">Comissão Técnica</a></div>
-                  <div><h4>Base</h4><a href="/turmas">Turmas</a><a href="#">Sub-17</a><a href="#">Sub-15</a><a href="#">Categorias de Base</a></div>
-                </div>
-              </li>
               <li><a href="#">Modalidades</a>
                 <div className="mega">
                   <div><h4>Esportes</h4><a href="#">Futebol</a><a href="#">Futsal</a></div>
                 </div>
               </li>
-              <li><a href="#">Matrícula/Planos</a>
+              <li><a href="#">Matrícula/Turmas</a>
                 <div className="mega">
                   <div><h4>Matrícula</h4><a href="/matricula">Pré-Matrícula</a><a href="/turmas">Turmas &amp; Horários</a><a href="#">Como Funciona</a></div>
                   <div><h4>Sócio</h4><a href="#">Sócio Torcedor</a><a href="#">Planos</a><a href="#">Benefícios</a></div>
@@ -369,38 +336,6 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
         </div>
       </section>
 
-      {/* ===== 6. SQUAD ===== */}
-      <section className="squad">
-        <div className="container">
-          <div className="squad-head">
-            <h2 className="section-title" style={{ marginBottom: "0" }}>Elenco</h2>
-            <div className="tabs">
-              <button className={"tab" + (squadTab === "masc" ? " active" : "")} onClick={() => setSquadTab("masc")}>Masculino</button>
-              <button className={"tab" + (squadTab === "fem" ? " active" : "")} onClick={() => setSquadTab("fem")}>Feminino</button>
-            </div>
-          </div>
-
-          <div className="squad-grid" id="squad-masc" style={{ display: squadTab === "masc" ? "grid" : "none" }}>
-            <div className="player"><div className="top"><span className="num">1</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Goleiro</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">3</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Zagueiro</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">4</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Zagueiro</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">5</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meio-campo</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">8</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meia</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">10</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Atacante</b><span>Elenco Masculino</span></div></div>
-          </div>
-
-          <div className="squad-grid" id="squad-fem" style={{ display: squadTab === "fem" ? "grid" : "none" }}>
-            <div className="player"><div className="top"><span className="num">1</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Goleira</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">2</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Lateral</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">4</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Zagueira</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">8</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meio-campo</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">9</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Atacante</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">11</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meia</b><span>Elenco Feminino</span></div></div>
-          </div>
-        </div>
-      </section>
-
-
       {/* ===== 8. MEMBERSHIP BANNER ===== */}
       <section className="membership">
         <div className="container">
@@ -416,7 +351,8 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
           <h2 className="section-title">Modalidades</h2>
           <div className="cat-grid">
             <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futebol</b><span>Masculino &amp; Feminino</span></a>
-            <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal</b><span>Liga Local</span></a>
+            <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal Federado</b><span>Liga Local</span></a>
+            <a className="cat" href="#"><div className="circle"><i className="ti ti-school"></i></div><b>Escolinha</b><span>Formação de Base</span></a>
           </div>
         </div>
       </section>
@@ -450,7 +386,7 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
             </div>
           </div>
           <div className="fcol"><h4>Clube</h4><a href="#">História</a><a href="#">Estatuto</a><a href="#">Gestão</a><a href="#">Arena</a><a href="#">Memória</a></div>
-          <div className="fcol"><h4>Futebol</h4><a href="#">Elenco Masculino</a><a href="#">Elenco Feminino</a><a href="/turmas">Turmas</a><a href="#">Comissão</a></div>
+          <div className="fcol"><h4>Futebol</h4><a href="/turmas">Turmas</a><a href="#">Categorias de Base</a><a href="#">Comissão</a></div>
           <div className="fcol"><h4>Modalidades</h4><a href="#">Futebol</a><a href="#">Futsal</a></div>
           <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a><a href="#">Loja Oficial</a></div>
         </div>
