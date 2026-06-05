@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, Swords, Trophy, Search } from "lucide-react"
+import { Plus, Pencil, Trash2, Swords, Trophy, Search, Shirt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -397,6 +397,11 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                   <TableCell>{resultadoBadge(p.resultado)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
+                        <Button size="icon-sm" variant="ghost" title="Escalação">
+                          <Shirt className="size-3.5" />
+                        </Button>
+                      </Link>
                       <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)}>
                         <Pencil className="size-3.5" />
                       </Button>

@@ -76,7 +76,9 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
       if (posicao !== "BANCO") {
         novo = novo.filter((j) => j.posicao !== posicao)
       }
-      const ordem = posicao === "BANCO" ? (novo.filter((j) => j.posicao === "BANCO").length) : 0
+      const ordem = posicao === "BANCO"
+        ? novo.filter((j) => j.posicao === "BANCO").reduce((max, j) => Math.max(max, j.ordem), -1) + 1
+        : 0
       return [...novo, { alunoId, nome: aluno.nome, turma: aluno.turma, posicao, numero: null, ordem }]
     })
   }
@@ -232,6 +234,7 @@ function PlacedCard({
       <Shirt className="size-4" />
       <input
         type="number"
+        min={1}
         value={placed.numero ?? ""}
         onChange={(e) => onNumero(e.target.value === "" ? null : Number(e.target.value))}
         placeholder="nº"
