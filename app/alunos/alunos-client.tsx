@@ -279,7 +279,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
     if (filters.turma !== "Todas") params.set("turma", filters.turma)
     if (filters.status !== "Todos") params.set("status", filters.status)
     router.push(`/alunos?${params.toString()}`)
-  }, [debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, filters.turma, filters.status, router])
 
   function pushFilter(key: string, value: string, defaultVal: string) {
     const params = new URLSearchParams()
@@ -342,7 +342,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           className="max-w-xs"
         />
         <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-          <SelectTrigger>
+          <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -353,7 +353,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           </SelectContent>
         </Select>
         <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-          <SelectTrigger>
+          <SelectTrigger className="w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -381,7 +381,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
