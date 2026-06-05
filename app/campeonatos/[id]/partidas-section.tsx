@@ -18,6 +18,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import Link from "next/link"
 import { criarPartida, editarPartida, deletarPartida } from "@/app/actions/campeonatos"
 import { calcularClassificacao } from "@/lib/campeonatos"
 import { format } from "date-fns"
@@ -257,6 +258,9 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     <TableCell><Badge variant="secondary" className="text-[10px]">{p.local}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
+                          <Button size="sm" variant="outline">Escalação</Button>
+                        </Link>
                         <Button size="sm" variant="outline" onClick={() => openScore(p)}>
                           Placar
                         </Button>
