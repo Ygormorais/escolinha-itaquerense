@@ -467,7 +467,7 @@ export function PagamentosClient({
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-xl border bg-white">
         <Table>
           <TableHeader>
             <TableRow>

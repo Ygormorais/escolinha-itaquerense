@@ -14,7 +14,7 @@ test.describe("Pagamentos", () => {
 
   test("botão gerar mensalidades existe", async ({ page }) => {
     await page.goto("/pagamentos")
-    const btn = page.locator('button:has-text("Gerar")')
+    const btn = page.getByRole('button', { name: 'Gerar Mensalidades' })
     await expect(btn).toBeVisible()
   })
 })
