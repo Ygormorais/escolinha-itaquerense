@@ -333,7 +333,7 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-xl font-semibold">Avaliações</h1>
