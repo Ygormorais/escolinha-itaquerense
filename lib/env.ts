@@ -47,6 +47,10 @@ export function verifyEvolutionAuth(request: Request, apiKey: string | null): bo
   return auth === apiKey
 }
 
+export const env = {
+  FPFS_SYNC_TOKEN: process.env.FPFS_SYNC_TOKEN ?? "",
+}
+
 export function checkCredentialsFromEnv(username: string, password: string): boolean {
   const expectedUser = process.env.ADMIN_USERNAME
   const expectedPass = process.env.ADMIN_PASSWORD
