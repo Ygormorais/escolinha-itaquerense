@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import Link from "next/link"
 
+
 export default function ResponsavelLoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")

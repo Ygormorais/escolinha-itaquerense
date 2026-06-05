@@ -33,17 +33,6 @@ async function housekeeping() {
     console.log(`[housekeeping] Solicitações órfãs arquivadas: ${orfaos.length}`)
   }
 
-  const pagamentosOrfao = await db.pagamento.findMany({
-    where: {
-      formaPagamento: { not: null },
-      valorRecebido: 0,
-    },
-  })
-  if (pagamentosOrfao.length) {
-    await db.pagamento.deleteMany({ where: { id: { in: pagamentosOrfao.map((p) => p.id) } } })
-    console.log(`[housekeeping] Pagamentos órfãos removidos: ${pagamentosOrfao.length}`)
-  }
-
   console.log("[housekeeping] Concluído!")
 }
 

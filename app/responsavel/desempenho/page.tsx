@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { CalendarCheck, CreditCard, Shirt, ArrowLeft, Trophy } from "lucide-react"
 import Link from "next/link"
 
+export const metadata = { title: "Desempenho — Escolinha Itaquerense" }
+
 export default async function DesempenhoPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

@@ -3,6 +3,8 @@ import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent } from "@/components/ui/card"
 import { Shield, Trophy, Users, Heart } from "lucide-react"
 
+export const metadata = { title: "Nossa História — Escolinha Itaquerense" }
+
 export default async function HistoriaPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

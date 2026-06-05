@@ -15,6 +15,8 @@ function resultadoBadge(resultado: string | null) {
   return <Badge variant="secondary">Empate</Badge>
 }
 
+export const metadata = { title: "Jogos — Escolinha Itaquerense" }
+
 export default async function JogosPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

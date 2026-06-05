@@ -4,6 +4,8 @@ import { getResponsavelSession } from "@/lib/responsavel-session"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
+export const metadata = { title: "Classificação — Escolinha Itaquerense" }
+
 export default async function ClassificacaoPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

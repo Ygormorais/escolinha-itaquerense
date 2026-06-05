@@ -3,6 +3,8 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { SolicitacoesClient } from "./solicitacoes-client"
 
+export const metadata = { title: "Solicitações — Escolinha Itaquerense" }
+
 export default async function SolicitacoesPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

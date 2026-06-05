@@ -63,28 +63,32 @@ export default async function BoletoPage() {
         </TabsContent>
         <TabsContent value="recebidos">
           <div className="rounded-xl border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Aluno</TableHead>
-                  <TableHead>Turma</TableHead>
-                  <TableHead>Mês Ref.</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Data</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recebidos.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
-                    <TableCell>{p.aluno.turma}</TableCell>
-                    <TableCell>{p.mesReferencia}</TableCell>
-                    <TableCell>R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
-                    <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</TableCell>
+            {recebidos.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">Nenhum boleto recebido ainda.</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Aluno</TableHead>
+                    <TableHead>Turma</TableHead>
+                    <TableHead>Mês Ref.</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Data</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {recebidos.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell>{p.aluno.turma}</TableCell>
+                      <TableCell>{p.mesReferencia}</TableCell>
+                      <TableCell>R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
+                      <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </TabsContent>
       </Tabs>

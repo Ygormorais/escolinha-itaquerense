@@ -13,6 +13,8 @@ function ProdutoIcon({ categoria }: { categoria: string }) {
   return <Package className="size-7" />
 }
 
+export const metadata = { title: "Lojinha — Escolinha Itaquerense" }
+
 export default async function LojinhaPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")
