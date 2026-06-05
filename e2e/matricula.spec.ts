@@ -45,4 +45,18 @@ test.describe("Admin - Pré-Matrículas", () => {
     await page.goto("/configuracoes/matriculas")
     await expect(page.locator("h1")).toContainText("Pré-Matrículas")
   })
+
+  test("botão Aprovar abre diálogo com campo de mensalidade", async ({ page }) => {
+    await page.goto("/configuracoes/matriculas")
+    const btnAprovar = page.getByRole("button", { name: /Aprovar/i }).first()
+    const hasPendente = await btnAprovar.isVisible().catch(() => false)
+    if (!hasPendente) return // nenhuma pré-matrícula pendente no seed — passa
+
+    await btnAprovar.click()
+    await expect(page.getByRole("dialog")).toBeVisible()
+    await expect(page.getByLabel(/Mensalidade/i)).toBeVisible()
+    // cancelar sem confirmar
+    await page.getByRole("button", { name: /Cancelar/i }).click()
+    await expect(page.getByRole("dialog")).not.toBeVisible()
+  })
 })

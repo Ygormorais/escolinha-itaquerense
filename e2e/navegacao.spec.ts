@@ -8,6 +8,7 @@ test.describe("Navegação", () => {
 
   test("sidebar desktop mostra todos os links principais", async ({ page }) => {
     const sidebar = page.locator("aside")
+    await expect(sidebar.locator('a[href="/dashboard"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/alunos"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/pagamentos"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/frequencia"]')).toBeVisible()
@@ -15,6 +16,7 @@ test.describe("Navegação", () => {
     await expect(sidebar.locator('a[href="/campeonatos"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/caixa"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/configuracoes"]')).toBeVisible()
+    await expect(sidebar.locator('a[href="/configuracoes/escalacoes"]')).toBeVisible()
   })
 
   test("sidebar mobile: hamburger abre menu", async ({ page }) => {
