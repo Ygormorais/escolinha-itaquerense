@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { requireAuth } from "@/lib/auth"
 
 export async function reativarEscalacao(telefone: string) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.chatSession.update({
     where: { telefone },
     data: { bloqueado: false },
