@@ -25,13 +25,14 @@ type Props = {
   escalacaoInicial: Placed[]
 }
 
-// posições da quadra no grid visual (linha/coluna)
+// posições na quadra horizontal (grid 4 colunas x 3 linhas).
+// Goleiro à direita; ataque (Pivô) à esquerda; alas empilhados no centro.
 const SLOT_POS: Record<(typeof POSICOES_QUADRA)[number], string> = {
-  PIVO: "row-start-1 col-start-2",
-  ALA_ESQ: "row-start-2 col-start-1",
-  ALA_DIR: "row-start-2 col-start-3",
-  FIXO: "row-start-3 col-start-2",
-  GOLEIRO: "row-start-4 col-start-2",
+  PIVO: "col-start-1 row-start-2",
+  ALA_DIR: "col-start-2 row-start-1",
+  ALA_ESQ: "col-start-2 row-start-3",
+  FIXO: "col-start-3 row-start-2",
+  GOLEIRO: "col-start-4 row-start-2",
 }
 
 export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInicial }: Props) {
@@ -140,11 +141,19 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
         {/* Quadra */}
         <div className="rounded-xl border border-border p-4">
           <div
-            className="relative grid aspect-[3/4] max-h-[640px] grid-cols-3 grid-rows-4 gap-2 rounded-lg p-4"
-            style={{ background: "linear-gradient(180deg,#0f7a5a,#0c6249)" }}
+            className="relative grid aspect-[16/10] grid-cols-4 grid-rows-3 gap-2 overflow-hidden rounded-lg border-[6px] border-blue-700 p-4"
+            style={{ background: "#e2902f" }}
           >
-            <div className="pointer-events-none absolute inset-4 rounded-md border-2 border-white/40" />
-            <div className="pointer-events-none absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/40" />
+            {/* linhas externas */}
+            <div className="pointer-events-none absolute inset-3 rounded-sm border-2 border-white/70" />
+            {/* linha central vertical */}
+            <div className="pointer-events-none absolute bottom-3 top-3 left-1/2 w-0.5 -translate-x-1/2 bg-white/70" />
+            {/* círculo central */}
+            <div className="pointer-events-none absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-blue-600/60" />
+            {/* área do gol (esquerda) */}
+            <div className="pointer-events-none absolute left-3 top-1/2 size-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-blue-600/60" />
+            {/* área do gol (direita — onde fica o goleiro) */}
+            <div className="pointer-events-none absolute right-3 top-1/2 size-28 translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70 bg-blue-600/60" />
             {POSICOES_QUADRA.map((pos) => {
               const j = jogadorEm(pos)
               return (
