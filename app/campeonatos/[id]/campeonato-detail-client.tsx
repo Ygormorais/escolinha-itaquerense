@@ -280,10 +280,8 @@ export function CampeonatoDetailClient({
             {sincronizando ? "Atualizando..." : "Atualizar da FPFS"}
           </Button>
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger>
-              <Button variant="outline" size="sm">
-                <Pencil className="size-4" /> Editar
-              </Button>
+            <DialogTrigger render={<Button variant="outline" size="sm" />}>
+              <Pencil className="size-4" /> Editar
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
               <DialogHeader>
