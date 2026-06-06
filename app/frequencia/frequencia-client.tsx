@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, PrinterIcon } from "lucide-react"
+import { SaveIcon, Printer } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -155,8 +155,8 @@ export function FrequenciaClient() {
                 onClick={handleImprimir}
                 disabled={alunos.length === 0}
               >
-                <PrinterIcon className="size-4" />
-                Imprimir Lista
+                <Printer className="size-4" />
+                Imprimir PDF
               </Button>
               <Button
                 onClick={handleSalvar}

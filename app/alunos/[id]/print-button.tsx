@@ -1,6 +1,6 @@
 "use client"
 
-import { PrinterIcon } from "lucide-react"
+import { Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { printHTML } from "@/lib/print"
 
@@ -54,8 +54,8 @@ export function AlunoPrintButton({ alunoId }: { alunoId: number }) {
 
   return (
     <Button variant="outline" size="sm" onClick={handlePrint}>
-      <PrinterIcon className="size-4" />
-      Histórico PDF
+      <Printer className="size-4" />
+      Imprimir PDF
     </Button>
   )
 }

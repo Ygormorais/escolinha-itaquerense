@@ -108,7 +108,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
               className="flex items-center gap-2"
             >
               <Printer className="size-4" />
-              {salvando ? "Salvando..." : "Imprimir Recibo"}
+              {salvando ? "Salvando..." : "Imprimir PDF"}
             </Button>
           }
         />

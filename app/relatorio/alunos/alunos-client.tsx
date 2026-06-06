@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Users, Download, PrinterIcon } from "lucide-react"
+import { Users, Download, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -86,7 +86,8 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
         action={
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={imprimirPDF}>
-              <PrinterIcon className="size-4 mr-1" /> PDF
+              <Printer className="size-4" />
+              Imprimir PDF
             </Button>
             <Button size="sm" onClick={exportarCSV}>
               <Download className="size-4 mr-1" /> Exportar CSV

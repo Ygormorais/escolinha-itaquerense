@@ -68,7 +68,7 @@ export function CarteirinhaView({
           className="ml-auto bg-brand-800 text-white hover:bg-brand-900 gap-2"
         >
           <Printer className="size-4" />
-          Imprimir
+          Imprimir PDF
         </Button>
       </div>
 
