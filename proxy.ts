@@ -69,6 +69,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/responsavel") ||
+    pathname.startsWith("/api/push/") ||
     pathname.startsWith("/api/whatsapp/webhook") ||
     pathname.startsWith("/api/config/public") ||
     pathname.startsWith("/api/upload/matricula") ||
