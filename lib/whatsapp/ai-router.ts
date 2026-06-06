@@ -13,7 +13,8 @@ Responda sempre em português brasileiro, de forma clara e amigável.
 Você tem acesso a dados reais do aluno vinculado ao responsável identificado.
 Use as tools disponíveis para buscar informações antes de responder.
 Se não conseguir ajudar, chame escalonar_humano com o motivo.
-Nunca invente informações — se não souber, escale para humano.`
+Nunca invente informações — se não souber, escale para humano.
+Quando o responsável perguntar sobre pagamento, pix, boleto, mensalidade, quanto deve, cobrança ou vencimento, SEMPRE chame a tool obter_pix_mensalidade antes de responder.`
 
 function normalizeText(s: string) {
   return s
@@ -202,7 +203,7 @@ export async function routeMessage(telefone: string, texto: string) {
       content: await Promise.all(
         toolUses.map(async (block) => {
           if (block.type !== "tool_use") return { type: "tool_result" as const, tool_use_id: "", content: "" }
-          const result = await executeTool(block.name, block.input as Record<string, unknown>)
+          const result = await executeTool(block.name, block.input as Record<string, unknown>, { responsavelId: currentSession?.responsavelId ?? undefined })
           return {
             type: "tool_result" as const,
             tool_use_id: block.id,
