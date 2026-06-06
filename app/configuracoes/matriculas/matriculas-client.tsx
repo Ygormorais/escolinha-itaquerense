@@ -106,7 +106,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
         <select
           value={filtroStatus}
           onChange={(e) => setFiltroStatus(e.target.value)}
-          className="rounded-lg border border-input bg-white px-3 py-2 text-sm"
+          className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
         >
           <option value="todas">Todos os status</option>
           <option value="pendente">Pendentes</option>
@@ -116,7 +116,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
         <span className="text-sm text-muted-foreground">{filtradas.length} registro(s)</span>
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="rounded-xl border bg-card">
         <div className="divide-y">
           {filtradas.length === 0 && (
             <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma pré-matrícula encontrada.</p>

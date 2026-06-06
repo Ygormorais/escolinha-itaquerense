@@ -136,7 +136,7 @@ export function ImportarAlunosClient() {
                   </thead>
                   <tbody>
                     {preview.slice(0, 10).map((r, i) => (
-                      <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-muted/20"}>
+                      <tr key={i} className={i % 2 === 0 ? "bg-muted/40" : "bg-muted/20"}>
                         <td className="px-3 py-2 font-medium">{r.nome}</td>
                         <td className="px-3 py-2">{r.dataNascimento}</td>
                         <td className="px-3 py-2">{r.turma}</td>
