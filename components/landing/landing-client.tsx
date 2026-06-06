@@ -389,7 +389,7 @@ export function LandingClient({ categorias, whatsapp }: { categorias: CategoriaJ
             </div>
           </div>
           <div className="fcol"><h4>Clube</h4><a href="#">História</a><a href="#">Estatuto</a><a href="#">Gestão</a><a href="#">Arena</a><a href="#">Memória</a></div>
-          <div className="fcol"><h4>Futebol</h4><a href="/turmas">Turmas</a><a href="#">Categorias de Base</a><a href="#">Comissão</a></div>
+          <div className="fcol"><h4>Futebol</h4><a href="/turmas">Turmas</a><a href="#">Categorias de Base</a><a href="#">Comissão</a><a href="/resultados">Resultados &amp; Classificação</a></div>
           <div className="fcol"><h4>Modalidades</h4><a href="#">Futebol</a><a href="#">Futsal</a></div>
           <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a><a href="#">Loja Oficial</a></div>
         </div>
