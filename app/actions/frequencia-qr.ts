@@ -10,7 +10,7 @@ const recentScans = new Map<number, number>()
 const RATE_LIMIT_MS = 5_000
 
 /** Exported only for test isolation — do not use in production code */
-export function _testResetScans() { recentScans.clear() }
+export async function _testResetScans() { recentScans.clear() }
 
 export async function registrarPresencaQr(alunoIdStr: string, h: string, dataStr?: string): Promise<QrResult> {
   await requireAuth(["admin", "secretaria", "tecnico"])
