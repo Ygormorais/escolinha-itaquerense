@@ -5,6 +5,8 @@ import { RecorrentesClient } from "./recorrentes-client"
 import { startOfMonth, endOfMonth } from "date-fns"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+export const metadata = { title: "Custos — Escolinha Itaquerense" }
+
 export default async function CustosPage({
   searchParams,
 }: {

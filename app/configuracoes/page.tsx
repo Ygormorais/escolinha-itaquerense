@@ -2,6 +2,8 @@ import { getClubConfig } from "@/app/actions/config"
 import { PageHeader } from "@/components/layout/page-header"
 import { ConfigForm } from "./config-form"
 
+export const metadata = { title: "Configurações — Escolinha Itaquerense" }
+
 export default async function ConfiguracoesPage() {
   const config = await getClubConfig()
   return (

@@ -10,6 +10,8 @@ import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-f
 import { ptBR } from "date-fns/locale"
 import { RelatorioHeader, RelatorioChart, RelatorioPrintStyle } from "./relatorio-client"
 
+export const metadata = { title: "Relatório Financeiro — Escolinha Itaquerense" }
+
 export default async function RelatorioPage({
   searchParams,
 }: {

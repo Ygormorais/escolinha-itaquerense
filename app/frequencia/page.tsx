@@ -4,6 +4,8 @@ import { ResumoFrequenciaClient } from "./resumo-client"
 import { EstatisticasFrequencia } from "./estatisticas-client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+export const metadata = { title: "Frequência — Escolinha Itaquerense" }
+
 export default function FrequenciaPage() {
   return (
     <div className="flex flex-col gap-6 p-6">

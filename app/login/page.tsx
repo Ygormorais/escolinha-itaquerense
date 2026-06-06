@@ -3,6 +3,8 @@ import { AuthShell } from "@/components/auth/auth-shell"
 import { getSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 
+export const metadata = { title: "Entrar — Escolinha Itaquerense" }
+
 export default async function LoginPage({
   searchParams,
 }: {

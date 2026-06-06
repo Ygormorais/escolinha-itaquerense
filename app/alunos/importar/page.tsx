@@ -1,6 +1,8 @@
 import { PageHeader } from "@/components/layout/page-header"
 import { ImportarAlunosClient } from "./importar-client"
 
+export const metadata = { title: "Importar Alunos — Escolinha Itaquerense" }
+
 export default function ImportarPage() {
   return (
     <div className="flex flex-col gap-6 p-6">

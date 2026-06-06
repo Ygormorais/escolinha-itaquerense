@@ -20,6 +20,8 @@ const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-re
 const ChartInadimplencia = dynamic(() => import("@/components/dashboard/chart-inadimplencia").then(m => ({ default: m.ChartInadimplencia })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 const ChartReceitaPorTurma = dynamic(() => import("@/components/dashboard/chart-receita-turma").then(m => ({ default: m.ChartReceitaPorTurma })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 
+export const metadata = { title: "Dashboard — Escolinha Itaquerense" }
+
 export default async function DashboardPage({
   searchParams,
 }: {

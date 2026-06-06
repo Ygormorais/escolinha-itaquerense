@@ -4,6 +4,8 @@ import { AlunosClient, NovoAlunoButton } from "./alunos-client"
 import { PAGE_SIZE } from "@/lib/constants"
 import { startOfMonth, endOfMonth } from "date-fns"
 
+export const metadata = { title: "Alunos — Escolinha Itaquerense" }
+
 export default async function AlunosPage({
   searchParams,
 }: {
