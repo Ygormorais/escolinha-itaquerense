@@ -19,6 +19,7 @@ const links = [
   { href: "/responsavel/historia", label: "História" },
   { href: "/responsavel/lojinha", label: "Lojinha" },
   { href: "/responsavel/solicitacoes", label: "Solicitações" },
+  { href: "/responsavel/notificacoes", label: "Notificações" },
 ]
 
 export function NavResponsavel() {
