@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, Printer } from "lucide-react"
+import { SaveIcon, Printer, QrCode } from "lucide-react"
 import { toast } from "sonner"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -123,6 +124,9 @@ export function FrequenciaClient() {
         >
           {loading ? "Carregando..." : "Carregar"}
         </Button>
+        <Link href={`/frequencia/scanner?data=${data}`}>
+          <Button variant="outline" size="sm" className="gap-2"><QrCode className="size-4" /> Scanner QR</Button>
+        </Link>
       </div>
 
       {loaded && (
