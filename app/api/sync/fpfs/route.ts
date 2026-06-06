@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { NextResponse } from "next/server"
 import { env } from "@/lib/env"
 import { syncTodos, syncCampeonato } from "@/lib/fpfs/sync"
