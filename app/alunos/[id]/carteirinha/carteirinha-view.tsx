@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import type { ClubConfig } from "@/lib/config"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { QRCodeSVG } from "qrcode.react"
+import { gerarHmacQr } from "@/lib/qr"
 
 type Aluno = {
   id: number
@@ -34,6 +36,8 @@ export function CarteirinhaView({
 }) {
   const nascimento = format(new Date(aluno.dataNascimento), "dd/MM/yyyy", { locale: ptBR })
   const matricula = String(aluno.id).padStart(6, "0")
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  const qrUrl = `${appUrl}/qr/${aluno.id}?h=${gerarHmacQr(aluno.id)}`
 
   return (
     <>
@@ -75,7 +79,7 @@ export function CarteirinhaView({
       {/* Preview */}
       <div className="no-print flex items-center justify-center py-12 bg-muted/30 min-h-[calc(100vh-73px)]">
         <div id="carteirinha-print">
-          <Carteirinha aluno={aluno} config={config} validade={validade} emissao={emissao} nascimento={nascimento} matricula={matricula} />
+          <Carteirinha aluno={aluno} config={config} validade={validade} emissao={emissao} nascimento={nascimento} matricula={matricula} qrUrl={qrUrl} />
         </div>
       </div>
     </>
@@ -83,7 +87,7 @@ export function CarteirinhaView({
 }
 
 function Carteirinha({
-  aluno, config, validade, emissao, nascimento, matricula,
+  aluno, config, validade, emissao, nascimento, matricula, qrUrl,
 }: {
   aluno: Aluno
   config: ClubConfig
@@ -91,6 +95,7 @@ function Carteirinha({
   emissao: string
   nascimento: string
   matricula: string
+  qrUrl: string
 }) {
   return (
     /* Tamanho padrão cartão: 85.6mm × 54mm */
@@ -146,29 +151,35 @@ function Carteirinha({
 
       {/* Body */}
       <div style={{ flex: 1, display: "flex", padding: "10px 14px", gap: 12 }}>
-        {/* Foto */}
-        <div style={{
-          width: 72, height: 96, flexShrink: 0,
-          borderRadius: 6, overflow: "hidden",
-          border: "1px solid #e5e7eb",
-          background: "#f3f4f6",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          {aluno.foto ? (
-            <Image
-              src={aluno.foto}
-              alt="Foto"
-              width={72}
-              height={96}
-              unoptimized
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" stroke="#9ca3af" strokeWidth="1.5"/>
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          )}
+        {/* Foto + QR */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          <div style={{
+            width: 72, height: 96,
+            borderRadius: 6, overflow: "hidden",
+            border: "1px solid #e5e7eb",
+            background: "#f3f4f6",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {aluno.foto ? (
+              <Image
+                src={aluno.foto}
+                alt="Foto"
+                width={72}
+                height={96}
+                unoptimized
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" stroke="#9ca3af" strokeWidth="1.5"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            )}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, marginTop: 8 }}>
+            <QRCodeSVG value={qrUrl} size={80} level="M" />
+            <span style={{ fontSize: 9, color: "#999" }}>Presença</span>
+          </div>
         </div>
 
         {/* Dados */}
