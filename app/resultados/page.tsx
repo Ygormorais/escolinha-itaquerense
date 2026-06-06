@@ -92,7 +92,7 @@ export default async function ResultadosPage() {
                         <tr key={p.id}>
                           <td>Itaquerense × {p.adversario}</td>
                           <td className="placar">{p.golsPro} × {p.golsContra}</td>
-                          <td>{p.rodada}ª</td>
+                          <td>{p.rodada != null ? `${p.rodada}ª` : "—"}</td>
                           <td>{format(new Date(p.data), "dd/MM/yyyy", { locale: ptBR })}</td>
                           <td>{p.sumulaUrl && <a href={p.sumulaUrl} target="_blank" rel="noopener noreferrer" className="sumula-link">Súmula →</a>}</td>
                         </tr>
