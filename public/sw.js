@@ -45,3 +45,24 @@ self.addEventListener("activate", (event) => {
       .then(() => self.clients.claim())
   )
 })
+
+self.addEventListener("push", (event) => {
+  if (!event.data) return
+  const { title, body, icon, url } = event.data.json()
+  event.waitUntil(
+    self.registration.showNotification(title, { body, icon: icon ?? "/logo.png", badge: "/logo.png", data: { url } })
+  )
+})
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close()
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      const url = event.notification.data?.url ?? "/responsavel"
+      for (const client of clientList) {
+        if (client.url.includes(url) && "focus" in client) return client.focus()
+      }
+      return clients.openWindow(url)
+    })
+  )
+})
