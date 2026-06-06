@@ -122,18 +122,20 @@ model Log {
 }
 
 model Responsavel {
-  id           Int           @id @default(autoincrement())
-  nome         String
-  email        String        @unique
-  telefone     String
-  senha        String
-  cpf          String?       @unique
-  ativo        Boolean       @default(true)
-  alunos       Aluno[]
-  chatSessions ChatSession[]
-  resetTokens  ResetToken[]
-  solicitacoes Solicitacao[]
-  createdAt    DateTime      @default(now())
+  id                Int                    @id @default(autoincrement())
+  nome              String
+  email             String                 @unique
+  telefone          String
+  senha             String
+  cpf               String?                @unique
+  ativo             Boolean                @default(true)
+  alunos            Aluno[]
+  chatSessions      ChatSession[]
+  resetTokens       ResetToken[]
+  solicitacoes      Solicitacao[]
+  pushSubscriptions PushSubscription[]
+  notificacaoPrefs  NotificacaoPreferencia?
+  createdAt         DateTime               @default(now())
 }
 
 model ResetToken {
@@ -419,4 +421,26 @@ model EscalacaoJogador {
 
   @@unique([partidaId, alunoId])
   @@index([partidaId])
+}
+
+model PushSubscription {
+  id            Int         @id @default(autoincrement())
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  endpoint      String      @unique
+  p256dh        String
+  auth          String
+  createdAt     DateTime    @default(now())
+
+  @@index([responsavelId])
+}
+
+model NotificacaoPreferencia {
+  responsavelId       Int         @id
+  responsavel         Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  vencimento          Boolean     @default(true)
+  pagamentoConfirmado Boolean     @default(true)
+  falta               Boolean     @default(false)
+  convocacao          Boolean     @default(true)
+  comunicado          Boolean     @default(true)
 }
