@@ -114,6 +114,11 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "obter_pix_mensalidade",
+    description: "Retorna o PIX copia-e-cola da mensalidade do mês atual. Use quando o responsável perguntar sobre pagamento, pix, mensalidade, quanto deve, cobrança ou vencimento.",
+    input_schema: { type: "object" as const, properties: {}, required: [] },
+  },
+  {
     name: "buscar_carteirinha",
     description: "Retorna informações da carteirinha digital do aluno (matrícula, turma, validade).",
     input_schema: {
@@ -128,7 +133,11 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
 
 type ToolInput = Record<string, unknown>
 
-export async function executeTool(name: string, input: ToolInput): Promise<string> {
+export async function executeTool(
+  name: string,
+  input: ToolInput,
+  context?: { responsavelId?: number }
+): Promise<string> {
   try {
     switch (name) {
       case "buscar_pagamentos": {
@@ -271,6 +280,12 @@ export async function executeTool(name: string, input: ToolInput): Promise<strin
         return `Carteirinha digital de ${aluno.nome}:\n• Matrícula: ${matricula}\n• Turma: ${aluno.turma}\n• Nascimento: ${nasc}\n• Validade: ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric" })}`
       }
 
+      case "obter_pix_mensalidade": {
+        if (!context?.responsavelId) return JSON.stringify({ erro: "Sessão não identificada" })
+        const res = await executarObterPixMensalidade({ responsavelId: context.responsavelId })
+        return JSON.stringify(res)
+      }
+
       default:
         return "Tool desconhecida."
     }
@@ -278,4 +293,54 @@ export async function executeTool(name: string, input: ToolInput): Promise<strin
     console.error(`[Tools] executeTool error for ${name}:`, error)
     return "Desculpe, ocorreu um erro ao buscar as informações. Tente novamente."
   }
+}
+
+export async function executarObterPixMensalidade(
+  input: { responsavelId: number }
+): Promise<{ alunos: Array<{ nome: string; mes: string; valor: number; pixCopiaECola: string | null; status: "pago" | "pendente" | "sem_cobranca" }> }> {
+  const mesAtual = new Date().toISOString().slice(0, 7)
+  const resp = await db.responsavel.findUnique({
+    where: { id: input.responsavelId },
+    include: { alunos: { select: { id: true, nome: true, mensalidade: true } } },
+  })
+  if (!resp) return { alunos: [] }
+
+  const resultados = await Promise.all(
+    resp.alunos.map(async (aluno) => {
+      const pag = await db.pagamento.findFirst({
+        where: { alunoId: aluno.id, mesReferencia: mesAtual },
+        include: { aluno: { select: { mensalidade: true } } },
+      })
+      if (!pag) return { nome: aluno.nome, mes: mesAtual, valor: aluno.mensalidade, pixCopiaECola: null, status: "sem_cobranca" as const }
+      if (pag.dataPagamento) return { nome: aluno.nome, mes: mesAtual, valor: pag.aluno.mensalidade, pixCopiaECola: null, status: "pago" as const }
+      if (pag.pixCopiaECola && pag.statusCobranca === "pendente") {
+        return { nome: aluno.nome, mes: mesAtual, valor: pag.aluno.mensalidade, pixCopiaECola: pag.pixCopiaECola, status: "pendente" as const }
+      }
+      // Tenta gerar novo PIX
+      try {
+        const { getMpPayment } = await import("@/lib/mercadopago")
+        const mp = getMpPayment()
+        const response = await mp.create({
+          body: {
+            transaction_amount: pag.aluno.mensalidade,
+            description: `Mensalidade ${mesAtual} — ${aluno.nome}`,
+            payment_method_id: "pix",
+            payer: { email: resp.email ?? "responsavel@escolinha.com" },
+            date_of_expiration: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+          },
+        })
+        const qrCode = response.point_of_interaction?.transaction_data?.qr_code ?? null
+        if (qrCode) {
+          await db.pagamento.update({
+            where: { id: pag.id },
+            data: { canalPrevisto: "PIX", statusCobranca: "pendente", externalId: String(response.id), pixCopiaECola: qrCode },
+          })
+        }
+        return { nome: aluno.nome, mes: mesAtual, valor: pag.aluno.mensalidade, pixCopiaECola: qrCode, status: "pendente" as const }
+      } catch {
+        return { nome: aluno.nome, mes: mesAtual, valor: pag.aluno.mensalidade, pixCopiaECola: null, status: "sem_cobranca" as const }
+      }
+    })
+  )
+  return { alunos: resultados }
 }
