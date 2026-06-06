@@ -73,11 +73,13 @@ export function RelatorioPrintStyle() {
   return (
     <style>{`
       @media print {
-        body * { visibility: hidden; }
-        .relatorio-print, .relatorio-print * { visibility: visible; }
-        .relatorio-print { position: absolute; top: 0; left: 0; width: 100%; padding: 24px; }
+        aside, header, nav, [aria-label="Navegação principal"], [aria-label="Navegação rápida"] {
+          display: none !important;
+        }
         .no-print { display: none !important; }
-        @page { margin: 1.5cm; }
+        .relatorio-print { width: 100% !important; padding: 0 !important; }
+        main { padding: 0 !important; overflow: visible !important; }
+        @page { margin: 1.5cm; size: A4; }
       }
     `}</style>
   )

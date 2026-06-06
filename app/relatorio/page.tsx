@@ -67,12 +67,12 @@ export default async function RelatorioPage({
     .sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="relatorio-print flex flex-col gap-6 p-6">
       <RelatorioPrintStyle />
       <PageHeader
         title="Relatório Anual"
         description={`Resumo financeiro consolidado — ${ano}`}
-        action={<RelatorioHeader ano={ano} meses={meses} />}
+        action={<div className="no-print"><RelatorioHeader ano={ano} meses={meses} /></div>}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
