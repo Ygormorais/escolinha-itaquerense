@@ -99,11 +99,15 @@ export async function editarCampeonato(id: number, data: {
 
 export async function sincronizarFpfs(campeonatoId: number) {
   await requireAuth()
-  const resumo = await syncCampeonato(campeonatoId)
-  revalidatePath(`/campeonatos/${campeonatoId}`)
-  revalidatePath("/responsavel/jogos")
-  revalidatePath("/responsavel/classificacao")
-  return resumo
+  try {
+    const resumo = await syncCampeonato(campeonatoId)
+    revalidatePath(`/campeonatos/${campeonatoId}`)
+    revalidatePath("/responsavel/jogos")
+    revalidatePath("/responsavel/classificacao")
+    return resumo
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Falha ao sincronizar com a FPFS" }
+  }
 }
 
 export async function deletarCampeonato(id: number) {

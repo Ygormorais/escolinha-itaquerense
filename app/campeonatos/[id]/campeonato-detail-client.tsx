@@ -186,6 +186,7 @@ export function CampeonatoDetailClient({
     setSincronizando(true)
     try {
       const r = await sincronizarFpfs(campeonato.id)
+      if ("error" in r) { toast.error(r.error); return }
       toast.success(`FPFS sincronizada: ${r.jogosNovos} novos, ${r.jogosAtualizados} atualizados, ${r.linhasClassificacao} na classificação`)
       router.refresh()
     } catch {
