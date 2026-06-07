@@ -124,10 +124,12 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
         imagem: form.imagem || undefined,
       }
       if (editingId) {
-        await atualizarProduto(editingId, data)
+        const r = await atualizarProduto(editingId, data)
+        if (r && "error" in r) { toast.error(r.error); return }
         toast.success("Produto atualizado!")
       } else {
-        await criarProduto(data)
+        const r = await criarProduto(data)
+        if (r && "error" in r) { toast.error(r.error); return }
         toast.success("Produto criado!")
       }
       setOpen(false)
