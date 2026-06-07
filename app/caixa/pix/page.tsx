@@ -12,6 +12,7 @@ export default async function PixPage() {
       where: { canalPrevisto: "PIX", statusCobranca: "pendente" },
       include: { aluno: { select: { nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
+      take: 200,
     }),
     db.pagamento.findMany({
       where: { dataPagamento: { not: null }, formaPagamento: "PIX" },

@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth"
 import { PageHeader } from "@/components/layout/page-header"
 import { AdminSolicitacoesClient } from "./solicitacoes-client"
 
-export const metadata = { title: "Solicitações" }
+export const metadata = { title: "Solicitações — Escolinha Itaquerense" }
 
 export default async function SolicitacoesAdminPage() {
   await requireAuth(["admin", "secretaria"])
@@ -13,7 +13,7 @@ export default async function SolicitacoesAdminPage() {
     take: 100,
   })
   return (
-    <div className="p-6">
+    <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader title="Solicitações" description="Gerencie as solicitações dos responsáveis." />
       <AdminSolicitacoesClient solicitacoes={solicitacoes} />
     </div>
