@@ -313,6 +313,11 @@ model WhatsAppMensagem {
   messageId  String?                           // ID da mensagem no WhatsApp
   lida       Boolean  @default(false)
   createdAt  DateTime @default(now())
+
+  @@index([alunoId])
+  @@index([messageId])
+  @@index([createdAt])
+  @@index([origem, direcao])
 }
 
 model ChatSession {
