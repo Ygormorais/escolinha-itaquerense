@@ -1,21 +1,27 @@
 name: Cron - Lembretes Diários
 
+# Dispara o endpoint de lembretes no servidor de produção.
+# Configurar em Settings > Secrets and variables > Actions:
+#   CRON_SECRET    — mesmo valor que CRON_SECRET no .env de produção
+#   APP_URL        — URL base da aplicação (ex: https://meudominio.com.br)
+
 on:
   schedule:
-    - cron: "0 9 * * *"  # Todo dia às 9h (horário de Brasília = 12h UTC)
+    - cron: "0 12 * * *"  # 12h UTC = 09h Brasília
 
-  workflow_dispatch:  # Permitir trigger manual
+  workflow_dispatch:      # Permite disparo manual
 
 jobs:
   lembretes:
     runs-on: ubuntu-latest
     steps:
-      - name: Aguardar deploy
-        run: sleep 30
-
       - name: Enviar lembretes (email + WhatsApp)
         run: |
-          curl -s -X GET \
-            "https://escolinha-itaquerense.vercel.app/api/cron/lembretes" \
+          APP_URL="${{ secrets.APP_URL || 'https://escolinha-itaquerense.vercel.app' }}"
+          curl -s -f -X GET \
+            "${APP_URL}/api/cron/lembretes" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            --max-time 60 \
+            && echo "Lembretes enviados com sucesso" \
+            || echo "Falha ao enviar lembretes (verificar logs)"
