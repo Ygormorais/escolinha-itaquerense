@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { getConfig } from "@/lib/config"
 
 export async function GET() {

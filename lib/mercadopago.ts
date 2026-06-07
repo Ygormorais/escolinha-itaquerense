@@ -33,7 +33,8 @@ export function getMpPayment(): Payment {
 
 // Compatibilidade com código existente que usa mpPayment diretamente
 export const mpPayment = new Proxy({} as Payment, {
-  get(_target, prop) {
-    return (getMpPayment() as any)[prop]
+  get(_target, prop: string | symbol) {
+    const mp = getMpPayment()
+    return mp[prop as keyof Payment]
   },
 })

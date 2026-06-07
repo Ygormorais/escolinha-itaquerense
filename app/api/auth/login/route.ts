@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { NextResponse } from "next/server"
 import { checkCredentials, createSession, cookieName, cookieMaxAge } from "@/lib/session"
 import { checkDbCredentials } from "@/app/actions/usuarios"
