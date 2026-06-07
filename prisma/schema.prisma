@@ -300,7 +300,7 @@ model Configuracao {
 model WhatsAppMensagem {
   id         Int      @id @default(autoincrement())
   alunoId    Int?
-  aluno      Aluno?   @relation(fields: [alunoId], references: [id])
+  aluno      Aluno?   @relation(fields: [alunoId], references: [id], onDelete: SetNull)
   telefone   String
   mensagem   String
   tipo       String   @default("text")        // text, template, image, document
@@ -324,7 +324,7 @@ model ChatSession {
   id            Int          @id @default(autoincrement())
   telefone      String       @unique
   responsavelId Int?
-  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
   identificado  Boolean      @default(false)
   bloqueado     Boolean      @default(false)
   historico     String       @default("[]")
