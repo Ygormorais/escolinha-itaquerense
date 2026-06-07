@@ -17,6 +17,9 @@ export async function registrarPagamento(
   }
 ): Promise<ActionResult> {
   await requireAuth()
+  const valor = Number(data.valorRecebido)
+  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
+  if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
   try {
     await db.pagamento.update({
       where: { id },
