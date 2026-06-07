@@ -84,7 +84,7 @@ export function RadarEvolutionChart({ snapshots }: { snapshots: AvaliacaoSnapsho
             fillOpacity={0.3}
             isAnimationActive
           />
-          <Tooltip formatter={(v: number) => [`${v}/10`, "Nota"]} />
+          <Tooltip formatter={(v) => [`${v}/10`, "Nota"]} />
         </RadarChart>
       </ResponsiveContainer>
 
