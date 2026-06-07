@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
+import { formatMoney } from "@/lib/utils"
 import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -545,7 +546,7 @@ export function PagamentosClient({
                     {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"}
                   </TableCell>
                   <TableCell className="text-right">
-                    R$ {(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}
+                    {formatMoney(p.valorRecebido ?? p.aluno.mensalidade)}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 items-center">
