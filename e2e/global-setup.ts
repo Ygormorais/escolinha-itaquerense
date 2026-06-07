@@ -2,13 +2,11 @@ import { chromium } from "@playwright/test"
 import path from "path"
 import fs from "fs"
 import { RESP_TESTE } from "./test-credentials"
+import { db } from "@/lib/db"
+import bcryptjs from "bcryptjs"
 
 export default async function globalSetup() {
   // ── 1. Cria responsável de teste no banco ─────────────────────────────────
-  // Importação dinâmica evita problemas de inicialização do módulo antes do env
-  const { db } = await import("../lib/db")
-  const bcrypt = await import("bcryptjs")
-
   // Remove responsável de execuções anteriores para evitar conflito de email único
   await db.responsavel.deleteMany({ where: { email: RESP_TESTE.email } })
 
@@ -20,7 +18,7 @@ export default async function globalSetup() {
     data: {
       nome: RESP_TESTE.nome,
       email: RESP_TESTE.email,
-      senha: bcrypt.hashSync(RESP_TESTE.senha, 10),
+      senha: bcryptjs.hashSync(RESP_TESTE.senha, 10),
       telefone: "11999999999",
       ativo: true,
       alunos: aluno ? { connect: { id: aluno.id } } : undefined,
