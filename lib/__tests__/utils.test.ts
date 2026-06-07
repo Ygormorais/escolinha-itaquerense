@@ -1,5 +1,48 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { formatMoney, formatDate, calcStatus } from "@/lib/utils"
+import { formatMoney, formatDate, calcStatus, sanitizeCSVCell } from "@/lib/utils"
+
+describe("sanitizeCSVCell", () => {
+  it("envolve valor em aspas duplas", () => {
+    expect(sanitizeCSVCell("João")).toBe('"João"')
+  })
+
+  it("dobra aspas internas", () => {
+    expect(sanitizeCSVCell('diz "olá"')).toBe('"diz ""olá"""')
+  })
+
+  it("prefixa = com apostrofo (injecao de formula)", () => {
+    expect(sanitizeCSVCell("=CMD|'...'!A0")).toBe("\"'=CMD|'...'!A0\"")
+  })
+
+  it("prefixa + com apostrofo", () => {
+    expect(sanitizeCSVCell("+1234")).toBe("\"'+1234\"")
+  })
+
+  it("prefixa - com apostrofo", () => {
+    expect(sanitizeCSVCell("-SUM(A1)")).toBe("\"'-SUM(A1)\"")
+  })
+
+  it("prefixa @ com apostrofo", () => {
+    expect(sanitizeCSVCell("@SUM(A1)")).toBe("\"'@SUM(A1)\"")
+  })
+
+  it("nao prefixa valor numerico normal", () => {
+    expect(sanitizeCSVCell("150.00")).toBe('"150.00"')
+  })
+
+  it("converte number para string", () => {
+    expect(sanitizeCSVCell(42)).toBe('"42"')
+  })
+
+  it("trata null e undefined como string vazia", () => {
+    expect(sanitizeCSVCell(null)).toBe('""')
+    expect(sanitizeCSVCell(undefined)).toBe('""')
+  })
+
+  it("nao altera texto normal sem caracteres especiais", () => {
+    expect(sanitizeCSVCell("Escolinha Itaquerense")).toBe('"Escolinha Itaquerense"')
+  })
+})
 
 describe("formatMoney", () => {
   it("formata valor inteiro", () => {
