@@ -1,6 +1,11 @@
 import { alunosData, custosData } from "../lib/seed-data"
 import { db } from "../lib/db"
 
+if (process.env.NODE_ENV === "production") {
+  console.error("❌ seed.ts não deve ser executado em produção! Abortando.")
+  process.exit(1)
+}
+
 /** Gera um CPF válido (apenas dígitos) para dados de teste. */
 function geraCpf(): string {
   const n = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10))
