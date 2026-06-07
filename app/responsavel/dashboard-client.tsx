@@ -194,7 +194,7 @@ export function ResponsavelDashboardClient({
                   </p>
                   <p className="mt-3 text-lg font-semibold text-[var(--color-ink-950)]">
                     {formatMoney(aluno.mensalidade - aluno.desconto)}
-                    {aluno.desconto > 0 && <span className="ml-1 text-xs text-success-600">(-{aluno.desconto.toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2})})</span>}
+                    {aluno.desconto > 0 && <span className="ml-1 text-xs text-success-600">(-{formatMoney(aluno.desconto)})</span>}
                   </p>
                 </div>
                 <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
