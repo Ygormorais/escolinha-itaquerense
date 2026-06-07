@@ -25,6 +25,7 @@ jobs:
           PRISMA_CONFIG_PATH: prisma.config.ts
 
       - run: npm test
+        timeout-minutes: 5
 
       - run: npm run lint || echo "Lint warnings (non-blocking)"
 
