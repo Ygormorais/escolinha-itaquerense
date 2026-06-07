@@ -48,8 +48,11 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
   }
 
   revalidatePath("/pagamentos")
+  revalidatePath("/inadimplencia")
+  revalidatePath("/caixa")
   revalidatePath("/caixa/pix")
   revalidatePath("/caixa/boleto")
+  revalidatePath("/caixa/recebimentos")
 
   return { atualizados }
 }
