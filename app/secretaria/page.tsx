@@ -25,18 +25,21 @@ export default async function SecretariaPage() {
           lte: new Date(now.getFullYear(), now.getMonth() + 1, 0),
         },
       },
-      select: { id: true, nome: true, dataNascimento: true, turma: true },
+      select: { id: true, nome: true, dataNascimento: true, turma: true, telefone: true },
       orderBy: { dataNascimento: "asc" },
     }),
     db.aluno.count({
       where: { dataMatricula: { gte: mesInicio, lte: mesFim } },
     }),
-    db.pagamento.count({
+    db.pagamento.findMany({
       where: {
-        mesReferencia: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+        dataVencimento: { lt: now },
         dataPagamento: null,
+        aluno: { status: "Ativo" },
       },
-    }),
+      select: { alunoId: true },
+      distinct: ["alunoId"],
+    }).then((rows) => rows.length),
     db.aluno.count({ where: { status: "Ativo" } }),
   ])
 

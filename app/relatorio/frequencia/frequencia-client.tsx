@@ -26,11 +26,14 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
     return stats.filter((s) => {
       if (filtroTurma !== "todas" && s.turma !== filtroTurma) return false
       if (filtroFreq === "altas" && s.percentual < 75) return false
+      if (filtroFreq === "risco" && s.percentual >= 75) return false
       if (filtroFreq === "baixas" && s.percentual >= 50) return false
       if (filtroFreq === "criticas" && s.percentual >= 25) return false
       return true
     })
   }, [stats, filtroTurma, filtroFreq])
+
+  const emRisco = stats.filter((s) => s.percentual < 75 && s.totalAulas > 0).length
 
   const mediaGeral = stats.length > 0
     ? Math.round(stats.reduce((s, a) => s + a.percentual, 0) / stats.length)
@@ -101,11 +104,18 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
           {[
             { key: "todos", label: "Todos" },
             { key: "altas", label: "≥75%" },
+            { key: "risco", label: "<75%", alert: emRisco > 0 },
             { key: "baixas", label: "<50%" },
             { key: "criticas", label: "<25%" },
           ].map((s) => (
-            <Button key={s.key} variant={filtroFreq === s.key ? "default" : "outline"} size="sm" onClick={() => setFiltroFreq(s.key)} className="text-xs">
-              {s.label}
+            <Button
+              key={s.key}
+              variant={filtroFreq === s.key ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFiltroFreq(s.key)}
+              className={`text-xs ${s.alert && filtroFreq !== s.key ? "border-warning-600 text-warning-600" : ""}`}
+            >
+              {s.label}{s.alert ? ` (${emRisco})` : ""}
             </Button>
           ))}
         </div>
