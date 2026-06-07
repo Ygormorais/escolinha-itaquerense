@@ -5,6 +5,12 @@ import { CarteirinhaView } from "./carteirinha-view"
 import { format, addYears } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const aluno = await db.aluno.findUnique({ where: { id: Number(id) }, select: { nome: true } })
+  return { title: aluno ? `Carteirinha — ${aluno.nome}` : "Carteirinha — Escolinha Itaquerense" }
+}
+
 export default async function CarteirinhaPage({
   params,
 }: {

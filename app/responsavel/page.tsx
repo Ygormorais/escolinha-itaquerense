@@ -3,6 +3,8 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { ResponsavelDashboardClient } from "./dashboard-client"
 
+export const metadata = { title: "Portal do Responsável — Escolinha Itaquerense" }
+
 export default async function ResponsavelPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

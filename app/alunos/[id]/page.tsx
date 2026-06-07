@@ -38,6 +38,12 @@ const presencaStyle: Record<string, string> = {
 
 const PAG_PAGE_SIZE = 12
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const aluno = await db.aluno.findUnique({ where: { id: Number(id) }, select: { nome: true } })
+  return { title: aluno ? `${aluno.nome} — Escolinha Itaquerense` : "Aluno — Escolinha Itaquerense" }
+}
+
 export default async function AlunoDetailPage({
   params,
   searchParams,
