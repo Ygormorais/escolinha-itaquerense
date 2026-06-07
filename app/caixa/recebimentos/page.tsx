@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format, startOfMonth, endOfMonth } from "date-fns"
@@ -33,7 +34,7 @@ export default async function RecebimentosPage({
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Recebimentos"
-        description={`${pagamentos.length} recebimentos · Total: R$ ${total.toFixed(2)} · ${labelMes}`}
+        description={`${pagamentos.length} recebimentos · Total: ${formatMoney(total)} · ${labelMes}`}
         action={<MonthPicker mes={mesParam} basePath="/caixa/recebimentos" />}
       />
 
@@ -62,7 +63,7 @@ export default async function RecebimentosPage({
                 <TableCell className="font-medium">{p.aluno.nome}</TableCell>
                 <TableCell>{p.aluno.turma}</TableCell>
                 <TableCell>{p.mesReferencia}</TableCell>
-                <TableCell>R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
+                <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>
                 <TableCell>{p.formaPagamento || "—"}</TableCell>
                 <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</TableCell>
               </TableRow>

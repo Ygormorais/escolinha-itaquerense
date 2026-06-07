@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,7 +27,7 @@ export default async function PixPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <PageHeader title="PIX" description={`${recebidos.length} recebidos · R$ ${totalRecebido.toFixed(2)}`} />
+      <PageHeader title="PIX" description={`${recebidos.length} recebidos · ${formatMoney(totalRecebido)}`} />
       <Tabs defaultValue="emitidos">
         <TabsList>
           <TabsTrigger value="emitidos">Emitidos ({emitidos.length})</TabsTrigger>
@@ -81,7 +82,7 @@ export default async function PixPage() {
                       <TableCell className="font-medium">{p.aluno.nome}</TableCell>
                       <TableCell>{p.aluno.turma}</TableCell>
                       <TableCell>{p.mesReferencia}</TableCell>
-                      <TableCell>R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
+                      <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>
                       <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</TableCell>
                     </TableRow>
                   ))}
