@@ -18,6 +18,8 @@ export async function criarSolicitacao(data: {
       status: "pendente",
     },
   })
+  revalidatePath("/responsavel/solicitacoes")
+  revalidatePath("/configuracoes/solicitacoes")
   return { success: true, id: s.id }
 }
 

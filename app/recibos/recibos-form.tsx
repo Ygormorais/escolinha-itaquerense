@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Printer, Trash2 } from "lucide-react"
 import { salvarRecibo, deleteRecibo } from "@/app/actions/recibos"
 import type { ClubConfig } from "@/lib/config"
+import { formatMoney } from "@/lib/utils"
 
 type Recibo = {
   id: number
@@ -290,7 +291,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                     <td className="px-4 py-3 font-bold text-brand-800">#{r.numero}</td>
                     <td className="px-4 py-3 font-medium">{r.alunoNome}</td>
                     <td className="px-4 py-3">{r.mesReferencia}</td>
-                    <td className="px-4 py-3 text-right">{r.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                    <td className="px-4 py-3 text-right">{formatMoney(r.valor)}</td>
                     <td className="px-4 py-3">{r.formaPagamento}</td>
                     <td className="px-4 py-3">{new Date(r.dataPagamento).toLocaleDateString("pt-BR")}</td>
                     <td className="px-4 py-3">

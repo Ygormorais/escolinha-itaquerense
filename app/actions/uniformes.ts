@@ -24,6 +24,7 @@ export async function adicionarUniforme(alunoId: number, data: {
       data: { alunoId, item: data.item, tamanho: data.tamanho ?? null, observacoes: data.observacoes ?? null },
     })
     revalidatePath(`/alunos/${alunoId}`)
+    revalidatePath("/uniformes")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao adicionar uniforme" }
@@ -38,6 +39,7 @@ export async function marcarEntregue(id: number, alunoId: number): Promise<Actio
       data: { entregue: true, dataEntrega: new Date() },
     })
     revalidatePath(`/alunos/${alunoId}`)
+    revalidatePath("/uniformes")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao marcar entrega" }
@@ -49,6 +51,7 @@ export async function removerUniforme(id: number, alunoId: number): Promise<Acti
   try {
     await db.uniforme.delete({ where: { id } })
     revalidatePath(`/alunos/${alunoId}`)
+    revalidatePath("/uniformes")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao remover uniforme" }

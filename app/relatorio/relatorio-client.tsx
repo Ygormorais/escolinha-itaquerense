@@ -9,6 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts"
+import { formatMoney } from "@/lib/utils"
 
 type MesData = {
   mes: number
@@ -163,7 +164,7 @@ export function RelatorioChart({
                   />
                   <span className="flex-1 truncate">{d.name}</span>
                   <span className="font-medium">
-                    {d.value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    {formatMoney(d.value)}
                   </span>
                 </div>
               ))}

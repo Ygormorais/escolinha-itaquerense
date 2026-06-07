@@ -13,16 +13,19 @@ export async function criarProduto(data: { nome: string; descricao?: string; pre
   await requireAuth()
   await db.produto.create({ data })
   revalidatePath("/configuracoes/produtos")
+  revalidatePath("/responsavel/lojinha")
 }
 
 export async function atualizarProduto(id: number, data: { nome?: string; descricao?: string; preco?: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
   await requireAuth()
   await db.produto.update({ where: { id }, data })
   revalidatePath("/configuracoes/produtos")
+  revalidatePath("/responsavel/lojinha")
 }
 
 export async function removerProduto(id: number) {
   await requireAuth()
   await db.produto.delete({ where: { id } })
   revalidatePath("/configuracoes/produtos")
+  revalidatePath("/responsavel/lojinha")
 }
