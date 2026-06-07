@@ -33,9 +33,11 @@ export default async function RelatorioPage({
       where: { data: { gte: inicioAno, lte: fimAno } },
       select: { data: true, valor: true, categoria: true },
     }),
-    db.pagamento.count({
-      where: { dataPagamento: null, dataVencimento: { lt: now } },
-    }),
+    db.pagamento.findMany({
+      where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
+      select: { alunoId: true },
+      distinct: ["alunoId"],
+    }).then((rows) => rows.length),
   ])
 
   // Agrupa por mês

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Users,
+  Users2,
   CreditCard,
   CalendarCheck,
   Calendar,
@@ -98,6 +99,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
       label: "Operação",
       items: filterByRole([
         { href: "/alunos",        label: "Alunos",        icon: Users },
+        { href: "/turmas",        label: "Turmas",        icon: Users2 },
         { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
         { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
         { href: "/agenda",        label: "Agenda",         icon: Calendar },
