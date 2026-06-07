@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { sanitizeCSVCell } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays } from "date-fns"
 import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send } from "lucide-react"
@@ -143,7 +144,7 @@ function exportarCSV(inadimplentes: Inadimplente[]) {
     ]),
   ]
 
-  const csv = linhas.map((l) => l.map((c) => `"${c}"`).join(";")).join("\n")
+  const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { Download, Printer, Search, X } from "lucide-react"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -119,8 +119,8 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
         p.aluno.nome, p.aluno.turma, p.mesReferencia, canal,
         format(new Date(p.dataVencimento), "dd/MM/yyyy"),
         p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "",
-        `R$ ${(p.valorRecebido ?? 0).toFixed(2)}`, st,
-      ].join(";")
+        formatMoney(p.valorRecebido ?? 0), st,
+      ].map(sanitizeCSVCell).join(";")
     })
     const csv = "﻿" + header + "\n" + rows.join("\n")
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })

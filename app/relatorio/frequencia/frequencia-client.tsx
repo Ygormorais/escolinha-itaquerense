@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
 import { printHTML } from "@/lib/print"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 type Stat = {
   id: number
@@ -56,7 +57,7 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
   function exportarCSV() {
     const header = "Nome;Turma;Aulas;Presenças;Frequência"
     const rows = filtrados.map((s) =>
-      [s.nome, s.turma, s.totalAulas, s.totalPresencas, `${s.percentual}%`].join(";")
+      [s.nome, s.turma, s.totalAulas, s.totalPresencas, `${s.percentual}%`].map(sanitizeCSVCell).join(";")
     )
     const csv = "\uFEFF" + header + "\n" + rows.join("\n")
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText } from "lucide-react"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -234,7 +234,7 @@ function exportarCSV(custos: Custo[], mes: string) {
       c.valor.toFixed(2),
     ]),
   ]
-  const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+  const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")

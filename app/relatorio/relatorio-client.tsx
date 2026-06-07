@@ -9,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 
 type MesData = {
   mes: number
@@ -38,7 +38,7 @@ export function RelatorioHeader({ ano, meses }: { ano: number; meses: MesData[] 
         meses.reduce((s, m) => s + m.saldo, 0).toFixed(2),
       ],
     ]
-    const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -53,7 +54,7 @@ function exportarCSV(resumo: Resumo[], turma: string, mes: string) {
       r.pct !== null ? `${r.pct}%` : "—",
     ]),
   ]
-  const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+  const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")

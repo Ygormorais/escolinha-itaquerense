@@ -53,7 +53,7 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Buscar..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
         </div>
-        <select value={filtro} onChange={(e) => setFiltro(e.target.value)} className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
+        <select value={filtro} onChange={(e) => setFiltro(e.target.value)} aria-label="Filtrar por status" className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
           <option value="todas">Todas</option>
           <option value="pendente">Pendentes</option>
           <option value="em_andamento">Em andamento</option>

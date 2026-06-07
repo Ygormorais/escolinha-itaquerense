@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { Users, Download, Printer, Search } from "lucide-react"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -69,9 +69,9 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
         a.status,
         a.responsavel ?? "",
         a.telefone ?? "",
-        `R$ ${a.mensalidade.toFixed(2)}`,
+        formatMoney(a.mensalidade),
         format(new Date(a.dataMatricula), "dd/MM/yyyy"),
-      ].join(";")
+      ].map(sanitizeCSVCell).join(";")
     )
     const csv = "\uFEFF" + header + "\n" + rows.join("\n")
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
