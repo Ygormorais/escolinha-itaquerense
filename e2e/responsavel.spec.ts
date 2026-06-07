@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { RESP_TESTE } from "./test-credentials"
+
+const RESP_STORAGE = "e2e/.auth/responsavel.json"
 
 // ── Testes sem autenticação (portal público) ───────────────────────────────
 
@@ -123,5 +126,120 @@ test.describe("Admin — gerenciar responsáveis", () => {
     await expect(dialog).not.toBeVisible({ timeout: 10000 })
     await page.reload()
     await expect(page.getByText(nomeUnico)).toBeVisible()
+  })
+})
+
+// ── Portal autenticado ─────────────────────────────────────────────────────
+
+test.describe("Portal autenticado — dashboard", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel")
+    await expect(page).toHaveURL("/responsavel")
+  })
+
+  test("exibe saudação com nome do responsável", async ({ page }) => {
+    await page.goto("/responsavel")
+    await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible()
+  })
+
+  test("exibe badge 'Portal do Responsável'", async ({ page }) => {
+    await page.goto("/responsavel")
+    await expect(page.getByText(/Portal do Responsável/i).first()).toBeVisible()
+  })
+})
+
+test.describe("Portal autenticado — mensalidades", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/mensalidades")
+    await expect(page).toHaveURL("/responsavel/mensalidades")
+  })
+
+  test("exibe heading Mensalidades", async ({ page }) => {
+    await page.goto("/responsavel/mensalidades")
+    await expect(page.getByRole("heading", { name: /Mensalidades/i })).toBeVisible()
+  })
+})
+
+test.describe("Portal autenticado — frequencia", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/frequencia")
+    await expect(page).toHaveURL("/responsavel/frequencia")
+  })
+
+  test("exibe heading Frequência", async ({ page }) => {
+    await page.goto("/responsavel/frequencia")
+    await expect(page.getByRole("heading", { name: /Frequência/i })).toBeVisible()
+  })
+
+  test("exibe nome do aluno vinculado", async ({ page }) => {
+    await page.goto("/responsavel/frequencia")
+    // O globalSetup vincula ao primeiro aluno ativo — deve aparecer na página
+    await expect(page.locator("h2").first()).toBeVisible({ timeout: 8000 })
+  })
+})
+
+test.describe("Portal autenticado — boletim", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/boletim")
+    await expect(page).toHaveURL("/responsavel/boletim")
+  })
+
+  test("exibe heading Boletim", async ({ page }) => {
+    await page.goto("/responsavel/boletim")
+    await expect(page.getByRole("heading", { name: /Boletim/i })).toBeVisible()
+  })
+
+  test("exibe estado de avaliações (com ou sem dados)", async ({ page }) => {
+    await page.goto("/responsavel/boletim")
+    // Ou mostra avaliações, ou mostra mensagem "Nenhuma avaliação publicada ainda"
+    const temAvaliacao = page.getByText(/Período/i)
+    const semAvaliacao = page.getByText(/Nenhuma avaliação publicada/i)
+    await expect(temAvaliacao.or(semAvaliacao)).toBeVisible({ timeout: 8000 })
+  })
+})
+
+test.describe("Portal autenticado — carteirinha", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/carteirinha")
+    await expect(page).toHaveURL("/responsavel/carteirinha")
+  })
+
+  test("exibe heading Carteirinhas", async ({ page }) => {
+    await page.goto("/responsavel/carteirinha")
+    await expect(page.getByRole("heading", { name: /Carteirinhas/i })).toBeVisible()
+  })
+
+  test("exibe carteirinha com texto 'CARTEIRINHA DIGITAL'", async ({ page }) => {
+    await page.goto("/responsavel/carteirinha")
+    await expect(page.getByText(/CARTEIRINHA DIGITAL/i)).toBeVisible({ timeout: 8000 })
+  })
+})
+
+test.describe("Portal autenticado — desempenho", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/desempenho")
+    await expect(page).toHaveURL("/responsavel/desempenho")
+  })
+
+  test("exibe heading Desempenho dos Atletas", async ({ page }) => {
+    await page.goto("/responsavel/desempenho")
+    await expect(page.getByRole("heading", { name: /Desempenho/i })).toBeVisible()
+  })
+
+  test("exibe card com 'Frequência média'", async ({ page }) => {
+    await page.goto("/responsavel/desempenho")
+    await expect(page.getByText(/Frequência média/i)).toBeVisible()
   })
 })
