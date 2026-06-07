@@ -30,7 +30,7 @@ import {
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import { cn, formatMoney } from "@/lib/utils"
 import { PartidasSection } from "./partidas-section"
 import type { RscDate } from "@/lib/rsc-date"
 
@@ -416,13 +416,13 @@ export function CampeonatoDetailClient({
               <div key={c.label} className="flex justify-between">
                 <span className="text-muted-foreground">{c.label}</span>
                 <span className={c.valor > 0 ? "font-medium" : "text-muted-foreground"}>
-                  R$ {c.valor.toFixed(2)}
+                  {formatMoney(c.valor)}
                 </span>
               </div>
             ))}
             <div className="border-t pt-2 flex justify-between font-bold text-brand-800">
               <span>Total por aluno</span>
-              <span>R$ {totalCustos.toFixed(2)}</span>
+              <span>{formatMoney(totalCustos)}</span>
             </div>
           </CardContent>
         </Card>
@@ -448,11 +448,11 @@ export function CampeonatoDetailClient({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total arrecadado</span>
-              <span className="font-medium text-success-600">R$ {totalPago.toFixed(2)}</span>
+              <span className="font-medium text-success-600">{formatMoney(totalPago)}</span>
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="text-muted-foreground">A receber</span>
-              <span className="font-bold text-warning-600">R$ {totalPendente.toFixed(2)}</span>
+              <span className="font-bold text-warning-600">{formatMoney(totalPendente)}</span>
             </div>
           </CardContent>
         </Card>
@@ -543,7 +543,7 @@ export function CampeonatoDetailClient({
                     <TableCell>{insc.aluno.turma}</TableCell>
                     <TableCell>
                       {insc.desconto > 0 ? (
-                        <span className="text-success-600 font-medium">- R$ {insc.desconto.toFixed(2)}</span>
+                        <span className="text-success-600 font-medium">- {formatMoney(insc.desconto)}</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -558,7 +558,7 @@ export function CampeonatoDetailClient({
                       )}
                     </TableCell>
                     <TableCell className={cn("font-medium", insc.bolsa ? "text-muted-foreground line-through" : "")}>
-                      R$ {insc.bolsa ? "0,00" : valorDevido.toFixed(2)}
+                      {insc.bolsa ? "R$ 0,00" : formatMoney(valorDevido)}
                     </TableCell>
                     <TableCell>
                       {insc.bolsa ? (
@@ -683,7 +683,7 @@ export function CampeonatoDetailClient({
               <p className="text-sm">
                 Aluno: <strong>{pagamentoOpen.aluno.nome}</strong>
                 {pagamentoOpen.desconto > 0 && (
-                  <span className="text-success-600"> (desconto de R$ {pagamentoOpen.desconto.toFixed(2)})</span>
+                  <span className="text-success-600"> (desconto de {formatMoney(pagamentoOpen.desconto)})</span>
                 )}
               </p>
               <div className="space-y-2">

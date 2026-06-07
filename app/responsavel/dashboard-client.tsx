@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
+import { formatMoney } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
 
 type Aluno = {
@@ -192,8 +193,8 @@ export function ResponsavelDashboardClient({
                     <CreditCard className="size-3.5" /> Mensalidade
                   </p>
                   <p className="mt-3 text-lg font-semibold text-[var(--color-ink-950)]">
-                    R$ {(aluno.mensalidade - aluno.desconto).toFixed(2)}
-                    {aluno.desconto > 0 && <span className="ml-1 text-xs text-success-600">(-{aluno.desconto.toFixed(2)})</span>}
+                    {formatMoney(aluno.mensalidade - aluno.desconto)}
+                    {aluno.desconto > 0 && <span className="ml-1 text-xs text-success-600">(-{aluno.desconto.toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2})})</span>}
                   </p>
                 </div>
                 <div className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-4">
@@ -230,7 +231,7 @@ export function ResponsavelDashboardClient({
                       <div key={i} className="flex items-center justify-between rounded-lg border border-black/5 bg-[var(--color-paper-50)] px-3 py-2 text-sm">
                         <span className="font-medium text-[var(--color-ink-900)]">{p.mesReferencia}</span>
                         <span className={p.dataPagamento ? "font-semibold text-success-600" : "text-[var(--color-ink-500)]"}>
-                          {p.dataPagamento ? `R$ ${p.valorRecebido?.toFixed(2)}` : "Pendente"}
+                          {p.dataPagamento ? formatMoney(p.valorRecebido ?? 0) : "Pendente"}
                         </span>
                       </div>
                     ))}
