@@ -31,7 +31,7 @@ export async function createCusto(data: {
         observacoes: data.observacoes ?? null,
       },
     })
-    await registrarLog("custo_novo", `Custo registrado — ${data.descricao}`, { categoria: data.categoria, valor: `R$ ${data.valor.toFixed(2)}` })
+    await registrarLog("custo_novo", `Custo registrado — ${data.descricao}`, { categoria: data.categoria, valor: data.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) })
     revalidatePath("/custos")
     return { success: true }
   } catch (e) {

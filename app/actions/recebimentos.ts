@@ -42,7 +42,7 @@ export async function criarRecebimento(input: RecebimentoInput): Promise<ActionR
     })
     await registrarLog("recebimento_novo", `Recebimento avulso — ${data.descricao}`, {
       categoria: data.categoria,
-      valor: `R$ ${data.valor.toFixed(2)}`,
+      valor: data.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
       forma: data.formaPagamento,
     })
     revalidatePath("/caixa")
