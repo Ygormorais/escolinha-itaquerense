@@ -57,6 +57,10 @@ docs/superpowers/
 AUDIT.md
 DESIGN_SYSTEM.md
 
+# audit screenshots
+audit-*.png
+audit.mjs
+
 # backup database files (tracked via backups branch)
 backups/*.db
 supabase/.temp/
