@@ -76,6 +76,8 @@ export async function createAluno(data: {
     }
 
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
@@ -122,6 +124,8 @@ export async function updateAluno(
 
     await registrarLog("aluno_editado", `Aluno atualizado — ${data.nome}`, { turma: data.turma })
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
@@ -135,6 +139,9 @@ export async function inativarAluno(id: number): Promise<ActionResult> {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Inativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_inativo", `Aluno inativado — ${aluno.nome}`, { turma: aluno.turma })
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
+    revalidatePath("/inadimplencia")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
@@ -148,6 +155,9 @@ export async function reativarAluno(id: number): Promise<ActionResult> {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Ativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_reativo", `Aluno reativado — ${aluno.nome}`, { turma: aluno.turma })
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
+    revalidatePath("/inadimplencia")
     revalidatePath("/")
     return { success: true }
   } catch (e) {

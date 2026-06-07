@@ -47,6 +47,7 @@ export async function criarRecebimento(input: RecebimentoInput): Promise<ActionR
     })
     revalidatePath("/caixa")
     revalidatePath("/caixa/dinheiro")
+    revalidatePath("/caixa/recebimentos")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar recebimento" }
