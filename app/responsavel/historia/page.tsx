@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent } from "@/components/ui/card"
-import { Shield, Trophy, Users, Heart } from "lucide-react"
+import { Shield, Trophy, Users, Heart, ArrowLeft, BookOpen } from "lucide-react"
+import Link from "next/link"
 
 export const metadata = { title: "Nossa História — Escolinha Itaquerense" }
 
@@ -17,8 +18,22 @@ export default async function HistoriaPage() {
   ]
 
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-6">Nossa História</h1>
+    <div className="flex flex-col gap-8">
+      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
+        <div className="space-y-4">
+          <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
+            <ArrowLeft className="size-4" />
+            Voltar ao portal
+          </Link>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <BookOpen className="size-6 opacity-80" />
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight">Nossa História</h1>
+            </div>
+            <p className="text-sm text-white/75">Conheça a origem, os valores e a missão da Escolinha Itaquerense.</p>
+          </div>
+        </div>
+      </section>
 
       <Card className="mb-8">
         <CardContent className="prose prose-sm max-w-none p-6 space-y-4">
@@ -68,6 +83,6 @@ export default async function HistoriaPage() {
           </p>
         </CardContent>
       </Card>
-    </>
+    </div>
   )
 }

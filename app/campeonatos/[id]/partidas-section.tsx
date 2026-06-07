@@ -406,11 +406,11 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                           <Shirt className="size-3.5" />
                         </Button>
                       </Link>
-                      <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)}>
+                      <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)} aria-label="Registrar placar">
                         <Pencil className="size-3.5" />
                       </Button>
                       <ConfirmDialog title="Deletar partida?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={() => handleDelete(p.id)}>
-                        <Button size="icon-sm" variant="ghost">
+                        <Button size="icon-sm" variant="ghost" aria-label="Deletar partida">
                           <Trash2 className="size-3.5 text-danger-600" />
                         </Button>
                       </ConfirmDialog>

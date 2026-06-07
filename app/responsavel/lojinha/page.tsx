@@ -6,6 +6,7 @@ import { Shirt, ShoppingBag, Package, Phone, ArrowLeft, Tags } from "lucide-reac
 import { db } from "@/lib/db"
 import Image from "next/image"
 import Link from "next/link"
+import { formatMoney } from "@/lib/utils"
 
 function ProdutoIcon({ categoria }: { categoria: string }) {
   if (categoria === "uniforme") return <Shirt className="size-7" />
@@ -27,8 +28,7 @@ export default async function LojinhaPage() {
     orderBy: { createdAt: "desc" },
   })
 
-  const formatPreco = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -109,7 +109,7 @@ export default async function LojinhaPage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-bold text-brand-600">
-                    {formatPreco(p.preco)}
+                    {formatMoney(p.preco)}
                   </span>
                   {p.tamanhos && (
                     <Badge variant="secondary" className="text-[10px]">
