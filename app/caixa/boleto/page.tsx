@@ -32,7 +32,7 @@ export default async function BoletoPage() {
           <TabsTrigger value="recebidos">Recebidos ({recebidos.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="emitidos">
-          <div className="rounded-xl border bg-card">
+          <div className="rounded-xl border bg-card overflow-x-auto">
             {emitidos.length === 0 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">Nenhum boleto aguardando pagamento.</div>
             ) : (
@@ -62,7 +62,7 @@ export default async function BoletoPage() {
           </div>
         </TabsContent>
         <TabsContent value="recebidos">
-          <div className="rounded-xl border bg-card">
+          <div className="rounded-xl border bg-card overflow-x-auto">
             {recebidos.length === 0 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">Nenhum boleto recebido ainda.</div>
             ) : (

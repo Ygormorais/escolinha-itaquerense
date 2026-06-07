@@ -39,7 +39,7 @@ export default async function DescontosPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

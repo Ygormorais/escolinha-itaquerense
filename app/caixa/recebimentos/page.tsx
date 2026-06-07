@@ -22,7 +22,7 @@ export default async function RecebimentosPage() {
         description={`${pagamentos.length} recebimentos · Total: R$ ${total.toFixed(2)}`}
       />
 
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
