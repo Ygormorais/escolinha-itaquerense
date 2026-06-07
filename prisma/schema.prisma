@@ -74,6 +74,9 @@ model Custo {
   comprovante    Boolean  @default(false)
   observacoes    String?
   createdAt      DateTime @default(now())
+
+  @@index([data])
+  @@index([categoria])
 }
 
 model CustoRecorrente {
@@ -290,6 +293,9 @@ model TransacaoMaquina {
   pagamentoId    Int?
   pagamento      Pagamento? @relation(fields: [pagamentoId], references: [id])
   createdAt      DateTime   @default(now())
+
+  @@index([status])
+  @@index([dataTransacao])
 }
 
 model Configuracao {
