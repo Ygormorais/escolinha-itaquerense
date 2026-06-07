@@ -115,7 +115,13 @@ npx prisma migrate dev --name init_pg
 - [ ] `FPFS_SYNC_TOKEN` definido (POST /api/sync/fpfs retorna 401 sem token)
 - [ ] `MERCADOPAGO_ACCESS_TOKEN` e `MERCADOPAGO_WEBHOOK_SECRET` definidos para cobranças PIX/Boleto
 - [ ] `.env` adicionado ao `.gitignore` (já está)
-- [ ] Backup automático do `prisma/dev.db` configurado
+- [ ] Backup automático configurado (GitHub Actions > Settings > Secrets):
+  - `SSH_HOST` — IP ou hostname do servidor de produção
+  - `SSH_USER` — usuário SSH (ex: ubuntu)
+  - `SSH_KEY` — chave SSH privada para acesso ao servidor
+  - `CONTAINER_NAME` — nome do container Docker (padrão: escolinha)
+  - `APP_URL` — URL base do app (ex: https://meudominio.com.br) para o cron diário
+- [ ] `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_EMAIL` definidos para push notifications PWA
 
 ### Rate limit (login e recuperação de senha)
 
