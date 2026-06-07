@@ -181,7 +181,7 @@ export function ResponsaveisClient({
               {!editId && (
                 <div className="space-y-2">
                   <Label>Senha *</Label>
-                  <Input type="password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
+                  <Input type="password" autoComplete="new-password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
                 </div>
               )}
             </div>

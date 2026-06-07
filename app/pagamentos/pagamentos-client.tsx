@@ -139,8 +139,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
             <div className="flex gap-2">
               <a
                 href={reciboUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-md bg-brand-800 px-4 py-2 text-sm font-medium text-white hover:bg-brand-900"
               >
                 <Printer className="size-4" />
@@ -565,8 +564,7 @@ export function PagamentosClient({
                       {status !== "Pago" && p.aluno.telefone && (
                         <a
                           href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          target="_blank" rel="noopener noreferrer"
                           title="Cobrar via WhatsApp"
                           className="inline-flex items-center justify-center size-7 rounded-md text-success-600 hover:bg-success-50 transition-colors"
                         >
@@ -576,8 +574,7 @@ export function PagamentosClient({
                       {status === "Pago" && (
                         <a
                           href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          target="_blank" rel="noopener noreferrer"
                           title="Imprimir recibo"
                           className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         >

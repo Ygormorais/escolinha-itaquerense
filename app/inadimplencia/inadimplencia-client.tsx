@@ -294,8 +294,7 @@ export function InadimplenciaClient({
                       </a>
                       <a
                         href={gerarLinkWA(a, nomeClube ?? "Escolinha")}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs font-medium text-success-600 hover:underline"
                       >
                         <MessageCircle className="size-3" />

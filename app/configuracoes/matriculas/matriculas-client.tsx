@@ -147,8 +147,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
                         <a
                           key={i}
                           href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
                         >
                           <ExternalLink className="size-3" />
