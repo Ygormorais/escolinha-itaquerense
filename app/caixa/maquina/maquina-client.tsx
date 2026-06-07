@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -160,7 +161,7 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
               {filtered.map((t) => (
                 <TableRow key={t.id}>
                   <TableCell>{format(new Date(t.dataTransacao), "dd/MM/yyyy")}</TableCell>
-                  <TableCell className="font-medium">R$ {t.valor.toFixed(2)}</TableCell>
+                  <TableCell className="font-medium">{formatMoney(t.valor)}</TableCell>
                   <TableCell>{t.bandeira || "—"}</TableCell>
                   <TableCell>
                     <Badge variant={t.tipo === "debito" ? "default" : "secondary"} className="text-[10px]">
@@ -208,7 +209,7 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
           <div className="space-y-4 py-2">
             {selectedTransacao && (
               <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
-                <p className="text-sm font-medium">R$ {selectedTransacao.valor.toFixed(2)} — {selectedTransacao.bandeira} {selectedTransacao.tipo}</p>
+                <p className="text-sm font-medium">{formatMoney(selectedTransacao.valor)} — {selectedTransacao.bandeira} {selectedTransacao.tipo}</p>
                 <p className="text-xs text-muted-foreground">{selectedTransacao.nomeNoCartao} · {format(new Date(selectedTransacao.dataTransacao), "dd/MM/yyyy")}</p>
               </div>
             )}
