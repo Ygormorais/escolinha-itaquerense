@@ -72,11 +72,16 @@ export function CaixaClient({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm font-heading">
               <TrendingUp className="size-4 text-success-600" />
               Últimos Recebimentos
             </CardTitle>
+            {pagamentosMes.length > 8 && (
+              <Link href="/caixa/recebimentos" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Ver todos ({pagamentosMes.length})
+              </Link>
+            )}
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -106,11 +111,16 @@ export function CaixaClient({
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm font-heading">
               <PiggyBank className="size-4 text-danger-600" />
               Últimos Custos
             </CardTitle>
+            {custosMes.length > 8 && (
+              <Link href="/custos" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Ver todos ({custosMes.length})
+              </Link>
+            )}
           </CardHeader>
           <CardContent className="p-0">
             <Table>

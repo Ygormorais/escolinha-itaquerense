@@ -105,7 +105,7 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Histórico de Atividades"
-        description={`${filtrados.length} registros`}
+        description={`${filtrados.length} registro(s)${logs.length >= 500 ? " · exibindo os 500 mais recentes" : ""}`}
         action={
           <Button size="sm" onClick={exportarCSV}>
             <Download className="size-4 mr-1" /> CSV
