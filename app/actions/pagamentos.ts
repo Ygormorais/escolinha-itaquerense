@@ -30,8 +30,12 @@ export async function registrarPagamento(
     const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
     await registrarLog("pagamento", `Pagamento registrado — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: `R$ ${data.valorRecebido.toFixed(2)}`, forma: data.formaPagamento })
     revalidatePath("/pagamentos")
+    revalidatePath("/inadimplencia")
     revalidatePath("/caixa")
+    revalidatePath("/caixa/recebimentos")
     revalidatePath("/caixa/dinheiro")
+    revalidatePath("/caixa/pix")
+    revalidatePath("/caixa/boleto")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
@@ -76,6 +80,9 @@ export async function registrarPagamentosLote(
 
     await registrarLog("pagamento", `Lote de ${ids.length} pagamento(s) registrado(s)`, { forma: data.formaPagamento, data: data.dataPagamento })
     revalidatePath("/pagamentos")
+    revalidatePath("/inadimplencia")
+    revalidatePath("/caixa")
+    revalidatePath("/caixa/recebimentos")
     revalidatePath("/")
     return { atualizados: ids.length }
   } catch (e) {
