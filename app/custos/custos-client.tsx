@@ -407,13 +407,13 @@ export function CustosClient({
                     <CustoFormDialog
                       custo={c}
                       trigger={
-                        <Button variant="ghost" size="icon-sm">
+                        <Button variant="ghost" size="icon-sm" aria-label="Editar custo">
                           <PencilIcon className="size-3.5" />
                         </Button>
                       }
                     />
                     <ConfirmDialog title="Excluir custo?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => handleDelete(c.id)}>
-                      <Button variant="ghost" size="icon-sm">
+                      <Button variant="ghost" size="icon-sm" aria-label="Excluir custo">
                         <Trash2Icon className="size-3.5 text-danger-600" />
                       </Button>
                     </ConfirmDialog>

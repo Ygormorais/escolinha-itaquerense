@@ -119,7 +119,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link href={`/campeonatos/${campeonatoId}`}>
-            <Button variant="ghost" size="icon-sm"><ArrowLeft className="size-4" /></Button>
+            <Button variant="ghost" size="icon-sm" aria-label="Voltar ao campeonato"><ArrowLeft className="size-4" /></Button>
           </Link>
           <div>
             <h1 className="font-heading text-2xl font-bold tracking-tight">Convocação</h1>

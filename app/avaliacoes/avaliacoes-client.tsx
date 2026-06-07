@@ -250,7 +250,7 @@ function EditarAvaliacaoDialog({ avaliacao }: { avaliacao: Avaliacao }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <div onClick={() => setOpen(true)}>
-        <Button variant="ghost" size="icon-sm">
+        <Button variant="ghost" size="icon-sm" aria-label="Editar avaliação">
           <Pencil className="size-3.5" />
         </Button>
       </div>

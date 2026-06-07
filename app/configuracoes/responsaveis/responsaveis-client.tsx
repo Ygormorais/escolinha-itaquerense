@@ -255,7 +255,7 @@ export function ResponsaveisClient({
                         </span>
                       ))}
                       <Dialog open={vincularOpen?.id === r.id} onOpenChange={(o) => { if (!o) setVincularOpen(null) }}>
-                        <Button size="icon-sm" variant="ghost" className="size-5" onClick={() => setVincularOpen(r)}>
+                        <Button size="icon-sm" variant="ghost" className="size-5" onClick={() => setVincularOpen(r)} aria-label="Vincular aluno">
                           <UserPlus className="size-3" />
                         </Button>
                         <DialogContent>
@@ -295,11 +295,11 @@ export function ResponsaveisClient({
                       <Button size="icon-sm" variant="ghost" onClick={() => { setWhatsOpen(r); setWhatsMsg("") }} title="Enviar WhatsApp">
                         <MessageSquare className="size-3.5 text-brand-600" />
                       </Button>
-                      <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)}>
+                      <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)} aria-label="Editar responsável">
                         <Pencil className="size-3.5" />
                       </Button>
                       <ConfirmDialog title="Remover responsável?" description={`Remover "${r.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleDelete(r.id, r.nome)}>
-                        <Button size="icon-sm" variant="ghost">
+                        <Button size="icon-sm" variant="ghost" aria-label="Remover responsável">
                           <Trash2 className="size-3.5 text-danger-600" />
                         </Button>
                       </ConfirmDialog>

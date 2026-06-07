@@ -240,11 +240,11 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     )}
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)}>
+                    <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)} aria-label="Editar evento">
                       <Pencil className="size-3" />
                     </Button>
                     <ConfirmDialog title="Excluir evento?" description="Esta ação não pode ser desfeita." onConfirm={() => handleDelete(ev.id)}>
-                      <Button variant="ghost" size="icon-sm">
+                      <Button variant="ghost" size="icon-sm" aria-label="Excluir evento">
                         <Trash2 className="size-3 text-danger-600" />
                       </Button>
                     </ConfirmDialog>

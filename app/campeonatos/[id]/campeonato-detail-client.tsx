@@ -367,7 +367,7 @@ export function CampeonatoDetailClient({
           </Dialog>
           <div className="h-5 w-px bg-border" />
           <ConfirmDialog title="Deletar campeonato?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={handleDelete}>
-            <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-danger-600 hover:bg-danger-50">
+            <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-danger-600 hover:bg-danger-50" aria-label="Deletar campeonato">
               <Trash2 className="size-4" />
             </Button>
           </ConfirmDialog>
@@ -593,7 +593,7 @@ export function CampeonatoDetailClient({
                           </Button>
                         )}
                         <ConfirmDialog title="Remover inscrição?" description={`Remover ${insc.aluno.nome} do campeonato?`} confirmLabel="Remover" onConfirm={() => handleRemover(insc.id, insc.aluno.nome)}>
-                          <Button size="icon-sm" variant="ghost">
+                          <Button size="icon-sm" variant="ghost" aria-label="Remover inscrição">
                             <XCircle className="size-4 text-danger-600" />
                           </Button>
                         </ConfirmDialog>

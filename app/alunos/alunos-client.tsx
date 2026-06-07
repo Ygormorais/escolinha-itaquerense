@@ -436,7 +436,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                       key={aluno.id}
                       aluno={aluno}
                       trigger={
-                        <Button variant="ghost" size="icon-sm">
+                        <Button variant="ghost" size="icon-sm" aria-label="Editar aluno">
                           <PencilIcon className="size-3.5" />
                         </Button>
                       }
