@@ -157,7 +157,7 @@ export async function notificarPagamentoConfirmadoEmail(pagamentoId: number): Pr
       <div style="background:#f9fafb;padding:24px 32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
         <p>Olá, ${p.aluno.responsavel?.split(" ")[0] ?? "responsável"}!</p>
         <p>O pagamento da mensalidade de <strong>${p.aluno.nome}</strong> referente a <strong>${p.mesReferencia}</strong> foi confirmado.</p>
-        <p style="font-size:20px;font-weight:bold;color:#047857">R$ ${(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}</p>
+        <p style="font-size:20px;font-weight:bold;color:#047857">${(p.valorRecebido ?? p.aluno.mensalidade).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
         <p style="color:#6b7280;font-size:13px">Obrigado por manter as mensalidades em dia.</p>
       </div>
     </div>

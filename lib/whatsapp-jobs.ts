@@ -1,10 +1,11 @@
 import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
+import { formatMoney } from "@/lib/utils"
 
 export async function runEnviarLembretesWhatsAppInadimplencia() {
   const config = getConfig()
-  const erros = 0
+  let erros = 0
   let semTelefone = 0
 
   const atrasadas = await db.pagamento.findMany({
@@ -29,7 +30,7 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
       ``,
       `Lembrete: a mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em atraso (${mesesAtraso} ${mesesAtraso === 1 ? "mês" : "meses"}).`,
       ``,
-      `Valor: *R$ ${p.aluno.mensalidade.toFixed(2)}*`,
+      `Valor: *${formatMoney(p.aluno.mensalidade)}*`,
       config.chavePix ? `PIX: ${config.chavePix}` : ``,
       ``,
       `Qualquer dúvida, entre em contato.`,
@@ -38,7 +39,7 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
     try {
       await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
     } catch {
-      // silently fail per student
+      erros++
     }
   }
 
@@ -47,7 +48,7 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
 
 export async function runEnviarLembretesWhatsAppVencendo() {
   const config = getConfig()
-  const erros = 0
+  let erros = 0
   let semTelefone = 0
 
   const tresDias = new Date()
@@ -75,14 +76,14 @@ export async function runEnviarLembretesWhatsAppVencendo() {
       ``,
       `A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* vence em *${dias} ${dias === 1 ? "dia" : "dias"}* (${new Date(p.dataVencimento).toLocaleDateString("pt-BR")}).`,
       ``,
-      `Valor: *R$ ${p.aluno.mensalidade.toFixed(2)}*`,
+      `Valor: *${formatMoney(p.aluno.mensalidade)}*`,
       config.chavePix ? `PIX: ${config.chavePix}` : ``,
     ].filter(Boolean).join("\n")
 
     try {
       await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
     } catch {
-      // silently fail per student
+      erros++
     }
   }
 
@@ -104,7 +105,7 @@ export async function notificarPagamentoConfirmado(pagamentoId: number): Promise
     ``,
     `Pagamento confirmado! A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* foi recebida com sucesso.`,
     ``,
-    `Valor: *R$ ${(p.valorRecebido ?? p.aluno.mensalidade).toFixed(2)}*`,
+    `Valor: *${formatMoney(p.valorRecebido ?? p.aluno.mensalidade)}*`,
     `Obrigado!`,
   ].join("\n")
 

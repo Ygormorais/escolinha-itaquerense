@@ -1,5 +1,6 @@
 // lib/whatsapp/tools.ts
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import type Anthropic from "@anthropic-ai/sdk"
 
 export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
@@ -153,7 +154,7 @@ export async function executeTool(
             const status = p.dataPagamento ? "✅ Pago" : "⏳ Pendente"
             const venc = p.dataVencimento.toLocaleDateString("pt-BR")
             const valor = p.valorRecebido ?? 0
-            return `• ${p.mesReferencia} — ${status} — Vencimento: ${venc} — R$ ${valor.toFixed(2)}`
+            return `• ${p.mesReferencia} — ${status} — Vencimento: ${venc} — ${formatMoney(valor)}`
           })
           .join("\n")
       }
