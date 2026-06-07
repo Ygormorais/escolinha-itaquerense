@@ -14,7 +14,7 @@ vi.mock("@/lib/config", () => ({
       capacidadeTurma: 20,
       chavePix: "pix@test.com",
       whatsapp: "5511999",
-      googleCalendarId: "",
+      googleCalendarId: "", diaVencimento: 10,
     }),
   saveConfig: vi.fn(),
 }))
@@ -33,7 +33,7 @@ const mockConfig: ClubConfig = {
   capacidadeTurma: 20,
   chavePix: "pix@test.com",
   whatsapp: "5511999",
-  googleCalendarId: "",
+  googleCalendarId: "", diaVencimento: 10,
 }
 
 describe("config", () => {

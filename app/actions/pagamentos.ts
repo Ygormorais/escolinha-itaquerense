@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
+import { getConfig } from "@/lib/config"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -101,6 +102,7 @@ export async function gerarMensalidadesMes(
   await requireAuth()
   try {
     const [ano, mesNum] = mes.split("-").map(Number)
+    const { diaVencimento } = getConfig()
 
     const [alunos, existentes] = await Promise.all([
       db.aluno.findMany({ where: { status: "Ativo" } }),
@@ -118,7 +120,7 @@ export async function gerarMensalidadesMes(
         data: novos.map((a) => ({
           alunoId: a.id,
           mesReferencia: mes,
-          dataVencimento: new Date(ano, mesNum - 1, 10),
+          dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
         })),
       })
     }
@@ -137,6 +139,7 @@ export async function gerarMensalidadesAno(
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
   await requireAuth()
   try {
+    const { diaVencimento } = getConfig()
     const alunos = await db.aluno.findMany({ where: { status: "Ativo" } })
     let criados = 0
     let ignorados = 0
@@ -155,7 +158,7 @@ export async function gerarMensalidadesAno(
           data: novos.map((a) => ({
             alunoId: a.id,
             mesReferencia: mes,
-            dataVencimento: new Date(ano, mesNum - 1, 10),
+            dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
           })),
         })
         criados += novos.length

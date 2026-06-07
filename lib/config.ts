@@ -11,6 +11,7 @@ export type ClubConfig = {
   chavePix: string
   whatsapp: string
   googleCalendarId: string
+  diaVencimento: number
 }
 
 const CONFIG_PATH = path.join(process.cwd(), "club.config.json")
@@ -25,6 +26,7 @@ const DEFAULT: ClubConfig = {
   chavePix: "ygorcamisa1@gmail.com",
   whatsapp: "5511999999999",
   googleCalendarId: "",
+  diaVencimento: 10,
 }
 
 export function getConfig(): ClubConfig {

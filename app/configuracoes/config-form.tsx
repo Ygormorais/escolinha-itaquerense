@@ -117,6 +117,20 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
                   />
                   <p className="text-xs text-muted-foreground">Máximo de alunos por turma</p>
                 </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Dia de vencimento</label>
+                  <Input
+                    type="number"
+                    name="diaVencimento"
+                    value={form.diaVencimento || 10}
+                    onChange={handleChange}
+                    placeholder="10"
+                    min={1}
+                    max={28}
+                    step={1}
+                  />
+                  <p className="text-xs text-muted-foreground">Dia do mês em que as mensalidades vencem (1–28)</p>
+                </div>
               </div>
             </div>
 
