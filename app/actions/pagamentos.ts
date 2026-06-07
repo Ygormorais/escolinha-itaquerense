@@ -70,16 +70,18 @@ export async function registrarPagamentosLote(
       include: { aluno: { select: { nome: true, mensalidade: true } } },
     })
 
-    for (const p of pagamentos) {
-      await db.pagamento.update({
-        where: { id: p.id },
-        data: {
-          dataPagamento: new Date(data.dataPagamento),
-          formaPagamento: data.formaPagamento,
-          valorRecebido: p.aluno.mensalidade,
-        },
-      })
-    }
+    await db.$transaction(
+      pagamentos.map((p) =>
+        db.pagamento.update({
+          where: { id: p.id },
+          data: {
+            dataPagamento: new Date(data.dataPagamento),
+            formaPagamento: data.formaPagamento,
+            valorRecebido: p.aluno.mensalidade,
+          },
+        })
+      )
+    )
 
     await registrarLog("pagamento", `Lote de ${ids.length} pagamento(s) registrado(s)`, { forma: data.formaPagamento, data: data.dataPagamento })
     revalidatePath("/pagamentos")
