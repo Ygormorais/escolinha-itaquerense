@@ -243,3 +243,135 @@ test.describe("Portal autenticado — desempenho", () => {
     await expect(page.getByText(/Frequência média/i)).toBeVisible()
   })
 })
+
+test.describe("Portal autenticado — classificacao", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/classificacao")
+    await expect(page).toHaveURL("/responsavel/classificacao")
+  })
+
+  test("exibe heading Classificação", async ({ page }) => {
+    await page.goto("/responsavel/classificacao")
+    await expect(page.getByRole("heading", { name: /Classificação/i })).toBeVisible()
+  })
+
+  test("exibe contador de campeonatos no header", async ({ page }) => {
+    await page.goto("/responsavel/classificacao")
+    await expect(page.getByText(/Campeonatos/i).first()).toBeVisible()
+  })
+})
+
+test.describe("Portal autenticado — jogos", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/jogos")
+    await expect(page).toHaveURL("/responsavel/jogos")
+  })
+
+  test("exibe heading Jogos", async ({ page }) => {
+    await page.goto("/responsavel/jogos")
+    await expect(page.getByRole("heading", { name: /^Jogos$/i })).toBeVisible()
+  })
+
+  test("exibe estado de jogos (com ou sem dados)", async ({ page }) => {
+    await page.goto("/responsavel/jogos")
+    const temJogos = page.locator('[data-slot="card"]').first()
+    const semJogos = page.getByText(/Nenhum jogo cadastrado/i)
+    await expect(temJogos.or(semJogos)).toBeVisible({ timeout: 8000 })
+  })
+})
+
+test.describe("Portal autenticado — galeria", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/galeria")
+    await expect(page).toHaveURL("/responsavel/galeria")
+  })
+
+  test("exibe heading Mural", async ({ page }) => {
+    await page.goto("/responsavel/galeria")
+    await expect(page.getByRole("heading", { name: /Mural/i })).toBeVisible()
+  })
+})
+
+test.describe("Portal autenticado — historia", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/historia")
+    await expect(page).toHaveURL("/responsavel/historia")
+  })
+
+  test("exibe heading Nossa História", async ({ page }) => {
+    await page.goto("/responsavel/historia")
+    await expect(page.getByRole("heading", { name: /Nossa História/i })).toBeVisible()
+  })
+
+  test("exibe texto sobre a escolinha", async ({ page }) => {
+    await page.goto("/responsavel/historia")
+    await expect(page.getByText(/Escolinha Itaquerense/i).first()).toBeVisible()
+  })
+})
+
+test.describe("Portal autenticado — lojinha", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/lojinha")
+    await expect(page).toHaveURL("/responsavel/lojinha")
+  })
+
+  test("exibe heading Lojinha", async ({ page }) => {
+    await page.goto("/responsavel/lojinha")
+    await expect(page.getByRole("heading", { name: /Lojinha/i })).toBeVisible()
+  })
+
+  test("exibe link para pedido por WhatsApp", async ({ page }) => {
+    await page.goto("/responsavel/lojinha")
+    await expect(page.getByRole("link", { name: /Quero comprar/i })).toBeVisible()
+  })
+})
+
+test.describe("Portal autenticado — notificacoes", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/notificacoes")
+    await expect(page).toHaveURL("/responsavel/notificacoes")
+  })
+
+  test("exibe heading Notificações", async ({ page }) => {
+    await page.goto("/responsavel/notificacoes")
+    // Client component — heading é renderizado no client, aguardar hidratação
+    await expect(page.getByRole("heading", { name: /Notificações/i })).toBeVisible({ timeout: 8000 })
+  })
+
+  test("exibe lista de tipos de notificação", async ({ page }) => {
+    await page.goto("/responsavel/notificacoes")
+    await expect(page.getByText(/Mensalidade vencendo/i)).toBeVisible({ timeout: 8000 })
+  })
+})
+
+test.describe("Portal autenticado — solicitacoes", () => {
+  test.use({ storageState: RESP_STORAGE })
+
+  test("carrega sem redirecionar para login", async ({ page }) => {
+    await page.goto("/responsavel/solicitacoes")
+    await expect(page).toHaveURL("/responsavel/solicitacoes")
+  })
+
+  test("exibe link 'Voltar ao portal'", async ({ page }) => {
+    await page.goto("/responsavel/solicitacoes")
+    await expect(page.getByRole("link", { name: /Voltar ao portal/i })).toBeVisible()
+  })
+
+  test("exibe formulário para nova solicitação", async ({ page }) => {
+    await page.goto("/responsavel/solicitacoes")
+    // Deve haver um select de tipo + textarea de descrição + botão de envio
+    await expect(page.locator("select, [role='combobox']").first()).toBeVisible({ timeout: 8000 })
+  })
+})
