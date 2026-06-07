@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Image from "next/image"
 import { Plus, ShoppingBag, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -289,7 +290,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">{p.nome}</TableCell>
-                <TableCell>R$ {p.preco.toFixed(2)}</TableCell>
+                <TableCell>{formatMoney(p.preco)}</TableCell>
                 <TableCell>
                   <Badge variant="secondary">
                     {categoriaLabel[p.categoria] ?? p.categoria}

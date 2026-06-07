@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -239,7 +240,7 @@ export function CampeonatoClient({
                     </span>
                     <span className="flex items-center gap-1 font-semibold text-brand-700">
                       <CircleDollarSign className="size-3.5" />
-                      R$ {c.taxaInscricao.toFixed(2)} taxa
+                      {formatMoney(c.taxaInscricao)} taxa
                     </span>
                   </div>
                 </CardContent>

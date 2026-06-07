@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -399,7 +400,7 @@ export function CustosClient({
                   {c.comprovante && <CheckIcon className="size-4 text-success-600" />}
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  R$ {c.valor.toFixed(2)}
+                  {formatMoney(c.valor)}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
