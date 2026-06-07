@@ -10,13 +10,13 @@ export default function ResponsavelLoading() {
         ))}
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border bg-white p-5 space-y-3">
+        <div className="rounded-xl border bg-card p-5 space-y-3">
           <div className="h-5 w-40 animate-pulse rounded bg-muted" />
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-4 w-full animate-pulse rounded bg-muted" />
           ))}
         </div>
-        <div className="rounded-xl border bg-white p-5 space-y-3">
+        <div className="rounded-xl border bg-card p-5 space-y-3">
           <div className="h-5 w-40 animate-pulse rounded bg-muted" />
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-4 w-full animate-pulse rounded bg-muted" />

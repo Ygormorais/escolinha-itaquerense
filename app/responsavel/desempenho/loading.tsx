@@ -10,7 +10,7 @@ export default function DesempenhoLoading() {
       </div>
       <div className="space-y-6">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-white p-6 space-y-4">
+          <div key={i} className="rounded-xl border bg-card p-6 space-y-4">
             <div className="h-6 w-40 animate-pulse rounded bg-muted" />
             <div className="grid gap-6 sm:grid-cols-3">
               {Array.from({ length: 3 }).map((_, j) => (
