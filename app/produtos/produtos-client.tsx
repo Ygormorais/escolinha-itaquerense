@@ -324,11 +324,12 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                       variant="ghost"
                       size="icon"
                       onClick={() => openEdit(p)}
+                      aria-label="Editar produto"
                     >
                       <Pencil className="size-4" />
                     </Button>
                     <ConfirmDialog title="Remover produto?" description={`Remover "${p.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleRemover(p.id, p.nome)}>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" aria-label="Remover produto">
                         <Trash2 className="size-4" />
                       </Button>
                     </ConfirmDialog>

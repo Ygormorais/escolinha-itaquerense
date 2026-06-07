@@ -290,7 +290,7 @@ export function MidiaClient({
                   <TableCell className="text-sm">{formatVinculo(m)}</TableCell>
                   <TableCell>
                     <ConfirmDialog title="Remover mídia?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleRemover(m.id)}>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" aria-label="Remover mídia">
                         <Trash2 className="size-4" />
                       </Button>
                     </ConfirmDialog>

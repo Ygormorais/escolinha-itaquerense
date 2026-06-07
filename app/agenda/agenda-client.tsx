@@ -138,13 +138,13 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={prevMonth}>
+            <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Mês anterior">
               <ChevronLeft className="size-4" />
             </Button>
             <CardTitle className="text-lg font-heading">
               {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={nextMonth}>
+            <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Próximo mês">
               <ChevronRight className="size-4" />
             </Button>
           </div>
