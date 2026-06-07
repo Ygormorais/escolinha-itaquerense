@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
+import { formatMoney } from "@/lib/utils"
 
 export const metadata = { title: "Caixa — Escolinha Itaquerense" }
 
@@ -60,25 +61,25 @@ export default async function CaixaPage() {
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Recebido (mês)</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-success-600">
-            R$ {totalRecebido.toFixed(2)}
+            {formatMoney(totalRecebido)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Custos (mês)</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-danger-600">
-            R$ {totalCustos.toFixed(2)}
+            {formatMoney(totalCustos)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saldo</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-foreground">
-            R$ {(totalRecebido - totalCustos).toFixed(2)}
+            {formatMoney(totalRecebido - totalCustos)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Maquininha (pendente)</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-warning-600">
-            R$ {totalPendente.toFixed(2)}
+            {formatMoney(totalPendente)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">{transacoesPendentes.length} transação(ões)</p>
         </div>

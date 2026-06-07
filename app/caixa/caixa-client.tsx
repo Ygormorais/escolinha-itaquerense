@@ -8,6 +8,7 @@ import {
 import { format } from "date-fns"
 import Link from "next/link"
 import type { RscDate } from "@/lib/rsc-date"
+import { formatMoney } from "@/lib/utils"
 
 type Pagamento = {
   id: number
@@ -40,9 +41,9 @@ export function CaixaClient({
 }) {
   const sections = [
     { href: "/caixa/recebimentos", label: "Recebimentos", icon: TrendingUp, color: "text-success-600 bg-success-50", desc: `${pagamentosMes.length} pagamentos no mês` },
-    { href: "/caixa/pix", label: "PIX", icon: Smartphone, color: "text-info-600 bg-info-50", desc: `R$ ${(porForma["PIX"] ?? 0).toFixed(2)}` },
-    { href: "/caixa/boleto", label: "Boleto", icon: FileText, color: "text-warning-600 bg-warning-50", desc: `R$ ${(porForma["Boleto"] ?? 0).toFixed(2)}` },
-    { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", desc: `R$ ${(porForma["Dinheiro"] ?? 0).toFixed(2)}` },
+    { href: "/caixa/pix", label: "PIX", icon: Smartphone, color: "text-info-600 bg-info-50", desc: formatMoney(porForma["PIX"] ?? 0) },
+    { href: "/caixa/boleto", label: "Boleto", icon: FileText, color: "text-warning-600 bg-warning-50", desc: formatMoney(porForma["Boleto"] ?? 0) },
+    { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", desc: formatMoney(porForma["Dinheiro"] ?? 0) },
     { href: "/caixa/maquina", label: "Maquininha", icon: CreditCard, color: "text-brand-800 bg-brand-100", desc: `Cartão crédito/débito` },
     { href: "/caixa/descontos", label: "Descontos", icon: Percent, color: "text-danger-600 bg-danger-50", desc: `Descontos concedidos` },
   ]
@@ -91,7 +92,7 @@ export function CaixaClient({
                 {pagamentosMes.slice(0, 8).map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.aluno.nome}</TableCell>
-                    <TableCell>R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
+                    <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>
                     <TableCell>{p.formaPagamento || "—"}</TableCell>
                     <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM") : "—"}</TableCell>
                   </TableRow>
@@ -126,7 +127,7 @@ export function CaixaClient({
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.descricao}</TableCell>
                     <TableCell>{c.categoria}</TableCell>
-                    <TableCell className="text-danger-600">R$ {c.valor.toFixed(2)}</TableCell>
+                    <TableCell className="text-danger-600">{formatMoney(c.valor)}</TableCell>
                     <TableCell>{format(new Date(c.data), "dd/MM")}</TableCell>
                   </TableRow>
                 ))}
