@@ -48,7 +48,10 @@ export function MatriculaForm() {
   }
 
   function validar(): string | null {
-    if (!aluno.trim() || !responsavel.trim() || !dataNasc || !telefone.trim()) return null
+    if (!aluno.trim()) return "Nome do aluno é obrigatório."
+    if (!responsavel.trim()) return "Nome do responsável é obrigatório."
+    if (!dataNasc) return "Data de nascimento é obrigatória."
+    if (!telefone.trim()) return "Telefone é obrigatório."
     const tel = telefone.replace(/\D/g, "")
     if (tel.length < 10 || tel.length > 11) return "Telefone inválido — informe DDD + número."
     const ano = new Date(dataNasc).getFullYear()

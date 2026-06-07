@@ -11,8 +11,12 @@ export async function salvarRecibo(data: {
   valor: number
   formaPagamento: string
   dataPagamento: string
-}): Promise<{ numero: string }> {
+}): Promise<{ numero: string } | { error: string }> {
   await requireAuth()
+  if (!data.alunoNome?.trim()) return { error: "Nome do aluno é obrigatório" }
+  const valor = Number(data.valor)
+  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
+  if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
   const count = await db.recibo.count()
   const numero = String(count + 1).padStart(3, "0")
 
@@ -34,7 +38,7 @@ export async function salvarRecibo(data: {
 
 export async function getRecibos() {
   await requireAuth()
-  return db.recibo.findMany({ orderBy: { createdAt: "desc" } })
+  return db.recibo.findMany({ orderBy: { createdAt: "desc" }, take: 500 })
 }
 
 export async function deleteRecibo(id: number) {

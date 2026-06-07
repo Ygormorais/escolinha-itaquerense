@@ -9,6 +9,7 @@ export async function criarSolicitacao(data: {
   tipo: string
   descricao: string
 }) {
+  if (!data.tipo?.trim()) return { error: "Selecione o tipo de solicitação" }
   if (!data.descricao?.trim()) return { error: "Descreva sua solicitação" }
   const s = await db.solicitacao.create({
     data: {
@@ -27,6 +28,7 @@ export async function listarSolicitacoes(responsavelId: number) {
   return db.solicitacao.findMany({
     where: { responsavelId },
     orderBy: { createdAt: "desc" },
+    take: 100,
   })
 }
 
@@ -37,6 +39,7 @@ export async function adminListarSolicitacoes(status?: string) {
     where,
     include: { responsavel: { select: { nome: true, email: true, telefone: true } } },
     orderBy: { createdAt: "desc" },
+    take: 500,
   })
 }
 

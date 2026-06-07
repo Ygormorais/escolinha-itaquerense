@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Printer, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import { salvarRecibo, deleteRecibo } from "@/app/actions/recibos"
 import type { ClubConfig } from "@/lib/config"
 import { formatMoney } from "@/lib/utils"
@@ -61,7 +62,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
   async function handleImprimir() {
     setSalvando(true)
     try {
-      const { numero } = await salvarRecibo({
+      const result = await salvarRecibo({
         alunoNome: form.aluno,
         responsavel: form.responsavel,
         mesReferencia: form.referencia,
@@ -69,6 +70,8 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
         formaPagamento: form.forma,
         dataPagamento: form.dataPagamento,
       })
+      if ("error" in result) { toast.error(result.error); return }
+      const { numero } = result
       setForm((prev) => ({ ...prev, numero }))
       window.print()
     } finally {

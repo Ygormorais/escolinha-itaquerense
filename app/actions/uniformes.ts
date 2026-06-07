@@ -19,9 +19,10 @@ export async function adicionarUniforme(alunoId: number, data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth()
+  if (!data.item?.trim()) return { error: "Item de uniforme é obrigatório" }
   try {
     await db.uniforme.create({
-      data: { alunoId, item: data.item, tamanho: data.tamanho ?? null, observacoes: data.observacoes ?? null },
+      data: { alunoId, item: data.item.trim(), tamanho: data.tamanho ?? null, observacoes: data.observacoes ?? null },
     })
     revalidatePath(`/alunos/${alunoId}`)
     revalidatePath("/uniformes")
