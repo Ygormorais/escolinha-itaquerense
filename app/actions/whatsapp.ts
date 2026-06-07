@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { getConfig } from "@/lib/config"
 import { requireAuth } from "@/lib/auth"
+import { formatMoney } from "@/lib/utils"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -54,7 +55,7 @@ export async function enviarCobrancaWhatsApp(
     if (!aluno) return { error: "Aluno não encontrado" }
 
     const config = getConfig()
-    const mensagem = `*${config.nome}* - Lembrete de Mensalidade\n\nOlá, *${aluno.responsavel || aluno.nome}*!\n\nA mensalidade do *${aluno.nome}* referente a *${mesReferencia}* está disponível para pagamento.\n\nValor: R$ ${valor.toFixed(2)}${config.chavePix ? `\n\nPIX: ${config.chavePix}` : ""}\n\nQualquer dúvida, estamos à disposição.`
+    const mensagem = `*${config.nome}* - Lembrete de Mensalidade\n\nOlá, *${aluno.responsavel || aluno.nome}*!\n\nA mensalidade do *${aluno.nome}* referente a *${mesReferencia}* está disponível para pagamento.\n\nValor: *${formatMoney(valor)}*${config.chavePix ? `\n\nPIX: ${config.chavePix}` : ""}\n\nQualquer dúvida, estamos à disposição.`
 
     const provider = getWhatsAppProvider()
     const result = await provider.sendText({ telefone, mensagem })
