@@ -13,7 +13,14 @@ srv*.log
 *.log
 backups
 test-results
+playwright-report
 .next
 prisma/dev.db
 prisma/dev.db-shm
 prisma/dev.db-wal
+e2e
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
