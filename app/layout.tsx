@@ -106,6 +106,12 @@ export default async function RootLayout({
         />
       </head>
       <body className="flex h-full bg-background font-sans">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-brand-800 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none"
+        >
+          Pular para o conteúdo
+        </a>
         <PWARegister />
         <Providers>
           {showAdminShell ? (
@@ -113,7 +119,7 @@ export default async function RootLayout({
               {children}
             </AdminShell>
           ) : (
-            <div className="flex flex-1 flex-col">
+            <div id="main-content" className="flex flex-1 flex-col">
               {children}
             </div>
           )}
