@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -418,7 +419,7 @@ export default async function DashboardPage({
                       <TableCell>{p.aluno.turma}</TableCell>
                       <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
                       <TableCell className="text-right">
-                        R$ {(p.valorRecebido ?? 0).toFixed(2)}
+                        {formatMoney(p.valorRecebido ?? 0)}
                       </TableCell>
                     </TableRow>
                   ))}

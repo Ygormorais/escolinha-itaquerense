@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { Download, Printer, Search, X } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -286,7 +287,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
                         {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}
                       </TableCell>
                       <TableCell className="text-right text-sm font-medium">
-                        R$ {(p.valorRecebido ?? p.aluno.mensalidade ?? 0).toFixed(2)}
+                        {formatMoney(p.valorRecebido ?? p.aluno.mensalidade ?? 0)}
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusBadge[st]}`}>

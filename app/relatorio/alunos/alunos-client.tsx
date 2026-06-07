@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { Users, Download, Printer, Search } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -167,7 +168,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
                     </TableCell>
                     <TableCell className="text-sm">{a.responsavel ?? "—"}</TableCell>
                     <TableCell className="text-sm">{a.telefone ?? "—"}</TableCell>
-                    <TableCell className="text-right text-sm">R$ {a.mensalidade.toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-sm">{formatMoney(a.mensalidade)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {format(new Date(a.dataMatricula), "dd/MM/yyyy")}
                     </TableCell>
