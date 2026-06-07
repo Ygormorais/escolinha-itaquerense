@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Pencil, Trash2, ClipboardX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -359,8 +359,12 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
           <TableBody>
             {avaliacoes.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  Nenhuma avaliação encontrada
+                <TableCell colSpan={8}>
+                  <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
+                    <ClipboardX className="size-10 opacity-30" />
+                    <p className="text-sm">Nenhuma avaliação registrada ainda.</p>
+                    <p className="text-xs">Use o botão <strong className="text-foreground">+ Nova Avaliação</strong> acima para começar.</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
