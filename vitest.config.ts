@@ -6,9 +6,6 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["**/*.test.ts", "**/*.test.tsx"],
-    // singleFork evita que handles nativos do better-sqlite3 prendam o processo no CI
-    pool: "forks",
-    poolOptions: { forks: { singleFork: true } },
   },
   resolve: {
     alias: {
