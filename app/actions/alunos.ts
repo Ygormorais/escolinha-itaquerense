@@ -25,10 +25,13 @@ export async function createAluno(data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth()
+  if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
+  const mensalidade = Number(data.mensalidade)
+  if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
   try {
     const aluno = await db.aluno.create({
       data: {
-        nome: data.nome,
+        nome: data.nome.trim(),
         dataNascimento: new Date(data.dataNascimento),
         turma: data.turma,
         horario: data.horario,
