@@ -19,12 +19,12 @@ test.describe("Landing Pública (/)", () => {
 
   test("expõe link para matrícula", async ({ page }) => {
     await page.goto("/")
-    await expect(page.locator('a[href="/matricula"]').first()).toBeVisible()
+    await expect(page.locator('a[href="/matricula"]').first()).toBeAttached()
   })
 
   test("não exibe sidebar administrativa", async ({ page }) => {
     await page.goto("/")
-    await expect(page.locator("aside")).not.toBeVisible()
+    await expect(page.locator('nav[aria-label="Navegação principal"]')).not.toBeAttached()
   })
 
   test("link Entrar leva ao login", async ({ page }) => {

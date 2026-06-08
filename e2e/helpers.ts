@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test"
 
-export async function loginAsAdmin(page: Page, password = "escolinha123") {
+export async function loginAsAdmin(page: Page, password = "admin") {
   await page.addInitScript(() => {
     localStorage.setItem("escolinha_onboarding_v1", "true")
   })

@@ -54,7 +54,7 @@ test.describe("Admin - Pré-Matrículas", () => {
 
     await btnAprovar.click()
     await expect(page.getByRole("dialog")).toBeVisible()
-    await expect(page.getByLabel(/Mensalidade/i)).toBeVisible()
+    await expect(page.getByRole("spinbutton", { name: /Mensalidade/i })).toBeVisible()
     // cancelar sem confirmar
     await page.getByRole("button", { name: /Cancelar/i }).click()
     await expect(page.getByRole("dialog")).not.toBeVisible()
