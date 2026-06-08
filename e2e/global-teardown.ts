@@ -14,6 +14,9 @@ export default async function globalTeardown() {
     await db.aluno.deleteMany({ where: { id: { in: ids } } })
   }
 
+  // Remove pré-matrículas criadas pelos testes E2E
+  await db.preMatricula.deleteMany({ where: { nomeAluno: { startsWith: "Teste E2E" } } })
+
   // Remove responsável de teste criado pelo globalSetup
   await db.responsavel.deleteMany({ where: { email: RESP_TESTE.email } })
 
