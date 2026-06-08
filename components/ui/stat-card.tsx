@@ -61,7 +61,7 @@ export function StatCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="font-heading text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl truncate">
+        <div className="font-heading text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl truncate tabular-nums">
           {value}
         </div>
         {trend && (
