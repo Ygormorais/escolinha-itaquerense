@@ -21,6 +21,11 @@ RUN npx prisma generate && npm run build
 FROM node:20-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV DATABASE_URL=file:/app/prisma/dev.db
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssl && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs nextjs
@@ -31,8 +36,10 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
-# Garante que o diretório do banco seja gravável pelo usuário nextjs
-RUN mkdir -p /app/prisma && chown -R nextjs:nodejs /app/prisma
+# Garante permissões para o banco (prisma) e engines nativas
+RUN mkdir -p /app/prisma && \
+    chown -R nextjs:nodejs /app/prisma && \
+    chown -R nextjs:nodejs /app/node_modules/@prisma
 
 USER nextjs
 EXPOSE 3000
