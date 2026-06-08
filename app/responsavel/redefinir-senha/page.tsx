@@ -23,10 +23,10 @@ export default function RedefinirSenhaPage() {
     return (
       <AuthShell
         badge="Redefinição de Senha"
-        title="Esse link nao esta mais disponivel."
-        description="Solicite um novo link de recuperacao para redefinir a senha com seguranca."
+        title="Esse link não está mais disponível."
+        description="Solicite um novo link de recuperação para redefinir a senha com segurança."
         accentLabel="Status"
-        accentValue="Link invalido ou expirado"
+        accentValue="Link inválido ou expirado"
         tone="responsavel"
       >
         <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
@@ -70,9 +70,9 @@ export default function RedefinirSenhaPage() {
       <AuthShell
         badge="Redefinição de Senha"
         title="Senha atualizada com sucesso."
-        description="Seu acesso foi restaurado. Agora voce ja pode entrar novamente no portal do responsavel."
+        description="Seu acesso foi restaurado. Agora você já pode entrar novamente no portal do responsável."
         accentLabel="Status"
-        accentValue="Redefinicao concluida"
+        accentValue="Redefinição concluída"
         tone="responsavel"
       >
         <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
@@ -97,9 +97,9 @@ export default function RedefinirSenhaPage() {
     <AuthShell
       badge="Redefinição de Senha"
       title="Crie uma nova senha para voltar ao portal."
-      description="Defina uma senha nova para concluir a recuperacao e restabelecer o acesso da familia."
+      description="Defina uma senha nova para concluir a recuperação e restabelecer o acesso da família."
       accentLabel="Segurança"
-      accentValue="Atualizacao protegida de credenciais"
+      accentValue="Atualização protegida de credenciais"
       tone="responsavel"
       footer={(
         <Link href="/responsavel/login" className="font-medium text-brand-800 underline underline-offset-4 transition-colors hover:text-brand-900">

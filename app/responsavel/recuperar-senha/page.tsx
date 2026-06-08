@@ -36,9 +36,9 @@ export default function RecuperarSenhaPage() {
     <AuthShell
       badge="Recuperação de Senha"
       title="Recupere o acesso ao portal com tranquilidade."
-      description="Informe o email cadastrado para receber um link de redefinicao de senha e seguir com o acesso da familia."
+      description="Informe o email cadastrado para receber um link de redefinição de senha e seguir com o acesso da família."
       accentLabel="Suporte"
-      accentValue="Fluxo seguro para restaurar o acesso ao portal do responsavel"
+      accentValue="Fluxo seguro para restaurar o acesso ao portal do responsável"
       tone="responsavel"
       footer={(
         <Link href="/responsavel/login" className="font-medium text-brand-800 underline underline-offset-4 transition-colors hover:text-brand-900">

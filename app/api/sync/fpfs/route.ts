@@ -7,7 +7,7 @@ import { syncTodos, syncCampeonato } from "@/lib/fpfs/sync"
 export async function POST(request: Request) {
   const token = request.headers.get("x-fpfs-token")
   if (!env.FPFS_SYNC_TOKEN || token !== env.FPFS_SYNC_TOKEN) {
-    return NextResponse.json({ erro: "nao autorizado" }, { status: 401 })
+    return NextResponse.json({ erro: "não autorizado" }, { status: 401 })
   }
 
   let campeonatoId: number | undefined
