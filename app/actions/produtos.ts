@@ -17,6 +17,7 @@ export async function criarProduto(data: { nome: string; descricao?: string; pre
   await db.produto.create({ data: { ...data, nome: data.nome.trim() } })
   revalidatePath("/configuracoes/produtos")
   revalidatePath("/responsavel/lojinha")
+  return { success: true as const }
 }
 
 export async function atualizarProduto(id: number, data: { nome?: string; descricao?: string; preco?: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
@@ -28,6 +29,7 @@ export async function atualizarProduto(id: number, data: { nome?: string; descri
   await db.produto.update({ where: { id }, data })
   revalidatePath("/configuracoes/produtos")
   revalidatePath("/responsavel/lojinha")
+  return { success: true as const }
 }
 
 export async function removerProduto(id: number) {
@@ -35,4 +37,5 @@ export async function removerProduto(id: number) {
   await db.produto.delete({ where: { id } })
   revalidatePath("/configuracoes/produtos")
   revalidatePath("/responsavel/lojinha")
+  return { success: true as const }
 }

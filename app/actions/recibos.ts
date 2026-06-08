@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { registrarLog } from "@/app/actions/log"
 
 export async function salvarRecibo(data: {
   alunoNome: string
@@ -32,6 +33,7 @@ export async function salvarRecibo(data: {
     },
   })
 
+  await registrarLog("recibo", `Recibo Nº${numero} emitido — ${data.alunoNome}`, { mes: data.mesReferencia, valor: data.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) })
   revalidatePath("/recibos")
   return { numero }
 }
@@ -43,6 +45,8 @@ export async function getRecibos() {
 
 export async function deleteRecibo(id: number) {
   await requireAuth()
+  const recibo = await db.recibo.findUnique({ where: { id }, select: { numero: true, alunoNome: true } })
   await db.recibo.delete({ where: { id } })
+  await registrarLog("recibo_excluido", `Recibo Nº${recibo?.numero ?? id} excluído — ${recibo?.alunoNome ?? ""}`)
   revalidatePath("/recibos")
 }
