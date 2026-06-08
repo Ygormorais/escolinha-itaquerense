@@ -6,6 +6,7 @@ vi.mock("@/lib/db", () => ({
       count: vi.fn(),
       create: vi.fn(),
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       delete: vi.fn(),
     },
   },
@@ -25,6 +26,7 @@ const m = db as unknown as {
     count: ReturnType<typeof vi.fn>
     create: ReturnType<typeof vi.fn>
     findMany: ReturnType<typeof vi.fn>
+    findUnique: ReturnType<typeof vi.fn>
     delete: ReturnType<typeof vi.fn>
   }
 }
@@ -43,6 +45,7 @@ beforeEach(() => {
   m.recibo.count.mockResolvedValue(5)
   m.recibo.create.mockResolvedValue({ id: 1 })
   m.recibo.findMany.mockResolvedValue([])
+  m.recibo.findUnique.mockResolvedValue({ numero: 6 })
   m.recibo.delete.mockResolvedValue({ id: 1 })
 })
 

@@ -10,6 +10,7 @@ vi.mock("@/lib/db", () => {
       delete: vi.fn(),
     },
     aluno: { findMany: vi.fn() },
+    $transaction: vi.fn((fns: Promise<unknown>[]) => Promise.all(fns)),
   }
   return { db }
 })

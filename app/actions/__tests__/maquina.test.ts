@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
   const db = {
-    transacaoMaquina: { findFirst: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() },
+    transacaoMaquina: { findFirst: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn() },
     pagamento: { create: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn() },
   }
@@ -104,11 +104,11 @@ describe("reconciliarTransacao", () => {
 
 describe("getResumoMaquina", () => {
   it("agrega totais por status", async () => {
-    m.transacaoMaquina.findMany.mockResolvedValue([
-      { valor: 100, status: "pendente" },
-      { valor: 200, status: "reconciliado" },
-      { valor: 50, status: "pendente" },
-    ])
+    m.transacaoMaquina.aggregate
+      .mockResolvedValueOnce({ _sum: { valor: 350 } })
+      .mockResolvedValueOnce({ _sum: { valor: 150 }, _count: 2 })
+      .mockResolvedValueOnce({ _sum: { valor: 200 }, _count: 1 })
+    m.transacaoMaquina.count.mockResolvedValue(3)
     const res = await getResumoMaquina()
     expect(res).toEqual({
       total: 350,

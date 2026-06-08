@@ -3,9 +3,12 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 vi.mock("@/lib/db", () => {
   const db = {
     avaliacao: { create: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    aluno: { findUnique: vi.fn() },
   }
   return { db }
 })
+
+vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
 vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({}),
@@ -34,6 +37,7 @@ beforeEach(() => {
   m.avaliacao.create.mockResolvedValue({})
   m.avaliacao.update.mockResolvedValue({})
   m.avaliacao.delete.mockResolvedValue({})
+  ;(db as unknown as { aluno: { findUnique: ReturnType<typeof vi.fn> } }).aluno.findUnique.mockResolvedValue({ nome: "Aluno" })
 })
 
 describe("criarAvaliacao", () => {
