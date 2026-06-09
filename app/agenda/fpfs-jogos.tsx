@@ -86,7 +86,10 @@ export async function FpfsJogos() {
                       {realizadas.map((p) => (
                         <TableRow
                           key={p.id}
-                          className={p.resultado === "Vitoria" ? "bg-success-50/50" : ""}
+                          className={
+                            p.resultado === "Vitoria" ? "bg-success-50/50" :
+                            p.resultado === "Derrota" ? "bg-destructive/5" : ""
+                          }
                         >
                           <TableCell className="font-medium">
                             {p.adversario}
