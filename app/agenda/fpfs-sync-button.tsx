@@ -5,6 +5,7 @@ import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { sincronizarFpfs } from "@/app/actions/campeonatos"
+import { cn } from "@/lib/utils"
 
 interface FpfsSyncButtonProps {
   campeonatoId: number
@@ -39,7 +40,7 @@ export function FpfsSyncButton({ campeonatoId }: FpfsSyncButtonProps) {
       disabled={loading}
       className="gap-1.5"
     >
-      <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+      <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
       {loading ? "Atualizando..." : "Atualizar"}
     </Button>
   )
