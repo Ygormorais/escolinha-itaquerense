@@ -104,6 +104,7 @@ export async function sincronizarFpfs(campeonatoId: number) {
     revalidatePath(`/campeonatos/${campeonatoId}`)
     revalidatePath("/responsavel/jogos")
     revalidatePath("/responsavel/classificacao")
+    revalidatePath("/agenda")
     return resumo
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Falha ao sincronizar com a FPFS" }
