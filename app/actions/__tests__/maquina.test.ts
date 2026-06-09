@@ -32,6 +32,8 @@ const m = db as unknown as {
     findUnique: ReturnType<typeof vi.fn>
     findMany: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
+    aggregate: ReturnType<typeof vi.fn>
+    count: ReturnType<typeof vi.fn>
   }
   pagamento: { create: ReturnType<typeof vi.fn> }
 }
