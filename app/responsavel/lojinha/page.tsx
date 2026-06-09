@@ -20,13 +20,14 @@ export default async function LojinhaPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")
 
-  const config = await db.configuracao.findUnique({ where: { chave: "whatsapp" } })
+  const [config, produtos] = await Promise.all([
+    db.configuracao.findUnique({ where: { chave: "whatsapp" } }),
+    db.produto.findMany({
+      where: { ativo: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ])
   const whatsapp = config?.valor ?? "5511999999999"
-
-  const produtos = await db.produto.findMany({
-    where: { ativo: true },
-    orderBy: { createdAt: "desc" },
-  })
 
 
 
