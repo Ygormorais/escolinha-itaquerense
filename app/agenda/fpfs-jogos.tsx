@@ -22,7 +22,7 @@ export async function FpfsJogos() {
   if (campeonatos.length === 0) return null
 
   const session = await getSession()
-  const isAdmin = session.authenticated
+  const isAdmin = session.role === "admin"
   const agora = new Date()
 
   return (
