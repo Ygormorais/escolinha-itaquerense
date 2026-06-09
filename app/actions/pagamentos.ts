@@ -102,7 +102,8 @@ export async function gerarMensalidadesMes(
   await requireAuth()
   try {
     const [ano, mesNum] = mes.split("-").map(Number)
-    const { diaVencimento } = getConfig()
+    const rawDia = getConfig().diaVencimento
+    const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
 
     const [alunos, existentes] = await Promise.all([
       db.aluno.findMany({ where: { status: "Ativo" } }),
@@ -139,7 +140,8 @@ export async function gerarMensalidadesAno(
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
   await requireAuth()
   try {
-    const { diaVencimento } = getConfig()
+    const rawDia = getConfig().diaVencimento
+    const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
     const alunos = await db.aluno.findMany({ where: { status: "Ativo" } })
     let criados = 0
     let ignorados = 0
@@ -184,7 +186,8 @@ export async function deletePagamento(id: number): Promise<ActionResult> {
 
     if (pag?.externalId) {
       const { cancelarCobranca } = await import("@/app/actions/cobranca")
-      await cancelarCobranca(id)
+      const cancelResult = await cancelarCobranca(id)
+      if ("error" in cancelResult) return cancelResult
     }
 
     await db.pagamento.delete({ where: { id } })

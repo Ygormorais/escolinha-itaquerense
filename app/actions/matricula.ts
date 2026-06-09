@@ -24,11 +24,16 @@ export async function criarPreMatricula(data: {
     return { error: "Preencha os campos obrigatórios" }
   }
 
+  const dataNasc = data.dataNascimento ? new Date(data.dataNascimento) : null
+  if (!dataNasc || isNaN(dataNasc.getTime())) {
+    return { error: "Data de nascimento inválida" }
+  }
+
   try {
     await db.preMatricula.create({
       data: {
         nomeAluno: data.nomeAluno.trim(),
-        dataNascimento: new Date(data.dataNascimento),
+        dataNascimento: dataNasc,
         turma: data.turma,
         horario: data.horario,
         nomeResponsavel: data.nomeResponsavel.trim(),

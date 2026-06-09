@@ -34,13 +34,15 @@ export async function getSession(): Promise<SessionInfo> {
   const raw = jar.get(COOKIE_NAME)?.value
   if (!raw) return { authenticated: false }
   const value = verify(raw)
-  if (!value || !value.startsWith("auth:")) return { authenticated: false }
-  const parts = value.slice(5).split(":")
+  // "auth2:" prefix rejects old-format cookies ("auth:username") that lack a role
+  // segment, forcing re-login instead of silently granting admin.
+  if (!value || !value.startsWith("auth2:")) return { authenticated: false }
+  const parts = value.slice(6).split(":")
   return { authenticated: true, user: parts[0], role: parts[1] ?? "admin" }
 }
 
 export async function createSession(username: string, role = "admin"): Promise<string> {
-  return sign(`auth:${username}:${role}`)
+  return sign(`auth2:${username}:${role}`)
 }
 
 export function cookieName() { return COOKIE_NAME }
