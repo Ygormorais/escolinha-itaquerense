@@ -10,10 +10,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "."),
-      "next/font/google": path.resolve(
-        __dirname,
-        "node_modules/next/dist/build/jest/__mocks__/nextFontMock.js"
-      ),
+      // Mock próprio: o nextFontMock.js do Next é um Proxy que responde a
+      // `then`, virando um thenable que faz o import() do vitest pendurar.
+      "next/font/google": path.resolve(__dirname, "__tests__/mocks/next-font-mock.ts"),
     },
   },
 })
