@@ -1,0 +1,10 @@
+# Troque pelo domínio real quando existir (Caddy emite HTTPS sozinho).
+# Sem domínio ainda: use ":80" para servir por IP, sem HTTPS.
+:80 {
+	reverse_proxy localhost:3000
+}
+
+# Com domínio:
+# escolinha.seudominio.com.br {
+# 	reverse_proxy localhost:3000
+# }
