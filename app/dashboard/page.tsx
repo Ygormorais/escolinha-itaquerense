@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,6 +20,8 @@ import { ResumoFinanceiro } from "@/components/dashboard/resumo-financeiro"
 const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-receita-custos").then(m => ({ default: m.ChartReceitaCustos })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 const ChartInadimplencia = dynamic(() => import("@/components/dashboard/chart-inadimplencia").then(m => ({ default: m.ChartInadimplencia })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 const ChartReceitaPorTurma = dynamic(() => import("@/components/dashboard/chart-receita-turma").then(m => ({ default: m.ChartReceitaPorTurma })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
+
+export const metadata = { title: "Dashboard — Escolinha Itaquerense" }
 
 export default async function DashboardPage({
   searchParams,
@@ -196,10 +199,6 @@ export default async function DashboardPage({
   }
   if (presencaMedia >= 50 && presencaMedia < 75 && totalFrequencias > 0) {
     alerts.push({ type: "warning", icon: "frequencia", message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.` })
-  }
-  const temConvocacoes = 0 // Will be computed from pendingEscalacoes in layout
-  if (temConvocacoes) {
-    alerts.push({ type: "info", icon: "convocacao", message: "Convocação(ões) pendente(s)", detail: "Há convocações aguardando revisão." })
   }
   if (vencendoSemana.length > 0) {
     alerts.push({ type: "info", icon: "tendencia", message: `${vencendoSemana.length} mensalidade(s) vencem nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
@@ -420,7 +419,7 @@ export default async function DashboardPage({
                       <TableCell>{p.aluno.turma}</TableCell>
                       <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
                       <TableCell className="text-right">
-                        R$ {(p.valorRecebido ?? 0).toFixed(2)}
+                        {formatMoney(p.valorRecebido ?? 0)}
                       </TableCell>
                     </TableRow>
                   ))}

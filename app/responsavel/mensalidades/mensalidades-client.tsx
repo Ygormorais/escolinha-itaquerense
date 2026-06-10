@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { formatMoney } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
 
 type Pagamento = {
@@ -142,8 +143,8 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                 <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
               </CardTitle>
               <p className="text-sm text-[var(--color-ink-700)]">
-                Mensalidade: R$ {(aluno.mensalidade - aluno.desconto).toFixed(2)}
-                {aluno.desconto > 0 && <span className="ml-1 text-success-600">(desconto de R$ {aluno.desconto.toFixed(2)})</span>}
+                Mensalidade: {formatMoney(aluno.mensalidade - aluno.desconto)}
+                {aluno.desconto > 0 && <span className="ml-1 text-success-600">(desconto de {formatMoney(aluno.desconto)})</span>}
               </p>
             </CardHeader>
             <CardContent className="p-0">
@@ -163,7 +164,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                               {p.formaPagamento ? `${p.formaPagamento} · ${format(new Date(p.dataPagamento!), "dd/MM")}` : ""}
                             </span>
                             <span className={`font-semibold ${emDia ? "text-success-600" : "text-[var(--color-ink-700)]"}`}>
-                              R$ {p.valorRecebido?.toFixed(2) ?? "—"}
+                              {p.valorRecebido != null ? formatMoney(p.valorRecebido) : "—"}
                             </span>
                             {emDia
                               ? <CheckCircle className="size-4 text-success-600" />
@@ -173,7 +174,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                         ) : (
                           <>
                             <span className="text-xs text-[var(--color-ink-500)]">Aguardando</span>
-                            <span className="text-[var(--color-ink-700)]">R$ {(aluno.mensalidade - aluno.desconto).toFixed(2)}</span>
+                            <span className="text-[var(--color-ink-700)]">{formatMoney(aluno.mensalidade - aluno.desconto)}</span>
                             <AlertTriangle className="size-4 text-warning-600" />
                           </>
                         )}

@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { addMonths, format } from "date-fns"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "./log"
@@ -23,11 +24,16 @@ export async function criarPreMatricula(data: {
     return { error: "Preencha os campos obrigatórios" }
   }
 
+  const dataNasc = data.dataNascimento ? new Date(data.dataNascimento) : null
+  if (!dataNasc || isNaN(dataNasc.getTime())) {
+    return { error: "Data de nascimento inválida" }
+  }
+
   try {
     await db.preMatricula.create({
       data: {
         nomeAluno: data.nomeAluno.trim(),
-        dataNascimento: new Date(data.dataNascimento),
+        dataNascimento: dataNasc,
         turma: data.turma,
         horario: data.horario,
         nomeResponsavel: data.nomeResponsavel.trim(),
@@ -55,7 +61,7 @@ export async function listarPreMatriculas(status?: string) {
 
 export async function aprovarPreMatricula(
   id: number,
-  opts: { mensalidade: number; desconto?: number }
+  opts: { mensalidade: number; desconto?: number; meses?: number }
 ): Promise<AprovarResult> {
   await requireAuth()
 
@@ -95,6 +101,18 @@ export async function aprovarPreMatricula(
         },
       })
       await tx.preMatricula.update({ where: { id }, data: { status: "aprovada" } })
+      const qtdMeses = Math.max(0, Math.min(12, Number(opts.meses ?? 0)))
+      for (let i = 0; i < qtdMeses; i++) {
+        const dataRef = addMonths(new Date(), i)
+        const vencimento = new Date(dataRef.getFullYear(), dataRef.getMonth(), 10)
+        await tx.pagamento.create({
+          data: {
+            alunoId: novo.id,
+            mesReferencia: format(dataRef, "yyyy-MM"),
+            dataVencimento: vencimento,
+          },
+        })
+      }
       return novo
     })
 
@@ -103,6 +121,7 @@ export async function aprovarPreMatricula(
       alunoId: aluno.id,
     })
     revalidatePath("/configuracoes/matriculas")
+    revalidatePath("/pagamentos")
     return { success: true, alunoId: aluno.id }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao aprovar pré-matrícula" }

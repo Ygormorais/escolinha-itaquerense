@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Users, Download, PrinterIcon } from "lucide-react"
+import { Users, Download, Printer, Search } from "lucide-react"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,15 +28,18 @@ type Aluno = {
 export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; turmas: string[] }) {
   const [filtroTurma, setFiltroTurma] = useState("todas")
   const [filtroStatus, setFiltroStatus] = useState("todos")
+  const [busca, setBusca] = useState("")
 
   const filtrados = useMemo(() => {
+    const q = busca.trim().toLowerCase()
     return alunos.filter((a) => {
+      if (q && !a.nome.toLowerCase().includes(q) && !(a.responsavel ?? "").toLowerCase().includes(q)) return false
       if (filtroTurma !== "todas" && a.turma !== filtroTurma) return false
       if (filtroStatus === "ativos" && a.status !== "Ativo") return false
       if (filtroStatus === "inativos" && a.status === "Ativo") return false
       return true
     })
-  }, [alunos, filtroTurma, filtroStatus])
+  }, [alunos, filtroTurma, filtroStatus, busca])
 
   const totalMensalidade = filtrados
     .filter((a) => a.status === "Ativo")
@@ -64,9 +69,9 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
         a.status,
         a.responsavel ?? "",
         a.telefone ?? "",
-        `R$ ${a.mensalidade.toFixed(2)}`,
+        formatMoney(a.mensalidade),
         format(new Date(a.dataMatricula), "dd/MM/yyyy"),
-      ].join(";")
+      ].map(sanitizeCSVCell).join(";")
     )
     const csv = "\uFEFF" + header + "\n" + rows.join("\n")
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
@@ -86,7 +91,8 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
         action={
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={imprimirPDF}>
-              <PrinterIcon className="size-4 mr-1" /> PDF
+              <Printer className="size-4" />
+              Imprimir PDF
             </Button>
             <Button size="sm" onClick={exportarCSV}>
               <Download className="size-4 mr-1" /> Exportar CSV
@@ -95,9 +101,18 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
         }
       />
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome ou responsável…"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="pl-9 h-9 text-sm"
+          />
+        </div>
         <select
-          className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="flex h-9 rounded-md border border-input bg-background px-3 py-2 text-sm"
           value={filtroTurma}
           onChange={(e) => setFiltroTurma(e.target.value)}
         >
@@ -153,7 +168,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
                     </TableCell>
                     <TableCell className="text-sm">{a.responsavel ?? "—"}</TableCell>
                     <TableCell className="text-sm">{a.telefone ?? "—"}</TableCell>
-                    <TableCell className="text-right text-sm">R$ {a.mensalidade.toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-sm">{formatMoney(a.mensalidade)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {format(new Date(a.dataMatricula), "dd/MM/yyyy")}
                     </TableCell>

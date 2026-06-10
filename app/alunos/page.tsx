@@ -4,6 +4,8 @@ import { AlunosClient, NovoAlunoButton } from "./alunos-client"
 import { PAGE_SIZE } from "@/lib/constants"
 import { startOfMonth, endOfMonth } from "date-fns"
 
+export const metadata = { title: "Alunos — Escolinha Itaquerense" }
+
 export default async function AlunosPage({
   searchParams,
 }: {
@@ -43,23 +45,25 @@ export default async function AlunosPage({
   const frequenciasBaixa = new Set<number>()
 
   if (idsAtivos.length > 0) {
-    const freqs = await db.frequencia.groupBy({
-      by: ["alunoId"],
-      where: {
-        alunoId: { in: idsAtivos },
-        data: { gte: inicioMes, lte: fimMes },
-      },
-      _count: { id: true },
-    })
-    const presentes = await db.frequencia.groupBy({
-      by: ["alunoId"],
-      where: {
-        alunoId: { in: idsAtivos },
-        data: { gte: inicioMes, lte: fimMes },
-        presenca: "Presente",
-      },
-      _count: { id: true },
-    })
+    const [freqs, presentes] = await Promise.all([
+      db.frequencia.groupBy({
+        by: ["alunoId"],
+        where: {
+          alunoId: { in: idsAtivos },
+          data: { gte: inicioMes, lte: fimMes },
+        },
+        _count: { id: true },
+      }),
+      db.frequencia.groupBy({
+        by: ["alunoId"],
+        where: {
+          alunoId: { in: idsAtivos },
+          data: { gte: inicioMes, lte: fimMes },
+          presenca: "Presente",
+        },
+        _count: { id: true },
+      }),
+    ])
 
     const totalMap = new Map(freqs.map((f) => [f.alunoId, f._count.id]))
     const presentesMap = new Map(presentes.map((f) => [f.alunoId, f._count.id]))

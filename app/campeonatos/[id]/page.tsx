@@ -27,18 +27,30 @@ export default async function CampeonatoDetailPage({
   if (!campeonato) notFound()
 
   const config = getConfig()
-  const alunosDisponiveis = await db.aluno.findMany({
-    where: {
-      status: "Ativo",
-      id: { notIn: campeonato.inscricoes.map((i) => i.alunoId) },
-    },
-    select: { id: true, nome: true, turma: true },
-    orderBy: { nome: "asc" },
-  })
+  const partidaIds = campeonato.partidas.map((p) => p.id)
+  const [alunosDisponiveis, convocacoes] = await Promise.all([
+    db.aluno.findMany({
+      where: {
+        status: "Ativo",
+        id: { notIn: campeonato.inscricoes.map((i) => i.alunoId) },
+      },
+      select: { id: true, nome: true, turma: true },
+      orderBy: { nome: "asc" },
+    }),
+    partidaIds.length > 0
+      ? db.escalacaoJogador.groupBy({
+          by: ["partidaId"],
+          where: { partidaId: { in: partidaIds } },
+          _count: { id: true },
+        })
+      : Promise.resolve([]),
+  ])
+
+  const convocacoesMap = new Set(convocacoes.map((c) => c.partidaId))
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <CampeonatoDetailClient campeonato={campeonato} alunosDisponiveis={alunosDisponiveis} nomeClube={config.nome} />
+      <CampeonatoDetailClient campeonato={campeonato} alunosDisponiveis={alunosDisponiveis} nomeClube={config.nome} convocacoesMap={convocacoesMap} />
     </div>
   )
 }

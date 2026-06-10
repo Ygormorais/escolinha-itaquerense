@@ -52,7 +52,7 @@ export function printAlunoHistorico(aluno: {
       <div><dt>Turma</dt><dd>${aluno.turma}</dd></div>
       <div><dt>Responsável</dt><dd>${aluno.responsavel}</dd></div>
       <div><dt>Telefone</dt><dd>${aluno.telefone}</dd></div>
-      <div><dt>Mensalidade</dt><dd>R$ ${aluno.mensalidade.toFixed(2)}</dd></div>
+      <div><dt>Mensalidade</dt><dd>${aluno.mensalidade.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</dd></div>
       <div><dt>Status</dt><dd><span class="badge ${aluno.status === "Ativo" ? "badge-success" : "badge-danger"}">${aluno.status}</span></dd></div>
       <div><dt>% Presença</dt><dd>${pctPresenca}%</dd></div>
     </dl>
@@ -60,7 +60,7 @@ export function printAlunoHistorico(aluno: {
     <table>
       <thead><tr><th>Mês</th><th>Valor</th><th>Data Pagamento</th><th>Forma</th></tr></thead>
       <tbody>
-        ${aluno.pagamentos.map((p) => `<tr><td>${p.mesReferencia}</td><td>${p.valorRecebido ? `R$ ${p.valorRecebido.toFixed(2)}` : "—"}</td><td>${p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString("pt-BR") : "—"}</td><td>${p.formaPagamento ?? "—"}</td></tr>`).join("")}
+        ${aluno.pagamentos.map((p) => `<tr><td>${p.mesReferencia}</td><td>${p.valorRecebido ? p.valorRecebido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td><td>${p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString("pt-BR") : "—"}</td><td>${p.formaPagamento ?? "—"}</td></tr>`).join("")}
       </tbody>
     </table>
     <h2 style="margin-top: 20px;">Frequência</h2>
@@ -93,7 +93,7 @@ export function printRecibo(recibo: {
       <p style="text-align: left; margin-bottom: 4px;"><strong>Aluno:</strong> ${recibo.alunoNome}</p>
       <p style="text-align: left; margin-bottom: 4px;"><strong>Responsável:</strong> ${recibo.responsavel}</p>
       <p style="text-align: left; margin-bottom: 4px;"><strong>Mês:</strong> ${recibo.mesReferencia}</p>
-      <p style="text-align: left; margin-bottom: 4px;"><strong>Valor:</strong> R$ ${recibo.valor.toFixed(2)}</p>
+      <p style="text-align: left; margin-bottom: 4px;"><strong>Valor:</strong> ${recibo.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
       <p style="text-align: left; margin-bottom: 4px;"><strong>Forma:</strong> ${recibo.formaPagamento}</p>
       <p style="text-align: left; margin-bottom: 4px;"><strong>Data:</strong> ${new Date(recibo.dataPagamento).toLocaleDateString("pt-BR")}</p>
       <hr style="margin: 20px 0; border: none; border-top: 1px dashed #E8DEDA;" />

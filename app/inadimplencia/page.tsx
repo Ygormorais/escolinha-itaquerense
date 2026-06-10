@@ -5,6 +5,8 @@ import { AlertTriangle, DollarSign } from "lucide-react"
 import { InadimplenciaClient } from "./inadimplencia-client"
 import { getConfig } from "@/lib/config"
 
+export const metadata = { title: "Inadimplência — Escolinha Itaquerense" }
+
 export default async function InadimplenciaPage() {
   const now = new Date()
 

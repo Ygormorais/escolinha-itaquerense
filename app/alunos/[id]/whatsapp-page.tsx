@@ -59,7 +59,7 @@ export function WhatsAppHistory({ alunoId, alunoNome }: Props) {
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href={`/alunos/${alunoId}`}>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="Voltar">
               <ArrowLeft className="size-4" />
             </Button>
           </Link>

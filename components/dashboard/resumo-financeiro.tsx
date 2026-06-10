@@ -1,5 +1,3 @@
-"use client"
-
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react"
 
 interface ResumoProps {

@@ -19,6 +19,6 @@ describe("sincronizarFpfs", () => {
     const resumo = await sincronizarFpfs(1)
     expect(requireAuth).toHaveBeenCalled()
     expect(syncCampeonato).toHaveBeenCalledWith(1)
-    expect(resumo.jogosNovos).toBe(2)
+    expect("error" in resumo ? null : resumo.jogosNovos).toBe(2)
   })
 })

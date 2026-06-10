@@ -5,6 +5,8 @@ import { GaleriaMural } from "@/components/responsavel/galeria-mural"
 import Link from "next/link"
 import { ArrowLeft, Images } from "lucide-react"
 
+export const metadata = { title: "Galeria — Escolinha Itaquerense" }
+
 export default async function GaleriaPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

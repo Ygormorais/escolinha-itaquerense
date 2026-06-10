@@ -1,6 +1,6 @@
 "use client"
 
-import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent } from "lucide-react"
+import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent, Banknote } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -8,6 +8,7 @@ import {
 import { format } from "date-fns"
 import Link from "next/link"
 import type { RscDate } from "@/lib/rsc-date"
+import { formatMoney } from "@/lib/utils"
 
 type Pagamento = {
   id: number
@@ -40,15 +41,16 @@ export function CaixaClient({
 }) {
   const sections = [
     { href: "/caixa/recebimentos", label: "Recebimentos", icon: TrendingUp, color: "text-success-600 bg-success-50", desc: `${pagamentosMes.length} pagamentos no mês` },
-    { href: "/caixa/pix", label: "PIX", icon: Smartphone, color: "text-info-600 bg-info-50", desc: `R$ ${(porForma["PIX"] ?? 0).toFixed(2)}` },
-    { href: "/caixa/boleto", label: "Boleto", icon: FileText, color: "text-warning-600 bg-warning-50", desc: `R$ ${(porForma["Boleto"] ?? 0).toFixed(2)}` },
+    { href: "/caixa/pix", label: "PIX", icon: Smartphone, color: "text-info-600 bg-info-50", desc: formatMoney(porForma["PIX"] ?? 0) },
+    { href: "/caixa/boleto", label: "Boleto", icon: FileText, color: "text-warning-600 bg-warning-50", desc: formatMoney(porForma["Boleto"] ?? 0) },
+    { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", desc: formatMoney(porForma["Dinheiro"] ?? 0) },
     { href: "/caixa/maquina", label: "Maquininha", icon: CreditCard, color: "text-brand-800 bg-brand-100", desc: `Cartão crédito/débito` },
     { href: "/caixa/descontos", label: "Descontos", icon: Percent, color: "text-danger-600 bg-danger-50", desc: `Descontos concedidos` },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {sections.map(({ href, label, icon: Icon, color, desc }) => (
           <Link key={href} href={href}>
             <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-px">
@@ -70,11 +72,16 @@ export function CaixaClient({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm font-heading">
               <TrendingUp className="size-4 text-success-600" />
               Últimos Recebimentos
             </CardTitle>
+            {pagamentosMes.length > 8 && (
+              <Link href="/caixa/recebimentos" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Ver todos ({pagamentosMes.length})
+              </Link>
+            )}
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -90,7 +97,7 @@ export function CaixaClient({
                 {pagamentosMes.slice(0, 8).map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.aluno.nome}</TableCell>
-                    <TableCell>R$ {(p.valorRecebido ?? 0).toFixed(2)}</TableCell>
+                    <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>
                     <TableCell>{p.formaPagamento || "—"}</TableCell>
                     <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM") : "—"}</TableCell>
                   </TableRow>
@@ -104,11 +111,16 @@ export function CaixaClient({
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-sm font-heading">
               <PiggyBank className="size-4 text-danger-600" />
               Últimos Custos
             </CardTitle>
+            {custosMes.length > 8 && (
+              <Link href="/custos" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Ver todos ({custosMes.length})
+              </Link>
+            )}
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -125,7 +137,7 @@ export function CaixaClient({
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.descricao}</TableCell>
                     <TableCell>{c.categoria}</TableCell>
-                    <TableCell className="text-danger-600">R$ {c.valor.toFixed(2)}</TableCell>
+                    <TableCell className="text-danger-600">{formatMoney(c.valor)}</TableCell>
                     <TableCell>{format(new Date(c.data), "dd/MM")}</TableCell>
                   </TableRow>
                 ))}

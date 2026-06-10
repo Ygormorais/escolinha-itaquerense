@@ -1,19 +1,24 @@
 import { Badge, badgeVariants } from "@/components/ui/badge"
 import type { VariantProps } from "class-variance-authority"
 
-type StatusType = "Ativo" | "Inativo" | "Pago" | "Pendente" | "Vencido" | "Presente" | "Ausente" | "Justificado"
+type StatusType =
+  | "Ativo" | "Inativo"
+  | "Pago" | "Pendente" | "Vencido" | "Em atraso" | "Atraso grave"
+  | "Presente" | "Ausente" | "Justificado"
 
 type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
 
 const statusConfig: Record<StatusType, { label: string; variant: BadgeVariant }> = {
-  Ativo:       { label: "Ativo",       variant: "success" },
-  Inativo:     { label: "Inativo",     variant: "secondary" },
-  Pago:        { label: "Pago",        variant: "success" },
-  Pendente:    { label: "Pendente",    variant: "warning" },
-  Vencido:     { label: "Vencido",     variant: "destructive" },
-  Presente:    { label: "Presente",    variant: "success" },
-  Ausente:     { label: "Ausente",     variant: "destructive" },
-  Justificado: { label: "Justificado", variant: "info" },
+  Ativo:          { label: "Ativo",        variant: "success" },
+  Inativo:        { label: "Inativo",      variant: "secondary" },
+  Pago:           { label: "Pago",         variant: "success" },
+  Pendente:       { label: "Pendente",     variant: "secondary" },
+  Vencido:        { label: "Vencido",      variant: "destructive" },
+  "Em atraso":    { label: "Em atraso",    variant: "warning" },
+  "Atraso grave": { label: "Atraso grave", variant: "destructive" },
+  Presente:       { label: "Presente",     variant: "success" },
+  Ausente:        { label: "Ausente",      variant: "destructive" },
+  Justificado:    { label: "Justificado",  variant: "info" },
 }
 
 interface StatusBadgeProps {

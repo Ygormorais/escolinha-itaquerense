@@ -34,12 +34,22 @@ export function AlertDialogFooter({ className, children, ...props }: React.HTMLA
   return <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6", className)} {...props}>{children}</div>
 }
 
-export function AlertDialogTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn("text-lg font-semibold text-ink-900", className)} {...props}>{children}</h2>
+export function AlertDialogTitle({ className, ...props }: AlertDialogPrimitive.AlertDialogTitleProps) {
+  return (
+    <AlertDialogPrimitive.Title
+      className={cn("text-lg font-semibold text-ink-900", className)}
+      {...props}
+    />
+  )
 }
 
-export function AlertDialogDescription({ className, children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-sm text-muted-foreground", className)} {...props}>{children}</p>
+export function AlertDialogDescription({ className, ...props }: AlertDialogPrimitive.AlertDialogDescriptionProps) {
+  return (
+    <AlertDialogPrimitive.Description
+      className={cn("text-sm text-muted-foreground", className)}
+      {...props}
+    />
+  )
 }
 
 export function AlertDialogAction({ className, children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {

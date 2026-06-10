@@ -3,6 +3,8 @@ import { TurmasClient } from "./turmas-client"
 import { TURMAS } from "@/lib/constants"
 import { getConfig } from "@/lib/config"
 
+export const metadata = { title: "Turmas & Horários — Escolinha Itaquerense" }
+
 export default async function TurmasPage() {
   const config = getConfig()
 

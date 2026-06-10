@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Users,
+  Users2,
   CreditCard,
   CalendarCheck,
   Calendar,
@@ -68,12 +69,12 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
       "/inadimplencia", "/caixa", "/produtos", "/recibos",
       "/relatorio/alunos", "/relatorio/pagamentos",
       "/historico", "/configuracoes/midia",
-      "/configuracoes", "/configuracoes/escalacoes",
+      "/configuracoes",
       "/configuracoes/responsaveis", "/secretaria",
     ]
     const restrictedSecretaria = [
       "/custos", "/caixa", "/produtos", "/campeonatos",
-      "/avaliacoes", "/configuracoes/escalacoes",
+      "/avaliacoes",
     ]
     if (role === "admin") return true
     if (role === "tecnico") return !restrictedTecnico.some((r) => href.startsWith(r))
@@ -83,7 +84,7 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
   return items.filter((i) => canAccess(i.href))
 }
 
-export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pendingEscalacoes?: number; onClose?: () => void; role?: SidebarRole }) {
+export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { onClose?: () => void; role?: SidebarRole; pendingEscalacoes?: number }) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -98,6 +99,7 @@ export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pe
       label: "Operação",
       items: filterByRole([
         { href: "/alunos",        label: "Alunos",        icon: Users },
+        { href: "/turmas",        label: "Turmas",        icon: Users2 },
         { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
         { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
         { href: "/agenda",        label: "Agenda",         icon: Calendar },
@@ -122,8 +124,8 @@ export function Sidebar({ pendingEscalacoes = 0, onClose, role = "admin" }: { pe
         { href: "/historico",     label: "Histórico",     icon: History },
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },
         { href: "/configuracoes", label: "Configurações", icon: Settings },
-        { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
+        { href: "/configuracoes/escalacoes", label: "Escalações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning },
         { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList },
       ], role),

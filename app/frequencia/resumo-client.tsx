@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -53,7 +54,7 @@ function exportarCSV(resumo: Resumo[], turma: string, mes: string) {
       r.pct !== null ? `${r.pct}%` : "—",
     ]),
   ]
-  const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+  const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
@@ -86,7 +87,7 @@ export function ResumoFrequenciaClient() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="text-sm font-medium text-muted-foreground">Turma</label>
@@ -146,7 +147,7 @@ export function ResumoFrequenciaClient() {
       )}
 
       {loaded && (
-        <div className="rounded-xl border bg-white">
+        <div className="rounded-xl border bg-card">
           <Table>
             <TableHeader>
               <TableRow>

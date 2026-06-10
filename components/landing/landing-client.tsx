@@ -52,6 +52,7 @@ const css = `
   .lp .utility .quick a:hover{opacity:1;color:#ffd6d6}
   .lp .live-dot{width:9px;height:9px;border-radius:50%;background:#ff3b3b;display:inline-block;animation:blink 1s infinite}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+  @keyframes wa-pulse{0%,100%{box-shadow:0 4px 16px rgba(37,211,102,.4)}50%{box-shadow:0 4px 24px rgba(37,211,102,.7),0 0 0 8px rgba(37,211,102,.12)}}
   .lp .utility .social{gap:14px;font-size:15px}
   .lp .utility .social a:hover{color:#ffd6d6}
   .lp header.site{position:sticky;top:0;z-index:1000;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.12)}
@@ -90,14 +91,6 @@ const css = `
   .lp .thumb:nth-child(2){background:linear-gradient(160deg,var(--red-dark),var(--red-deep))}
   .lp .thumb:nth-child(3){background:linear-gradient(160deg,#d11a1a,var(--red-dark))}
   .lp .thumb:hover .placeholder{transform:scale(1.08);transition:.4s}
-  .lp .matchbar{background:var(--red-deep);color:#fff}
-  .lp .matchbar .container{display:grid;grid-template-columns:repeat(3,1fr)}
-  .lp .mb-cell{padding:22px 24px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border-right:1px solid rgba(255,255,255,.12)}
-  .lp .mb-cell:last-child{border-right:none}
-  .lp .mb-comp{font-family:var(--font-heading),sans-serif;text-transform:uppercase;font-size:12px;letter-spacing:.5px;opacity:.8}
-  .lp .mb-match{display:flex;align-items:center;gap:14px}
-  .lp .mb-score{font-family:var(--font-heading),sans-serif;font-size:30px;font-weight:700}
-  .lp .mb-info{font-size:12px;opacity:.85}
   .lp section{padding:54px 0}
   .lp .news-grid{display:grid;grid-template-columns:2fr 1fr;gap:30px}
   .lp .news-main{display:grid;grid-template-columns:1fr 1fr;gap:22px}
@@ -127,20 +120,6 @@ const css = `
   .lp .mini h4{font-family:var(--font-heading),sans-serif;font-size:14px;font-weight:700;line-height:1.2}
   .lp .mini:hover h4{color:var(--red)}
   .lp .mini .date{font-size:11px;color:#999;margin-top:3px}
-  .lp .squad{background:var(--gray-bg)}
-  .lp .squad-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:26px}
-  .lp .tabs{display:flex;gap:6px}
-  .lp .tab{font-family:var(--font-heading),sans-serif;text-transform:uppercase;letter-spacing:.5px;font-weight:700;font-size:14px;padding:10px 22px;border:2px solid var(--red);background:#fff;color:var(--red);cursor:pointer;border-radius:4px;transition:.2s}
-  .lp .tab.active{background:var(--red);color:#fff}
-  .lp .squad-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
-  .lp .player{background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);transition:.25s;cursor:pointer}
-  .lp .player:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(198,40,40,.18)}
-  .lp .player .top{position:relative;min-height:150px;background:linear-gradient(160deg,var(--red),var(--red-darker));display:flex;align-items:flex-end;justify-content:center}
-  .lp .player .top .placeholder{position:absolute;inset:0;align-items:center;font-size:60px}
-  .lp .player .num{position:absolute;top:10px;right:12px;font-family:var(--font-heading),sans-serif;font-size:34px;font-weight:700;color:rgba(255,255,255,.55);z-index:2}
-  .lp .player .info{padding:12px;text-align:center}
-  .lp .player .info b{font-family:var(--font-heading),sans-serif;text-transform:uppercase;font-size:15px;display:block}
-  .lp .player .info span{font-size:12px;color:#888}
   .lp .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
   .lp .result-card{border:1px solid var(--gray-line);border-radius:6px;overflow:hidden;transition:.25s}
   .lp .result-card:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(198,40,40,.15)}
@@ -157,7 +136,7 @@ const css = `
   .lp .membership{background:linear-gradient(120deg,var(--red),var(--red-darker));color:#fff;text-align:center}
   .lp .membership h2{font-family:var(--font-heading),sans-serif;text-transform:uppercase;font-size:34px;font-weight:700;margin-bottom:12px}
   .lp .membership p{font-size:17px;opacity:.92;margin-bottom:26px;max-width:640px;margin-left:auto;margin-right:auto}
-  .lp .cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:22px}
+  .lp .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
   .lp .cat{text-align:center;padding:24px 10px;border-radius:8px;transition:.25s;cursor:pointer}
   .lp .cat:hover{background:var(--gray-bg);transform:translateY(-6px)}
   .lp .cat .circle{width:84px;height:84px;border-radius:50%;background:linear-gradient(150deg,var(--red),var(--red-darker));display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;margin:0 auto 14px}
@@ -191,18 +170,14 @@ const css = `
     .lp .mega.small{min-width:0}
     .lp .burger{display:block}
     .lp .news-grid{grid-template-columns:1fr}
-    .lp .squad-grid{grid-template-columns:repeat(3,1fr)}
     .lp .results-grid{grid-template-columns:repeat(2,1fr)}
     .lp .cat-grid{grid-template-columns:repeat(3,1fr)}
-    .lp .matchbar .container{grid-template-columns:1fr}
-    .lp .mb-cell{border-right:none;border-bottom:1px solid rgba(255,255,255,.12)}
     .lp .foot-grid{grid-template-columns:1fr 1fr}
     .lp .hero h1{font-size:34px}
   }
   @media(max-width:600px){
     .lp .utility .quick{display:none}
     .lp .news-main{grid-template-columns:1fr}
-    .lp .squad-grid{grid-template-columns:repeat(2,1fr)}
     .lp .results-grid{grid-template-columns:1fr}
     .lp .cat-grid{grid-template-columns:repeat(2,1fr)}
     .lp .thumb-strip{grid-template-columns:1fr}
@@ -230,11 +205,15 @@ const css = `
   .lp .jc-adv{font-weight:700}
   .lp .jc-foot{display:flex;align-items:center;justify-content:space-between;font-size:13px;opacity:.9}
   .lp .jc-sumula{font-weight:700;text-decoration:underline}
+  .lp .jc-empty{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:18px 0 6px}
+  .lp .jc-empty .jc-badge{width:48px;height:48px;opacity:.95}
+  .lp .jc-empty p{max-width:460px;font-size:15px;opacity:.92;line-height:1.5}
 `
 
-export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) {
+export function LandingClient({ categorias, whatsapp }: { categorias: CategoriaJogos[]; whatsapp?: string }) {
   const [navOpen, setNavOpen] = useState(false)
-  const [squadTab, setSquadTab] = useState<"masc" | "fem">("masc")
+  const waNumber = whatsapp?.replace(/\D/g, "") || "5511999999999"
+  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de mais informações sobre a Escolinha Itaquerense.")}`
 
   return (
     <div className={`${roboto.variable} ${robotoCondensed.variable} lp`}>
@@ -283,18 +262,12 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
                   <div><h4>Estrutura</h4><a href="#">Arena Itaquerense</a><a href="#">Centro de Treinamento</a><a href="#">Sede Social</a><a href="#">Memória</a></div>
                 </div>
               </li>
-              <li><a href="#">Futebol</a>
-                <div className="mega">
-                  <div><h4>Profissional</h4><a href="#">Elenco Masculino</a><a href="#">Elenco Feminino</a><a href="#">Comissão Técnica</a></div>
-                  <div><h4>Base</h4><a href="/turmas">Turmas</a><a href="#">Sub-17</a><a href="#">Sub-15</a><a href="#">Categorias de Base</a></div>
-                </div>
-              </li>
               <li><a href="#">Modalidades</a>
                 <div className="mega">
                   <div><h4>Esportes</h4><a href="#">Futebol</a><a href="#">Futsal</a></div>
                 </div>
               </li>
-              <li><a href="#">Matrícula/Planos</a>
+              <li><a href="#">Matrícula/Turmas</a>
                 <div className="mega">
                   <div><h4>Matrícula</h4><a href="/matricula">Pré-Matrícula</a><a href="/turmas">Turmas &amp; Horários</a><a href="#">Como Funciona</a></div>
                   <div><h4>Sócio</h4><a href="#">Sócio Torcedor</a><a href="#">Planos</a><a href="#">Benefícios</a></div>
@@ -366,38 +339,6 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
         </div>
       </section>
 
-      {/* ===== 6. SQUAD ===== */}
-      <section className="squad">
-        <div className="container">
-          <div className="squad-head">
-            <h2 className="section-title" style={{ marginBottom: "0" }}>Elenco</h2>
-            <div className="tabs">
-              <button className={"tab" + (squadTab === "masc" ? " active" : "")} onClick={() => setSquadTab("masc")}>Masculino</button>
-              <button className={"tab" + (squadTab === "fem" ? " active" : "")} onClick={() => setSquadTab("fem")}>Feminino</button>
-            </div>
-          </div>
-
-          <div className="squad-grid" id="squad-masc" style={{ display: squadTab === "masc" ? "grid" : "none" }}>
-            <div className="player"><div className="top"><span className="num">1</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Goleiro</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">3</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Zagueiro</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">4</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Zagueiro</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">5</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meio-campo</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">8</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meia</b><span>Elenco Masculino</span></div></div>
-            <div className="player"><div className="top"><span className="num">10</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Atacante</b><span>Elenco Masculino</span></div></div>
-          </div>
-
-          <div className="squad-grid" id="squad-fem" style={{ display: squadTab === "fem" ? "grid" : "none" }}>
-            <div className="player"><div className="top"><span className="num">1</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Goleira</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">2</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Lateral</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">4</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Zagueira</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">8</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meio-campo</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">9</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Atacante</b><span>Elenco Feminino</span></div></div>
-            <div className="player"><div className="top"><span className="num">11</span><div className="placeholder"><i className="ti ti-user"></i></div></div><div className="info"><b>Meia</b><span>Elenco Feminino</span></div></div>
-          </div>
-        </div>
-      </section>
-
-
       {/* ===== 8. MEMBERSHIP BANNER ===== */}
       <section className="membership">
         <div className="container">
@@ -413,7 +354,8 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
           <h2 className="section-title">Modalidades</h2>
           <div className="cat-grid">
             <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futebol</b><span>Masculino &amp; Feminino</span></a>
-            <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal</b><span>Liga Local</span></a>
+            <a className="cat" href="#"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal Federado</b><span>Liga Local</span></a>
+            <a className="cat" href="#"><div className="circle"><i className="ti ti-school"></i></div><b>Escolinha</b><span>Formação de Base</span></a>
           </div>
         </div>
       </section>
@@ -447,7 +389,7 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
             </div>
           </div>
           <div className="fcol"><h4>Clube</h4><a href="#">História</a><a href="#">Estatuto</a><a href="#">Gestão</a><a href="#">Arena</a><a href="#">Memória</a></div>
-          <div className="fcol"><h4>Futebol</h4><a href="#">Elenco Masculino</a><a href="#">Elenco Feminino</a><a href="/turmas">Turmas</a><a href="#">Comissão</a></div>
+          <div className="fcol"><h4>Futebol</h4><a href="/turmas">Turmas</a><a href="#">Categorias de Base</a><a href="#">Comissão</a><a href="/resultados">Resultados &amp; Classificação</a></div>
           <div className="fcol"><h4>Modalidades</h4><a href="#">Futebol</a><a href="#">Futsal</a></div>
           <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a><a href="#">Loja Oficial</a></div>
         </div>
@@ -462,6 +404,34 @@ export function LandingClient({ categorias }: { categorias: CategoriaJogos[] }) 
           </div>
         </div>
       </footer>
+
+      {/* Botão flutuante WhatsApp */}
+      <a
+        href={waUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Fale conosco pelo WhatsApp"
+        style={{
+          position: "fixed",
+          bottom: "24px",
+          right: "24px",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "56px",
+          height: "56px",
+          borderRadius: "50%",
+          background: "#25D366",
+          boxShadow: "0 4px 16px rgba(37,211,102,0.4)",
+          animation: "wa-pulse 2.5s ease-in-out infinite",
+          textDecoration: "none",
+        }}
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </a>
     </div>
   )
 }

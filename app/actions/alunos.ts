@@ -25,10 +25,13 @@ export async function createAluno(data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth()
+  if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
+  const mensalidade = Number(data.mensalidade)
+  if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
   try {
     const aluno = await db.aluno.create({
       data: {
-        nome: data.nome,
+        nome: data.nome.trim(),
         dataNascimento: new Date(data.dataNascimento),
         turma: data.turma,
         horario: data.horario,
@@ -76,6 +79,8 @@ export async function createAluno(data: {
     }
 
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
@@ -122,6 +127,8 @@ export async function updateAluno(
 
     await registrarLog("aluno_editado", `Aluno atualizado — ${data.nome}`, { turma: data.turma })
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
@@ -135,6 +142,9 @@ export async function inativarAluno(id: number): Promise<ActionResult> {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Inativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_inativo", `Aluno inativado — ${aluno.nome}`, { turma: aluno.turma })
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
+    revalidatePath("/inadimplencia")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
@@ -148,6 +158,9 @@ export async function reativarAluno(id: number): Promise<ActionResult> {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Ativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_reativo", `Aluno reativado — ${aluno.nome}`, { turma: aluno.turma })
     revalidatePath("/alunos")
+    revalidatePath("/secretaria")
+    revalidatePath("/turmas")
+    revalidatePath("/inadimplencia")
     revalidatePath("/")
     return { success: true }
   } catch (e) {

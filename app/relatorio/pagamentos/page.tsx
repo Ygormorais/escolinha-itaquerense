@@ -10,7 +10,7 @@ type PagamentoRow = {
   dataPagamento: Date | null
   formaPagamento: string | null
   valorRecebido: number | null
-  aluno: { id: number; nome: string; turma: string }
+  aluno: { id: number; nome: string; turma: string; mensalidade: number }
 }
 
 export default async function RelatorioPagamentosPage() {
@@ -22,7 +22,7 @@ export default async function RelatorioPagamentosPage() {
       mesReferencia: { startsWith: String(currentYear) },
     },
     include: {
-      aluno: { select: { id: true, nome: true, turma: true } },
+      aluno: { select: { id: true, nome: true, turma: true, mensalidade: true } },
     },
     orderBy: [{ dataVencimento: "desc" }],
   })

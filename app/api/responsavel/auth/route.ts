@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
@@ -6,7 +8,8 @@ import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
 
 export async function POST(request: Request) {
-  const { email, senha } = await request.json()
+  const { email: rawEmail, senha } = await request.json()
+  const email = (rawEmail ?? "").trim().toLowerCase()
   const ip = request.headers.get("x-forwarded-for") ?? "unknown"
   const limit = checkRateLimit(`resp-login:${ip}`)
   if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)

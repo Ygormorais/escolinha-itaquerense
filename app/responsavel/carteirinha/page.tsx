@@ -9,6 +9,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, IdCard, Shirt } from "lucide-react"
 
+export const metadata = { title: "Carteirinha — Escolinha Itaquerense" }
+
 export default async function CarteirinhaPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

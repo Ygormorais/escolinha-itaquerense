@@ -198,7 +198,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
         />
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -238,13 +238,13 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
                     <RecorrenteFormDialog
                       recorrente={r}
                       trigger={
-                        <Button variant="ghost" size="icon-sm">
+                        <Button variant="ghost" size="icon-sm" aria-label="Editar modelo recorrente">
                           <PencilIcon className="size-3.5" />
                         </Button>
                       }
                     />
                     <ConfirmDialog title="Excluir modelo recorrente?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => handleDelete(r.id)}>
-                      <Button variant="ghost" size="icon-sm" disabled={deleting}>
+                      <Button variant="ghost" size="icon-sm" disabled={deleting} aria-label="Excluir modelo recorrente">
                         <Trash2Icon className="size-3.5 text-danger-600" />
                       </Button>
                     </ConfirmDialog>

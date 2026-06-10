@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -29,7 +30,7 @@ export default async function DescontosPage() {
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Descontos</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-danger-600">R$ {totalDescontos.toFixed(2)}</p>
+          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-danger-600">{formatMoney(totalDescontos)}</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">% Média Desconto</p>
@@ -39,7 +40,7 @@ export default async function DescontosPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -65,14 +66,14 @@ export default async function DescontosPage() {
                   <TableRow key={a.id}>
                     <TableCell className="font-medium">{a.nome}</TableCell>
                     <TableCell>{a.turma}</TableCell>
-                    <TableCell>R$ {a.mensalidade.toFixed(2)}</TableCell>
-                    <TableCell className="text-danger-600 font-medium">— R$ {a.desconto.toFixed(2)}</TableCell>
+                    <TableCell>{formatMoney(a.mensalidade)}</TableCell>
+                    <TableCell className="text-danger-600 font-medium">— {formatMoney(a.desconto)}</TableCell>
                     <TableCell>
                       <Badge variant={pct > 50 ? "destructive" : pct > 25 ? "outline" : "secondary"}>
                         {pct.toFixed(0)}%
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium">R$ {(a.mensalidade - a.desconto).toFixed(2)}</TableCell>
+                    <TableCell className="font-medium">{formatMoney(a.mensalidade - a.desconto)}</TableCell>
                   </TableRow>
                 )
               })

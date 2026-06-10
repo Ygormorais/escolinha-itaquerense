@@ -37,7 +37,7 @@ test.describe("Autenticação", () => {
     // nas navegações seguintes. (Logar pelo formulário com fetch in-page não
     // propaga o cookie de forma confiável para a navegação imediata no harness.)
     const res = await page.request.post("/api/auth/login", {
-      data: { username: "admin", password: "escolinha123" },
+      data: { username: "admin", password: "admin" },
     })
     expect(res.ok()).toBeTruthy()
 

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, Swords, Trophy, Search } from "lucide-react"
+import { Plus, Pencil, Trash2, Swords, Trophy, Search, Shirt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -13,11 +13,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import Link from "next/link"
 import { criarPartida, editarPartida, deletarPartida } from "@/app/actions/campeonatos"
 import { calcularClassificacao } from "@/lib/campeonatos"
 import { format } from "date-fns"
@@ -36,7 +37,7 @@ type Partida = {
   observacoes: string | null
 }
 
-export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense" }: { partidas: Partida[]; campeonatoId: number; nomeClube?: string }) {
+export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense", convocacoesMap = new Set() }: { partidas: Partida[]; campeonatoId: number; nomeClube?: string; convocacoesMap?: Set<number> }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Partida | null>(null)
@@ -257,6 +258,13 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     <TableCell><Badge variant="secondary" className="text-[10px]">{p.local}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
+                          <Button size="sm" variant="outline" className={convocacoesMap.has(p.id) ? "border-success-600 text-success-600" : ""}>
+                            <Shirt className="size-3.5" />
+                            Convocação
+                            {convocacoesMap.has(p.id) && <span className="ml-1 size-2 rounded-full bg-success-600" />}
+                          </Button>
+                        </Link>
                         <Button size="sm" variant="outline" onClick={() => openScore(p)}>
                           Placar
                         </Button>
@@ -302,9 +310,9 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
               ))}
             </div>
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" }) } }}>
-              <DialogTrigger render={<Button size="sm" className="h-8" />}>
+              <Button size="sm" className="h-8" onClick={() => setOpen(true)}>
                 <Plus className="size-4" /> Partida
-              </DialogTrigger>
+              </Button>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
@@ -393,11 +401,16 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                   <TableCell>{resultadoBadge(p.resultado)}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)}>
+                      <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
+                        <Button size="icon-sm" variant="ghost" title="Convocação" className={convocacoesMap.has(p.id) ? "text-success-600" : ""}>
+                          <Shirt className="size-3.5" />
+                        </Button>
+                      </Link>
+                      <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)} aria-label="Registrar placar">
                         <Pencil className="size-3.5" />
                       </Button>
                       <ConfirmDialog title="Deletar partida?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={() => handleDelete(p.id)}>
-                        <Button size="icon-sm" variant="ghost">
+                        <Button size="icon-sm" variant="ghost" aria-label="Deletar partida">
                           <Trash2 className="size-3.5 text-danger-600" />
                         </Button>
                       </ConfirmDialog>

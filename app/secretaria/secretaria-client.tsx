@@ -9,6 +9,9 @@ import { ptBR } from "date-fns/locale"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
+import { useTransition } from "react"
+import { enviarWhatsApp } from "@/app/actions/whatsapp"
+import { toast } from "sonner"
 
 type Evento = {
   id: number
@@ -27,12 +30,51 @@ type Aniversariante = {
   nome: string
   dataNascimento: RscDate
   turma: string
+  telefone: string | null
 }
 
 const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800",
   Jogo: "bg-success-50 text-success-600",
   Evento: "bg-info-50 text-info-600",
+}
+
+function AniversarianteRow({ aniversariante: a }: { aniversariante: Aniversariante }) {
+  const [pending, start] = useTransition()
+  const anos = new Date().getFullYear() - new Date(a.dataNascimento).getFullYear()
+  const tel = a.telefone?.replace(/\D/g, "") ?? ""
+
+  function enviarParabens() {
+    if (!tel) { toast.error("Aluno sem telefone cadastrado"); return }
+    start(async () => {
+      const msg = `🎉 Parabéns, ${a.nome.split(" ")[0]}! Hoje você completa ${anos} anos! Desejamos muita saúde, alegria e gols pela frente. Abraços da equipe! ⚽`
+      const res = await enviarWhatsApp(a.id, tel, msg)
+      if ("success" in res) toast.success("Parabéns enviado!")
+      else toast.error("Falha ao enviar")
+    })
+  }
+
+  return (
+    <div className="flex items-center justify-between rounded-lg border p-2.5">
+      <div className="flex items-center gap-2">
+        <div className="flex size-8 items-center justify-center rounded-full bg-brand-100 text-brand-800 text-xs font-bold">
+          {format(new Date(a.dataNascimento), "dd")}
+        </div>
+        <div>
+          <p className="text-sm font-medium">{a.nome}</p>
+          <p className="text-xs text-muted-foreground">{a.turma}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className="text-[10px]">{anos} anos</Badge>
+        {tel && (
+          <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs text-success-600 hover:text-success-600" onClick={enviarParabens} disabled={pending}>
+            🎂 {pending ? "…" : "Parabéns"}
+          </Button>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export function SecretariaClient({
@@ -51,7 +93,7 @@ export function SecretariaClient({
   const hoje = new Date()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 lg:p-8">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-l-4 border-l-brand-600">
           <CardHeader className="pb-2">
@@ -173,20 +215,7 @@ export function SecretariaClient({
             ) : (
               <div className="space-y-2">
                 {aniversariantes.slice(0, 10).map((a) => (
-                  <div key={a.id} className="flex items-center justify-between rounded-lg border p-2.5">
-                    <div className="flex items-center gap-2">
-                      <div className="flex size-8 items-center justify-center rounded-full bg-brand-100 text-brand-800 text-xs font-bold">
-                        {format(new Date(a.dataNascimento), "dd")}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{a.nome}</p>
-                        <p className="text-xs text-muted-foreground">{a.turma}</p>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-[10px]">
-                      {new Date().getFullYear() - new Date(a.dataNascimento).getFullYear()} anos
-                    </Badge>
-                  </div>
+                  <AniversarianteRow key={a.id} aniversariante={a} />
                 ))}
                 {aniversariantes.length > 10 && (
                   <p className="text-xs text-center text-muted-foreground">

@@ -7,7 +7,7 @@ datasource db {
 }
 
 model Aluno {
-  id             Int          @id @default(autoincrement())
+  id             Int                   @id @default(autoincrement())
   nome           String
   dataNascimento DateTime
   turma          String
@@ -17,9 +17,9 @@ model Aluno {
   email          String
   dataMatricula  DateTime
   mensalidade    Float
-  desconto       Float        @default(0)
+  desconto       Float                 @default(0)
   foto           String?
-  status         String       @default("Ativo")
+  status         String                @default("Ativo")
   observacoes    String?
   pagamentos     Pagamento[]
   frequencias    Frequencia[]
@@ -28,15 +28,19 @@ model Aluno {
   transacoes     TransacaoMaquina[]
   inscricoes     InscricaoCampeonato[]
   responsavelId  Int?
-  responsavelRef Responsavel?  @relation(fields: [responsavelId], references: [id])
+  responsavelRef Responsavel?          @relation(fields: [responsavelId], references: [id])
   avaliacoes     Avaliacao[]
-  createdAt      DateTime     @default(now())
+  escalacoes     EscalacaoJogador[]
+  createdAt      DateTime              @default(now())
+
+  @@index([status])
+  @@index([turma])
 }
 
 model Pagamento {
-  id             Int               @id @default(autoincrement())
+  id             Int                @id @default(autoincrement())
   alunoId        Int
-  aluno          Aluno             @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  aluno          Aluno              @relation(fields: [alunoId], references: [id], onDelete: Cascade)
   mesReferencia  String
   dataVencimento DateTime
   dataPagamento  DateTime?
@@ -50,7 +54,13 @@ model Pagamento {
   linhaDigitavel String?
   pixCopiaECola  String?
   externalUrl    String?
-  createdAt      DateTime          @default(now())
+  createdAt      DateTime           @default(now())
+
+  @@index([alunoId])
+  @@index([mesReferencia])
+  @@index([dataPagamento])
+  @@index([statusCobranca])
+  @@index([externalId])
 }
 
 model Custo {
@@ -64,6 +74,9 @@ model Custo {
   comprovante    Boolean  @default(false)
   observacoes    String?
   createdAt      DateTime @default(now())
+
+  @@index([data])
+  @@index([categoria])
 }
 
 model CustoRecorrente {
@@ -78,49 +91,54 @@ model CustoRecorrente {
 }
 
 model Frequencia {
-  id        Int      @id @default(autoincrement())
-  alunoId   Int
-  aluno     Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  data      DateTime
-  presenca  String
+  id       Int      @id @default(autoincrement())
+  alunoId  Int
+  aluno    Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  data     DateTime
+  presenca String
 
   @@unique([alunoId, data])
 }
 
 model Uniforme {
-  id        Int      @id @default(autoincrement())
-  alunoId   Int
-  aluno     Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  item      String
-  tamanho   String?
-  entregue  Boolean  @default(false)
+  id          Int       @id @default(autoincrement())
+  alunoId     Int
+  aluno       Aluno     @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  item        String
+  tamanho     String?
+  entregue    Boolean   @default(false)
   dataEntrega DateTime?
   observacoes String?
-  createdAt DateTime @default(now())
+  createdAt   DateTime  @default(now())
 }
 
 model Log {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   tipo      String
   descricao String
   usuario   String?
   meta      String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([tipo])
+  @@index([createdAt])
 }
 
 model Responsavel {
-  id           Int           @id @default(autoincrement())
-  nome         String
-  email        String        @unique
-  telefone     String
-  senha        String
-  cpf          String?       @unique
-  ativo        Boolean       @default(true)
-  alunos       Aluno[]
-  chatSessions ChatSession[]
-  resetTokens  ResetToken[]
-  solicitacoes Solicitacao[]
-  createdAt    DateTime      @default(now())
+  id                Int                     @id @default(autoincrement())
+  nome              String
+  email             String                  @unique
+  telefone          String
+  senha             String
+  cpf               String?                 @unique
+  ativo             Boolean                 @default(true)
+  alunos            Aluno[]
+  chatSessions      ChatSession[]
+  resetTokens       ResetToken[]
+  solicitacoes      Solicitacao[]
+  pushSubscriptions PushSubscription[]
+  notificacaoPrefs  NotificacaoPreferencia?
+  createdAt         DateTime                @default(now())
 }
 
 model ResetToken {
@@ -136,12 +154,12 @@ model ResetToken {
 model Evento {
   id         Int      @id @default(autoincrement())
   titulo     String
-  tipo       String   // Treino, Jogo, Evento, Reunião
+  tipo       String // Treino, Jogo, Evento, Reunião
   data       DateTime
   horaInicio String?
   horaFim    String?
   local      String?
-  turmas     String?  // "Todas" ou turmas separadas por vírgula
+  turmas     String? // "Todas" ou turmas separadas por vírgula
   descricao  String?
   status     String   @default("pendente") // pendente, confirmado, cancelado, realizado
   createdAt  DateTime @default(now())
@@ -170,45 +188,46 @@ model Recibo {
 }
 
 model Campeonato {
-  id            Int                  @id @default(autoincrement())
-  nome          String
-  descricao     String?
-  dataInicio    DateTime
-  dataFim       DateTime?
-  local         String?
-  taxaInscricao Float                @default(0)
-  taxaJogo      Float                @default(0)      // taxa por jogo/rodada
-  taxaArbitragem Float               @default(0)
-  custoTransporte Float              @default(0)
-  custoUniforme  Float               @default(0)
-  observacoes   String?
-  status        String               @default("aberto") // aberto, andamento, encerrado
-  fpfsEventoId  Int?                                   // id do evento na FPFS (ex.: 920)
-  fpfsTimeNome  String?                                // nome do nosso time como aparece na FPFS
-  fpfsSyncEm    DateTime?                              // ultimo sync bem-sucedido
-  inscricoes    InscricaoCampeonato[]
-  partidas      Partida[]
-  media         Media[]
+  id                Int                   @id @default(autoincrement())
+  nome              String
+  descricao         String?
+  dataInicio        DateTime
+  dataFim           DateTime?
+  local             String?
+  taxaInscricao     Float                 @default(0)
+  taxaJogo          Float                 @default(0) // taxa por jogo/rodada
+  taxaArbitragem    Float                 @default(0)
+  custoTransporte   Float                 @default(0)
+  custoUniforme     Float                 @default(0)
+  observacoes       String?
+  status            String                @default("aberto") // aberto, andamento, encerrado
+  fpfsEventoId      Int? // id do evento na FPFS (ex.: 920)
+  fpfsTimeNome      String? // nome do nosso time como aparece na FPFS
+  fpfsSyncEm        DateTime? // ultimo sync bem-sucedido
+  inscricoes        InscricaoCampeonato[]
+  partidas          Partida[]
+  media             Media[]
   classificacaoFpfs ClassificacaoFpfs[]
-  createdAt     DateTime             @default(now())
+  createdAt         DateTime              @default(now())
 }
 
 model Partida {
-  id            Int        @id @default(autoincrement())
-  campeonatoId  Int
-  campeonato    Campeonato @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
-  rodada        Int        @default(1)
-  data          DateTime
-  adversario    String
-  local         String     @default("Casa")  // Casa, Fora, Neutro
-  golsPro       Int?
-  golsContra    Int?
-  resultado     String?    // Vitoria, Derrota, Empate — null se não realizada
-  observacoes   String?
-  fpfsJogoId    String?                                // id do jogo na FPFS (link da sumula)
-  sumulaUrl     String?                                // URL da sumula
-  media         Media[]
-  createdAt     DateTime   @default(now())
+  id           Int                @id @default(autoincrement())
+  campeonatoId Int
+  campeonato   Campeonato         @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  rodada       Int                @default(1)
+  data         DateTime
+  adversario   String
+  local        String             @default("Casa") // Casa, Fora, Neutro
+  golsPro      Int?
+  golsContra   Int?
+  resultado    String? // Vitoria, Derrota, Empate — null se não realizada
+  observacoes  String?
+  fpfsJogoId   String? // id do jogo na FPFS (link da sumula)
+  sumulaUrl    String? // URL da sumula
+  media        Media[]
+  escalacao    EscalacaoJogador[]
+  createdAt    DateTime           @default(now())
 
   @@unique([campeonatoId, fpfsJogoId])
 }
@@ -241,10 +260,10 @@ model InscricaoCampeonato {
   campeonato     Campeonato @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
   alunoId        Int
   aluno          Aluno      @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  bolsa          Boolean    @default(false)            // bolsa integral (isento)
-  desconto       Float      @default(0)                // desconto em R$ sobre a taxa total
+  bolsa          Boolean    @default(false) // bolsa integral (isento)
+  desconto       Float      @default(0) // desconto em R$ sobre a taxa total
   taxaPaga       Boolean    @default(false)
-  valorPago      Float?                                // valor efetivamente pago
+  valorPago      Float? // valor efetivamente pago
   dataPagamento  DateTime?
   formaPagamento String?
   observacoes    String?
@@ -254,26 +273,29 @@ model InscricaoCampeonato {
 }
 
 model TransacaoMaquina {
-  id             Int       @id @default(autoincrement())
-  dataTransacao  DateTime
-  valor          Float
-  parcelas       Int       @default(1)
-  bandeira       String    @default("")          // Visa, Mastercard, Elo
-  tipo           String    @default("credito")    // credito, debito
-  nomeNoCartao   String    @default("")           // nome do portador
-  parcela        String?                           // "1/3", "2/3"... raw do CSV
-  autorizacao    String?                           // codigo de autorizacao
-  nsu            String?                           // NSU da transacao
-  custoTaxa      Float?                            // taxa descontada
-  valorLiquido   Float?                            // valor a receber
-  previsao       DateTime?                         // data prevista para recebimento
-  arquivo        String    @default("")            // nome do CSV importado
-  status         String    @default("pendente")    // pendente, reconciliado, ignorado
-  alunoId        Int?
-  aluno          Aluno?     @relation(fields: [alunoId], references: [id])
-  pagamentoId    Int?
-  pagamento      Pagamento? @relation(fields: [pagamentoId], references: [id])
-  createdAt      DateTime   @default(now())
+  id            Int        @id @default(autoincrement())
+  dataTransacao DateTime
+  valor         Float
+  parcelas      Int        @default(1)
+  bandeira      String     @default("") // Visa, Mastercard, Elo
+  tipo          String     @default("credito") // credito, debito
+  nomeNoCartao  String     @default("") // nome do portador
+  parcela       String? // "1/3", "2/3"... raw do CSV
+  autorizacao   String? // codigo de autorizacao
+  nsu           String? // NSU da transacao
+  custoTaxa     Float? // taxa descontada
+  valorLiquido  Float? // valor a receber
+  previsao      DateTime? // data prevista para recebimento
+  arquivo       String     @default("") // nome do CSV importado
+  status        String     @default("pendente") // pendente, reconciliado, ignorado
+  alunoId       Int?
+  aluno         Aluno?     @relation(fields: [alunoId], references: [id])
+  pagamentoId   Int?
+  pagamento     Pagamento? @relation(fields: [pagamentoId], references: [id])
+  createdAt     DateTime   @default(now())
+
+  @@index([status])
+  @@index([dataTransacao])
 }
 
 model Configuracao {
@@ -284,26 +306,31 @@ model Configuracao {
 model WhatsAppMensagem {
   id         Int      @id @default(autoincrement())
   alunoId    Int?
-  aluno      Aluno?   @relation(fields: [alunoId], references: [id])
+  aluno      Aluno?   @relation(fields: [alunoId], references: [id], onDelete: SetNull)
   telefone   String
   mensagem   String
-  tipo       String   @default("text")        // text, template, image, document
-  direcao    String   @default("outgoing")    // outgoing, incoming
-  status     String   @default("sent")        // sent, delivered, read, failed, received
+  tipo       String   @default("text") // text, template, image, document
+  direcao    String   @default("outgoing") // outgoing, incoming
+  status     String   @default("sent") // sent, delivered, read, failed, received
   instancia  String   @default("escolinha")
-  origem     String   @default("manual")      // manual, cobranca, comunicado, ai-router, webhook
-  intent     String?                           // classificacao AI: cobranca, frequencia, etc
-  confidence Float?                            // confianca da classificacao AI
-  messageId  String?                           // ID da mensagem no WhatsApp
+  origem     String   @default("manual") // manual, cobranca, comunicado, ai-router, webhook
+  intent     String? // classificacao AI: cobranca, frequencia, etc
+  confidence Float? // confianca da classificacao AI
+  messageId  String? // ID da mensagem no WhatsApp
   lida       Boolean  @default(false)
   createdAt  DateTime @default(now())
+
+  @@index([alunoId])
+  @@index([messageId])
+  @@index([createdAt])
+  @@index([origem, direcao])
 }
 
 model ChatSession {
   id            Int          @id @default(autoincrement())
   telefone      String       @unique
   responsavelId Int?
-  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
   identificado  Boolean      @default(false)
   bloqueado     Boolean      @default(false)
   historico     String       @default("[]")
@@ -314,7 +341,7 @@ model ChatSession {
 
 model Media {
   id           Int         @id @default(autoincrement())
-  tipo         String      // "video" | "fotos"
+  tipo         String // "video" | "fotos"
   titulo       String
   url          String
   partidaId    Int?
@@ -328,7 +355,7 @@ model Solicitacao {
   id            Int         @id @default(autoincrement())
   responsavelId Int
   responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
-  tipo          String      // "uniforme", "horario", "documento", "outro"
+  tipo          String // "uniforme", "horario", "documento", "outro"
   descricao     String
   status        String      @default("pendente") // pendente, em_andamento, resolvida, recusada
   resposta      String?
@@ -345,36 +372,86 @@ model PreMatricula {
   nomeResponsavel String
   telefone        String
   email           String
-  documentos      String?  // JSON array of file paths
+  documentos      String? // JSON array of file paths
   observacoes     String?
   status          String   @default("pendente") // pendente, aprovada, recusada
   createdAt       DateTime @default(now())
 }
 
 model Produto {
-  id         Int      @id @default(autoincrement())
-  nome       String
-  descricao  String?
-  preco      Float    @default(0)
-  categoria  String   @default("uniforme") // uniforme, acessorio, outro
-  tamanhos   String?  // "P,M,G,GG" ou "Único"
-  estoque    Int      @default(0)
-  ativo      Boolean  @default(true)
-  imagem     String?  // URL da imagem
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  nome      String
+  descricao String?
+  preco     Float    @default(0)
+  categoria String   @default("uniforme") // uniforme, acessorio, outro
+  tamanhos  String? // "P,M,G,GG" ou "Único"
+  estoque   Int      @default(0)
+  ativo     Boolean  @default(true)
+  imagem    String? // URL da imagem
+  createdAt DateTime @default(now())
 }
 
 model Avaliacao {
   id                Int      @id @default(autoincrement())
   alunoId           Int
   aluno             Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  periodo           String   // "2026-1S", "2026-2S" (semestre)
-  notaTecnica       Float?   // 0-10
-  notaFisica        Float?   // 0-10
-  notaComportamento Float?   // 0-10
-  frequencia        Float?   // % presença no período
+  periodo           String // "2026-1S", "2026-2S" (semestre)
+  notaTecnica       Float? // 0-10
+  notaFisica        Float? // 0-10
+  notaComportamento Float? // 0-10
+  frequencia        Float? // % presença no período
   observacoes       String?
   createdAt         DateTime @default(now())
 
   @@unique([alunoId, periodo])
+}
+
+model Recebimento {
+  id             Int      @id @default(autoincrement())
+  data           DateTime
+  descricao      String
+  categoria      String // "Uniforme", "Evento", "Doação", "Outros"
+  valor          Float
+  formaPagamento String // "Dinheiro", "PIX", "Transferência", "Cartão"
+  observacoes    String?
+  createdAt      DateTime @default(now())
+
+  @@index([data])
+}
+
+model EscalacaoJogador {
+  id        Int      @id @default(autoincrement())
+  partidaId Int
+  partida   Partida  @relation(fields: [partidaId], references: [id], onDelete: Cascade)
+  alunoId   Int
+  aluno     Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  posicao   String // GOLEIRO, FIXO, ALA_ESQ, ALA_DIR, PIVO, BANCO
+  numero    Int?
+  ordem     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([partidaId, alunoId])
+  @@index([partidaId])
+}
+
+model PushSubscription {
+  id            Int         @id @default(autoincrement())
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  endpoint      String      @unique
+  p256dh        String
+  auth          String
+  createdAt     DateTime    @default(now())
+
+  @@index([responsavelId])
+}
+
+model NotificacaoPreferencia {
+  responsavelId       Int         @id
+  responsavel         Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  vencimento          Boolean     @default(true)
+  pagamentoConfirmado Boolean     @default(true)
+  falta               Boolean     @default(false)
+  convocacao          Boolean     @default(true)
+  comunicado          Boolean     @default(true)
 }

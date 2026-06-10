@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { importarAlunosCSV } from "@/app/actions/importar"
 import { toast } from "sonner"
+import { formatMoney } from "@/lib/utils"
 
 type AlunoRow = {
   nome: string; dataNascimento: string; turma: string; horario: string
@@ -136,11 +137,11 @@ export function ImportarAlunosClient() {
                   </thead>
                   <tbody>
                     {preview.slice(0, 10).map((r, i) => (
-                      <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-muted/20"}>
+                      <tr key={i} className={i % 2 === 0 ? "bg-muted/40" : "bg-muted/20"}>
                         <td className="px-3 py-2 font-medium">{r.nome}</td>
                         <td className="px-3 py-2">{r.dataNascimento}</td>
                         <td className="px-3 py-2">{r.turma}</td>
-                        <td className="px-3 py-2">R$ {Number(r.mensalidade).toFixed(2)}</td>
+                        <td className="px-3 py-2">{formatMoney(Number(r.mensalidade))}</td>
                         <td className="px-3 py-2">{r.status}</td>
                       </tr>
                     ))}

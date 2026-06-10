@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { routeMessage } from "@/lib/whatsapp/ai-router"
@@ -15,7 +17,8 @@ export async function POST(req: NextRequest) {
 
     if (event === "MESSAGE" && data?.key?.remoteJid) {
       const telefone = data.key.remoteJid.replace(/@s\.whatsapp\.net$/, "")
-      const texto = data.message?.conversation || data.message?.extendedTextMessage?.text || ""
+      const textoRaw = data.message?.conversation || data.message?.extendedTextMessage?.text || ""
+      const texto = textoRaw.slice(0, 4096) // trunca mensagens anormalmente longas
       const messageId = data.key.id
 
       if (!texto) return NextResponse.json({ ok: true })

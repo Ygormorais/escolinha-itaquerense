@@ -1,6 +1,7 @@
 "use client"
 
 import { Download } from "lucide-react"
+import { sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 
@@ -49,7 +50,7 @@ export function ExportarCaixaButton({ mes, pagamentos, custos }: Props) {
 
     const cabecalho = ["Tipo", "Descrição/Aluno", "Ref/Categoria", "Forma", "Valor (R$)", "Data"]
     const linhas = [cabecalho, ...linhasPag, ...linhasCusto]
-    const csv = linhas.map((l) => l.map((c) => `"${c}"`).join(";")).join("\n")
+    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")

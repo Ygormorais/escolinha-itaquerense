@@ -53,7 +53,7 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Buscar..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
         </div>
-        <select value={filtro} onChange={(e) => setFiltro(e.target.value)} className="rounded-lg border border-input bg-white px-3 py-2 text-sm">
+        <select value={filtro} onChange={(e) => setFiltro(e.target.value)} aria-label="Filtrar por status" className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
           <option value="todas">Todas</option>
           <option value="pendente">Pendentes</option>
           <option value="em_andamento">Em andamento</option>
@@ -63,7 +63,7 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
         <span className="text-sm text-muted-foreground">{filtradas.length} registro(s)</span>
       </div>
 
-      <div className="rounded-xl border bg-white divide-y">
+      <div className="rounded-xl border bg-card divide-y">
         {filtradas.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma solicitação encontrada.</p>}
         {filtradas.map((s) => {
           const responderJSX = s.status === "pendente" || s.status === "em_andamento" ? (
@@ -112,7 +112,7 @@ function ResponderForm({ id, onResponder }: { id: number; onResponder: (id: numb
 
   return (
     <div className="mt-3 space-y-2">
-      <textarea value={resposta} onChange={(e) => setResposta(e.target.value)} rows={3} className="block w-full rounded-lg border border-input bg-white px-3 py-2 text-sm shadow-sm" placeholder="Escreva sua resposta..." />
+      <textarea value={resposta} onChange={(e) => setResposta(e.target.value)} rows={3} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm" placeholder="Escreva sua resposta..." />
       <div className="flex gap-2">
         <Button size="sm" onClick={() => { onResponder(id, "resolvida", resposta); setAberto(false) }} className="bg-success-600 text-white"><CheckCircle2 className="size-4" /> Resolver</Button>
         <Button size="sm" variant="outline" onClick={() => { onResponder(id, "recusada", resposta); setAberto(false) }} className="text-destructive border-destructive"><XCircle className="size-4" /> Recusar</Button>

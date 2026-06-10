@@ -230,12 +230,12 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                                 </div>
                                 <div className="flex gap-1">
                                   {!u.entregue && (
-                                    <Button size="icon-sm" variant="outline" onClick={() => handleEntregar(u.id, aluno.id)}>
+                                    <Button size="icon-sm" variant="outline" onClick={() => handleEntregar(u.id, aluno.id)} aria-label="Marcar como entregue">
                                       <CheckCircle className="size-4 text-success-600" />
                                     </Button>
                                   )}
                                   <ConfirmDialog title="Remover item?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleRemover(u.id, aluno.id)}>
-                                    <Button size="icon-sm" variant="ghost">
+                                    <Button size="icon-sm" variant="ghost" aria-label="Remover item de uniforme">
                                       <XCircle className="size-4 text-danger-600" />
                                     </Button>
                                   </ConfirmDialog>

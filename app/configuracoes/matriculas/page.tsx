@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth"
 import { MatriculasClient } from "./matriculas-client"
 import { PageHeader } from "@/components/layout/page-header"
 
-export const metadata = { title: "Pré-Matrículas" }
+export const metadata = { title: "Pré-Matrículas — Escolinha Itaquerense" }
 
 export default async function MatriculasPage() {
   await requireAuth(["admin", "secretaria"])
@@ -15,7 +15,7 @@ export default async function MatriculasPage() {
   }))
 
   return (
-    <div className="p-6">
+    <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader title="Pré-Matrículas" description="Gerencie as solicitações de matrícula recebidas." />
       <MatriculasClient matriculas={parsed} />
     </div>

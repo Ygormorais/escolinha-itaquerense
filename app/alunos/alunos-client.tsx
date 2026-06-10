@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Pagination } from "@/components/ui/pagination"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { TURMAS } from "@/lib/constants"
@@ -279,7 +280,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
     if (filters.turma !== "Todas") params.set("turma", filters.turma)
     if (filters.status !== "Todos") params.set("status", filters.status)
     router.push(`/alunos?${params.toString()}`)
-  }, [debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, filters.turma, filters.status, router])
 
   function pushFilter(key: string, value: string, defaultVal: string) {
     const params = new URLSearchParams()
@@ -299,7 +300,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         a.mensalidade.toFixed(2), a.status,
       ]),
     ]
-    const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -342,7 +343,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           className="max-w-xs"
         />
         <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-          <SelectTrigger>
+          <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -353,7 +354,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           </SelectContent>
         </Select>
         <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-          <SelectTrigger>
+          <SelectTrigger className="w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -381,7 +382,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -425,7 +426,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                 <TableCell>{aluno.turma}</TableCell>
                 <TableCell>{aluno.horario}</TableCell>
                 <TableCell>{aluno.responsavel}</TableCell>
-                <TableCell>R$ {aluno.mensalidade.toFixed(2)}</TableCell>
+                <TableCell>{formatMoney(aluno.mensalidade)}</TableCell>
                 <TableCell>
                   <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />
                 </TableCell>
@@ -435,7 +436,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                       key={aluno.id}
                       aluno={aluno}
                       trigger={
-                        <Button variant="ghost" size="icon-sm">
+                        <Button variant="ghost" size="icon-sm" aria-label="Editar aluno">
                           <PencilIcon className="size-3.5" />
                         </Button>
                       }

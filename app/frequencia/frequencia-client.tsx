@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, PrinterIcon } from "lucide-react"
+import { SaveIcon, Printer, QrCode, ClipboardList } from "lucide-react"
 import { toast } from "sonner"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -94,7 +95,7 @@ export function FrequenciaClient() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="text-sm font-medium text-muted-foreground">Turma</label>
@@ -123,7 +124,17 @@ export function FrequenciaClient() {
         >
           {loading ? "Carregando..." : "Carregar"}
         </Button>
+        <Link href={`/frequencia/scanner?data=${data}`}>
+          <Button variant="outline" size="sm" className="gap-2"><QrCode className="size-4" /> Scanner QR</Button>
+        </Link>
       </div>
+
+      {!loaded && !loading && (
+        <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+          <ClipboardList className="size-10 opacity-30" />
+          <p className="text-sm">Selecione a turma e a data, depois clique em <strong className="text-foreground">Carregar</strong>.</p>
+        </div>
+      )}
 
       {loaded && (
         <>
@@ -155,8 +166,8 @@ export function FrequenciaClient() {
                 onClick={handleImprimir}
                 disabled={alunos.length === 0}
               >
-                <PrinterIcon className="size-4" />
-                Imprimir Lista
+                <Printer className="size-4" />
+                Imprimir PDF
               </Button>
               <Button
                 onClick={handleSalvar}
@@ -169,7 +180,7 @@ export function FrequenciaClient() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-white">
+          <div className="rounded-xl border bg-card">
             <Table>
               <TableHeader>
                 <TableRow>

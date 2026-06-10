@@ -21,14 +21,15 @@ export async function criarResponsavel(data: {
   alunoIds?: number[]
 }) {
   await requireAuth()
-  const existing = await db.responsavel.findUnique({ where: { email: data.email } })
+  const email = data.email.trim().toLowerCase()
+  const existing = await db.responsavel.findUnique({ where: { email } })
   if (existing) return { error: "Email já cadastrado" }
 
   const senha = bcrypt.hashSync(data.senha, 10)
   const responsavel = await db.responsavel.create({
     data: {
       nome: data.nome,
-      email: data.email,
+      email,
       telefone: data.telefone,
       senha,
       alunos: data.alunoIds?.length

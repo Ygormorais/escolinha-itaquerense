@@ -138,13 +138,13 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={prevMonth}>
+            <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Mês anterior">
               <ChevronLeft className="size-4" />
             </Button>
             <CardTitle className="text-lg font-heading">
               {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={nextMonth}>
+            <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Próximo mês">
               <ChevronRight className="size-4" />
             </Button>
           </div>
@@ -240,11 +240,11 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     )}
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)}>
+                    <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)} aria-label="Editar evento">
                       <Pencil className="size-3" />
                     </Button>
                     <ConfirmDialog title="Excluir evento?" description="Esta ação não pode ser desfeita." onConfirm={() => handleDelete(ev.id)}>
-                      <Button variant="ghost" size="icon-sm">
+                      <Button variant="ghost" size="icon-sm" aria-label="Excluir evento">
                         <Trash2 className="size-3 text-danger-600" />
                       </Button>
                     </ConfirmDialog>

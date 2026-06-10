@@ -111,8 +111,17 @@ npx prisma migrate dev --name init_pg
 - [ ] `SESSION_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` definidos (o app recusa defaults em produção)
 - [ ] `CRON_SECRET` definido (cron retorna 401 sem Bearer válido em produção)
 - [ ] `EVOLUTION_API_KEY` definida (webhook WhatsApp retorna 401 em produção sem header `apikey`)
+- [ ] `ANTHROPIC_API_KEY` definida (chatbot WhatsApp retorna resposta padrão sem ela)
+- [ ] `FPFS_SYNC_TOKEN` definido (POST /api/sync/fpfs retorna 401 sem token)
+- [ ] `MERCADOPAGO_ACCESS_TOKEN` e `MERCADOPAGO_WEBHOOK_SECRET` definidos para cobranças PIX/Boleto
 - [ ] `.env` adicionado ao `.gitignore` (já está)
-- [ ] Backup automático do `prisma/dev.db` configurado
+- [ ] Backup automático configurado (GitHub Actions > Settings > Secrets):
+  - `SSH_HOST` — IP ou hostname do servidor de produção
+  - `SSH_USER` — usuário SSH (ex: ubuntu)
+  - `SSH_KEY` — chave SSH privada para acesso ao servidor
+  - `CONTAINER_NAME` — nome do container Docker (padrão: escolinha)
+  - `APP_URL` — URL base do app (ex: https://meudominio.com.br) para o cron diário
+- [ ] `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_EMAIL` definidos para push notifications PWA
 
 ### Rate limit (login e recuperação de senha)
 

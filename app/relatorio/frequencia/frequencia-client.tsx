@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { CalendarCheck, Download, PrinterIcon } from "lucide-react"
+import { CalendarCheck, Download, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
 import { printHTML } from "@/lib/print"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 type Stat = {
   id: number
@@ -26,11 +27,14 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
     return stats.filter((s) => {
       if (filtroTurma !== "todas" && s.turma !== filtroTurma) return false
       if (filtroFreq === "altas" && s.percentual < 75) return false
+      if (filtroFreq === "risco" && s.percentual >= 75) return false
       if (filtroFreq === "baixas" && s.percentual >= 50) return false
       if (filtroFreq === "criticas" && s.percentual >= 25) return false
       return true
     })
   }, [stats, filtroTurma, filtroFreq])
+
+  const emRisco = stats.filter((s) => s.percentual < 75 && s.totalAulas > 0).length
 
   const mediaGeral = stats.length > 0
     ? Math.round(stats.reduce((s, a) => s + a.percentual, 0) / stats.length)
@@ -53,7 +57,7 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
   function exportarCSV() {
     const header = "Nome;Turma;Aulas;Presenças;Frequência"
     const rows = filtrados.map((s) =>
-      [s.nome, s.turma, s.totalAulas, s.totalPresencas, `${s.percentual}%`].join(";")
+      [s.nome, s.turma, s.totalAulas, s.totalPresencas, `${s.percentual}%`].map(sanitizeCSVCell).join(";")
     )
     const csv = "\uFEFF" + header + "\n" + rows.join("\n")
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
@@ -76,7 +80,8 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
         action={
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={imprimirPDF}>
-              <PrinterIcon className="size-4 mr-1" /> PDF
+              <Printer className="size-4" />
+              Imprimir PDF
             </Button>
             <Button size="sm" onClick={exportarCSV}>
               <Download className="size-4 mr-1" /> Exportar CSV
@@ -100,11 +105,18 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
           {[
             { key: "todos", label: "Todos" },
             { key: "altas", label: "≥75%" },
+            { key: "risco", label: "<75%", alert: emRisco > 0 },
             { key: "baixas", label: "<50%" },
             { key: "criticas", label: "<25%" },
           ].map((s) => (
-            <Button key={s.key} variant={filtroFreq === s.key ? "default" : "outline"} size="sm" onClick={() => setFiltroFreq(s.key)} className="text-xs">
-              {s.label}
+            <Button
+              key={s.key}
+              variant={filtroFreq === s.key ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFiltroFreq(s.key)}
+              className={`text-xs ${s.alert && filtroFreq !== s.key ? "border-warning-600 text-warning-600" : ""}`}
+            >
+              {s.label}{s.alert ? ` (${emRisco})` : ""}
             </Button>
           ))}
         </div>

@@ -34,17 +34,21 @@ export function getEvolutionApiKey(): string | null {
 }
 
 export function verifyBearerSecret(request: Request, secret: string | null): boolean {
-  if (!secret) return !isProd()
+  if (!secret) return false
   const auth = request.headers.get("authorization")
   return auth === `Bearer ${secret}`
 }
 
 export function verifyEvolutionAuth(request: Request, apiKey: string | null): boolean {
-  if (!apiKey) return !isProd()
+  if (!apiKey) return false
   const auth =
     request.headers.get("apikey") ||
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
   return auth === apiKey
+}
+
+export const env = {
+  FPFS_SYNC_TOKEN: process.env.FPFS_SYNC_TOKEN ?? "",
 }
 
 export function checkCredentialsFromEnv(username: string, password: string): boolean {

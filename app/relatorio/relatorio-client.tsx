@@ -9,6 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 
 type MesData = {
   mes: number
@@ -37,7 +38,7 @@ export function RelatorioHeader({ ano, meses }: { ano: number; meses: MesData[] 
         meses.reduce((s, m) => s + m.saldo, 0).toFixed(2),
       ],
     ]
-    const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -73,11 +74,13 @@ export function RelatorioPrintStyle() {
   return (
     <style>{`
       @media print {
-        body * { visibility: hidden; }
-        .relatorio-print, .relatorio-print * { visibility: visible; }
-        .relatorio-print { position: absolute; top: 0; left: 0; width: 100%; padding: 24px; }
+        aside, header, nav, [aria-label="Navegação principal"], [aria-label="Navegação rápida"] {
+          display: none !important;
+        }
         .no-print { display: none !important; }
-        @page { margin: 1.5cm; }
+        .relatorio-print { width: 100% !important; padding: 0 !important; }
+        main { padding: 0 !important; overflow: visible !important; }
+        @page { margin: 1.5cm; size: A4; }
       }
     `}</style>
   )
@@ -102,7 +105,7 @@ export function RelatorioChart({
   const pieData = categorias.map(([name, value]) => ({ name, value }))
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 p-6 lg:p-8">
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Receita × Custos — {ano}</CardTitle>
@@ -161,7 +164,7 @@ export function RelatorioChart({
                   />
                   <span className="flex-1 truncate">{d.name}</span>
                   <span className="font-medium">
-                    {d.value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    {formatMoney(d.value)}
                   </span>
                 </div>
               ))}

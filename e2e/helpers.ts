@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test"
 
-export async function loginAsAdmin(page: Page, password = "escolinha123") {
+export async function loginAsAdmin(page: Page, password = "admin") {
   await page.addInitScript(() => {
     localStorage.setItem("escolinha_onboarding_v1", "true")
   })
@@ -8,6 +8,14 @@ export async function loginAsAdmin(page: Page, password = "escolinha123") {
   await page.locator("#login-usuario").fill("admin")
   await page.locator("#login-senha").fill(password)
   await page.click('button[type="submit"]')
-  // aguarda o login concluir (sessão criada + navegação para fora de /login)
   await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 15000 })
+}
+
+/** Login como responsável usando o formulário */
+export async function loginAsResponsavel(page: Page, email: string, senha: string) {
+  await page.goto("/responsavel/login")
+  await page.fill('input[type="email"]', email)
+  await page.fill('input[type="password"]', senha)
+  await page.click('button[type="submit"]')
+  await page.waitForURL((u) => u.pathname === "/responsavel", { timeout: 15000 })
 }

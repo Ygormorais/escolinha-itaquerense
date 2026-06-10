@@ -3,6 +3,8 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { MensalidadesClient } from "./mensalidades-client"
 
+export const metadata = { title: "Mensalidades — Escolinha Itaquerense" }
+
 export default async function MensalidadesPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

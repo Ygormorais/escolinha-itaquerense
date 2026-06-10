@@ -3,6 +3,8 @@ import { PageHeader } from "@/components/layout/page-header"
 import { PagamentosClient } from "./pagamentos-client"
 import { getConfig } from "@/lib/config"
 
+export const metadata = { title: "Pagamentos — Escolinha Itaquerense" }
+
 export default async function PagamentosPage({
   searchParams,
 }: {

@@ -2,6 +2,8 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { AvaliacoesClient } from "./avaliacoes-client"
 
+export const metadata = { title: "Avaliações — Escolinha Itaquerense" }
+
 export default async function AvaliacoesPage() {
   await requireAuth()
 

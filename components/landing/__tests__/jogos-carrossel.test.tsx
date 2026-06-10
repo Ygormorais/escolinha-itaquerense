@@ -30,8 +30,9 @@ describe("JogosCarrossel", () => {
     const html = renderToStaticMarkup(<JogosCarrossel categorias={categorias} />)
     expect(html).toContain('href="http://x/sumula"')
   })
-  it("não renderiza nada quando não há categorias", () => {
+  it("mostra estado vazio quando não há categorias (não some sem dados FPFS)", () => {
     const html = renderToStaticMarkup(<JogosCarrossel categorias={[]} />)
-    expect(html).toBe("")
+    expect(html).toContain("jc-empty")
+    expect(html).toContain("aparecerão aqui em breve")
   })
 })

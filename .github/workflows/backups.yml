@@ -1,10 +1,17 @@
 name: Backup Diário do Banco
 
+# Faz download do banco SQLite do container de produção via SSH e salva na branch backups.
+# Pré-requisitos (configurar em Settings > Secrets and variables > Actions):
+#   SSH_HOST     — IP ou hostname do servidor
+#   SSH_USER     — usuário SSH (ex: ubuntu)
+#   SSH_KEY      — chave SSH privada (conteúdo do ~/.ssh/id_rsa)
+#   CONTAINER_NAME — nome do container Docker (padrão: escolinha)
+
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "0 3 * * *"   # 03h UTC = 00h Brasília
 
-  workflow_dispatch:
+  workflow_dispatch:       # Permite disparo manual
 
 permissions:
   contents: write
@@ -17,22 +24,30 @@ jobs:
         with:
           ref: backups
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Copiar banco de dados
+      - name: Configurar SSH
         run: |
-          mkdir -p backups
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Baixar banco do container de produção
+        run: |
           TIMESTAMP=$(date -u +%Y-%m-%d-%H%M%S)
-          cp prisma/dev.db "backups/dev-${TIMESTAMP}.db"
-          echo "Backup criado: dev-${TIMESTAMP}.db"
+          mkdir -p backups
+
+          # Copia o banco de dentro do container para o servidor, depois baixa via scp
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "docker exec ${{ secrets.CONTAINER_NAME || 'escolinha' }} cat /app/prisma/dev.db" \
+            > "backups/dev-${TIMESTAMP}.db"
+
+          echo "Backup criado: dev-${TIMESTAMP}.db ($(du -sh backups/dev-${TIMESTAMP}.db | cut -f1))"
 
       - name: Rotacionar backups (manter últimos 30)
         run: |
           cd backups
           ls -1t dev-*.db 2>/dev/null | tail -n +31 | xargs -r rm -f
-          echo "Backups restantes: $(ls -1 dev-*.db 2>/dev/null | wc -l)"
+          echo "Backups mantidos: $(ls -1 dev-*.db 2>/dev/null | wc -l)"
 
       - name: Commit e push
         run: |

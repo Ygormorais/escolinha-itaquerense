@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -11,7 +12,7 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -134,9 +135,9 @@ export function CampeonatoClient({
 
       <div className="flex justify-end">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button />}>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="size-4" /> Novo Campeonato
-          </DialogTrigger>
+          </Button>
           <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -239,7 +240,7 @@ export function CampeonatoClient({
                     </span>
                     <span className="flex items-center gap-1 font-semibold text-brand-700">
                       <CircleDollarSign className="size-3.5" />
-                      R$ {c.taxaInscricao.toFixed(2)} taxa
+                      {formatMoney(c.taxaInscricao)} taxa
                     </span>
                   </div>
                 </CardContent>

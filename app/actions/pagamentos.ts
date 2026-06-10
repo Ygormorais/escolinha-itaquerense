@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
+import { getConfig } from "@/lib/config"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -17,6 +18,9 @@ export async function registrarPagamento(
   }
 ): Promise<ActionResult> {
   await requireAuth()
+  const valor = Number(data.valorRecebido)
+  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
+  if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
   try {
     await db.pagamento.update({
       where: { id },
@@ -28,13 +32,32 @@ export async function registrarPagamento(
       },
     })
     const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
-    await registrarLog("pagamento", `Pagamento registrado — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: `R$ ${data.valorRecebido.toFixed(2)}`, forma: data.formaPagamento })
+    await registrarLog("pagamento", `Pagamento registrado — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: data.valorRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), forma: data.formaPagamento })
     revalidatePath("/pagamentos")
+    revalidatePath("/inadimplencia")
+    revalidatePath("/caixa")
+    revalidatePath("/caixa/recebimentos")
+    revalidatePath("/caixa/dinheiro")
+    revalidatePath("/caixa/pix")
+    revalidatePath("/caixa/boleto")
     revalidatePath("/")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
   }
+}
+
+export async function getPagamentosPendentes(alunoId: number) {
+  return db.pagamento.findMany({
+    where: { alunoId, dataPagamento: null },
+    select: {
+      id: true,
+      mesReferencia: true,
+      dataVencimento: true,
+      aluno: { select: { mensalidade: true } },
+    },
+    orderBy: { dataVencimento: "asc" },
+  })
 }
 
 export async function registrarPagamentosLote(
@@ -48,19 +71,24 @@ export async function registrarPagamentosLote(
       include: { aluno: { select: { nome: true, mensalidade: true } } },
     })
 
-    for (const p of pagamentos) {
-      await db.pagamento.update({
-        where: { id: p.id },
-        data: {
-          dataPagamento: new Date(data.dataPagamento),
-          formaPagamento: data.formaPagamento,
-          valorRecebido: p.aluno.mensalidade,
-        },
-      })
-    }
+    await db.$transaction(
+      pagamentos.map((p) =>
+        db.pagamento.update({
+          where: { id: p.id },
+          data: {
+            dataPagamento: new Date(data.dataPagamento),
+            formaPagamento: data.formaPagamento,
+            valorRecebido: p.aluno.mensalidade,
+          },
+        })
+      )
+    )
 
     await registrarLog("pagamento", `Lote de ${ids.length} pagamento(s) registrado(s)`, { forma: data.formaPagamento, data: data.dataPagamento })
     revalidatePath("/pagamentos")
+    revalidatePath("/inadimplencia")
+    revalidatePath("/caixa")
+    revalidatePath("/caixa/recebimentos")
     revalidatePath("/")
     return { atualizados: ids.length }
   } catch (e) {
@@ -74,6 +102,8 @@ export async function gerarMensalidadesMes(
   await requireAuth()
   try {
     const [ano, mesNum] = mes.split("-").map(Number)
+    const rawDia = getConfig().diaVencimento
+    const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
 
     const [alunos, existentes] = await Promise.all([
       db.aluno.findMany({ where: { status: "Ativo" } }),
@@ -91,7 +121,7 @@ export async function gerarMensalidadesMes(
         data: novos.map((a) => ({
           alunoId: a.id,
           mesReferencia: mes,
-          dataVencimento: new Date(ano, mesNum - 1, 10),
+          dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
         })),
       })
     }
@@ -110,6 +140,8 @@ export async function gerarMensalidadesAno(
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
   await requireAuth()
   try {
+    const rawDia = getConfig().diaVencimento
+    const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
     const alunos = await db.aluno.findMany({ where: { status: "Ativo" } })
     let criados = 0
     let ignorados = 0
@@ -128,7 +160,7 @@ export async function gerarMensalidadesAno(
           data: novos.map((a) => ({
             alunoId: a.id,
             mesReferencia: mes,
-            dataVencimento: new Date(ano, mesNum - 1, 10),
+            dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
           })),
         })
         criados += novos.length
@@ -154,7 +186,8 @@ export async function deletePagamento(id: number): Promise<ActionResult> {
 
     if (pag?.externalId) {
       const { cancelarCobranca } = await import("@/app/actions/cobranca")
-      await cancelarCobranca(id)
+      const cancelResult = await cancelarCobranca(id)
+      if ("error" in cancelResult) return cancelResult
     }
 
     await db.pagamento.delete({ where: { id } })
@@ -186,7 +219,7 @@ export async function marcarComoPago(
     })
 
     const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
-    await registrarLog("pagamento_pago", `Pagamento marcado como pago — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: `R$ ${data.valorRecebido.toFixed(2)}` })
+    await registrarLog("pagamento_pago", `Pagamento marcado como pago — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: data.valorRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) })
     revalidatePath("/inadimplencia")
     revalidatePath("/pagamentos")
     revalidatePath("/")

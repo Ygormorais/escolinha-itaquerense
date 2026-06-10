@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { AgendaClient } from "./agenda-client"
+import { FpfsJogos } from "./fpfs-jogos"
 
 export const metadata = { title: "Agenda — Escolinha Itaquerense" }
 
@@ -24,6 +25,7 @@ export default async function AgendaPage() {
         description="Calendário de treinos, jogos, eventos e reuniões"
       />
       <AgendaClient eventos={eventos} mes={mes} ano={ano} />
+      <FpfsJogos />
     </div>
   )
 }

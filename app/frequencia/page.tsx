@@ -4,6 +4,8 @@ import { ResumoFrequenciaClient } from "./resumo-client"
 import { EstatisticasFrequencia } from "./estatisticas-client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+export const metadata = { title: "Frequência — Escolinha Itaquerense" }
+
 export default function FrequenciaPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -12,11 +14,13 @@ export default function FrequenciaPage() {
         description="Registre e acompanhe a presença dos alunos"
       />
       <Tabs defaultValue="registro">
-        <TabsList>
-          <TabsTrigger value="registro">Registro</TabsTrigger>
-          <TabsTrigger value="resumo">Resumo Mensal</TabsTrigger>
-          <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="w-max min-w-full">
+            <TabsTrigger value="registro">Registro</TabsTrigger>
+            <TabsTrigger value="resumo">Resumo Mensal</TabsTrigger>
+            <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent value="registro" className="mt-4">
           <FrequenciaClient />
         </TabsContent>

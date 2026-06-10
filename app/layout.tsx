@@ -6,8 +6,8 @@ import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
-import { db } from "@/lib/db"
 import { AdminShell } from "@/components/layout/admin-shell"
+import { db } from "@/lib/db"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -70,15 +70,9 @@ export default async function RootLayout({
   const pathname = (await headers()).get("x-pathname") ?? "/"
   const session = await getSession()
   const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && !pathname.startsWith("/matricula") && pathname !== "/login" && pathname !== "/"
-
-  let pendingEscalacoes = 0
-  if (showAdminShell) {
-    try {
-      pendingEscalacoes = await db.chatSession.count({ where: { bloqueado: true } })
-    } catch {
-      // DB indisponível — ignora
-    }
-  }
+  const pendingEscalacoes = showAdminShell
+    ? await db.chatSession.count({ where: { bloqueado: true } })
+    : 0
 
   return (
       <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
@@ -112,14 +106,20 @@ export default async function RootLayout({
         />
       </head>
       <body className="flex h-full bg-background font-sans">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-brand-800 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none"
+        >
+          Pular para o conteúdo
+        </a>
         <PWARegister />
         <Providers>
           {showAdminShell ? (
-            <AdminShell pendingEscalacoes={pendingEscalacoes} role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}>
+            <AdminShell role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"} pendingEscalacoes={pendingEscalacoes}>
               {children}
             </AdminShell>
           ) : (
-            <div className="flex flex-1 flex-col">
+            <div id="main-content" className="flex flex-1 flex-col">
               {children}
             </div>
           )}

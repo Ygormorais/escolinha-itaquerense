@@ -177,11 +177,18 @@ export async function ignorarTransacao(id: number) {
 }
 
 export async function getResumoMaquina() {
-  const transacoes = await db.transacaoMaquina.findMany()
-  const total = transacoes.reduce((s, t) => s + t.valor, 0)
-  const pendentes = transacoes.filter((t) => t.status === "pendente")
-  const totalPendente = pendentes.reduce((s, t) => s + t.valor, 0)
-  const reconciliados = transacoes.filter((t) => t.status === "reconciliado")
-  const totalReconciliado = reconciliados.reduce((s, t) => s + t.valor, 0)
-  return { total, totalPendente, totalReconciliado, pendentes: pendentes.length, reconciliados: reconciliados.length, totalTransacoes: transacoes.length }
+  const [aggTotal, aggPendente, aggReconciliado, totalTransacoes] = await Promise.all([
+    db.transacaoMaquina.aggregate({ _sum: { valor: true } }),
+    db.transacaoMaquina.aggregate({ where: { status: "pendente" }, _sum: { valor: true }, _count: true }),
+    db.transacaoMaquina.aggregate({ where: { status: "reconciliado" }, _sum: { valor: true }, _count: true }),
+    db.transacaoMaquina.count(),
+  ])
+  return {
+    total: aggTotal._sum.valor ?? 0,
+    totalPendente: aggPendente._sum.valor ?? 0,
+    totalReconciliado: aggReconciliado._sum.valor ?? 0,
+    pendentes: aggPendente._count,
+    reconciliados: aggReconciliado._count,
+    totalTransacoes,
+  }
 }

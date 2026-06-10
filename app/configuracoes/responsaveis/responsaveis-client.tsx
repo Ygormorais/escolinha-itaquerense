@@ -13,7 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -137,9 +137,9 @@ export function ResponsaveisClient({
           <p className="text-sm text-muted-foreground">Gerencie contas de acesso dos pais/responsáveis</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
-          <DialogTrigger render={<Button />}>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="size-4" /> Novo Responsável
-          </DialogTrigger>
+          </Button>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export function ResponsaveisClient({
               {!editId && (
                 <div className="space-y-2">
                   <Label>Senha *</Label>
-                  <Input type="password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
+                  <Input type="password" autoComplete="new-password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
                 </div>
               )}
             </div>
@@ -255,9 +255,9 @@ export function ResponsaveisClient({
                         </span>
                       ))}
                       <Dialog open={vincularOpen?.id === r.id} onOpenChange={(o) => { if (!o) setVincularOpen(null) }}>
-                        <DialogTrigger render={<Button size="icon-sm" variant="ghost" className="size-5" />} onClick={() => setVincularOpen(r)}>
+                        <Button size="icon-sm" variant="ghost" className="size-5" onClick={() => setVincularOpen(r)} aria-label="Vincular aluno">
                           <UserPlus className="size-3" />
-                        </DialogTrigger>
+                        </Button>
                         <DialogContent>
                           <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
@@ -295,11 +295,11 @@ export function ResponsaveisClient({
                       <Button size="icon-sm" variant="ghost" onClick={() => { setWhatsOpen(r); setWhatsMsg("") }} title="Enviar WhatsApp">
                         <MessageSquare className="size-3.5 text-brand-600" />
                       </Button>
-                      <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)}>
+                      <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)} aria-label="Editar responsável">
                         <Pencil className="size-3.5" />
                       </Button>
                       <ConfirmDialog title="Remover responsável?" description={`Remover "${r.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleDelete(r.id, r.nome)}>
-                        <Button size="icon-sm" variant="ghost">
+                        <Button size="icon-sm" variant="ghost" aria-label="Remover responsável">
                           <Trash2 className="size-3.5 text-danger-600" />
                         </Button>
                       </ConfirmDialog>

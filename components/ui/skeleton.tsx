@@ -16,6 +16,27 @@ export function StatCardSkeleton() {
   )
 }
 
+export function ResponsavelHeroSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-black/5 bg-muted px-6 py-7 sm:px-8">
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-32 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function TableSkeleton({ rows = 8, cols = 5 }: { rows?: number; cols?: number }) {
   return (
     <div className="rounded-xl border bg-white overflow-hidden">

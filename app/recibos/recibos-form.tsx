@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Printer, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import { salvarRecibo, deleteRecibo } from "@/app/actions/recibos"
 import type { ClubConfig } from "@/lib/config"
+import { formatMoney } from "@/lib/utils"
 
 type Recibo = {
   id: number
@@ -60,7 +62,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
   async function handleImprimir() {
     setSalvando(true)
     try {
-      const { numero } = await salvarRecibo({
+      const result = await salvarRecibo({
         alunoNome: form.aluno,
         responsavel: form.responsavel,
         mesReferencia: form.referencia,
@@ -68,6 +70,8 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
         formaPagamento: form.forma,
         dataPagamento: form.dataPagamento,
       })
+      if ("error" in result) { toast.error(result.error); return }
+      const { numero } = result
       setForm((prev) => ({ ...prev, numero }))
       window.print()
     } finally {
@@ -108,7 +112,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
               className="flex items-center gap-2"
             >
               <Printer className="size-4" />
-              {salvando ? "Salvando..." : "Imprimir Recibo"}
+              {salvando ? "Salvando..." : "Imprimir PDF"}
             </Button>
           }
         />
@@ -290,7 +294,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                     <td className="px-4 py-3 font-bold text-brand-800">#{r.numero}</td>
                     <td className="px-4 py-3 font-medium">{r.alunoNome}</td>
                     <td className="px-4 py-3">{r.mesReferencia}</td>
-                    <td className="px-4 py-3 text-right">{r.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                    <td className="px-4 py-3 text-right">{formatMoney(r.valor)}</td>
                     <td className="px-4 py-3">{r.formaPagamento}</td>
                     <td className="px-4 py-3">{new Date(r.dataPagamento).toLocaleDateString("pt-BR")}</td>
                     <td className="px-4 py-3">

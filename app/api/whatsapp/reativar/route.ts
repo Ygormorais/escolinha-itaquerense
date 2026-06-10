@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { NextRequest, NextResponse } from "next/server"
 import { unblockSession } from "@/lib/whatsapp/session"
 import { getEvolutionApiKey, verifyEvolutionAuth } from "@/lib/env"

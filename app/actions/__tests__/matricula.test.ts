@@ -6,6 +6,7 @@ vi.mock("@/lib/db", () => {
     aluno: { create: vi.fn() },
     responsavel: { findFirst: vi.fn() },
     log: { create: vi.fn() },
+    pagamento: { findUnique: vi.fn(), create: vi.fn(), deleteMany: vi.fn(), createMany: vi.fn() },
   }
   db.$transaction = vi.fn(async (cb: (tx: typeof db) => unknown) => cb(db))
   return { db }
@@ -118,6 +119,27 @@ describe("aprovarPreMatricula", () => {
     m.aluno.create.mockRejectedValue(new Error("UNIQUE constraint failed"))
     const res = await aprovarPreMatricula(1, { mensalidade: 200 })
     expect(res).toEqual({ error: "UNIQUE constraint failed" })
+  })
+
+  it("gera 3 mensalidades quando meses = 3", async () => {
+    const createSpy = vi.fn().mockResolvedValue({ id: 5 })
+    ;(db as unknown as any).pagamento = { create: createSpy }
+
+    await aprovarPreMatricula(1, { mensalidade: 200, meses: 3 })
+
+    expect(createSpy).toHaveBeenCalledTimes(3)
+    const mesesRef = createSpy.mock.calls.map((c: any) => c[0].data.mesReferencia)
+    expect(mesesRef).toHaveLength(3)
+    // Todos devem ser strings "YYYY-MM"
+    mesesRef.forEach((m: string) => expect(m).toMatch(/^\d{4}-\d{2}$/))
+  })
+
+  it("nao gera mensalidades quando meses = 0", async () => {
+    const createSpy = vi.fn().mockResolvedValue({ id: 5 })
+    ;(db as unknown as any).pagamento = { create: createSpy }
+
+    await aprovarPreMatricula(1, { mensalidade: 200, meses: 0 })
+    expect(createSpy).not.toHaveBeenCalled()
   })
 })
 

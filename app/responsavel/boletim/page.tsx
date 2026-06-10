@@ -26,6 +26,8 @@ function mediaGeral(avaliacao: { notaTecnica: number | null; notaFisica: number 
   return Math.round((notas.reduce((a, b) => a + b, 0) / notas.length) * 10) / 10
 }
 
+export const metadata = { title: "Boletim — Escolinha Itaquerense" }
+
 export default async function BoletimPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")

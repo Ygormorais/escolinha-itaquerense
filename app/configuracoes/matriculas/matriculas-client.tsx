@@ -15,6 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { aprovarPreMatricula, recusarPreMatricula, deletarPreMatricula } from "@/app/actions/matricula"
 
 type MatriculaRow = {
@@ -54,11 +61,17 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
     )
   })
 
-  function handleAprovar(id: number, mensalidade: number, desconto: number) {
+  function handleAprovar(id: number, mensalidade: number, desconto: number, meses: number) {
     startTransition(async () => {
-      const res = await aprovarPreMatricula(id, { mensalidade, desconto })
-      if ("error" in res) toast.error((res as { error: string }).error)
-      else toast.success("Pré-matrícula aprovada — aluno criado")
+      const res = await aprovarPreMatricula(id, { mensalidade, desconto, meses })
+      if ("error" in res) {
+        toast.error((res as { error: string }).error)
+        return
+      }
+      const msg = meses > 0
+        ? `Aluno criado + ${meses} mensalidade${meses > 1 ? "s" : ""} gerada${meses > 1 ? "s" : ""}`
+        : "Pré-matrícula aprovada — aluno criado"
+      toast.success(msg)
     })
   }
 
@@ -93,7 +106,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
         <select
           value={filtroStatus}
           onChange={(e) => setFiltroStatus(e.target.value)}
-          className="rounded-lg border border-input bg-white px-3 py-2 text-sm"
+          className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
         >
           <option value="todas">Todos os status</option>
           <option value="pendente">Pendentes</option>
@@ -103,7 +116,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
         <span className="text-sm text-muted-foreground">{filtradas.length} registro(s)</span>
       </div>
 
-      <div className="rounded-xl border bg-white">
+      <div className="rounded-xl border bg-card">
         <div className="divide-y">
           {filtradas.length === 0 && (
             <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma pré-matrícula encontrada.</p>
@@ -134,8 +147,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
                         <a
                           key={i}
                           href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
                         >
                           <ExternalLink className="size-3" />
@@ -150,7 +162,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
                     <>
                       <AprovarDialog
                         nomeAluno={m.nomeAluno}
-                        onConfirm={(mensalidade, desconto) => handleAprovar(m.id, mensalidade, desconto)}
+                        onConfirm={(mensalidade, desconto, meses) => handleAprovar(m.id, mensalidade, desconto, meses)}
                       />
                       <Button size="sm" variant="outline" onClick={() => handleRecusar(m.id)} className="text-destructive border-destructive hover:bg-destructive-50">
                         <X className="size-4" />
@@ -178,11 +190,12 @@ function AprovarDialog({
   onConfirm,
 }: {
   nomeAluno: string
-  onConfirm: (mensalidade: number, desconto: number) => void
+  onConfirm: (mensalidade: number, desconto: number, meses: number) => void
 }) {
   const [open, setOpen] = useState(false)
   const [mensalidade, setMensalidade] = useState("")
   const [desconto, setDesconto] = useState("")
+  const [meses, setMeses] = useState("3")
 
   const valor = Number(mensalidade)
   const valido = mensalidade.trim() !== "" && Number.isFinite(valor) && valor >= 0
@@ -190,10 +203,11 @@ function AprovarDialog({
   function handleConfirm() {
     if (!valido) return
     const desc = Number(desconto)
-    onConfirm(valor, Number.isFinite(desc) && desc > 0 ? desc : 0)
+    onConfirm(valor, Number.isFinite(desc) && desc > 0 ? desc : 0, Number(meses))
     setOpen(false)
     setMensalidade("")
     setDesconto("")
+    setMeses("3")
   }
 
   return (
@@ -214,6 +228,7 @@ function AprovarDialog({
           if (!v) {
             setMensalidade("")
             setDesconto("")
+            setMeses("3")
           }
         }}
       >
@@ -247,6 +262,21 @@ function AprovarDialog({
                 onChange={(e) => setDesconto(e.target.value)}
                 placeholder="0"
               />
+            </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="font-medium">Gerar mensalidades</span>
+              <Select value={meses} onValueChange={(v) => setMeses(v ?? "3")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Não gerar agora</SelectItem>
+                  <SelectItem value="1">1 mês (só o atual)</SelectItem>
+                  <SelectItem value="3">3 meses (recomendado)</SelectItem>
+                  <SelectItem value="6">6 meses</SelectItem>
+                  <SelectItem value="12">12 meses (ano letivo)</SelectItem>
+                </SelectContent>
+              </Select>
             </label>
           </div>
           <DialogFooter>

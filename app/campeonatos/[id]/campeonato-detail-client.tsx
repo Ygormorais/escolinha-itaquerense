@@ -18,7 +18,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -30,7 +30,7 @@ import {
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import { cn, formatMoney } from "@/lib/utils"
 import { PartidasSection } from "./partidas-section"
 import type { RscDate } from "@/lib/rsc-date"
 
@@ -94,10 +94,12 @@ export function CampeonatoDetailClient({
   campeonato,
   alunosDisponiveis,
   nomeClube = "E.C. Itaquerense",
+  convocacoesMap = new Set(),
 }: {
   campeonato: Campeonato
   alunosDisponiveis: { id: number; nome: string; turma: string }[]
   nomeClube?: string
+  convocacoesMap?: Set<number>
 }) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
@@ -184,6 +186,7 @@ export function CampeonatoDetailClient({
     setSincronizando(true)
     try {
       const r = await sincronizarFpfs(campeonato.id)
+      if ("error" in r) { toast.error(r.error); return }
       toast.success(`FPFS sincronizada: ${r.jogosNovos} novos, ${r.jogosAtualizados} atualizados, ${r.linhasClassificacao} na classificação`)
       router.refresh()
     } catch {
@@ -280,11 +283,9 @@ export function CampeonatoDetailClient({
             {sincronizando ? "Atualizando..." : "Atualizar da FPFS"}
           </Button>
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger>
-              <Button variant="outline" size="sm">
-                <Pencil className="size-4" /> Editar
-              </Button>
-            </DialogTrigger>
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+              <Pencil className="size-4" /> Editar
+            </Button>
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
@@ -365,8 +366,9 @@ export function CampeonatoDetailClient({
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <div className="h-5 w-px bg-border" />
           <ConfirmDialog title="Deletar campeonato?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={handleDelete}>
-            <Button variant="destructive" size="sm">
+            <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-danger-600 hover:bg-danger-50" aria-label="Deletar campeonato">
               <Trash2 className="size-4" />
             </Button>
           </ConfirmDialog>
@@ -415,13 +417,13 @@ export function CampeonatoDetailClient({
               <div key={c.label} className="flex justify-between">
                 <span className="text-muted-foreground">{c.label}</span>
                 <span className={c.valor > 0 ? "font-medium" : "text-muted-foreground"}>
-                  R$ {c.valor.toFixed(2)}
+                  {formatMoney(c.valor)}
                 </span>
               </div>
             ))}
             <div className="border-t pt-2 flex justify-between font-bold text-brand-800">
               <span>Total por aluno</span>
-              <span>R$ {totalCustos.toFixed(2)}</span>
+              <span>{formatMoney(totalCustos)}</span>
             </div>
           </CardContent>
         </Card>
@@ -447,11 +449,11 @@ export function CampeonatoDetailClient({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total arrecadado</span>
-              <span className="font-medium text-success-600">R$ {totalPago.toFixed(2)}</span>
+              <span className="font-medium text-success-600">{formatMoney(totalPago)}</span>
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="text-muted-foreground">A receber</span>
-              <span className="font-bold text-warning-600">R$ {totalPendente.toFixed(2)}</span>
+              <span className="font-bold text-warning-600">{formatMoney(totalPendente)}</span>
             </div>
           </CardContent>
         </Card>
@@ -542,7 +544,7 @@ export function CampeonatoDetailClient({
                     <TableCell>{insc.aluno.turma}</TableCell>
                     <TableCell>
                       {insc.desconto > 0 ? (
-                        <span className="text-success-600 font-medium">- R$ {insc.desconto.toFixed(2)}</span>
+                        <span className="text-success-600 font-medium">- {formatMoney(insc.desconto)}</span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
@@ -557,7 +559,7 @@ export function CampeonatoDetailClient({
                       )}
                     </TableCell>
                     <TableCell className={cn("font-medium", insc.bolsa ? "text-muted-foreground line-through" : "")}>
-                      R$ {insc.bolsa ? "0,00" : valorDevido.toFixed(2)}
+                      {insc.bolsa ? "R$ 0,00" : formatMoney(valorDevido)}
                     </TableCell>
                     <TableCell>
                       {insc.bolsa ? (
@@ -592,7 +594,7 @@ export function CampeonatoDetailClient({
                           </Button>
                         )}
                         <ConfirmDialog title="Remover inscrição?" description={`Remover ${insc.aluno.nome} do campeonato?`} confirmLabel="Remover" onConfirm={() => handleRemover(insc.id, insc.aluno.nome)}>
-                          <Button size="icon-sm" variant="ghost">
+                          <Button size="icon-sm" variant="ghost" aria-label="Remover inscrição">
                             <XCircle className="size-4 text-danger-600" />
                           </Button>
                         </ConfirmDialog>
@@ -606,7 +608,7 @@ export function CampeonatoDetailClient({
         </CardContent>
       </Card>
 
-      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} nomeClube={nomeClube} />
+      <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} nomeClube={nomeClube} convocacoesMap={convocacoesMap} />
 
       <Dialog open={inscreverOpen} onOpenChange={setInscreverOpen}>
         <DialogContent>
@@ -682,7 +684,7 @@ export function CampeonatoDetailClient({
               <p className="text-sm">
                 Aluno: <strong>{pagamentoOpen.aluno.nome}</strong>
                 {pagamentoOpen.desconto > 0 && (
-                  <span className="text-success-600"> (desconto de R$ {pagamentoOpen.desconto.toFixed(2)})</span>
+                  <span className="text-success-600"> (desconto de {formatMoney(pagamentoOpen.desconto)})</span>
                 )}
               </p>
               <div className="space-y-2">

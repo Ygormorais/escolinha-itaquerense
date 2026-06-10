@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CalendarCheck, CreditCard, Shirt, ArrowLeft, Trophy } from "lucide-react"
 import Link from "next/link"
+import { RadarEvolutionChart, type AvaliacaoSnapshot } from "@/components/responsavel/radar-evolution-chart"
+
+export const metadata = { title: "Desempenho — Escolinha Itaquerense" }
 
 export default async function DesempenhoPage() {
   const session = await getResponsavelSession()
@@ -19,12 +22,26 @@ export default async function DesempenhoPage() {
           pagamentos: { orderBy: { dataVencimento: "desc" }, take: 6 },
           uniformes: true,
           inscricoes: { include: { campeonato: true } },
+          avaliacoes: { orderBy: { createdAt: "asc" } },
         },
       },
     },
   })
 
   if (!responsavel) redirect("/responsavel/login")
+
+  const primeiroAluno = responsavel?.alunos[0]
+  const snapshots: AvaliacaoSnapshot[] = (primeiroAluno?.avaliacoes ?? [])
+    .filter((a) => a.notaTecnica != null)
+    .map((a) => ({
+      label: a.periodo,
+      data: a.createdAt,
+      notas: {
+        tecnica: a.notaTecnica ?? 0,
+        fisico: a.notaFisica ?? 0,
+        comportamento: a.notaComportamento ?? 0,
+      },
+    }))
 
   const totalAlunos = responsavel.alunos.length
   const totalCampeonatos = responsavel.alunos.reduce((acc, aluno) => acc + aluno.inscricoes.length, 0)
@@ -72,6 +89,11 @@ export default async function DesempenhoPage() {
           </div>
         </div>
       </section>
+
+      <div className="mb-6 rounded-xl border bg-card p-4">
+        <h2 className="font-heading text-lg font-semibold mb-4">Evolução Técnica</h2>
+        <RadarEvolutionChart snapshots={snapshots} />
+      </div>
 
       <div className="space-y-6">
         {responsavel.alunos.map((aluno) => {

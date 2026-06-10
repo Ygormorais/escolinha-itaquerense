@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Image from "next/image"
 import { Plus, ShoppingBag, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react"
+import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -123,10 +124,12 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
         imagem: form.imagem || undefined,
       }
       if (editingId) {
-        await atualizarProduto(editingId, data)
+        const r = await atualizarProduto(editingId, data)
+        if (r && "error" in r) { toast.error(r.error); return }
         toast.success("Produto atualizado!")
       } else {
-        await criarProduto(data)
+        const r = await criarProduto(data)
+        if (r && "error" in r) { toast.error(r.error); return }
         toast.success("Produto criado!")
       }
       setOpen(false)
@@ -149,7 +152,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-bold tracking-tight flex items-center gap-2">
           <ShoppingBag className="size-6 text-brand-600" />
@@ -289,7 +292,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">{p.nome}</TableCell>
-                <TableCell>R$ {p.preco.toFixed(2)}</TableCell>
+                <TableCell>{formatMoney(p.preco)}</TableCell>
                 <TableCell>
                   <Badge variant="secondary">
                     {categoriaLabel[p.categoria] ?? p.categoria}
@@ -323,11 +326,12 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                       variant="ghost"
                       size="icon"
                       onClick={() => openEdit(p)}
+                      aria-label="Editar produto"
                     >
                       <Pencil className="size-4" />
                     </Button>
                     <ConfirmDialog title="Remover produto?" description={`Remover "${p.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleRemover(p.id, p.nome)}>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" aria-label="Remover produto">
                         <Trash2 className="size-4" />
                       </Button>
                     </ConfirmDialog>

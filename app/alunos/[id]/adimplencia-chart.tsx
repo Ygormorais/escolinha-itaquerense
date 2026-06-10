@@ -78,7 +78,7 @@ export function AdimplenciaChart({ pagamentos }: Props) {
                 if (!active || !payload?.[0]) return null
                 const d = payload[0].payload as { mes: string; status: string }
                 return (
-                  <div className="rounded-lg border bg-white px-3 py-1.5 text-xs shadow-md">
+                  <div className="rounded-lg border bg-card px-3 py-1.5 text-xs shadow-md">
                     <span className="font-semibold">{d.mes}</span>
                     {" — "}
                     <span style={{ color: COR[d.status] }}>{d.status}</span>

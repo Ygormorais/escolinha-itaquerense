@@ -41,7 +41,7 @@ export async function appendHistory(
 ): Promise<boolean> {
   const session = await db.chatSession.findUnique({ where: { telefone } })
   if (!session) {
-    console.warn(`[ChatSession] appendHistory: session not found for ${telefone}`)
+    // Sessão pode ter expirado ou ser de número não cadastrado — silenciar é o comportamento correto
     return false
   }
   let history: Message[] = []

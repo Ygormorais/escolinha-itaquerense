@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
+import { formatMoney } from "@/lib/utils"
 
 export const metadata = { title: "Caixa — Escolinha Itaquerense" }
 
@@ -10,13 +11,17 @@ export default async function CaixaPage() {
   const inicio = startOfMonth(now)
   const fim = endOfMonth(now)
 
-  const [pagamentosMes, custosMes, transacoesPendentes, alunos] = await Promise.all([
+  const [pagamentosMes, custosMes, recebimentosMes, transacoesPendentes, alunos] = await Promise.all([
     db.pagamento.findMany({
       where: { dataPagamento: { gte: inicio, lte: fim } },
       include: { aluno: { select: { nome: true, turma: true } } },
       orderBy: { dataPagamento: "desc" },
     }),
     db.custo.findMany({
+      where: { data: { gte: inicio, lte: fim } },
+      orderBy: { data: "desc" },
+    }),
+    db.recebimento.findMany({
       where: { data: { gte: inicio, lte: fim } },
       orderBy: { data: "desc" },
     }),
@@ -30,7 +35,9 @@ export default async function CaixaPage() {
     }),
   ])
 
-  const totalRecebido = pagamentosMes.reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+  const totalRecebido =
+    pagamentosMes.reduce((s, p) => s + (p.valorRecebido ?? 0), 0) +
+    recebimentosMes.reduce((s, r) => s + r.valor, 0)
   const totalCustos = custosMes.reduce((s, c) => s + c.valor, 0)
   const totalPendente = transacoesPendentes.reduce((s, t) => s + t.valor, 0)
 
@@ -39,6 +46,9 @@ export default async function CaixaPage() {
     acc[forma] = (acc[forma] || 0) + (p.valorRecebido ?? 0)
     return acc
   }, {} as Record<string, number>)
+  for (const r of recebimentosMes) {
+    porForma[r.formaPagamento] = (porForma[r.formaPagamento] || 0) + r.valor
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
@@ -51,25 +61,25 @@ export default async function CaixaPage() {
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Recebido (mês)</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-success-600">
-            R$ {totalRecebido.toFixed(2)}
+            {formatMoney(totalRecebido)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Custos (mês)</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-danger-600">
-            R$ {totalCustos.toFixed(2)}
+            {formatMoney(totalCustos)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saldo</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-foreground">
-            R$ {(totalRecebido - totalCustos).toFixed(2)}
+            {formatMoney(totalRecebido - totalCustos)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Maquininha (pendente)</p>
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-warning-600">
-            R$ {totalPendente.toFixed(2)}
+            {formatMoney(totalPendente)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">{transacoesPendentes.length} transação(ões)</p>
         </div>

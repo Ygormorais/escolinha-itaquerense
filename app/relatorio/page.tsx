@@ -10,6 +10,8 @@ import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-f
 import { ptBR } from "date-fns/locale"
 import { RelatorioHeader, RelatorioChart, RelatorioPrintStyle } from "./relatorio-client"
 
+export const metadata = { title: "Relatório Financeiro — Escolinha Itaquerense" }
+
 export default async function RelatorioPage({
   searchParams,
 }: {
@@ -31,9 +33,11 @@ export default async function RelatorioPage({
       where: { data: { gte: inicioAno, lte: fimAno } },
       select: { data: true, valor: true, categoria: true },
     }),
-    db.pagamento.count({
-      where: { dataPagamento: null, dataVencimento: { lt: now } },
-    }),
+    db.pagamento.findMany({
+      where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
+      select: { alunoId: true },
+      distinct: ["alunoId"],
+    }).then((rows) => rows.length),
   ])
 
   // Agrupa por mês
@@ -67,12 +71,12 @@ export default async function RelatorioPage({
     .sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="relatorio-print flex flex-col gap-6 p-6">
       <RelatorioPrintStyle />
       <PageHeader
         title="Relatório Anual"
         description={`Resumo financeiro consolidado — ${ano}`}
-        action={<RelatorioHeader ano={ano} meses={meses} />}
+        action={<div className="no-print"><RelatorioHeader ano={ano} meses={meses} /></div>}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

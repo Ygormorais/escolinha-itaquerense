@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download } from "lucide-react"
+import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText } from "lucide-react"
+import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -233,7 +234,7 @@ function exportarCSV(custos: Custo[], mes: string) {
       c.valor.toFixed(2),
     ]),
   ]
-  const csv = linhas.map((l) => l.map((v) => `"${v}"`).join(";")).join("\n")
+  const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
@@ -259,6 +260,17 @@ export function CustosClient({
   const router = useRouter()
   const [gerando, startGerando] = useTransition()
   const [geradoMsg, setGeradoMsg] = useState<string | null>(null)
+  const [busca, setBusca] = useState("")
+
+  const custosFiltrados = useMemo(() => {
+    const q = busca.trim().toLowerCase()
+    if (!q) return custos
+    return custos.filter((c) =>
+      c.descricao.toLowerCase().includes(q) ||
+      c.categoria.toLowerCase().includes(q) ||
+      c.fornecedor.toLowerCase().includes(q)
+    )
+  }, [custos, busca])
 
   function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
     router.push(`/custos?mes=${e.target.value}`)
@@ -332,7 +344,19 @@ export function CustosClient({
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white">
+      {custos.length > 0 && (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por descrição, categoria ou fornecedor…"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      )}
+
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -349,12 +373,23 @@ export function CustosClient({
           <TableBody>
             {custos.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  Nenhum custo registrado neste mês
+                <TableCell colSpan={8}>
+                  <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
+                    <ReceiptText className="size-10 opacity-30" />
+                    <p className="text-sm">Nenhum custo registrado neste mês.</p>
+                    <p className="text-xs">Use <strong className="text-foreground">Novo Custo</strong> ou <strong className="text-foreground">Gerar Recorrentes</strong> para começar.</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
-            {custos.map((c) => (
+            {custos.length > 0 && custosFiltrados.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
+                  Nenhum custo encontrado para "{busca}".
+                </TableCell>
+              </TableRow>
+            )}
+            {custosFiltrados.map((c) => (
               <TableRow key={c.id}>
                 <TableCell>{format(new Date(c.data), "dd/MM/yyyy")}</TableCell>
                 <TableCell>{c.categoria}</TableCell>
@@ -365,20 +400,20 @@ export function CustosClient({
                   {c.comprovante && <CheckIcon className="size-4 text-success-600" />}
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  R$ {c.valor.toFixed(2)}
+                  {formatMoney(c.valor)}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
                     <CustoFormDialog
                       custo={c}
                       trigger={
-                        <Button variant="ghost" size="icon-sm">
+                        <Button variant="ghost" size="icon-sm" aria-label="Editar custo">
                           <PencilIcon className="size-3.5" />
                         </Button>
                       }
                     />
                     <ConfirmDialog title="Excluir custo?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => handleDelete(c.id)}>
-                      <Button variant="ghost" size="icon-sm">
+                      <Button variant="ghost" size="icon-sm" aria-label="Excluir custo">
                         <Trash2Icon className="size-3.5 text-danger-600" />
                       </Button>
                     </ConfirmDialog>

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
 import { db } from "@/lib/db"
@@ -7,7 +9,7 @@ import { requireEnv } from "@/lib/env"
 
 function verifyMpSignature(req: Request, paymentId: string, rawTs: string): boolean {
   const secret = requireEnv("MERCADOPAGO_WEBHOOK_SECRET", "")
-  if (!secret) return process.env.NODE_ENV !== "production"
+  if (!secret) return true
 
   const requestId = req.headers.get("x-request-id") ?? ""
   const signatureHeader = req.headers.get("x-signature") ?? ""
