@@ -44,7 +44,7 @@ ssh -i chave.key ubuntu@IP_DA_VM "bash escolinha-itaquerense/deploy/deploy.sh"
 ```
 
 O `deploy.sh` faz: `git pull` → `npm ci` → `build` → `prisma migrate deploy` →
-reload no PM2 (a partir da `main` — fazer merge develop → main antes).
+reload no PM2 (a partir da `master` — fazer merge develop → master antes).
 
 ## 5. Operação
 

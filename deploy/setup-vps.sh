@@ -5,7 +5,7 @@ set -euo pipefail
 
 APP_DIR="$HOME/escolinha-itaquerense"
 REPO="https://github.com/Ygormorais/escolinha-itaquerense.git"
-BRANCH="main"
+BRANCH="master"
 
 echo "==> Pacotes base"
 sudo apt-get update
