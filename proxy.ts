@@ -74,6 +74,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/api/whatsapp/webhook") ||
     pathname.startsWith("/api/config/public") ||
     pathname.startsWith("/api/upload/matricula") ||
+    pathname.startsWith("/uploads/fotos/") ||
     pathname.startsWith("/matricula") ||
     pathname.startsWith("/qr/") ||
     pathname.startsWith("/resultados") ||
