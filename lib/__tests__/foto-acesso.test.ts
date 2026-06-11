@@ -23,6 +23,12 @@ describe("parseFotoFilename", () => {
     expect(parseFotoFilename("1.JPG")).toBeNull()
     expect(parseFotoFilename("")).toBeNull()
   })
+
+  it("rejeita id zero e zeros à esquerda (upload nunca gera)", () => {
+    expect(parseFotoFilename("0.jpg")).toBeNull()
+    expect(parseFotoFilename("007.jpg")).toBeNull()
+    expect(parseFotoFilename("01.png")).toBeNull()
+  })
 })
 
 describe("canAccessFoto", () => {

@@ -5,7 +5,7 @@ export type FotoExt = "jpg" | "png" | "webp"
 
 // Nomes gerados pelo upload: `${alunoId}.${ext}` — qualquer outra coisa
 // (traversal, encoding, maiúsculas) é rejeitada antes de tocar o filesystem
-const FOTO_NAME = /^(\d+)\.(jpg|png|webp)$/
+const FOTO_NAME = /^([1-9]\d*)\.(jpg|png|webp)$/
 
 export function parseFotoFilename(file: string): { alunoId: number; ext: FotoExt } | null {
   const m = FOTO_NAME.exec(file)
