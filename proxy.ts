@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getSessionSecret } from "@/lib/env"
+import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
 
-const COOKIE_NAME = "escolinha_session"
+const COOKIE_NAME = SESSION_COOKIE
 
 async function verify(signed: string): Promise<boolean> {
   const secret = getSessionSecret()
@@ -34,7 +35,7 @@ async function verify(signed: string): Promise<boolean> {
   }
   if (diff !== 0) return false
 
-  return value.startsWith("auth:")
+  return value.startsWith(SESSION_PREFIX)
 }
 
 export async function proxy(request: NextRequest) {
