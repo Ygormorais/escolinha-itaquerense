@@ -20,11 +20,17 @@ O SQLite fica em arquivo no disco da VPS — **instância única, sempre**.
 ssh -i chave.key ubuntu@IP_DA_VM
 git clone https://github.com/Ygormorais/escolinha-itaquerense.git
 bash escolinha-itaquerense/deploy/setup-vps.sh   # para no .env na 1ª vez
-nano escolinha-itaquerense/.env                  # preencher produção (checklist abaixo)
+cp escolinha-itaquerense/.env.production.example escolinha-itaquerense/.env
+bash escolinha-itaquerense/deploy/gen-secrets.sh # cole a saída no .env
+nano escolinha-itaquerense/.env                  # preencher o restante (checklist abaixo)
 bash escolinha-itaquerense/deploy/setup-vps.sh   # roda de novo: builda, sobe PM2 + Caddy
 ```
 
 ## 3. Checklist do `.env` de produção
+
+Comece pelo template: `cp .env.production.example .env`, depois
+`bash deploy/gen-secrets.sh` gera `SESSION_SECRET`, `CRON_SECRET`,
+`FPFS_SYNC_TOKEN`, `ADMIN_PASSWORD` e as chaves VAPID — cole a saída no `.env`.
 
 - [ ] `DATABASE_URL=file:./prisma/prod.db` (caminho relativo ao repo na VPS)
 - [ ] `ADMIN_PASSWORD` — senha forte (NÃO usar admin/admin)
