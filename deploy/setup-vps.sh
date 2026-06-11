@@ -9,7 +9,7 @@ BRANCH="master"
 
 echo "==> Pacotes base"
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends git curl build-essential python3 ca-certificates
+sudo apt-get install -y --no-install-recommends git curl build-essential python3 ca-certificates sqlite3
 
 echo "==> Node 20 (NodeSource)"
 if ! command -v node >/dev/null || [[ "$(node -v)" != v20* ]]; then
