@@ -41,6 +41,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# uploads de usuários (documentos de matrícula, fotos)
+/uploads/
+/public/uploads/
+
 # database
 prisma/dev.db
 .prisma/

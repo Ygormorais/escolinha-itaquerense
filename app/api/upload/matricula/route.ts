@@ -47,7 +47,10 @@ export async function POST(request: Request) {
   }
 
   const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}${extReal}`
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "matriculas")
+  // Fora de public/: documentos pessoais não podem ser servidos estaticamente
+  // sem auth. A URL /uploads/matriculas/* é atendida por um route handler
+  // protegido pelo middleware (app/uploads/matriculas/[file]/route.ts).
+  const uploadDir = path.join(process.cwd(), "uploads", "matriculas")
   await mkdir(uploadDir, { recursive: true })
   await writeFile(path.join(uploadDir, safeName), Buffer.from(bytes))
 
