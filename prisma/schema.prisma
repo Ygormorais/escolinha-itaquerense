@@ -313,7 +313,7 @@ model WhatsAppMensagem {
   direcao    String   @default("outgoing") // outgoing, incoming
   status     String   @default("sent") // sent, delivered, read, failed, received
   instancia  String   @default("escolinha")
-  origem     String   @default("manual") // manual, cobranca, comunicado, ai-router, webhook
+  origem     String   @default("manual") // manual, cobranca, comunicado, ai-router, webhook, aniversario
   intent     String? // classificacao AI: cobranca, frequencia, etc
   confidence Float? // confianca da classificacao AI
   messageId  String? // ID da mensagem no WhatsApp

@@ -6,6 +6,7 @@ export type Aniversariante = AlunoNascimento & {
   ehHoje: boolean
 }
 
+/** Retorna true quando `dataNascimento` cai no mesmo dia/mês de `dia`. Aniversários em 29/fev só batem em anos bissextos — comportamento intencional. */
 export function ehAniversarioNoDia(dataNascimento: Date, dia: Date): boolean {
   return (
     dataNascimento.getDate() === dia.getDate() &&

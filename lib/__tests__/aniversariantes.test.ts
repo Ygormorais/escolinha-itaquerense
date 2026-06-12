@@ -49,4 +49,16 @@ describe("ehAniversarioNoDia", () => {
     expect(ehAniversarioNoDia(new Date("2015-06-20T03:00:00"), new Date("2026-06-20T23:00:00"))).toBe(true)
     expect(ehAniversarioNoDia(new Date("2015-06-20T03:00:00"), new Date("2026-06-21T01:00:00"))).toBe(false)
   })
+
+  it("29/fev não bate em 28/fev nem em 01/mar (anos não-bissextos — deliberado)", () => {
+    const feb29 = new Date("2000-02-29T12:00:00")
+    expect(ehAniversarioNoDia(feb29, new Date("2026-02-28T12:00:00"))).toBe(false)
+    expect(ehAniversarioNoDia(feb29, new Date("2026-03-01T12:00:00"))).toBe(false)
+  })
+})
+
+describe("aniversariantesDoMes — edge cases", () => {
+  it("retorna [] para lista vazia de alunos", () => {
+    expect(aniversariantesDoMes([], new Date("2026-06-01T00:00:00"))).toEqual([])
+  })
 })

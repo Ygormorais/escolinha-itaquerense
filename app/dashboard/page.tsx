@@ -102,7 +102,7 @@ export default async function DashboardPage({
     }),
     db.aluno.findMany({
       where: { status: "Ativo" },
-      select: { id: true, nome: true, dataNascimento: true, turma: true },
+      select: { id: true, nome: true, dataNascimento: true },
       orderBy: { dataNascimento: "asc" },
     }),
     db.pagamento.findMany({
