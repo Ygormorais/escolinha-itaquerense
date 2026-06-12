@@ -393,8 +393,8 @@ export function CustosClient({
               <TableRow key={c.id}>
                 <TableCell>{format(new Date(c.data), "dd/MM/yyyy")}</TableCell>
                 <TableCell>{c.categoria}</TableCell>
-                <TableCell>{c.descricao}</TableCell>
-                <TableCell className="text-muted-foreground">{c.fornecedor}</TableCell>
+                <TableCell>{c.descricao || "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{c.fornecedor || "—"}</TableCell>
                 <TableCell>{c.formaPagamento}</TableCell>
                 <TableCell>
                   {c.comprovante && <CheckIcon className="size-4 text-success-600" />}

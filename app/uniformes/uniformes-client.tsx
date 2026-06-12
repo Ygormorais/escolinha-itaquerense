@@ -105,7 +105,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
             <CardTitle className="text-sm text-muted-foreground">Alunos com uniforme</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{alunos.length}</p>
+            <p className="text-2xl font-bold font-heading">{alunos.filter((a) => a.uniformes.length > 0).length}</p>
           </CardContent>
         </Card>
         <Card>

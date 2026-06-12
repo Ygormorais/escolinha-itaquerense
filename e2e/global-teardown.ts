@@ -14,6 +14,9 @@ export default async function globalTeardown() {
     await db.aluno.deleteMany({ where: { id: { in: ids } } })
   }
 
+  // Remove custos criados pelos testes E2E
+  await db.custo.deleteMany({ where: { descricao: { startsWith: "Custo E2E" } } })
+
   // Remove pré-matrículas criadas pelos testes E2E
   await db.preMatricula.deleteMany({
     where: { OR: [{ nomeAluno: { startsWith: "Teste E2E" } }, { nomeAluno: { startsWith: "E2E Aprovacao " } }] },

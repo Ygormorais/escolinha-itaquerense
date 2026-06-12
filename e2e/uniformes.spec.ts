@@ -143,18 +143,17 @@ test.describe("Uniformes — edge cases", () => {
     }
   })
 
-  test("stat card 'Alunos com uniforme' exibe número igual ao total de alunos ativos na tabela", async ({ page }) => {
+  test("stat card 'Alunos com uniforme' conta só alunos que têm itens", async ({ page }) => {
     await page.goto("/uniformes")
     await page.waitForLoadState("networkidle")
     const rows = page.locator("table tbody tr")
     const count = await rows.count()
-    // O stat card deve mostrar o mesmo número (ou 0 se lista vazia)
     const statCard = page.locator('[data-slot="card"]').filter({ hasText: /Alunos com uniforme/i })
     const statText = await statCard.locator('[data-slot="card-content"] p').textContent()
-    if (statText) {
-      const statNum = parseInt(statText.trim(), 10)
-      // Número pode diferir do count visível se há filtro ativo; aceita qualquer número >= 0
-      expect(statNum).toBeGreaterThanOrEqual(0)
-    }
+    const statNum = parseInt((statText ?? "").trim(), 10)
+    // nunca pode exceder o total de alunos listados; com "Nenhum item" em todas as linhas deve ser 0
+    expect(statNum).toBeLessThanOrEqual(count)
+    const semItens = await rows.filter({ hasText: "Nenhum item" }).count()
+    if (semItens === count && count > 0) expect(statNum).toBe(0)
   })
 })
