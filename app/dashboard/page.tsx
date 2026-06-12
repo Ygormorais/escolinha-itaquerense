@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck, Cake, Inbox, CheckCircle2 } from "lucide-react"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, Inbox, CheckCircle2 } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import dynamic from "next/dynamic"
@@ -16,6 +16,8 @@ import { AlertBanner, type AlertIcon } from "@/components/dashboard/alert-banner
 import { EmptyState } from "@/components/ui/empty-state"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ResumoFinanceiro } from "@/components/dashboard/resumo-financeiro"
+import { AniversariantesCard } from "@/components/dashboard/aniversariantes-card"
+import { aniversariantesDoMes } from "@/lib/aniversariantes"
 
 const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-receita-custos").then(m => ({ default: m.ChartReceitaCustos })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 const ChartInadimplencia = dynamic(() => import("@/components/dashboard/chart-inadimplencia").then(m => ({ default: m.ChartInadimplencia })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
@@ -175,9 +177,7 @@ export default async function DashboardPage({
     return { turma, receita, alunos }
   }).filter((t) => t.alunos > 0)
 
-  const aniversariantesMes = aniversariantes.filter(
-    (a) => new Date(a.dataNascimento).getMonth() + 1 === mesRef
-  ).sort((a, b) => new Date(a.dataNascimento).getDate() - new Date(b.dataNascimento).getDate())
+  const aniversariantesMes = aniversariantesDoMes(aniversariantes, dataRef)
 
   const receitaMes = pagamentosMes.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
   const custosMes = custosChart
@@ -353,42 +353,7 @@ export default async function DashboardPage({
         </Card>
       )}
 
-      {aniversariantesMes.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Cake className="size-4 text-brand-800" />
-              Aniversariantes de {format(now, "MMMM", { locale: ptBR })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Aluno</TableHead>
-                  <TableHead>Turma</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Idade</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {aniversariantesMes.map((a) => {
-                  const nasc = new Date(a.dataNascimento)
-                  const idade = now.getFullYear() - nasc.getFullYear()
-                  return (
-                    <TableRow key={a.id}>
-                      <TableCell className="font-medium">{a.nome}</TableCell>
-                      <TableCell>{a.turma}</TableCell>
-                      <TableCell>{format(nasc, "dd/MM")}</TableCell>
-                      <TableCell>{idade} anos</TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+      <AniversariantesCard aniversariantes={aniversariantesMes} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
