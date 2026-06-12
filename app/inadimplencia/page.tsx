@@ -10,10 +10,12 @@ export const metadata = { title: "Inadimplência — Escolinha Itaquerense" }
 export default async function InadimplenciaPage() {
   const now = new Date()
 
+  // Mesmo critério do dashboard e do relatório: só alunos ativos
   const pagamentosVencidos = await db.pagamento.findMany({
     where: {
       dataPagamento: null,
       dataVencimento: { lt: now },
+      aluno: { status: "Ativo" },
     },
     include: {
       aluno: {

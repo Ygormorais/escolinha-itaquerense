@@ -1,5 +1,24 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { formatMoney, formatDate, calcStatus, sanitizeCSVCell, plural } from "@/lib/utils"
+import { formatMoney, formatDate, calcStatus, sanitizeCSVCell, plural, formatPhone } from "@/lib/utils"
+
+describe("formatPhone", () => {
+  it("celular com 11 digitos", () => {
+    expect(formatPhone("11958686579")).toBe("(11) 95868-6579")
+  })
+  it("fixo com 10 digitos", () => {
+    expect(formatPhone("1133334444")).toBe("(11) 3333-4444")
+  })
+  it("ja formatado continua igual (re-normaliza)", () => {
+    expect(formatPhone("(11) 99111-1111")).toBe("(11) 99111-1111")
+  })
+  it("com codigo do pais 55 remove o prefixo", () => {
+    expect(formatPhone("5511958686579")).toBe("(11) 95868-6579")
+  })
+  it("fora do padrao devolve como veio", () => {
+    expect(formatPhone("123")).toBe("123")
+    expect(formatPhone("")).toBe("")
+  })
+})
 
 describe("plural", () => {
   it("zero usa 'nenhuma' por padrao do termo", () => {

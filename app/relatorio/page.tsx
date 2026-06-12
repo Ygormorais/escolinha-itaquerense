@@ -114,7 +114,7 @@ export default async function RelatorioPage({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Receita × Custos por Mês</CardTitle>
+            <CardTitle>Detalhamento Mensal</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -172,7 +172,7 @@ export default async function RelatorioPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Custos por Categoria</CardTitle>
+            <CardTitle>Detalhamento por Categoria</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
