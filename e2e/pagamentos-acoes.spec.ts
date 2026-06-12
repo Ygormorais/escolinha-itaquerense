@@ -58,13 +58,9 @@ test.describe("Pagamentos — registro manual completo", () => {
     const btnConfirmar = dialog.getByRole("button", { name: /Confirmar/i })
     await btnConfirmar.click()
 
-    // Após confirmar: dialog deve exibir o estado de sucesso com opção de imprimir recibo
-    // ou fechar automaticamente
-    const sucessoTexto = page.getByText(/Pagamento registrado/i)
-    const dialogFechado = dialog.isHidden()
-    const isSucesso = await sucessoTexto.isVisible({ timeout: 8000 }).catch(() => false)
-    const isFechado = await dialogFechado.catch(() => false)
-    expect(isSucesso || isFechado).toBe(true)
+    // Após confirmar, o dialog permanece aberto exibindo o estado de sucesso
+    // (isVisible não espera — usar o assert com timeout real)
+    await expect(dialog.getByText(/Pagamento registrado/i)).toBeVisible({ timeout: 10000 })
   })
 
   test("estado de sucesso exibe botão 'Imprimir PDF' com link para /recibos", async ({ page }) => {
@@ -191,10 +187,11 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
     await page.goto("/pagamentos")
     await page.waitForLoadState("networkidle")
 
-    // Badges de status de cobrança existente (Aguardando, Pago MP, etc.)
+    // Badges de status de cobrança existente — só os rótulos exclusivos do
+    // CobrancaBadge ("Vencido"/"Cancelado" colidem com o status do pagamento)
     const badgeCobranca = page
       .locator("span")
-      .filter({ hasText: /Aguardando|Pago MP|Vencido|Cancelado/ })
+      .filter({ hasText: /Aguardando|Pago MP/ })
       .first()
 
     if (!(await badgeCobranca.isVisible({ timeout: 3000 }).catch(() => false))) return
@@ -247,11 +244,11 @@ test.describe("Pagamentos — gerar mensalidades", () => {
     // Aguarda: ou o dialog fecha (após geração), ou exibe resultado parcial
     // Pode mostrar mensagem "X criada(s), Y já existia(m)" dentro do dialog antes de fechar
     const resultado = dialog.getByText(/criada|existia|gerada/i)
-    const dialogFechado = async () => !(await dialog.isVisible().catch(() => true))
-    await Promise.race([
-      resultado.waitFor({ timeout: 10000 }).catch(() => null),
-      page.waitForFunction(dialogFechado, {}, { timeout: 10000 }).catch(() => null),
-    ])
+    await expect(async () => {
+      const temResultado = await resultado.isVisible()
+      const aberto = await dialog.isVisible()
+      expect(temResultado || !aberto).toBe(true)
+    }).toPass({ timeout: 10000 })
 
     // A tabela continua visível após a operação
     await expect(page.locator("table")).toBeVisible({ timeout: 5000 })
@@ -345,9 +342,10 @@ test.describe("Pagamentos — filtros de status e turma", () => {
     const opcaoPago = page.getByRole("option", { name: /^Pago$/i })
     if (await opcaoPago.isVisible({ timeout: 2000 }).catch(() => false)) {
       await opcaoPago.click()
-      // Todos os status badges visíveis devem ser "Pago"
-      const badgesPendente = page.locator('[data-slot], span').filter({ hasText: /^Pendente$/ })
-      const badgesVencido = page.locator('[data-slot], span').filter({ hasText: /^Vencido$/ })
+      // Todos os status badges visíveis nas células devem ser "Pago"
+      // (contar só células — há elementos ocultos do select com esses textos)
+      const badgesPendente = page.getByRole("cell").filter({ hasText: /^Pendente$/ })
+      const badgesVencido = page.getByRole("cell").filter({ hasText: /^Vencido$/ })
       expect(await badgesPendente.count()).toBe(0)
       expect(await badgesVencido.count()).toBe(0)
     }
@@ -365,7 +363,7 @@ test.describe("Pagamentos — filtros de status e turma", () => {
     const opcaoPendente = page.getByRole("option", { name: /^Pendente$/i })
     if (await opcaoPendente.isVisible({ timeout: 2000 }).catch(() => false)) {
       await opcaoPendente.click()
-      const badgesPago = page.locator("span").filter({ hasText: /^Pago$/ })
+      const badgesPago = page.getByRole("cell").filter({ hasText: /^Pago$/ })
       expect(await badgesPago.count()).toBe(0)
     }
   })
@@ -438,7 +436,7 @@ test.describe("Caixa — página PIX", () => {
     // O TabsTrigger com "Emitidos" inclui a contagem
     const tabEmitidos = page.getByRole("tab", { name: /Emitidos/i })
     await expect(tabEmitidos).toBeVisible()
-    await expect(tabEmitidos).toHaveAttribute("data-state", "active")
+    await expect(tabEmitidos).toHaveAttribute("aria-selected", "true")
   })
 
   test("aba 'Recebidos' é clicável e carrega conteúdo", async ({ page }) => {
@@ -446,7 +444,7 @@ test.describe("Caixa — página PIX", () => {
     const tabRecebidos = page.getByRole("tab", { name: /Recebidos/i })
     await expect(tabRecebidos).toBeVisible()
     await tabRecebidos.click()
-    await expect(tabRecebidos).toHaveAttribute("data-state", "active")
+    await expect(tabRecebidos).toHaveAttribute("aria-selected", "true")
 
     // Deve mostrar tabela ou mensagem de vazio
     const tabela = page.locator("table")

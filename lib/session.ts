@@ -1,8 +1,9 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 import { checkCredentialsFromEnv, getSessionSecret } from "@/lib/env"
+import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
 
-const COOKIE_NAME = "escolinha_session"
+const COOKIE_NAME = SESSION_COOKIE
 const MAX_AGE = 60 * 60 * 24 * 7 // 7 dias
 
 function sign(value: string): string {
@@ -34,15 +35,13 @@ export async function getSession(): Promise<SessionInfo> {
   const raw = jar.get(COOKIE_NAME)?.value
   if (!raw) return { authenticated: false }
   const value = verify(raw)
-  // "auth2:" prefix rejects old-format cookies ("auth:username") that lack a role
-  // segment, forcing re-login instead of silently granting admin.
-  if (!value || !value.startsWith("auth2:")) return { authenticated: false }
-  const parts = value.slice(6).split(":")
+  if (!value || !value.startsWith(SESSION_PREFIX)) return { authenticated: false }
+  const parts = value.slice(SESSION_PREFIX.length).split(":")
   return { authenticated: true, user: parts[0], role: parts[1] ?? "admin" }
 }
 
 export async function createSession(username: string, role = "admin"): Promise<string> {
-  return sign(`auth2:${username}:${role}`)
+  return sign(`${SESSION_PREFIX}${username}:${role}`)
 }
 
 export function cookieName() { return COOKIE_NAME }

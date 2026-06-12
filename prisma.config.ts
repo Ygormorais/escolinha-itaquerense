@@ -1,12 +1,12 @@
-import path from "node:path"
 import { defineConfig } from "prisma/config"
-
-const dbPath = path.join(process.cwd(), "prisma", "dev.db")
+import { resolveDbPath } from "./lib/db-path"
 
 export default defineConfig({
   schema: "./prisma/schema.prisma",
   datasource: {
-    url: process.env.DATABASE_URL ?? `file:${dbPath}`,
+    // Caminho absoluto para garantir que migrate/studio usem o MESMO arquivo
+    // que o app em runtime (lib/db.ts).
+    url: `file:${resolveDbPath()}`,
   },
   migrations: {
     seed: "npx ts-node ./prisma/seed.ts",

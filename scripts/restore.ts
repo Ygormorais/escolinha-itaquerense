@@ -1,7 +1,9 @@
 import fs from "fs"
 import path from "path"
+import { resolveDbPath } from "../lib/db-path"
 
-const DB_PATH = path.join(process.cwd(), "prisma", "dev.db")
+const DB_PATH = resolveDbPath()
+const DB_PREFIX = path.basename(DB_PATH, ".db")
 const BACKUP_DIR = path.join(process.cwd(), "backups")
 
 function main() {
@@ -13,7 +15,7 @@ function main() {
     console.error("Backups disponíveis:")
     if (fs.existsSync(BACKUP_DIR)) {
       const backups = fs.readdirSync(BACKUP_DIR)
-        .filter((f) => f.startsWith("dev-") && f.endsWith(".db"))
+        .filter((f) => f.startsWith(`${DB_PREFIX}-`) && f.endsWith(".db"))
         .sort()
         .reverse()
       if (backups.length === 0) {

@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 test.describe("Inadimplência — smoke e carregamento", () => {
   test("página carrega com título correto", async ({ page }) => {
     await page.goto("/inadimplencia")
-    await expect(page.getByRole("heading", { name: /Inadimpl/i })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Inadimplência", exact: true })).toBeVisible()
   })
 
   test("exibe os três stat cards de resumo", async ({ page }) => {
@@ -43,10 +43,9 @@ test.describe("Inadimplência — lista calculada", () => {
 
   test("stat card 'Total Inadimplentes' exibe um número", async ({ page }) => {
     await page.goto("/inadimplencia")
-    // O StatCard renderiza um valor (pode ser 0)
-    const statCard = page.locator("text=Total Inadimplentes").locator("..")
-    const valorEl = statCard.locator("p, span, h3").first()
-    const texto = await valorEl.textContent()
+    // O StatCard renderiza um valor (pode ser 0) no CardContent
+    const statCard = page.locator('[data-slot="card"]').filter({ hasText: "Total Inadimplentes" })
+    const texto = await statCard.locator('[data-slot="card-content"]').textContent()
     // Deve conter dígito ou "0"
     expect(texto).toMatch(/\d/)
   })
@@ -54,7 +53,7 @@ test.describe("Inadimplência — lista calculada", () => {
   test("stat card 'Valor Total em Aberto' exibe valor em R$", async ({ page }) => {
     await page.goto("/inadimplencia")
     // Valor sempre presente, mesmo quando R$ 0,00
-    await expect(page.getByText(/R\$\s*[\d,.]+/)).toBeVisible()
+    await expect(page.getByText(/R\$\s*[\d,.]+/).first()).toBeVisible()
   })
 })
 

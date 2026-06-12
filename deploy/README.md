@@ -20,11 +20,17 @@ O SQLite fica em arquivo no disco da VPS — **instância única, sempre**.
 ssh -i chave.key ubuntu@IP_DA_VM
 git clone https://github.com/Ygormorais/escolinha-itaquerense.git
 bash escolinha-itaquerense/deploy/setup-vps.sh   # para no .env na 1ª vez
-nano escolinha-itaquerense/.env                  # preencher produção (checklist abaixo)
+cp escolinha-itaquerense/.env.production.example escolinha-itaquerense/.env
+bash escolinha-itaquerense/deploy/gen-secrets.sh # cole a saída no .env
+nano escolinha-itaquerense/.env                  # preencher o restante (checklist abaixo)
 bash escolinha-itaquerense/deploy/setup-vps.sh   # roda de novo: builda, sobe PM2 + Caddy
 ```
 
 ## 3. Checklist do `.env` de produção
+
+Comece pelo template: `cp .env.production.example .env`, depois
+`bash deploy/gen-secrets.sh` gera `SESSION_SECRET`, `CRON_SECRET`,
+`FPFS_SYNC_TOKEN`, `ADMIN_PASSWORD` e as chaves VAPID — cole a saída no `.env`.
 
 - [ ] `DATABASE_URL=file:./prisma/prod.db` (caminho relativo ao repo na VPS)
 - [ ] `ADMIN_PASSWORD` — senha forte (NÃO usar admin/admin)
@@ -43,10 +49,34 @@ bash escolinha-itaquerense/deploy/setup-vps.sh   # roda de novo: builda, sobe PM
 ssh -i chave.key ubuntu@IP_DA_VM "bash escolinha-itaquerense/deploy/deploy.sh"
 ```
 
-O `deploy.sh` faz: `git pull` → `npm ci` → `build` → `prisma migrate deploy` →
-reload no PM2 (a partir da `master` — fazer merge develop → master antes).
+O `deploy.sh` faz: `git checkout master` + `git pull` → backup do banco em
+`backups/pre-deploy-*.db` → `npm ci` → `build` → `prisma migrate deploy` →
+reload no PM2 → tag `deploy-*` (fazer merge develop → master antes).
 
-## 5. Operação
+## 5. Rollback (se a versão nova quebrar)
+
+```bash
+ssh -i chave.key ubuntu@IP_DA_VM "bash escolinha-itaquerense/deploy/rollback.sh"
+```
+
+Sem argumento, volta para a tag `deploy-*` anterior à atual e rebuilda
+(~2–3 min). Para um destino específico: `bash deploy/rollback.sh <tag|commit>`.
+Liste as tags com `git tag -l 'deploy-*'`.
+
+**Banco:** as migrations não são revertidas. Se a versão antiga não abrir por
+causa do schema novo, restaure o backup feito automaticamente no deploy:
+
+```bash
+pm2 stop escolinha
+cp backups/pre-deploy-<timestamp>.db prisma/prod.db
+pm2 start escolinha
+```
+
+Enquanto o processo antigo continua no ar, uma falha de **build** no deploy
+não derruba nada (o reload só acontece depois do build) — rollback só é
+necessário quando a versão nova sobe mas se comporta mal.
+
+## 6. Operação
 
 ```bash
 pm2 status / pm2 logs escolinha      # processo e logs

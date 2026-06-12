@@ -35,11 +35,13 @@ export async function POST(request: Request) {
 
   const ext = validation.extension
   const filename = `${alunoId}.${ext}`
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "fotos")
+  const uploadDir = path.join(process.cwd(), "uploads", "fotos")
 
   if (aluno!.foto) {
-    const oldPath = path.join(process.cwd(), "public", aluno!.foto.replace(/^\//, ""))
-    await unlink(oldPath).catch(() => {})
+    const rel = aluno!.foto.replace(/^\//, "")
+    // apaga no local novo e no legado (fotos antigas viviam em public/)
+    await unlink(path.join(process.cwd(), rel)).catch(() => {})
+    await unlink(path.join(process.cwd(), "public", rel)).catch(() => {})
   }
 
   await mkdir(uploadDir, { recursive: true })
@@ -61,8 +63,9 @@ export async function DELETE(request: Request) {
 
   const aluno = await db.aluno.findUnique({ where: { id: alunoId }, select: { foto: true } })
   if (aluno?.foto) {
-    const filePath = path.join(process.cwd(), "public", aluno.foto.replace(/^\//, ""))
-    await unlink(filePath).catch(() => {})
+    const rel = aluno.foto.replace(/^\//, "")
+    await unlink(path.join(process.cwd(), rel)).catch(() => {})
+    await unlink(path.join(process.cwd(), "public", rel)).catch(() => {})
   }
 
   await db.aluno.update({ where: { id: alunoId }, data: { foto: null } })

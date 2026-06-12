@@ -149,7 +149,8 @@ test.describe("Uniformes — edge cases", () => {
     const rows = page.locator("table tbody tr")
     const count = await rows.count()
     // O stat card deve mostrar o mesmo número (ou 0 se lista vazia)
-    const statText = await page.getByText(/Alunos com uniforme/i).locator("..").locator("p").first().textContent()
+    const statCard = page.locator('[data-slot="card"]').filter({ hasText: /Alunos com uniforme/i })
+    const statText = await statCard.locator('[data-slot="card-content"] p').textContent()
     if (statText) {
       const statNum = parseInt(statText.trim(), 10)
       // Número pode diferir do count visível se há filtro ativo; aceita qualquer número >= 0

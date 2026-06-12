@@ -1,7 +1,9 @@
 import fs from "fs"
 import path from "path"
+import { resolveDbPath } from "../lib/db-path"
 
-const DB_PATH = path.join(process.cwd(), "prisma", "dev.db")
+const DB_PATH = resolveDbPath()
+const DB_PREFIX = path.basename(DB_PATH, ".db")
 const BACKUP_DIR = path.join(process.cwd(), "backups")
 const MAX_BACKUPS = 30
 
@@ -17,7 +19,7 @@ function main() {
 
   const now = new Date()
   const timestamp = now.toISOString().replace(/[:.]/g, "-").slice(0, 19)
-  const backupName = `dev-${timestamp}.db`
+  const backupName = `${DB_PREFIX}-${timestamp}.db`
   const backupPath = path.join(BACKUP_DIR, backupName)
 
   fs.copyFileSync(DB_PATH, backupPath)
@@ -28,7 +30,7 @@ function main() {
   console.log(`✅ Backup criado: ${backupName} (${sizeKB} KB)`)
 
   const backups = fs.readdirSync(BACKUP_DIR)
-    .filter((f) => f.startsWith("dev-") && f.endsWith(".db"))
+    .filter((f) => f.startsWith(`${DB_PREFIX}-`) && f.endsWith(".db"))
     .sort()
     .reverse()
 
