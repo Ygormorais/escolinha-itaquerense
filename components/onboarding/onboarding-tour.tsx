@@ -41,8 +41,9 @@ const STEPS = [
 export function OnboardingTour() {
   const { active, currentStep, totalSteps, next, prev, skip, complete } = useOnboarding()
 
+  // O gate de rota pública (incluindo /login) é do Providers via usePathname;
+  // checar window.location aqui congelava null durante a navegação pós-login
   if (!active) return null
-  if (typeof window !== "undefined" && window.location.pathname === "/login") return null
 
   const step = STEPS[currentStep] ?? STEPS[0]
   const isFirst = currentStep === 0
