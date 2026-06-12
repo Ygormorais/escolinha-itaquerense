@@ -103,12 +103,13 @@ test.describe("Avaliações — tabela com dados", () => {
     await page.goto("/avaliacoes")
     await page.waitForLoadState("networkidle")
 
-    const rows = page.locator("table tbody tr")
+    // Só linhas de dados — o empty state é uma tr com td[colspan]
+    const rows = page.locator("table tbody tr").filter({ has: page.locator("td:not([colspan])") })
     const count = await rows.count()
     if (count > 0) {
       // Primeira linha deve ter badges
       const firstRow = rows.first()
-      await expect(firstRow.locator("span, [data-testid='badge'], .badge")).toHaveCount({ minimum: 1 } as never)
+      expect(await firstRow.locator("span, [data-testid='badge'], .badge").count()).toBeGreaterThan(0)
     }
   })
 })

@@ -171,7 +171,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
                     </>
                   )}
                   <ConfirmDialog title="Remover pré-matrícula?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleDeletar(m.id)}>
-                    <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive">
+                    <Button size="sm" variant="ghost" aria-label="Remover pré-matrícula" className="text-muted-foreground hover:text-destructive">
                       <Trash2 className="size-4" />
                     </Button>
                   </ConfirmDialog>

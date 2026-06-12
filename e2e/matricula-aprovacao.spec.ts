@@ -31,6 +31,11 @@ async function criarPreMatriculaPublica(page: Parameters<typeof loginAsAdmin>[0]
   return nomeAluno
 }
 
+/** Localiza a linha (item da lista) de uma pré-matrícula pelo nome do aluno */
+function linhaPreMatricula(page: Parameters<typeof loginAsAdmin>[0], nomeAluno: string) {
+  return page.locator(".divide-y > div").filter({ hasText: nomeAluno })
+}
+
 // ── Testes ─────────────────────────────────────────────────────────────────
 
 test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
@@ -100,11 +105,11 @@ test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
     await page.waitForLoadState("networkidle")
 
     // Localiza a linha do aluno criado
-    const linhaAluno = page.locator("div").filter({ hasText: nomeAluno }).first()
+    const linhaAluno = linhaPreMatricula(page, nomeAluno)
     await expect(linhaAluno).toBeVisible({ timeout: 8000 })
 
     // Abre o dialog de aprovação através do botão na linha desse aluno
-    const btnAprovar = linhaAluno.locator("..").getByRole("button", { name: /Aprovar/i }).first()
+    const btnAprovar = linhaAluno.getByRole("button", { name: /Aprovar/i }).first()
     await btnAprovar.click()
 
     const dialog = page.getByRole("dialog")
@@ -135,17 +140,17 @@ test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
     await page.goto("/configuracoes/matriculas")
     await page.waitForLoadState("networkidle")
 
-    const linhaAluno = page.locator("div").filter({ hasText: nomeAluno }).first()
+    const linhaAluno = linhaPreMatricula(page, nomeAluno)
     await expect(linhaAluno).toBeVisible({ timeout: 8000 })
 
-    const btnRecusar = linhaAluno.locator("..").getByRole("button", { name: /Recusar/i }).first()
+    const btnRecusar = linhaAluno.getByRole("button", { name: /Recusar/i })
     await btnRecusar.click()
 
     // Aguarda o toast ou a mudança de badge
     await page.waitForLoadState("networkidle")
 
     // O aluno não deve mais ter o botão "Aprovar" (status mudou para recusada)
-    const btnAprovarApos = linhaAluno.locator("..").getByRole("button", { name: /Aprovar/i })
+    const btnAprovarApos = linhaAluno.getByRole("button", { name: /Aprovar/i })
     await expect(btnAprovarApos).not.toBeVisible({ timeout: 5000 })
   })
 
@@ -157,17 +162,17 @@ test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
     await page.goto("/configuracoes/matriculas")
     await page.waitForLoadState("networkidle")
 
-    const linhaAluno = page.locator("div").filter({ hasText: nomeAluno }).first()
+    const linhaAluno = linhaPreMatricula(page, nomeAluno)
     await expect(linhaAluno).toBeVisible({ timeout: 8000 })
 
     // O botão de lixeira (ConfirmDialog trigger)
-    const btnLixeira = linhaAluno.locator("..").getByRole("button").filter({ hasText: "" }).last()
+    const btnLixeira = linhaAluno.getByRole("button", { name: "Remover pré-matrícula" })
     await btnLixeira.click()
 
-    // ConfirmDialog aparece
-    const confirmDialog = page.getByRole("dialog")
+    // ConfirmDialog é um AlertDialog → role "alertdialog"
+    const confirmDialog = page.getByRole("alertdialog")
     await expect(confirmDialog).toBeVisible()
-    await expect(confirmDialog.getByText(/Remover|Excluir/i)).toBeVisible()
+    await expect(confirmDialog.getByRole("heading", { name: /Remover pré-matrícula/i })).toBeVisible()
 
     // Cancela — não remove
     const btnCancelar = confirmDialog.getByRole("button", { name: /Cancelar/i })

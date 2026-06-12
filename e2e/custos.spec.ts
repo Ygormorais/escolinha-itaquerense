@@ -16,7 +16,7 @@ test.describe("Custos — smoke e carregamento", () => {
   test("tab Lançamentos está ativa por padrão e exibe tabela", async ({ page }) => {
     await page.goto("/custos")
     const tabLancamentos = page.getByRole("tab", { name: /Lançamentos/i })
-    await expect(tabLancamentos).toHaveAttribute("data-state", "active")
+    await expect(tabLancamentos).toHaveAttribute("aria-selected", "true")
     await expect(page.locator("table")).toBeVisible()
   })
 
@@ -40,9 +40,22 @@ test.describe("Custos — filtro de mês", () => {
   test("alterar o mês navega para URL com query ?mes=", async ({ page }) => {
     await page.goto("/custos")
     const inputMes = page.locator('input[type="month"]')
-    await inputMes.fill("2025-01")
-    await inputMes.dispatchEvent("change")
-    await page.waitForURL(/mes=2025-01/, { timeout: 8000 })
+    // Corrida de hidratação: um set pré-hidratação vira o lastValue do
+    // value-tracker do React e o evento com o mesmo valor é deduplicado para
+    // sempre. Garante value ≠ lastValue em toda iteração: decoy pelo setter
+    // rastreado + alvo pelo setter do prototype; repete até o onChange
+    // disparar o router.push e a URL refletir o mês.
+    await expect
+      .poll(async () => {
+        await inputMes.evaluate((el: HTMLInputElement, valor) => {
+          el.value = "2024-12" // decoy via setter rastreado (atualiza o tracker)
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!
+          setter.call(el, valor) // alvo bypassando o tracker
+          el.dispatchEvent(new Event("input", { bubbles: true }))
+        }, "2025-01")
+        return page.url()
+      }, { timeout: 10000 })
+      .toMatch(/mes=2025-01/)
     await expect(page.locator("table")).toBeVisible()
   })
 })
