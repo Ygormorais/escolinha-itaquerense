@@ -100,4 +100,4 @@ para fora da VM de tempos em tempos.
 Enquanto não houver domínio, o Caddyfile serve por IP na porta 80 (sem HTTPS —
 não usar senha real do MP até ter HTTPS). Quando o domínio existir: apontar o
 DNS para o IP da VM, editar o Caddyfile (bloco comentado) e
-`sudo systemctl reload caddy`. Aproveite e atualize o `APP_HOST` da landing.
+`sudo systemctl reload caddy`.
