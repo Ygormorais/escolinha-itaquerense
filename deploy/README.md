@@ -43,6 +43,11 @@ Comece pelo template: `cp .env.production.example .env`, depois
 - [ ] `EVOLUTION_API_*` / `ANTHROPIC_API_KEY` — se o chatbot WhatsApp for ao ar
 - [ ] `ESCOLA_*` — endereço real do clube
 
+Após o primeiro deploy, confirmar que `public/uploads/` está vazio ou inexistente
+(`ls public/uploads 2>/dev/null`). Fotos e documentos devem viver só em `uploads/`
+(fora de `public/`), servidos pelas rotas autenticadas — um arquivo legado em
+`public/uploads/` seria servido sem auth como asset estático.
+
 ## 4. Atualizar o app (cada release)
 
 ```bash
