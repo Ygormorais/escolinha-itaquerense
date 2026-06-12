@@ -1,5 +1,5 @@
 import { db } from "@/lib/db"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -192,7 +192,7 @@ export default async function DashboardPage({
     alerts.push({ type: "danger", icon: "alerta", message: `${inadimplentes.length} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
   }
   if (inadimplentes.length > 0 && inadimplentes.length <= 5) {
-    alerts.push({ type: "warning", icon: "alerta", message: `${inadimplentes.length} mensalidade(s) em atraso`, detail: "Poucos casos, mas requer atenção." })
+    alerts.push({ type: "warning", icon: "alerta", message: `${plural(inadimplentes.length, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção." })
   }
   if (presencaMedia < 50 && totalFrequencias > 0) {
     alerts.push({ type: "danger", icon: "frequencia", message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.` })
@@ -201,7 +201,7 @@ export default async function DashboardPage({
     alerts.push({ type: "warning", icon: "frequencia", message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.` })
   }
   if (vencendoSemana.length > 0) {
-    alerts.push({ type: "info", icon: "tendencia", message: `${vencendoSemana.length} mensalidade(s) vencem nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
+    alerts.push({ type: "info", icon: "tendencia", message: `${plural(vencendoSemana.length, "mensalidade vence", "mensalidades vencem", "nenhuma")} nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
   }
 
   const receitaAnterior = mesAnteriorData.receita

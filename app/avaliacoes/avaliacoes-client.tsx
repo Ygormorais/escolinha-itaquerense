@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { plural } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { Plus, Pencil, Trash2, ClipboardX } from "lucide-react"
@@ -337,7 +338,7 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-xl font-semibold">Avaliações</h1>
-          <p className="text-sm text-muted-foreground">{avaliacoes.length} avaliação(ões) registrada(s)</p>
+          <p className="text-sm text-muted-foreground">{plural(avaliacoes.length, "avaliação registrada", "avaliações registradas", "nenhuma")}</p>
         </div>
         <NovaAvaliacaoDialog alunos={alunos} />
       </div>

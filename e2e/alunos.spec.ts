@@ -18,7 +18,8 @@ test.describe("Alunos — listagem", () => {
     await page.goto("/alunos")
     const search = page.locator('input[placeholder*="Buscar"]')
     await search.fill("zzz_nao_existe_e2e")
-    await expect(page.getByText(/Nenhum aluno/i)).toBeVisible()
+    // counter ("nenhum aluno encontrado") e empty-state da tabela aparecem juntos
+    await expect(page.getByText(/Nenhum aluno/i).first()).toBeVisible()
     await search.clear()
   })
 

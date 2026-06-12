@@ -1,6 +1,7 @@
 "use client"
 
 import { useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { Mail, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { enviarLembretesInadimplentes } from "@/app/actions/email"
@@ -16,8 +17,8 @@ export function EmailNotifButton() {
         toast.error(r.error)
       } else {
         const parts: string[] = []
-        if (r.enviados > 0) parts.push(`${r.enviados} e-mail(s) enviado(s)`)
-        if (r.erros > 0) parts.push(`${r.erros} erro(s)`)
+        if (r.enviados > 0) parts.push(`${plural(r.enviados, "e-mail enviado", "e-mails enviados", "nenhum")}`)
+        if (r.erros > 0) parts.push(`${plural(r.erros, "erro", "erros", "nenhum")}`)
         if (r.semEmail > 0) parts.push(`${r.semEmail} sem e-mail cadastrado`)
         toast.success(parts.join(" · ") || "Nenhum inadimplente")
       }

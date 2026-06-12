@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { sanitizeCSVCell } from "@/lib/utils"
+import { sanitizeCSVCell, plural } from "@/lib/utils"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
@@ -106,7 +106,7 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Histórico de Atividades"
-        description={`${filtrados.length} registro(s)${logs.length >= 500 ? " · exibindo os 500 mais recentes" : ""}`}
+        description={`${plural(filtrados.length, "registro", "registros", "nenhum")}${logs.length >= 500 ? " · exibindo os 500 mais recentes" : ""}`}
         action={
           <Button size="sm" onClick={exportarCSV}>
             <Download className="size-4 mr-1" /> CSV

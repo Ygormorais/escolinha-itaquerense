@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { importarAlunosCSV } from "@/app/actions/importar"
 import { toast } from "sonner"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 
 type AlunoRow = {
   nome: string; dataNascimento: string; turma: string; horario: string
@@ -75,8 +75,8 @@ export function ImportarAlunosClient() {
       const r = await importarAlunosCSV(preview)
       if ("error" in r) { toast.error(r.error); return }
       setResultado(r)
-      if (r.importados > 0) toast.success(`${r.importados} aluno(s) importado(s) com sucesso`)
-      if (r.erros.length > 0) toast.warning(`${r.erros.length} linha(s) com erro`)
+      if (r.importados > 0) toast.success(`${plural(r.importados, "aluno importado", "alunos importados", "nenhum")} com sucesso`)
+      if (r.erros.length > 0) toast.warning(`${plural(r.erros.length, "linha", "linhas", "nenhuma")} com erro`)
     })
   }
 
@@ -124,7 +124,7 @@ export function ImportarAlunosClient() {
           {preview.length > 0 && (
             <div className="space-y-3">
               <p className="text-sm font-medium text-foreground">
-                {preview.length} linha(s) encontrada(s) — pré-visualização:
+                {plural(preview.length, "linha encontrada", "linhas encontradas", "nenhuma")} — pré-visualização:
               </p>
               <div className="overflow-x-auto rounded-lg border">
                 <table className="w-full text-xs">
@@ -148,7 +148,7 @@ export function ImportarAlunosClient() {
                     {preview.length > 10 && (
                       <tr>
                         <td colSpan={5} className="px-3 py-2 text-center text-muted-foreground">
-                          ... e mais {preview.length - 10} linha(s)
+                          ... e mais {preview.length - 10} linhas
                         </td>
                       </tr>
                     )}
@@ -162,7 +162,7 @@ export function ImportarAlunosClient() {
                   disabled={pending}
                   className="bg-brand-800 text-white hover:bg-brand-900"
                 >
-                  {pending ? "Importando..." : `Importar ${preview.length} aluno(s)`}
+                  {pending ? "Importando..." : `Importar ${plural(preview.length, "aluno", "alunos", "nenhum")}`}
                 </Button>
               )}
             </div>
@@ -172,13 +172,13 @@ export function ImportarAlunosClient() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-success-600">
                 <CheckCircle className="size-5" />
-                <span className="font-medium">{resultado.importados} aluno(s) importado(s) com sucesso</span>
+                <span className="font-medium">{plural(resultado.importados, "aluno importado", "alunos importados", "nenhum")} com sucesso</span>
               </div>
               {resultado.erros.length > 0 && (
                 <div className="rounded-lg border border-danger-200 bg-danger-50 p-4">
                   <div className="flex items-center gap-2 text-danger-700 font-medium mb-2">
                     <AlertCircle className="size-4" />
-                    {resultado.erros.length} linha(s) com erro:
+                    {plural(resultado.erros.length, "linha", "linhas", "nenhuma")} com erro:
                   </div>
                   <ul className="space-y-1 text-xs text-danger-700">
                     {resultado.erros.map((e) => (

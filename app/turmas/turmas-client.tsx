@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { plural } from "@/lib/utils"
 import Link from "next/link"
 import { Phone, MessageCircle, TrendingUp, Search, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -57,7 +58,7 @@ export function TurmasClient({
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Turmas"
-        description={`${totalExibidos} aluno(s) em ${turmas.length} turmas`}
+        description={`${plural(totalExibidos, "aluno", "alunos", "nenhum")} em ${plural(turmas.length, "turma", "turmas", "nenhuma")}`}
       />
 
       <div className="flex flex-wrap items-center gap-3">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -37,7 +38,7 @@ export function CategoriasClient({ viradas, anoRef }: { viradas: ViradaSerializa
     start(async () => {
       const r = await aplicarViradaCategorias(ids)
       if ("error" in r) toast.error(r.error)
-      else toast.success(`${r.aplicadas} aluno(s) promovido(s) de categoria`)
+      else toast.success(`${plural(r.aplicadas, "aluno promovido", "alunos promovidos", "nenhum")} de categoria`)
     })
   }
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { useForm } from "react-hook-form"
 import { PlusIcon, PencilIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -182,7 +183,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {recorrentes.filter((r) => r.ativo).length} modelo(s) ativo(s) —{" "}
+            {plural(recorrentes.filter((r) => r.ativo).length, "modelo ativo", "modelos ativos", "nenhum")} —{" "}
             <span className="font-medium text-foreground">
               R$ {total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} /mês
             </span>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Search, CheckCircle2, XCircle, MessageSquare } from "lucide-react"
@@ -60,7 +61,7 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
           <option value="resolvida">Resolvidas</option>
           <option value="recusada">Recusadas</option>
         </select>
-        <span className="text-sm text-muted-foreground">{filtradas.length} registro(s)</span>
+        <span className="text-sm text-muted-foreground">{plural(filtradas.length, "registro", "registros", "nenhum")}</span>
       </div>
 
       <div className="rounded-xl border bg-card divide-y">
