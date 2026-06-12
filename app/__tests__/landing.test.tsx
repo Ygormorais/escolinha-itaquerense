@@ -35,4 +35,12 @@ describe("landing publica", () => {
     expect(html).not.toContain("Sócio Torcedor")
     expect(html).not.toContain("Transmissão Ao Vivo")
   })
+  it("matricula aparece uma vez no header (so o botao de acesso)", () => {
+    const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"))
+    expect(header.match(/Matrícula/g)).toHaveLength(1)
+  })
+  it("hero institucional nao duplica o CTA do banner de matricula", () => {
+    const hero = html.slice(html.indexOf('class="hero"'), html.indexOf('id="jogos"'))
+    expect(hero).not.toContain("/matricula")
+  })
 })

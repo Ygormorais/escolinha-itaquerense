@@ -180,7 +180,6 @@ export function LandingClient({
 
           <nav className={"main" + (navOpen ? " open" : "")} id="nav">
             <ul>
-              <li><a href="/matricula">Matrícula</a></li>
               <li><a href="/turmas">Turmas &amp; Horários</a></li>
               <li><a href="#jogos">Jogos</a></li>
               <li><a href="/resultados">Resultados</a></li>

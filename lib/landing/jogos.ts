@@ -98,12 +98,13 @@ export function heroView(destaque: HeroDestaque): HeroView {
       ctaLabel: "Ver jogos",
     }
   }
+  // CTA aponta para turmas: a chamada de matrícula é do banner dedicado logo abaixo
   return {
     badge: "Escolinha de Futebol e Futsal",
     titulo: "Formação de base com paixão itaquerense",
     descricao: "Treinos para todas as categorias, jogos oficiais e acompanhamento completo pelo portal do responsável. Venha fazer parte da nossa história.",
-    ctaHref: "/matricula",
-    ctaLabel: "Fazer Matrícula",
+    ctaHref: "/turmas",
+    ctaLabel: "Conheça as Turmas",
   }
 }
 
