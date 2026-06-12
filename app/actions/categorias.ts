@@ -16,16 +16,26 @@ export async function aplicarViradaCategorias(mudancas: Mudanca[]): Promise<Acti
   }
 
   try {
-    let aplicadas = 0
-    for (const m of mudancas) {
-      const aluno = await db.aluno.findUnique({ where: { id: m.alunoId }, select: { turma: true, nome: true } })
-      if (!aluno) continue
-      await db.aluno.update({ where: { id: m.alunoId }, data: { turma: m.novaTurma } })
-      await registrarLog("categoria", `Virada de categoria: ${aluno.nome} ${aluno.turma} → ${m.novaTurma}`, {
-        alunoId: m.alunoId, de: aluno.turma, para: m.novaTurma,
+    type LogEntry = { alunoId: number; nome: string; de: string; para: string }
+    const { aplicadas, logs } = await db.$transaction(async (tx) => {
+      let aplicadas = 0
+      const logs: LogEntry[] = []
+      for (const m of mudancas) {
+        const aluno = await tx.aluno.findUnique({ where: { id: m.alunoId }, select: { turma: true, nome: true } })
+        if (!aluno) continue
+        await tx.aluno.update({ where: { id: m.alunoId }, data: { turma: m.novaTurma } })
+        logs.push({ alunoId: m.alunoId, nome: aluno.nome, de: aluno.turma, para: m.novaTurma })
+        aplicadas++
+      }
+      return { aplicadas, logs }
+    })
+
+    for (const l of logs) {
+      await registrarLog("categoria", `Virada de categoria: ${l.nome} ${l.de} → ${l.para}`, {
+        alunoId: l.alunoId, de: l.de, para: l.para,
       })
-      aplicadas++
     }
+
     revalidatePath("/alunos")
     revalidatePath("/configuracoes/categorias")
     return { success: true, aplicadas }
