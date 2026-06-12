@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { getEscalacao } from "@/app/actions/escalacao-partida"
 import { EscalacaoBoard } from "./escalacao-board"
+import { ConvocacaoPanel } from "@/components/campeonatos/convocacao-panel"
 import type { Posicao } from "@/lib/escalacao/posicoes"
 
 export const metadata = { title: "Convocação — Escolinha Itaquerense" }
@@ -22,28 +23,44 @@ export default async function EscalacaoPage({
   })
   if (!partida) notFound()
 
-  const [alunos, escalacao] = await Promise.all([
+  const [alunos, escalacao, escalacaoComStatus] = await Promise.all([
     db.aluno.findMany({
       where: { status: "Ativo" },
       select: { id: true, nome: true, turma: true },
       orderBy: { nome: "asc" },
     }),
     getEscalacao(pid),
+    db.escalacaoJogador.findMany({
+      where: { partidaId: pid },
+      select: { id: true, confirmacao: true, convocadoEm: true, aluno: { select: { nome: true } } },
+      orderBy: { ordem: "asc" },
+    }),
   ])
 
   return (
-    <EscalacaoBoard
-      campeonatoId={Number(id)}
-      partida={{ id: partida.id, adversario: partida.adversario, rodada: partida.rodada, data: partida.data }}
-      inscritos={alunos}
-      escalacaoInicial={escalacao.map((e) => ({
-        alunoId: e.alunoId,
-        nome: e.aluno.nome,
-        turma: e.aluno.turma,
-        posicao: e.posicao as Posicao,
-        numero: e.numero,
-        ordem: e.ordem,
-      }))}
-    />
+    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-6">
+      <EscalacaoBoard
+        campeonatoId={Number(id)}
+        partida={{ id: partida.id, adversario: partida.adversario, rodada: partida.rodada, data: partida.data }}
+        inscritos={alunos}
+        escalacaoInicial={escalacao.map((e) => ({
+          alunoId: e.alunoId,
+          nome: e.aluno.nome,
+          turma: e.aluno.turma,
+          posicao: e.posicao as Posicao,
+          numero: e.numero,
+          ordem: e.ordem,
+        }))}
+      />
+      <ConvocacaoPanel
+        partidaId={pid}
+        jaConvocada={escalacaoComStatus.some((e) => e.convocadoEm != null)}
+        escalados={escalacaoComStatus.map((e) => ({
+          id: e.id,
+          nome: e.aluno.nome,
+          confirmacao: e.confirmacao,
+        }))}
+      />
+    </div>
   )
 }
