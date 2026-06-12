@@ -102,11 +102,8 @@ test.describe("Custos — criar novo custo", () => {
     await selectCategoria.click()
     await page.getByRole("option", { name: /Outros/i }).first().click()
 
-    // Descrição
-    const inputDescricao = dialog.locator('label:has-text("Descrição") + div input, label:has-text("Descrição") ~ div input').first()
-    if (await inputDescricao.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await inputDescricao.fill("Custo E2E Automático")
-    }
+    // Descrição (obrigatória — o locator antigo falhava em silêncio e criava custos vazios)
+    await dialog.getByLabel("Descrição").fill("Custo E2E Automático")
 
     // Valor
     await dialog.locator('input[type="number"]').fill("150.00")

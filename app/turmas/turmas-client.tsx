@@ -118,7 +118,7 @@ export function TurmasClient({
                 />
               </div>
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>{pct}% ocupado · {ativos} ativos</span>
+                <span>{pct}% ocupado · {plural(ativos, "ativo", "ativos", "nenhum")}</span>
                 <span className="flex items-center gap-1">
                   <TrendingUp className="size-3" />
                   R$ {receitaMensal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}/mês

@@ -20,6 +20,7 @@ export async function createCusto(data: {
 }): Promise<ActionResult> {
   await requireAuth()
   if (!dataValida(data.data)) return { error: "Data inválida" }
+  if (!data.descricao?.trim()) return { error: "Descrição é obrigatória" }
   try {
     await db.custo.create({
       data: {
@@ -53,6 +54,7 @@ export async function updateCusto(id: number, data: {
 }): Promise<ActionResult> {
   await requireAuth()
   if (!dataValida(data.data)) return { error: "Data inválida" }
+  if (!data.descricao?.trim()) return { error: "Descrição é obrigatória" }
   try {
     await db.custo.update({
       where: { id },
