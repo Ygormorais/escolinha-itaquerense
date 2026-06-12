@@ -68,6 +68,7 @@ export async function proxy(request: NextRequest) {
   if (
     pathname === "/" ||
     pathname.startsWith("/login") ||
+    pathname === "/api/health" ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/responsavel") ||
     pathname.startsWith("/api/push/") ||

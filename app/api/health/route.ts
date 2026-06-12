@@ -1,0 +1,14 @@
+export const dynamic = "force-dynamic"
+
+import { NextResponse } from "next/server"
+import { db } from "@/lib/db"
+
+/** Health check público para PM2/Caddy/uptime monitor: app vivo + banco acessível. */
+export async function GET() {
+  try {
+    await db.$queryRaw`SELECT 1`
+    return NextResponse.json({ status: "ok", db: "ok" })
+  } catch {
+    return NextResponse.json({ status: "degraded", db: "error" }, { status: 503 })
+  }
+}
