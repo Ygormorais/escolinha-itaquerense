@@ -8,7 +8,7 @@ import {
 import { format } from "date-fns"
 import Link from "next/link"
 import type { RscDate } from "@/lib/rsc-date"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 
 type Pagamento = {
   id: number
@@ -33,27 +33,34 @@ export function CaixaClient({
   pagamentosMes,
   custosMes,
   porForma,
+  totalRecebido,
+  totalMaquininhaPendente,
+  totalDescontos,
 }: {
   pagamentosMes: Pagamento[]
   custosMes: Custo[]
   porForma: Record<string, number>
   alunos: Aluno[]
+  totalRecebido: number
+  totalMaquininhaPendente: number
+  totalDescontos: number
 }) {
+  const noMes = "no mês"
   const sections = [
-    { href: "/caixa/recebimentos", label: "Recebimentos", icon: TrendingUp, color: "text-success-600 bg-success-50", desc: `${pagamentosMes.length} pagamentos no mês` },
-    { href: "/caixa/pix", label: "PIX", icon: Smartphone, color: "text-info-600 bg-info-50", desc: formatMoney(porForma["PIX"] ?? 0) },
-    { href: "/caixa/boleto", label: "Boleto", icon: FileText, color: "text-warning-600 bg-warning-50", desc: formatMoney(porForma["Boleto"] ?? 0) },
-    { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", desc: formatMoney(porForma["Dinheiro"] ?? 0) },
-    { href: "/caixa/maquina", label: "Maquininha", icon: CreditCard, color: "text-brand-800 bg-brand-100", desc: `Cartão crédito/débito` },
-    { href: "/caixa/descontos", label: "Descontos", icon: Percent, color: "text-danger-600 bg-danger-50", desc: `Descontos concedidos` },
+    { href: "/caixa/recebimentos", label: "Recebimentos", icon: TrendingUp, color: "text-success-600 bg-success-50", valor: formatMoney(totalRecebido), sub: plural(pagamentosMes.length, "pagamento", "pagamentos", "nenhum") + ` ${noMes}` },
+    { href: "/caixa/pix", label: "PIX", icon: Smartphone, color: "text-info-600 bg-info-50", valor: formatMoney(porForma["PIX"] ?? 0), sub: noMes },
+    { href: "/caixa/boleto", label: "Boleto", icon: FileText, color: "text-warning-600 bg-warning-50", valor: formatMoney(porForma["Boleto"] ?? 0), sub: noMes },
+    { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", valor: formatMoney(porForma["Dinheiro"] ?? 0), sub: noMes },
+    { href: "/caixa/maquina", label: "Maquininha", icon: CreditCard, color: "text-brand-800 bg-brand-100", valor: formatMoney(totalMaquininhaPendente), sub: "pendente de reconciliação" },
+    { href: "/caixa/descontos", label: "Descontos", icon: Percent, color: "text-danger-600 bg-danger-50", valor: formatMoney(totalDescontos), sub: "concedidos por mês" },
   ]
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {sections.map(({ href, label, icon: Icon, color, desc }) => (
+        {sections.map(({ href, label, icon: Icon, color, valor, sub }) => (
           <Link key={href} href={href}>
-            <Card className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-px">
+            <Card className="h-full cursor-pointer transition-all hover:shadow-md hover:-translate-y-px">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</CardTitle>
@@ -63,7 +70,8 @@ export function CaixaClient({
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-muted-foreground">{desc}</p>
+                <p className="font-heading text-lg font-bold tracking-tight text-foreground">{valor}</p>
+                <p className="text-xs text-muted-foreground">{sub}</p>
               </CardContent>
             </Card>
           </Link>

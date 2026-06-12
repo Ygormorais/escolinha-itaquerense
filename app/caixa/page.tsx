@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 
 export const metadata = { title: "Caixa — Escolinha Itaquerense" }
 
@@ -11,7 +11,7 @@ export default async function CaixaPage() {
   const inicio = startOfMonth(now)
   const fim = endOfMonth(now)
 
-  const [pagamentosMes, custosMes, recebimentosMes, transacoesPendentes, alunos] = await Promise.all([
+  const [pagamentosMes, custosMes, recebimentosMes, transacoesPendentes, alunos, descontosAgg] = await Promise.all([
     db.pagamento.findMany({
       where: { dataPagamento: { gte: inicio, lte: fim } },
       include: { aluno: { select: { nome: true, turma: true } } },
@@ -32,6 +32,10 @@ export default async function CaixaPage() {
     db.aluno.findMany({
       where: { status: "Ativo" },
       select: { id: true, nome: true },
+    }),
+    db.aluno.aggregate({
+      _sum: { desconto: true },
+      where: { status: "Ativo", desconto: { gt: 0 } },
     }),
   ])
 
@@ -81,11 +85,19 @@ export default async function CaixaPage() {
           <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-warning-600">
             {formatMoney(totalPendente)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">{transacoesPendentes.length} transação(ões)</p>
+          <p className="text-xs text-muted-foreground mt-1">{plural(transacoesPendentes.length, "transação pendente", "transações pendentes")}</p>
         </div>
       </div>
 
-      <CaixaClient pagamentosMes={pagamentosMes} custosMes={custosMes} porForma={porForma} alunos={alunos} />
+      <CaixaClient
+        pagamentosMes={pagamentosMes}
+        custosMes={custosMes}
+        porForma={porForma}
+        alunos={alunos}
+        totalRecebido={totalRecebido}
+        totalMaquininhaPendente={totalPendente}
+        totalDescontos={descontosAgg._sum.desconto ?? 0}
+      />
     </div>
   )
 }

@@ -9,6 +9,12 @@ export function formatMoney(value: number): string {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
+/** "nenhuma transação" / "1 transação" / "3 transações" — zero customizável ("nenhum"). */
+export function plural(n: number, singular: string, plural: string, zero = "nenhuma"): string {
+  if (n === 0) return `${zero} ${singular}`
+  return `${n} ${n === 1 ? singular : plural}`
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date
   return d.toLocaleDateString("pt-BR")
