@@ -22,8 +22,9 @@ export default async function globalTeardown() {
     where: { OR: [{ nomeAluno: { startsWith: "Teste E2E" } }, { nomeAluno: { startsWith: "E2E Aprovacao " } }] },
   })
 
-  // Remove responsável de teste criado pelo globalSetup
+  // Remove responsável de teste criado pelo globalSetup e os criados pelos specs (resp.<ts>@e2e.test)
   await db.responsavel.deleteMany({ where: { email: RESP_TESTE.email } })
+  await db.responsavel.deleteMany({ where: { email: { endsWith: "@e2e.test" } } })
 
   await db.$disconnect()
 }
