@@ -36,7 +36,7 @@ export function NavResponsavel() {
   }
 
   return (
-    <nav className="-m-6 mb-8 border-b border-black/5 bg-white/78 px-6 py-5 shadow-[0_10px_30px_rgba(74,11,11,0.04)] backdrop-blur lg:-m-8 lg:mb-10 lg:px-8">
+    <nav className="-m-6 mb-8 border-b border-black/5 bg-white/78 px-6 py-5 shadow-[0_10px_30px_rgba(74,11,11,0.04)] backdrop-blur lg:-m-8 lg:mb-10 lg:px-8 print:hidden">
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <div>

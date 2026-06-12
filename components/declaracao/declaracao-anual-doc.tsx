@@ -32,8 +32,15 @@ export function DeclaracaoAnualDoc({ declaracao, aluno, clube }: Props) {
           </tr>
         </thead>
         <tbody className="divide-y">
-          {declaracao.linhas.map((l, i) => (
-            <tr key={i}>
+          {declaracao.linhas.length === 0 && (
+            <tr>
+              <td className="px-2 py-4 text-center text-muted-foreground" colSpan={4}>
+                Nenhum pagamento registrado para este ano.
+              </td>
+            </tr>
+          )}
+          {declaracao.linhas.map((l) => (
+            <tr key={l.mesReferencia}>
               <td className="px-2 py-2">{l.mesReferencia}</td>
               <td className="px-2 py-2">{format(l.dataPagamento, "dd/MM/yyyy")}</td>
               <td className="px-2 py-2">{l.formaPagamento ?? "—"}</td>
