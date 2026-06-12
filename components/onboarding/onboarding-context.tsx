@@ -50,6 +50,9 @@ export function OnboardingProvider({
   }, [])
 
   const skip = useCallback(() => {
+    // Pular também persiste: sem isso o tour reaparecia em todo reload
+    localStorage.setItem(STORAGE_KEY, "true")
+    setIsCompleted(true)
     setActive(false)
   }, [])
 
