@@ -113,9 +113,9 @@ describe("heroView", () => {
     expect(derrota.titulo).toContain("0 × 2")
   })
 
-  it("institucional convida para a matricula", () => {
+  it("institucional aponta para turmas (matricula ja tem banner proprio)", () => {
     const v = heroView({ tipo: "institucional" })
-    expect(v.ctaHref).toBe("/matricula")
+    expect(v.ctaHref).toBe("/turmas")
     expect(v.titulo.length).toBeGreaterThan(10)
   })
 })
