@@ -23,18 +23,13 @@ export default async function EscalacaoPage({
   })
   if (!partida) notFound()
 
-  const [alunos, escalacao, escalacaoComStatus] = await Promise.all([
+  const [alunos, escalacao] = await Promise.all([
     db.aluno.findMany({
       where: { status: "Ativo" },
       select: { id: true, nome: true, turma: true },
       orderBy: { nome: "asc" },
     }),
     getEscalacao(pid),
-    db.escalacaoJogador.findMany({
-      where: { partidaId: pid },
-      select: { id: true, confirmacao: true, convocadoEm: true, aluno: { select: { nome: true } } },
-      orderBy: { ordem: "asc" },
-    }),
   ])
 
   return (
@@ -54,8 +49,8 @@ export default async function EscalacaoPage({
       />
       <ConvocacaoPanel
         partidaId={pid}
-        jaConvocada={escalacaoComStatus.some((e) => e.convocadoEm != null)}
-        escalados={escalacaoComStatus.map((e) => ({
+        jaConvocada={escalacao.some((e) => e.convocadoEm != null)}
+        escalados={escalacao.map((e) => ({
           id: e.id,
           nome: e.aluno.nome,
           confirmacao: e.confirmacao,
