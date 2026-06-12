@@ -1,5 +1,20 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { formatMoney, formatDate, calcStatus, sanitizeCSVCell } from "@/lib/utils"
+import { formatMoney, formatDate, calcStatus, sanitizeCSVCell, plural } from "@/lib/utils"
+
+describe("plural", () => {
+  it("zero usa 'nenhuma' por padrao do termo", () => {
+    expect(plural(0, "transação pendente", "transações pendentes")).toBe("nenhuma transação pendente")
+  })
+  it("um usa singular", () => {
+    expect(plural(1, "transação pendente", "transações pendentes")).toBe("1 transação pendente")
+  })
+  it("varios usa plural", () => {
+    expect(plural(3, "transação pendente", "transações pendentes")).toBe("3 transações pendentes")
+  })
+  it("zero masculino configuravel", () => {
+    expect(plural(0, "pagamento", "pagamentos", "nenhum")).toBe("nenhum pagamento")
+  })
+})
 
 describe("sanitizeCSVCell", () => {
   it("envolve valor em aspas duplas", () => {
