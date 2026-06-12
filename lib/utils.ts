@@ -15,6 +15,15 @@ export function plural(n: number, singular: string, plural: string, zero = "nenh
   return `${n} ${n === 1 ? singular : plural}`
 }
 
+/** Normaliza telefone BR para "(11) 95868-6579"; fora do padrão devolve como veio. */
+export function formatPhone(telefone: string): string {
+  let d = telefone.replace(/\D/g, "")
+  if (d.length === 13 && d.startsWith("55")) d = d.slice(2)
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  return telefone
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date
   return d.toLocaleDateString("pt-BR")

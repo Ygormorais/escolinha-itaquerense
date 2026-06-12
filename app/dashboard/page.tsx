@@ -65,6 +65,8 @@ export default async function DashboardPage({
     receitaTurmaRaw,
     mesAnteriorData,
     mesAnteriorCustos,
+    mensalidadesVencidas,
+    alunosInadimplentes,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -145,6 +147,15 @@ export default async function DashboardPage({
         _sum: { valor: true },
       }).then(r => ({ custos: r._sum.valor ?? 0 }))
     })(),
+    // Contagens sem take — mesmos critérios da página /inadimplencia
+    db.pagamento.count({
+      where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
+    }),
+    db.pagamento.findMany({
+      where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
+      select: { alunoId: true },
+      distinct: ["alunoId"],
+    }).then((rows) => rows.length),
   ])
 
   const chartData = last6Months.map((mes) => {
@@ -188,11 +199,11 @@ export default async function DashboardPage({
     : 0
 
   const alerts: { type: "danger" | "warning" | "info"; icon: AlertIcon; message: string; detail: string }[] = []
-  if (inadimplentes.length > 5) {
-    alerts.push({ type: "danger", icon: "alerta", message: `${inadimplentes.length} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
+  if (mensalidadesVencidas > 5) {
+    alerts.push({ type: "danger", icon: "alerta", message: `${mensalidadesVencidas} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
   }
-  if (inadimplentes.length > 0 && inadimplentes.length <= 5) {
-    alerts.push({ type: "warning", icon: "alerta", message: `${plural(inadimplentes.length, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção." })
+  if (mensalidadesVencidas > 0 && mensalidadesVencidas <= 5) {
+    alerts.push({ type: "warning", icon: "alerta", message: `${plural(mensalidadesVencidas, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção." })
   }
   if (presencaMedia < 50 && totalFrequencias > 0) {
     alerts.push({ type: "danger", icon: "frequencia", message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.` })
@@ -258,18 +269,18 @@ export default async function DashboardPage({
         />
         <StatCard
           title="Inadimplentes"
-          value={inadimplentes.length}
-          description="Mensalidades vencidas"
+          value={alunosInadimplentes}
+          description="Alunos com mensalidade vencida"
           icon={AlertCircle}
-          variant={inadimplentes.length > 0 ? "danger" : "success"}
+          variant={alunosInadimplentes > 0 ? "danger" : "success"}
           href="/inadimplencia"
         />
         <StatCard
           title="Presença Média"
-          value={`${presencaMedia}%`}
-          description="No mês atual"
+          value={totalFrequencias > 0 ? `${presencaMedia}%` : "—"}
+          description={totalFrequencias > 0 ? "No mês atual" : "Sem registros no mês"}
           icon={CalendarCheck}
-          variant={presencaMedia >= 75 ? "success" : presencaMedia >= 50 ? "warning" : "danger"}
+          variant={totalFrequencias === 0 ? "default" : presencaMedia >= 75 ? "success" : presencaMedia >= 50 ? "warning" : "danger"}
           href="/frequencia"
         />
       </div>

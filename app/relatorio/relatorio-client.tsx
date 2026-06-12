@@ -118,7 +118,8 @@ export function RelatorioChart({
               <YAxis
                 tick={{ fontSize: 12 }}
                 tickFormatter={(v: number) =>
-                  v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`
+                  // casa decimal quando não é milhar cheio — 1500 e 2000 viravam ambos "R$2k"
+                  v >= 1000 ? `R$${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1).replace(".", ",")}k` : `R$${v}`
                 }
               />
               <Tooltip formatter={fmtCurrency} />

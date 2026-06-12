@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { sanitizeCSVCell, plural } from "@/lib/utils"
+import { sanitizeCSVCell, plural, formatPhone } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays } from "date-fns"
 import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send } from "lucide-react"
@@ -291,7 +291,7 @@ export function InadimplenciaClient({
                         className="inline-flex items-center gap-1 text-xs font-medium text-brand-800 hover:underline"
                       >
                         <Phone className="size-3" />
-                        {a.telefone}
+                        {formatPhone(a.telefone)}
                       </a>
                       <a
                         href={gerarLinkWA(a, nomeClube ?? "Escolinha")}
