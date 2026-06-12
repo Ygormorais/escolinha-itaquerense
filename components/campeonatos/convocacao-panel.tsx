@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { convocarEscalacao } from "@/app/actions/convocacao"
+import { resumoConfirmacoes } from "@/lib/convocacao"
 
 type EscaladoStatus = { id: number; nome: string; confirmacao: string | null }
 
@@ -29,9 +30,7 @@ export function ConvocacaoPanel({
     })
   }
 
-  const confirmados = escalados.filter((e) => e.confirmacao === "confirmado").length
-  const ausentes = escalados.filter((e) => e.confirmacao === "ausente").length
-  const semResposta = escalados.length - confirmados - ausentes
+  const { confirmados, ausentes, semResposta } = resumoConfirmacoes(escalados)
 
   return (
     <Card>
