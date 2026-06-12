@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft, Trophy } from "lucide-react"
+import { ConvocacaoCard } from "@/components/responsavel/convocacao-card"
 
 function resultadoBadge(resultado: string | null) {
   if (!resultado) return <Badge variant="outline">A realizar</Badge>
@@ -21,10 +22,27 @@ export default async function JogosPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")
 
-  const partidas = await db.partida.findMany({
-    include: { campeonato: true },
-    orderBy: { data: "desc" },
-  })
+  const [partidas, convocacoes] = await Promise.all([
+    db.partida.findMany({
+      include: { campeonato: true },
+      orderBy: { data: "desc" },
+    }),
+    session.responsavelId != null
+      ? db.escalacaoJogador.findMany({
+          where: {
+            convocadoEm: { not: null },
+            partida: { data: { gte: new Date() } },
+            aluno: { responsavelId: session.responsavelId },
+          },
+          select: {
+            id: true, confirmacao: true,
+            aluno: { select: { nome: true } },
+            partida: { select: { data: true, adversario: true, local: true } },
+          },
+          orderBy: { partida: { data: "asc" } },
+        })
+      : Promise.resolve([]),
+  ])
 
   const grouped = new Map<number, { campeonato: typeof partidas[0]["campeonato"]; partidas: typeof partidas }>()
   for (const p of partidas) {
@@ -72,6 +90,25 @@ export default async function JogosPage() {
           </div>
         </div>
       </section>
+
+      {convocacoes.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Convocações</h2>
+          {convocacoes.map((c) => (
+            <ConvocacaoCard
+              key={c.id}
+              convocacao={{
+                escalacaoId: c.id,
+                alunoNome: c.aluno.nome,
+                adversario: c.partida.adversario,
+                data: c.partida.data.toISOString(),
+                local: c.partida.local,
+                confirmacao: c.confirmacao,
+              }}
+            />
+          ))}
+        </section>
+      )}
 
       {grouped.size === 0 && (
         <p className="text-muted-foreground">Nenhum jogo cadastrado ainda.</p>
