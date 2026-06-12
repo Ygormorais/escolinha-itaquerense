@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/table"
 import { startOfMonth, endOfMonth, format } from "date-fns"
 import { mergeRecebimentosDinheiro } from "@/lib/caixa/dinheiro"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 import { RegistrarDinheiroDialog } from "./registrar-dinheiro-dialog"
 
 export const metadata = { title: "Dinheiro — Escolinha Itaquerense" }
@@ -42,7 +42,7 @@ export default async function DinheiroPage() {
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Dinheiro"
-        description={`${entradas.length} entrada(s) no mês · ${formatMoney(total)}`}
+        description={`${plural(entradas.length, "entrada", "entradas", "nenhuma")} no mês · ${formatMoney(total)}`}
         action={<RegistrarDinheiroDialog alunos={alunos} />}
       />
 

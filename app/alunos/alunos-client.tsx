@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
-import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
+import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Pagination } from "@/components/ui/pagination"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { TURMAS } from "@/lib/constants"
@@ -378,7 +378,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
       </div>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{total} aluno(s) encontrado(s)</span>
+        <span>{plural(total, "aluno encontrado", "alunos encontrados", "nenhum")}</span>
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 

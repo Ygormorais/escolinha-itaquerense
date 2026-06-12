@@ -13,8 +13,9 @@ test.describe("Avaliações — smoke e carregamento", () => {
 
   test("exibe contagem de avaliações registradas", async ({ page }) => {
     await page.goto("/avaliacoes")
-    // "X avaliação(ões) registrada(s)" — parágrafo descritivo
-    await expect(page.getByText(/avalia[cç][aã]o\(ões\) registrada\(s\)/i)).toBeVisible()
+    // "nenhuma avaliação registrada" / "1 avaliação registrada" / "N avaliações registradas"
+    // contador do header + empty state da tabela podem casar juntos
+    await expect(page.getByText(/avalia[cç](ão|ões) registradas?/i).first()).toBeVisible()
   })
 
   test("tabela com colunas corretas é visível", async ({ page }) => {

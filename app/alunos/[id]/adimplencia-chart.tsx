@@ -3,6 +3,7 @@
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from "recharts"
+import { plural } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart2 } from "lucide-react"
 
@@ -101,13 +102,13 @@ export function AdimplenciaChart({ pagamentos }: Props) {
         </ResponsiveContainer>
         <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
           <span className="text-success-600 font-semibold">
-            {data.filter((d) => d.status === "Pago").length} pago(s)
+            {plural(data.filter((d) => d.status === "Pago").length, "pago", "pagos", "nenhum")}
           </span>
           <span className="text-danger-600 font-semibold">
-            {data.filter((d) => d.status === "Vencido").length} vencido(s)
+            {plural(data.filter((d) => d.status === "Vencido").length, "vencido", "vencidos", "nenhum")}
           </span>
           <span className="text-muted-foreground">
-            {data.filter((d) => d.status === "Pendente").length} pendente(s)
+            {plural(data.filter((d) => d.status === "Pendente").length, "pendente", "pendentes", "nenhum")}
           </span>
         </div>
       </CardContent>

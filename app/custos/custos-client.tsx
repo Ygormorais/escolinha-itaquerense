@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText } from "lucide-react"
-import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
+import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -295,8 +295,8 @@ export function CustosClient({
       if ("error" in r) {
         toast.error(r.error)
       } else {
-        setGeradoMsg(`${r.criados} custo(s) gerado(s)`)
-        toast.success(`${r.criados} custo(s) recorrente(s) gerado(s) para ${mes}`)
+        setGeradoMsg(`${plural(r.criados, "custo gerado", "custos gerados", "nenhum")}`)
+        toast.success(`${plural(r.criados, "custo recorrente gerado", "custos recorrentes gerados", "nenhum")} para ${mes}`)
       }
       router.refresh()
     })
@@ -318,7 +318,7 @@ export function CustosClient({
         <div className="ml-auto flex flex-col items-end gap-2">
           {geradoMsg && <p className="text-xs text-success-600 font-medium">{geradoMsg}</p>}
           <div className="flex gap-2">
-            <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${recorrentes.filter((r) => r.ativo).length} custo(s) recorrente(s) para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
+            <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${plural(recorrentes.filter((r) => r.ativo).length, "custo recorrente", "custos recorrentes", "nenhum")} para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
               <Button variant="outline" disabled={gerando}>
                 <RefreshCw className="size-4" />
                 {gerando ? "Gerando..." : "Gerar Recorrentes"}

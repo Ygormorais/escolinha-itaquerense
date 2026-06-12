@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Check, X, Trash2, ExternalLink, Search, GraduationCap } from "lucide-react"
@@ -113,7 +114,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
           <option value="aprovada">Aprovadas</option>
           <option value="recusada">Recusadas</option>
         </select>
-        <span className="text-sm text-muted-foreground">{filtradas.length} registro(s)</span>
+        <span className="text-sm text-muted-foreground">{plural(filtradas.length, "registro", "registros", "nenhum")}</span>
       </div>
 
       <div className="rounded-xl border bg-card">

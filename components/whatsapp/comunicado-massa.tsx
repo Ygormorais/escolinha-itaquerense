@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -21,7 +22,7 @@ export function ComunicadoMassa() {
       const result = await enviarComunicadoMassa(mensagem, turma)
       if ("enviados" in result) {
         setResultado(result)
-        toast.success(`Enviado para ${result.enviados} aluno(s)`)
+        toast.success(`Enviado para ${plural(result.enviados, "aluno", "alunos", "nenhum")}`)
       } else {
         toast.error(result.error ?? "Erro ao enviar comunicado")
       }
@@ -67,8 +68,8 @@ export function ComunicadoMassa() {
 
         {resultado && (
           <div className="text-sm text-muted-foreground space-y-1 pt-2 border-t">
-            <p className="text-success-600">✓ {resultado.enviados} mensagem(ns) enviada(s)</p>
-            {resultado.erros > 0 && <p className="text-danger-600">✗ {resultado.erros} erro(s)</p>}
+            <p className="text-success-600">✓ {plural(resultado.enviados, "mensagem enviada", "mensagens enviadas", "nenhuma")}</p>
+            {resultado.erros > 0 && <p className="text-danger-600">✗ {plural(resultado.erros, "erro", "erros", "nenhum")}</p>}
             {resultado.semTelefone > 0 && <p className="text-warning-600">⚠ {resultado.semTelefone} sem telefone</p>}
           </div>
         )}

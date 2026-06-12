@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -71,7 +72,7 @@ export function EstatisticasFrequencia() {
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-warning-700 text-sm">
                   <TrendingDown className="size-4" />
-                  {baixaFrequencia.length} aluno(s) com frequência abaixo de 75%
+                  {plural(baixaFrequencia.length, "aluno", "alunos", "nenhum")} com frequência abaixo de 75%
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -138,7 +139,7 @@ export function EstatisticasFrequencia() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Ranking completo — {ranking.length} aluno(s)</CardTitle>
+              <CardTitle className="text-base">Ranking completo — {plural(ranking.length, "aluno", "alunos", "nenhum")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {ranking.map((a, i) => (

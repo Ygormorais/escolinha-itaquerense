@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
+import { cn, plural } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
 import { useTransition } from "react"
 import { enviarWhatsApp } from "@/app/actions/whatsapp"
@@ -219,7 +219,7 @@ export function SecretariaClient({
                 ))}
                 {aniversariantes.length > 10 && (
                   <p className="text-xs text-center text-muted-foreground">
-                    +{aniversariantes.length - 10} aniversariante(s)
+                    +{plural(aniversariantes.length - 10, "aniversariante", "aniversariantes")}
                   </p>
                 )}
               </div>

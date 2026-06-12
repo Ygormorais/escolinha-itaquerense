@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { calcStatus, formatMoney, formatDate } from "@/lib/utils"
+import { calcStatus, formatMoney, formatDate, plural } from "@/lib/utils"
 import { PagamentoButton } from "./pagamento-button"
 import { EditarAlunoButton } from "./editar-button"
 import { FrequenciaChart } from "./frequencia-chart"
@@ -184,7 +184,7 @@ export default async function AlunoDetailPage({
               ...(aluno.desconto > 0 ? [["Desconto", `- ${formatMoney(aluno.desconto)}`] as [string, string]] : []),
               ...(aluno.desconto > 0 ? [["Valor líquido", formatMoney(aluno.mensalidade - aluno.desconto)] as [string, string]] : []),
               ["Total Pago", formatMoney(totalPago)],
-              ["Pendências", `${pendentes} mês(es)`],
+              ["Pendências", `${plural(pendentes, "mês", "meses", "nenhum")}`],
               ["Total Registros", String(aluno.pagamentos.length)],
             ].map(([label, value]) => (
               <div key={label} className="flex justify-between border-b border-muted pb-2 last:border-0">

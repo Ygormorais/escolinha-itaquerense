@@ -1,6 +1,7 @@
 "use client"
 
 import { useTransition } from "react"
+import { plural } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { CalendarPlus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -21,7 +22,7 @@ export function GerarMesButton({ mes }: { mes: string }) {
       if (result.criados === 0) {
         toast.info("Todas as mensalidades do mês já foram geradas")
       } else {
-        toast.success(`${result.criados} mensalidade(s) gerada(s) para ${mes}`)
+        toast.success(`${plural(result.criados, "mensalidade gerada", "mensalidades geradas", "nenhuma")} para ${mes}`)
       }
       router.refresh()
     })

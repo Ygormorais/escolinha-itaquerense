@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -104,7 +104,7 @@ export function CampeonatoClient({
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold font-heading">{campeonatos.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{encerrados} encerrado(s)</p>
+            <p className="text-xs text-muted-foreground mt-1">{plural(encerrados, "encerrado", "encerrados", "nenhum")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -236,7 +236,7 @@ export function CampeonatoClient({
                   <div className="flex items-center gap-4 text-xs">
                     <span className="flex items-center gap-1">
                       <Users className="size-3.5" />
-                      {c._count.inscricoes} inscrito(s)
+                      {plural(c._count.inscricoes, "inscrito", "inscritos", "nenhum")}
                     </span>
                     <span className="flex items-center gap-1 font-semibold text-brand-700">
                       <CircleDollarSign className="size-3.5" />

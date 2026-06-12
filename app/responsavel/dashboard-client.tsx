@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
 
 type Aluno = {
@@ -122,7 +122,7 @@ export function ResponsavelDashboardClient({
               <div>
                 <p className="text-sm font-semibold text-[var(--color-ink-950)]">Situação financeira</p>
                 <p className="mt-1 text-sm text-[var(--color-ink-700)]">
-                  {pendencias > 0 ? `${pendencias} pendência(s) para acompanhar.` : "Nenhuma pendência no mês atual."}
+                  {pendencias > 0 ? `${plural(pendencias, "pendência", "pendências", "nenhuma")} para acompanhar.` : "Nenhuma pendência no mês atual."}
                 </p>
               </div>
             </CardContent>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { sanitizeCSVCell } from "@/lib/utils"
+import { sanitizeCSVCell, plural } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays } from "date-fns"
 import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send } from "lucide-react"
@@ -155,7 +155,7 @@ function exportarCSV(inadimplentes: Inadimplente[]) {
 }
 
 function gerarLinkWA(a: Inadimplente, nomeClube: string) {
-  const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${a.pagamentos.length} mensalidade(s) em aberto na ${nomeClube}.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
+  const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${plural(a.pagamentos.length, "mensalidade", "mensalidades", "nenhuma")} em aberto na ${nomeClube}.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
   return `https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`
 }
 
@@ -233,7 +233,7 @@ export function InadimplenciaClient({
           </Select>
         </div>
         <div className="flex gap-2">
-          <ConfirmDialog title="Notificar inadimplentes?" description={`Abrir WhatsApp para ${filtered.length} inadimplente(s)? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarEmLote}>
+          <ConfirmDialog title="Notificar inadimplentes?" description={`Abrir WhatsApp para ${plural(filtered.length, "inadimplente", "inadimplentes", "nenhum")}? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarEmLote}>
             <Button variant="outline" disabled={filtered.length === 0 || enviando} className="text-success-600 border-success-600/30 hover:bg-success-50">
               <Send className="size-4" />
               {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}

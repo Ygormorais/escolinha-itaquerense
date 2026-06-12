@@ -30,7 +30,7 @@ import {
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { cn, formatMoney } from "@/lib/utils"
+import { cn, formatMoney, plural } from "@/lib/utils"
 import { PartidasSection } from "./partidas-section"
 import type { RscDate } from "@/lib/rsc-date"
 
@@ -401,7 +401,7 @@ export function CampeonatoDetailClient({
             )}
             <p>
               <span className="text-muted-foreground">Inscrições:</span>{" "}
-              {campeonato.inscricoes.length} aluno(s)
+              {plural(campeonato.inscricoes.length, "aluno", "alunos", "nenhum")}
             </p>
           </CardContent>
         </Card>

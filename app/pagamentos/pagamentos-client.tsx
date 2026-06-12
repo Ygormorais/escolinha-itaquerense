@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -243,7 +243,7 @@ export function PagamentosClient({
         toast.error(r.error)
       } else {
         setResultado(r)
-        toast.success(`${r.criados} mensalidade(s) gerada(s)`)
+        toast.success(`${plural(r.criados, "mensalidade gerada", "mensalidades geradas", "nenhuma")}`)
       }
       setConfirmOpen(false)
       router.refresh()
@@ -323,7 +323,7 @@ export function PagamentosClient({
     startBulk(async () => {
       const r = await registrarPagamentosLote(Array.from(selected), { dataPagamento: bulkData, formaPagamento: bulkForma })
       if ("error" in r) { toast.error(r.error); return }
-      toast.success(`${r.atualizados} pagamento(s) registrado(s)`)
+      toast.success(`${plural(r.atualizados, "pagamento registrado", "pagamentos registrados", "nenhum")}`)
       setSelected(new Set())
       setBulkOpen(false)
       router.refresh()
@@ -334,7 +334,7 @@ export function PagamentosClient({
     <div className="space-y-4">
       {selected.size > 0 && (
         <div className="flex items-center gap-3 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
-          <span className="text-sm font-medium text-brand-800">{selected.size} selecionado(s)</span>
+          <span className="text-sm font-medium text-brand-800">{plural(selected.size, "selecionado", "selecionados", "nenhum")}</span>
           <Button
             size="sm"
             onClick={() => setBulkOpen(true)}
@@ -350,7 +350,7 @@ export function PagamentosClient({
       <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Registrar {selected.size} pagamento(s)</DialogTitle>
+            <DialogTitle>Registrar {plural(selected.size, "pagamento", "pagamentos", "nenhum")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
@@ -437,7 +437,7 @@ export function PagamentosClient({
             </p>
             {resultado && (
               <p className="text-sm font-medium text-success-600">
-                ✅ {resultado.criados} criada(s), {resultado.ignorados} já existia(m).
+                ✅ {plural(resultado.criados, "criada", "criadas", "nenhuma")}, {plural(resultado.ignorados, "já existia", "já existiam", "nenhuma")}.
               </p>
             )}
             <DialogFooter showCloseButton>
