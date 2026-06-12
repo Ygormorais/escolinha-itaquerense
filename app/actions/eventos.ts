@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
+import { dataValida } from "@/lib/utils"
 
 export async function getEventosMes(ano: number, mes: number) {
   const inicio = new Date(ano, mes - 1, 1)
@@ -25,6 +26,7 @@ export async function criarEvento(data: {
   descricao?: string
 }) {
   await requireAuth()
+  if (!dataValida(data.data)) throw new Error("Data inválida")
   await db.evento.create({
     data: {
       titulo: data.titulo,
@@ -52,6 +54,7 @@ export async function editarEvento(id: number, data: {
   descricao?: string
 }) {
   await requireAuth()
+  if (!dataValida(data.data)) throw new Error("Data inválida")
   await db.evento.update({
     where: { id },
     data: {

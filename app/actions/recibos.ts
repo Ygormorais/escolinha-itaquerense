@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { registrarLog } from "@/app/actions/log"
+import { dataValida } from "@/lib/utils"
 
 export async function salvarRecibo(data: {
   alunoNome: string
@@ -18,6 +19,7 @@ export async function salvarRecibo(data: {
   const valor = Number(data.valor)
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
+  if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   const count = await db.recibo.count()
   const numero = String(count + 1).padStart(3, "0")
 

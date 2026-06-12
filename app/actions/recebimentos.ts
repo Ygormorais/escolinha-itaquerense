@@ -6,11 +6,12 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
 import { FORMAS_PAGAMENTO } from "@/lib/constants"
+import { dataValida } from "@/lib/utils"
 
 type ActionResult = { success: true } | { error: string }
 
 const recebimentoSchema = z.object({
-  data: z.string().min(1, "Data obrigatória"),
+  data: z.string().refine(dataValida, "Data inválida"),
   descricao: z.string().trim().min(1, "Descrição obrigatória"),
   categoria: z.string().trim().min(1, "Categoria obrigatória"),
   valor: z.number().positive("Valor deve ser maior que zero"),

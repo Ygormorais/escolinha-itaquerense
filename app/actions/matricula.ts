@@ -5,6 +5,7 @@ import { addMonths, format } from "date-fns"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "./log"
+import { dataValida } from "@/lib/utils"
 
 export type ActionResult = { success: true } | { error: string }
 export type AprovarResult = { success: true; alunoId: number } | { error: string }
@@ -24,10 +25,10 @@ export async function criarPreMatricula(data: {
     return { error: "Preencha os campos obrigatórios" }
   }
 
-  const dataNasc = data.dataNascimento ? new Date(data.dataNascimento) : null
-  if (!dataNasc || isNaN(dataNasc.getTime())) {
+  if (!dataValida(data.dataNascimento)) {
     return { error: "Data de nascimento inválida" }
   }
+  const dataNasc = new Date(data.dataNascimento)
 
   try {
     await db.preMatricula.create({
