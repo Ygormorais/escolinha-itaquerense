@@ -32,7 +32,6 @@ export function EvolucaoChart({ pontos }: { pontos: PontoEvolucao[] }) {
               stroke={s.cor}
               strokeWidth={2}
               dot={{ r: 3 }}
-              connectNulls
             />
           ))}
         </LineChart>

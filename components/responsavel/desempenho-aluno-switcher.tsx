@@ -21,16 +21,18 @@ export function DesempenhoAlunoSwitcher({ alunos }: { alunos: AlunoDesempenho[] 
   return (
     <div className="space-y-4">
       {alunos.length > 1 && (
-        <select
-          value={atual.id}
-          onChange={(e) => setAlunoId(Number(e.target.value))}
-          className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-          aria-label="Selecionar aluno"
-        >
-          {alunos.map((a) => (
-            <option key={a.id} value={a.id}>{a.nome}</option>
-          ))}
-        </select>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          Aluno
+          <select
+            value={atual.id}
+            onChange={(e) => setAlunoId(Number(e.target.value))}
+            className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+          >
+            {alunos.map((a) => (
+              <option key={a.id} value={a.id}>{a.nome}</option>
+            ))}
+          </select>
+        </label>
       )}
       {atual.snapshots.length > 0 && (
         <Card>
