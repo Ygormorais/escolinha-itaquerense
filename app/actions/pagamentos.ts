@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
 import { getConfig } from "@/lib/config"
+import { dataValida, plural } from "@/lib/utils"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -21,6 +22,7 @@ export async function registrarPagamento(
   const valor = Number(data.valorRecebido)
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
+  if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
     await db.pagamento.update({
       where: { id },
@@ -65,6 +67,7 @@ export async function registrarPagamentosLote(
   data: { dataPagamento: string; formaPagamento: string }
 ): Promise<{ atualizados: number } | { error: string }> {
   await requireAuth()
+  if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
     const pagamentos = await db.pagamento.findMany({
       where: { id: { in: ids } },
@@ -84,7 +87,7 @@ export async function registrarPagamentosLote(
       )
     )
 
-    await registrarLog("pagamento", `Lote de ${ids.length} pagamento(s) registrado(s)`, { forma: data.formaPagamento, data: data.dataPagamento })
+    await registrarLog("pagamento", `Lote: ${plural(ids.length, "pagamento registrado", "pagamentos registrados", "nenhum")}`, { forma: data.formaPagamento, data: data.dataPagamento })
     revalidatePath("/pagamentos")
     revalidatePath("/inadimplencia")
     revalidatePath("/caixa")
@@ -208,6 +211,7 @@ export async function marcarComoPago(
   data: { dataPagamento: string; formaPagamento: string; valorRecebido: number }
 ): Promise<ActionResult> {
   await requireAuth()
+  if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
     await db.pagamento.update({
       where: { id },

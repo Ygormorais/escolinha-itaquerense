@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
+import { dataValida } from "@/lib/utils"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -18,6 +19,7 @@ export async function createCusto(data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth()
+  if (!dataValida(data.data)) return { error: "Data inválida" }
   try {
     await db.custo.create({
       data: {
@@ -50,6 +52,7 @@ export async function updateCusto(id: number, data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth()
+  if (!dataValida(data.data)) return { error: "Data inválida" }
   try {
     await db.custo.update({
       where: { id },

@@ -1,5 +1,29 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { formatMoney, formatDate, calcStatus, sanitizeCSVCell, plural, formatPhone } from "@/lib/utils"
+import { formatMoney, formatDate, calcStatus, sanitizeCSVCell, plural, formatPhone, dataValida } from "@/lib/utils"
+
+describe("dataValida", () => {
+  it("aceita yyyy-mm-dd com ano razoavel", () => {
+    expect(dataValida("2026-06-12")).toBe(true)
+    expect(dataValida("1950-01-31")).toBe(true)
+  })
+  it("rejeita ano absurdo (o caso 10/02/0002)", () => {
+    expect(dataValida("0002-02-10")).toBe(false)
+    expect(dataValida("2200-01-01")).toBe(false)
+  })
+  it("rejeita formato invalido ou vazio", () => {
+    expect(dataValida("")).toBe(false)
+    expect(dataValida("12/06/2026")).toBe(false)
+    expect(dataValida("2026-6-1")).toBe(false)
+  })
+  it("rejeita data inexistente no calendario", () => {
+    expect(dataValida("2026-02-30")).toBe(false)
+    expect(dataValida("2026-13-01")).toBe(false)
+  })
+  it("aceita datetime-local (yyyy-mm-ddThh:mm)", () => {
+    expect(dataValida("2026-06-12T16:30")).toBe(true)
+    expect(dataValida("0002-06-12T16:30")).toBe(false)
+  })
+})
 
 describe("formatPhone", () => {
   it("celular com 11 digitos", () => {

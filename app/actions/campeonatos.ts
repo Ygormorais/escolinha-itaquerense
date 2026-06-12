@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { syncCampeonato } from "@/lib/fpfs/sync"
+import { dataValida } from "@/lib/utils"
 
 export async function listarCampeonatos() {
   return db.campeonato.findMany({
@@ -38,6 +39,7 @@ export async function criarCampeonato(data: {
   observacoes?: string
 }) {
   await requireAuth()
+  if (!dataValida(data.dataInicio) || (data.dataFim && !dataValida(data.dataFim))) throw new Error("Data inválida")
   const campeonato = await db.campeonato.create({
     data: {
       nome: data.nome,
@@ -74,6 +76,7 @@ export async function editarCampeonato(id: number, data: {
   fpfsTimeNome?: string | null
 }) {
   await requireAuth()
+  if (!dataValida(data.dataInicio) || (data.dataFim && !dataValida(data.dataFim))) throw new Error("Data inválida")
   await db.campeonato.update({
     where: { id },
     data: {
@@ -148,6 +151,7 @@ export async function registrarPagamentoInscricao(
   data: { valorPago: number; formaPagamento: string; dataPagamento: string }
 ) {
   await requireAuth()
+  if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   const inscricao = await db.inscricaoCampeonato.findUnique({ where: { id } })
   if (!inscricao) return { error: "Inscrição não encontrada" }
 
@@ -194,6 +198,7 @@ export async function criarPartida(data: {
   observacoes?: string
 }) {
   await requireAuth()
+  if (!dataValida(data.data)) throw new Error("Data inválida")
   let resultado: string | null = null
   if (data.golsPro != null && data.golsContra != null) {
     resultado = data.golsPro > data.golsContra ? "Vitoria" : data.golsPro < data.golsContra ? "Derrota" : "Empate"
@@ -225,6 +230,7 @@ export async function editarPartida(id: number, data: {
   observacoes?: string
 }, campeonatoId?: number) {
   await requireAuth()
+  if (!dataValida(data.data)) throw new Error("Data inválida")
   let resultado: string | null = null
   if (data.golsPro != null && data.golsContra != null) {
     resultado = data.golsPro > data.golsContra ? "Vitoria" : data.golsPro < data.golsContra ? "Derrota" : "Empate"

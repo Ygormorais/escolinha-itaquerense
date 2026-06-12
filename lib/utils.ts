@@ -15,6 +15,16 @@ export function plural(n: number, singular: string, plural: string, zero = "nenh
   return `${n} ${n === 1 ? singular : plural}`
 }
 
+/** Valida input de data "yyyy-mm-dd" (ou datetime-local) com ano 1900–2100 e data real no calendário. */
+export function dataValida(s: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(T\d{2}:\d{2})?$/.exec(s)
+  if (!m) return false
+  const [ano, mes, dia] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  if (ano < 1900 || ano > 2100) return false
+  const d = new Date(ano, mes - 1, dia)
+  return d.getFullYear() === ano && d.getMonth() === mes - 1 && d.getDate() === dia
+}
+
 /** Normaliza telefone BR para "(11) 95868-6579"; fora do padrão devolve como veio. */
 export function formatPhone(telefone: string): string {
   let d = telefone.replace(/\D/g, "")

@@ -6,6 +6,7 @@ import { addMonths, setDate } from "date-fns"
 import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
 import { getConfig } from "@/lib/config"
+import { dataValida } from "@/lib/utils"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 
 type ActionResult = { success: true } | { error: string }
@@ -28,6 +29,8 @@ export async function createAluno(data: {
   if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
   const mensalidade = Number(data.mensalidade)
   if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
+  if (!dataValida(data.dataNascimento)) return { error: "Data de nascimento inválida" }
+  if (!dataValida(data.dataMatricula)) return { error: "Data de matrícula inválida" }
   try {
     const aluno = await db.aluno.create({
       data: {
@@ -106,6 +109,8 @@ export async function updateAluno(
   }
 ): Promise<ActionResult> {
   await requireAuth()
+  if (!dataValida(data.dataNascimento)) return { error: "Data de nascimento inválida" }
+  if (!dataValida(data.dataMatricula)) return { error: "Data de matrícula inválida" }
   try {
     await db.aluno.update({
       where: { id },
