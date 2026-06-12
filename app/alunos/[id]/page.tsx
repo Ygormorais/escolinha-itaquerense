@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
-import { ArrowLeft, IdCard, MessageCircle, Receipt } from "lucide-react"
+import { ArrowLeft, IdCard, MessageCircle, Receipt, FileText } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -129,6 +129,13 @@ export default async function AlunoDetailPage({
               >
                 <IdCard className="size-4" />
                 Carteirinha
+              </Link>
+              <Link
+                href={`/recibos/declaracao?alunoId=${aluno.id}&ano=${new Date().getFullYear()}`}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
+              >
+                <FileText className="size-4" />
+                Declaração anual
               </Link>
               <EditarAlunoButton aluno={aluno} />
               <AlunoPrintButton alunoId={aluno.id} />

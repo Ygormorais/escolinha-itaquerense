@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { formatMoney } from "@/lib/utils"
+import { ehAniversarioNoDia } from "@/lib/aniversariantes"
 
 export async function runEnviarLembretesWhatsAppInadimplencia() {
   const config = getConfig()
@@ -110,4 +111,49 @@ export async function notificarPagamentoConfirmado(pagamentoId: number): Promise
   ].join("\n")
 
   await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+}
+
+export async function runEnviarParabensAniversariantes() {
+  let enviados = 0
+  let erros = 0
+
+  const hoje = new Date()
+  const inicioDoDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())
+
+  const ativos = await db.aluno.findMany({
+    where: { status: "Ativo" },
+    select: { id: true, nome: true, dataNascimento: true, telefone: true, responsavel: true },
+  })
+  const aniversariantes = ativos.filter((a) => ehAniversarioNoDia(a.dataNascimento, hoje))
+
+  for (const a of aniversariantes) {
+    const tel = a.telefone?.replace(/\D/g, "")
+    if (!tel || tel.length < 8) continue
+
+    // dedup: já parabenizamos este aluno hoje?
+    const jaEnviado = await db.whatsAppMensagem.findFirst({
+      where: { alunoId: a.id, origem: "aniversario", createdAt: { gte: inicioDoDia } },
+      select: { id: true },
+    })
+    if (jaEnviado) continue
+
+    const idade = hoje.getFullYear() - a.dataNascimento.getFullYear()
+    const msg = [
+      `🎉 Feliz aniversário, *${a.nome}*!`,
+      ``,
+      `Toda a Escolinha Itaquerense deseja um dia incrível e muita alegria nos seus ${idade} anos! ⚽🎂`,
+    ].join("\n")
+
+    try {
+      await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+      await db.whatsAppMensagem.create({
+        data: { alunoId: a.id, telefone: tel, mensagem: msg, origem: "aniversario" },
+      })
+      enviados++
+    } catch {
+      erros++
+    }
+  }
+
+  return { aniversariantes: aniversariantes.length, enviados, erros }
 }

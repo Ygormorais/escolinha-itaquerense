@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CalendarCheck, CreditCard, Shirt, ArrowLeft, Trophy } from "lucide-react"
 import Link from "next/link"
-import { RadarEvolutionChart, type AvaliacaoSnapshot } from "@/components/responsavel/radar-evolution-chart"
+import type { AvaliacaoSnapshot } from "@/components/responsavel/radar-evolution-chart"
+import { DesempenhoAlunoSwitcher } from "@/components/responsavel/desempenho-aluno-switcher"
+import { montarSeriesEvolucao } from "@/lib/evolucao"
 
 export const metadata = { title: "Desempenho — Escolinha Itaquerense" }
 
@@ -30,18 +32,21 @@ export default async function DesempenhoPage() {
 
   if (!responsavel) redirect("/responsavel/login")
 
-  const primeiroAluno = responsavel?.alunos[0]
-  const snapshots: AvaliacaoSnapshot[] = (primeiroAluno?.avaliacoes ?? [])
-    .filter((a) => a.notaTecnica != null)
-    .map((a) => ({
-      label: a.periodo,
-      data: a.createdAt,
-      notas: {
-        tecnica: a.notaTecnica ?? 0,
-        fisico: a.notaFisica ?? 0,
-        comportamento: a.notaComportamento ?? 0,
-      },
-    }))
+  const alunosDesempenho = responsavel.alunos.map((aluno) => {
+    const snapshots: AvaliacaoSnapshot[] = aluno.avaliacoes
+      .filter((a) => a.notaTecnica != null)
+      .map((a) => ({
+        label: a.periodo,
+        data: a.createdAt,
+        notas: {
+          tecnica: a.notaTecnica ?? 0,
+          fisico: a.notaFisica ?? 0,
+          comportamento: a.notaComportamento ?? 0,
+        },
+      }))
+    const pontos = montarSeriesEvolucao(aluno.avaliacoes)
+    return { id: aluno.id, nome: aluno.nome, snapshots, pontos }
+  })
 
   const totalAlunos = responsavel.alunos.length
   const totalCampeonatos = responsavel.alunos.reduce((acc, aluno) => acc + aluno.inscricoes.length, 0)
@@ -90,10 +95,7 @@ export default async function DesempenhoPage() {
         </div>
       </section>
 
-      <div className="mb-6 rounded-xl border bg-card p-4">
-        <h2 className="font-heading text-lg font-semibold mb-4">Evolução Técnica</h2>
-        <RadarEvolutionChart snapshots={snapshots} />
-      </div>
+      <DesempenhoAlunoSwitcher alunos={alunosDesempenho} />
 
       <div className="space-y-6">
         {responsavel.alunos.map((aluno) => {
