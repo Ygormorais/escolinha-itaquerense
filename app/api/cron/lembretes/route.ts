@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { runEnviarLembreteVencendo, runEnviarLembretesInadimplentes } from "@/lib/email-jobs"
-import { runEnviarLembretesWhatsAppInadimplencia, runEnviarLembretesWhatsAppVencendo } from "@/lib/whatsapp-jobs"
+import { runEnviarLembretesWhatsAppInadimplencia, runEnviarLembretesWhatsAppVencendo, runEnviarParabensAniversariantes } from "@/lib/whatsapp-jobs"
 import { getCronSecret, verifyBearerSecret } from "@/lib/env"
 import { runHousekeeping } from "@/lib/housekeeping"
 import { db } from "@/lib/db"
@@ -65,11 +65,12 @@ export async function GET(request: Request) {
 
   const isDomingo = new Date().getDay() === 0
 
-  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, cobrancas] = await Promise.all([
+  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas] = await Promise.all([
     runEnviarLembretesInadimplentes(),
     runEnviarLembreteVencendo(),
     runEnviarLembretesWhatsAppInadimplencia(),
     runEnviarLembretesWhatsAppVencendo(),
+    runEnviarParabensAniversariantes(),
     sincronizarStatusCobrancas(),
   ])
 
@@ -77,7 +78,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
-    whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo },
+    whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo, aniversarios: waAniversarios },
     cobrancas,
     housekeeping,
     executadoEm: new Date().toISOString(),
