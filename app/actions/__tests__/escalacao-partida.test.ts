@@ -1,9 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
+const tx = {
+  escalacaoJogador: { deleteMany: vi.fn(), upsert: vi.fn() },
+}
+
 vi.mock("@/lib/db", () => ({
   db: {
     partida: { findUnique: vi.fn() },
-    escalacaoJogador: { deleteMany: vi.fn(), createMany: vi.fn() },
+    $transaction: vi.fn(async (fn: (t: unknown) => unknown) => fn(tx)),
   },
 }))
 
@@ -19,14 +23,13 @@ import { requireAuth } from "@/lib/auth"
 
 const m = db as unknown as {
   partida: { findUnique: ReturnType<typeof vi.fn> }
-  escalacaoJogador: { deleteMany: ReturnType<typeof vi.fn>; createMany: ReturnType<typeof vi.fn> }
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
   m.partida.findUnique.mockResolvedValue({ campeonatoId: 7 })
-  m.escalacaoJogador.deleteMany.mockResolvedValue({})
-  m.escalacaoJogador.createMany.mockResolvedValue({})
+  tx.escalacaoJogador.deleteMany.mockResolvedValue({})
+  tx.escalacaoJogador.upsert.mockResolvedValue({})
 })
 
 describe("salvarEscalacao", () => {
@@ -35,19 +38,36 @@ describe("salvarEscalacao", () => {
     expect(requireAuth).toHaveBeenCalled()
   })
 
-  it("substitui a escalação: deleteMany + createMany com os dados certos", async () => {
-    const res = await salvarEscalacao(1, [
+  it("remove apenas quem saiu da escalação", async () => {
+    await salvarEscalacao(1, [
       { alunoId: 10, posicao: "GOLEIRO", numero: 1 },
       { alunoId: 11, posicao: "PIVO" },
     ])
-    expect(res).toEqual({ success: true })
-    expect(m.escalacaoJogador.deleteMany).toHaveBeenCalledWith({ where: { partidaId: 1 } })
-    expect(m.escalacaoJogador.createMany).toHaveBeenCalledWith({
-      data: [
-        expect.objectContaining({ partidaId: 1, alunoId: 10, posicao: "GOLEIRO", numero: 1 }),
-        expect.objectContaining({ partidaId: 1, alunoId: 11, posicao: "PIVO", numero: null }),
-      ],
+    expect(tx.escalacaoJogador.deleteMany).toHaveBeenCalledWith({
+      where: { partidaId: 1, alunoId: { notIn: [10, 11] } },
     })
+  })
+
+  it("quem permanece é atualizado sem tocar nos campos de RSVP", async () => {
+    const res = await salvarEscalacao(1, [{ alunoId: 10, posicao: "FIXO", numero: 4 }])
+    expect(res).toEqual({ success: true })
+    expect(tx.escalacaoJogador.upsert).toHaveBeenCalledWith({
+      where: { partidaId_alunoId: { partidaId: 1, alunoId: 10 } },
+      update: { posicao: "FIXO", numero: 4, ordem: 0 },
+      create: expect.objectContaining({ partidaId: 1, alunoId: 10, posicao: "FIXO", numero: 4 }),
+    })
+    const { update } = tx.escalacaoJogador.upsert.mock.calls[0][0]
+    expect(update).not.toHaveProperty("convocadoEm")
+    expect(update).not.toHaveProperty("confirmacao")
+    expect(update).not.toHaveProperty("respondidoEm")
+  })
+
+  it("quem entra é criado com RSVP zerado", async () => {
+    await salvarEscalacao(1, [{ alunoId: 12, posicao: "ALA_ESQ" }])
+    const { create } = tx.escalacaoJogador.upsert.mock.calls[0][0]
+    expect(create).toMatchObject({ partidaId: 1, alunoId: 12, posicao: "ALA_ESQ", numero: null })
+    expect(create.convocadoEm ?? null).toBeNull()
+    expect(create.confirmacao ?? null).toBeNull()
   })
 
   it("rejeita escalação inválida sem tocar no banco", async () => {
@@ -56,14 +76,16 @@ describe("salvarEscalacao", () => {
       { alunoId: 11, posicao: "PIVO" },
     ])
     expect(res).toEqual({ error: expect.any(String) })
-    expect(m.escalacaoJogador.deleteMany).not.toHaveBeenCalled()
-    expect(m.escalacaoJogador.createMany).not.toHaveBeenCalled()
+    expect(tx.escalacaoJogador.deleteMany).not.toHaveBeenCalled()
+    expect(tx.escalacaoJogador.upsert).not.toHaveBeenCalled()
   })
 
-  it("não chama createMany quando a escalação é vazia", async () => {
+  it("escalação vazia deleta todos e não faz upsert", async () => {
     const res = await salvarEscalacao(1, [])
     expect(res).toEqual({ success: true })
-    expect(m.escalacaoJogador.deleteMany).toHaveBeenCalledWith({ where: { partidaId: 1 } })
-    expect(m.escalacaoJogador.createMany).not.toHaveBeenCalled()
+    expect(tx.escalacaoJogador.deleteMany).toHaveBeenCalledWith({
+      where: { partidaId: 1, alunoId: { notIn: [] } },
+    })
+    expect(tx.escalacaoJogador.upsert).not.toHaveBeenCalled()
   })
 })
