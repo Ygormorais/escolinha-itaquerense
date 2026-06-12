@@ -425,10 +425,13 @@ model EscalacaoJogador {
   partida   Partida  @relation(fields: [partidaId], references: [id], onDelete: Cascade)
   alunoId   Int
   aluno     Aluno    @relation(fields: [alunoId], references: [id], onDelete: Cascade)
-  posicao   String // GOLEIRO, FIXO, ALA_ESQ, ALA_DIR, PIVO, BANCO
-  numero    Int?
-  ordem     Int      @default(0)
-  createdAt DateTime @default(now())
+  posicao      String // GOLEIRO, FIXO, ALA_ESQ, ALA_DIR, PIVO, BANCO
+  numero       Int?
+  ordem        Int      @default(0)
+  convocadoEm  DateTime?
+  confirmacao  String? // "confirmado" | "ausente" | null (sem resposta)
+  respondidoEm DateTime?
+  createdAt    DateTime @default(now())
 
   @@unique([partidaId, alunoId])
   @@index([partidaId])
