@@ -12,3 +12,4 @@ export const Roboto = font
 export const Roboto_Condensed = font
 export const Inter = font
 export const Nunito = font
+export const Playfair_Display = font
