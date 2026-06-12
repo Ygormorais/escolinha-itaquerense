@@ -62,7 +62,7 @@ export function ConvocacaoPanel({
           </ul>
         )}
         <p className="text-xs text-muted-foreground">
-          Salvar novamente a escalação zera convocação e respostas.
+          Quem permanece na escalação mantém a resposta; quem sai perde a convocação.
         </p>
         <Button onClick={convocar} disabled={pending || escalados.length === 0} className="bg-brand-800 text-white hover:bg-brand-900">
           {pending ? "Enviando..." : jaConvocada ? "Re-convocar pendentes" : "Convocar escalação"}

@@ -23,19 +23,20 @@ export async function salvarEscalacao(
     })
     if (!partida) return { error: "Partida não encontrada." }
 
-    await db.escalacaoJogador.deleteMany({ where: { partidaId } })
-
-    if (jogadores.length > 0) {
-      await db.escalacaoJogador.createMany({
-        data: jogadores.map((j, i) => ({
-          partidaId,
-          alunoId: j.alunoId,
-          posicao: j.posicao,
-          numero: j.numero ?? null,
-          ordem: j.ordem ?? i,
-        })),
+    // Diff por aluno: quem permanece mantém convocadoEm/confirmacao/respondidoEm
+    await db.$transaction(async (tx) => {
+      await tx.escalacaoJogador.deleteMany({
+        where: { partidaId, alunoId: { notIn: jogadores.map((j) => j.alunoId) } },
       })
-    }
+      for (const [i, j] of jogadores.entries()) {
+        const campos = { posicao: j.posicao, numero: j.numero ?? null, ordem: j.ordem ?? i }
+        await tx.escalacaoJogador.upsert({
+          where: { partidaId_alunoId: { partidaId, alunoId: j.alunoId } },
+          update: campos,
+          create: { partidaId, alunoId: j.alunoId, ...campos },
+        })
+      }
+    })
 
     revalidatePath(`/campeonatos/${partida.campeonatoId}/partidas/${partidaId}/escalacao`)
     revalidatePath(`/campeonatos/${partida.campeonatoId}`)
