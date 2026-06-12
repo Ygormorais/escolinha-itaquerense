@@ -33,6 +33,9 @@ Comece pelo template: `cp .env.production.example .env`, depois
 `FPFS_SYNC_TOKEN`, `ADMIN_PASSWORD` e as chaves VAPID — cole a saída no `.env`.
 
 - [ ] `DATABASE_URL=file:./prisma/prod.db` (caminho relativo ao repo na VPS)
+- [ ] `TZ=UTC` — obrigatório: datas de nascimento são gravadas à meia-noite UTC e
+  comparadas com hora local (aniversariantes/WhatsApp); em TZ negativo o
+  aniversário dispararia um dia antes
 - [ ] `ADMIN_PASSWORD` — senha forte (NÃO usar admin/admin)
 - [ ] `SESSION_SECRET` — `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 - [ ] `CRON_SECRET` e `FPFS_SYNC_TOKEN` — idem
