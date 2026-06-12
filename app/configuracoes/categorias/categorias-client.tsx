@@ -31,11 +31,11 @@ export function CategoriasClient({ viradas, anoRef }: { viradas: ViradaSerializa
   }
 
   function aplicar() {
-    const mudancas = viradas
+    const ids = viradas
       .filter((v) => selecionados.has(v.id) && v.turmaProposta != null)
-      .map((v) => ({ alunoId: v.id, novaTurma: v.turmaProposta! }))
+      .map((v) => v.id)
     start(async () => {
-      const r = await aplicarViradaCategorias(mudancas)
+      const r = await aplicarViradaCategorias(ids)
       if ("error" in r) toast.error(r.error)
       else toast.success(`${r.aplicadas} aluno(s) promovido(s) de categoria`)
     })
