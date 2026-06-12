@@ -22,10 +22,25 @@ describe("aniversariantesDoMes", () => {
     expect(a.dia).toBe(20)
   })
 
-  it("marca quem faz aniversário hoje", () => {
+  it("marca quem faz aniversário hoje (ref e hoje idênticos)", () => {
     const ref = new Date("2026-06-15T12:00:00")
-    const [a] = aniversariantesDoMes([aluno("Hoje", "2014-06-15")], ref)
+    const [a] = aniversariantesDoMes([aluno("Hoje", "2014-06-15")], ref, ref)
     expect(a.ehHoje).toBe(true)
+  })
+
+  it("marca ehHoje pela data real, não pelo dia 1 do mês de referência", () => {
+    // ref = dia 1 de junho (como o dashboard passa), hoje = dia 15 de junho
+    const ref = new Date("2026-06-01T00:00:00")
+    const hoje = new Date("2026-06-15T12:00:00")
+    const lista = aniversariantesDoMes(
+      [aluno("Dia15", "2014-06-15"), aluno("Dia01", "2014-06-01")],
+      ref,
+      hoje
+    )
+    const dia15 = lista.find((a) => a.nome === "Dia15")!
+    const dia01 = lista.find((a) => a.nome === "Dia01")!
+    expect(dia15.ehHoje).toBe(true)
+    expect(dia01.ehHoje).toBe(false)
   })
 })
 

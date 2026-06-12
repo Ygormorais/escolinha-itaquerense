@@ -13,10 +13,15 @@ export function ehAniversarioNoDia(dataNascimento: Date, dia: Date): boolean {
   )
 }
 
-/** Aniversariantes do mês de `ref`, ordenados por dia. */
+/** Aniversariantes do mês de `ref`, ordenados por dia.
+ *
+ * @param ref  Escopa o mês exibido e o ano usado em `idadeQueCompleta`.
+ * @param hoje Data usada exclusivamente para o badge `ehHoje`. Padrão: `new Date()`.
+ */
 export function aniversariantesDoMes(
   alunos: AlunoNascimento[],
-  ref: Date = new Date()
+  ref: Date = new Date(),
+  hoje: Date = new Date()
 ): Aniversariante[] {
   return alunos
     .filter((a) => a.dataNascimento.getMonth() === ref.getMonth())
@@ -24,7 +29,7 @@ export function aniversariantesDoMes(
       ...a,
       dia: a.dataNascimento.getDate(),
       idadeQueCompleta: ref.getFullYear() - a.dataNascimento.getFullYear(),
-      ehHoje: ehAniversarioNoDia(a.dataNascimento, ref),
+      ehHoje: ehAniversarioNoDia(a.dataNascimento, hoje),
     }))
     .sort((a, b) => a.dia - b.dia)
 }

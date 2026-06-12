@@ -177,7 +177,7 @@ export default async function DashboardPage({
     return { turma, receita, alunos }
   }).filter((t) => t.alunos > 0)
 
-  const aniversariantesMes = aniversariantesDoMes(aniversariantes, dataRef)
+  const aniversariantesMes = aniversariantesDoMes(aniversariantes, dataRef, now)
 
   const receitaMes = pagamentosMes.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
   const custosMes = custosChart
