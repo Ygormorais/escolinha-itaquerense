@@ -1,14 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
-  const db = { campeonato: { findMany: vi.fn() } }
+  const db = { campeonato: { findMany: vi.fn() }, partida: { findFirst: vi.fn() } }
   return { db }
 })
 
-import { getJogosPorCategoria } from "@/lib/landing/jogos"
+import { getJogosPorCategoria, getHeroDestaque, heroView } from "@/lib/landing/jogos"
 import { db } from "@/lib/db"
 
-const m = db as unknown as { campeonato: { findMany: ReturnType<typeof vi.fn> } }
+const m = db as unknown as {
+  campeonato: { findMany: ReturnType<typeof vi.fn> }
+  partida: { findFirst: ReturnType<typeof vi.fn> }
+}
 
 beforeEach(() => { vi.clearAllMocks() })
 
@@ -50,5 +53,69 @@ describe("getJogosPorCategoria", () => {
       include: { partidas: { orderBy: { data: "asc" } } },
       orderBy: { dataInicio: "desc" },
     })
+  })
+})
+
+describe("getHeroDestaque", () => {
+  const agora = new Date("2026-06-12T12:00:00")
+
+  it("prioriza a proxima partida futura", async () => {
+    m.partida.findFirst.mockResolvedValueOnce({
+      adversario: "Atlético Leste", local: "Casa", data: new Date("2026-06-14T16:00:00"),
+      golsPro: null, golsContra: null, resultado: null,
+      campeonato: { nome: "Sub-11 A2" },
+    })
+    const d = await getHeroDestaque(agora)
+    expect(d).toMatchObject({ tipo: "proximo", adversario: "Atlético Leste", campeonato: "Sub-11 A2" })
+  })
+
+  it("sem partida futura, usa o ultimo resultado realizado", async () => {
+    m.partida.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        adversario: "Vila Real", local: "Fora", data: new Date("2026-06-01T16:00:00"),
+        golsPro: 2, golsContra: 1, resultado: "Vitoria",
+        campeonato: { nome: "Sub-9 A3" },
+      })
+    const d = await getHeroDestaque(agora)
+    expect(d).toMatchObject({ tipo: "resultado", adversario: "Vila Real", placar: "2 × 1", resultado: "Vitoria" })
+  })
+
+  it("sem partida alguma, retorna institucional", async () => {
+    m.partida.findFirst.mockResolvedValue(null)
+    expect(await getHeroDestaque(agora)).toEqual({ tipo: "institucional" })
+  })
+})
+
+describe("heroView", () => {
+  const base = { adversario: "Vila Real", data: new Date("2026-06-14T16:00:00"), local: "Casa", campeonato: "Sub-9 A3" }
+
+  it("proximo jogo vira manchete com CTA para #jogos", () => {
+    const v = heroView({ tipo: "proximo", ...base })
+    expect(v.badge).toBe("Sub-9 A3")
+    expect(v.titulo).toContain("Vila Real")
+    expect(v.descricao).toContain("14/06")
+    expect(v.ctaHref).toBe("#jogos")
+  })
+
+  it("vitoria celebra com placar", () => {
+    const v = heroView({ tipo: "resultado", ...base, placar: "2 × 1", resultado: "Vitoria" })
+    expect(v.titulo).toContain("vence")
+    expect(v.titulo).toContain("2 × 1")
+    expect(v.ctaHref).toBe("#jogos")
+  })
+
+  it("empate e derrota usam tom neutro", () => {
+    const empate = heroView({ tipo: "resultado", ...base, placar: "1 × 1", resultado: "Empate" })
+    expect(empate.titulo).toContain("empata")
+    const derrota = heroView({ tipo: "resultado", ...base, placar: "0 × 2", resultado: "Derrota" })
+    expect(derrota.titulo).not.toContain("vence")
+    expect(derrota.titulo).toContain("0 × 2")
+  })
+
+  it("institucional convida para a matricula", () => {
+    const v = heroView({ tipo: "institucional" })
+    expect(v.ctaHref).toBe("/matricula")
+    expect(v.titulo.length).toBeGreaterThan(10)
   })
 })
