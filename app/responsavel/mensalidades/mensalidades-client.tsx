@@ -138,10 +138,15 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
         return (
           <Card key={aluno.id}>
             <CardHeader className="border-b border-black/5 pb-4">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                {aluno.nome}
-                <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
-              </CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  {aluno.nome}
+                  <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
+                </CardTitle>
+                <Link href={`/responsavel/declaracao?alunoId=${aluno.id}&ano=${new Date().getFullYear()}`} className="text-xs text-brand-600 underline-offset-2 hover:underline">
+                  Declaração anual
+                </Link>
+              </div>
               <p className="text-sm text-[var(--color-ink-700)]">
                 Mensalidade: {formatMoney(aluno.mensalidade - aluno.desconto)}
                 {aluno.desconto > 0 && <span className="ml-1 text-success-600">(desconto de {formatMoney(aluno.desconto)})</span>}
