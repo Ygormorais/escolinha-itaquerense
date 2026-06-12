@@ -244,11 +244,11 @@ test.describe("Pagamentos — gerar mensalidades", () => {
     // Aguarda: ou o dialog fecha (após geração), ou exibe resultado parcial
     // Pode mostrar mensagem "X criada(s), Y já existia(m)" dentro do dialog antes de fechar
     const resultado = dialog.getByText(/criada|existia|gerada/i)
-    const dialogFechado = async () => !(await dialog.isVisible().catch(() => true))
-    await Promise.race([
-      resultado.waitFor({ timeout: 10000 }).catch(() => null),
-      page.waitForFunction(dialogFechado, {}, { timeout: 10000 }).catch(() => null),
-    ])
+    await expect(async () => {
+      const temResultado = await resultado.isVisible()
+      const aberto = await dialog.isVisible()
+      expect(temResultado || !aberto).toBe(true)
+    }).toPass({ timeout: 10000 })
 
     // A tabela continua visível após a operação
     await expect(page.locator("table")).toBeVisible({ timeout: 5000 })
