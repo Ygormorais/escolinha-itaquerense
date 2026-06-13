@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { CheckCircle } from "lucide-react"
+import { CheckCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,6 +12,7 @@ import {
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { registrarPagamento } from "@/app/actions/pagamentos"
 
@@ -59,11 +60,11 @@ export function PagamentoButton({ pagamentoId, mensalidade }: Props) {
 
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium">Data do pagamento</label>
-              <Input type="date" value={data} onChange={(e) => setData(e.target.value)} className="mt-1" />
+              <Label htmlFor="pag-data">Data do pagamento</Label>
+              <Input id="pag-data" type="date" value={data} onChange={(e) => setData(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium">Forma de pagamento</label>
+              <Label>Forma de pagamento</Label>
               <Select value={forma} onValueChange={(v) => { if (v) setForma(v) }}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
@@ -74,8 +75,9 @@ export function PagamentoButton({ pagamentoId, mensalidade }: Props) {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Valor recebido (R$)</label>
+              <Label htmlFor="pag-valor">Valor recebido (R$)</Label>
               <Input
+                id="pag-valor"
                 type="number"
                 step="0.01"
                 value={valor}
@@ -91,7 +93,7 @@ export function PagamentoButton({ pagamentoId, mensalidade }: Props) {
               disabled={pending}
               className="bg-brand-800 text-white hover:bg-brand-900"
             >
-              {pending ? "Salvando..." : "Confirmar"}
+              {pending ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Confirmar"}
             </Button>
           </DialogFooter>
         </DialogContent>
