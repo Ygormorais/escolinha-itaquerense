@@ -4,6 +4,9 @@ import { useState, useMemo } from "react"
 import { CalendarCheck, Download, Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
@@ -91,16 +94,15 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
       />
 
       <div className="flex flex-wrap gap-3">
-        <select
-          className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          value={filtroTurma}
-          onChange={(e) => setFiltroTurma(e.target.value)}
-        >
-          <option value="todas">Todas turmas</option>
-          {turmas.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+        <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
+          <SelectTrigger className="h-10 w-36 text-sm" aria-label="Filtrar por turma">
+            <SelectValue placeholder="Todas turmas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas turmas</SelectItem>
+            {turmas.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <div className="flex gap-1">
           {[
             { key: "todos", label: "Todos" },
