@@ -1,13 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { Printer, Trash2 } from "lucide-react"
+import { Printer, Trash2, Loader2 } from "lucide-react"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 import { salvarRecibo, deleteRecibo } from "@/app/actions/recibos"
 import type { ClubConfig } from "@/lib/config"
@@ -49,42 +52,36 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
     dataPagamento: searchParams.get("data") ?? today,
   })
 
-  const [salvando, setSalvando] = useState(false)
+  const [salvando, startSalvando] = useTransition()
   const [searchRecibo, setSearchRecibo] = useState("")
   const router = useRouter()
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  async function handleImprimir() {
-    setSalvando(true)
-    try {
-      const result = await salvarRecibo({
-        alunoNome: form.aluno,
-        responsavel: form.responsavel,
-        mesReferencia: form.referencia,
-        valor: parseFloat(form.valor) || 0,
-        formaPagamento: form.forma,
-        dataPagamento: form.dataPagamento,
-      })
-      if ("error" in result) { toast.error(result.error); return }
-      const { numero } = result
-      setForm((prev) => ({ ...prev, numero }))
-      window.print()
-    } finally {
-      setSalvando(false)
-    }
+  function handleImprimir() {
+    startSalvando(async () => {
+      try {
+        const result = await salvarRecibo({
+          alunoNome: form.aluno,
+          responsavel: form.responsavel,
+          mesReferencia: form.referencia,
+          valor: parseFloat(form.valor) || 0,
+          formaPagamento: form.forma,
+          dataPagamento: form.dataPagamento,
+        })
+        if ("error" in result) { toast.error(result.error); return }
+        const { numero } = result
+        setForm((prev) => ({ ...prev, numero }))
+        window.print()
+      } catch {
+        toast.error("Erro ao salvar recibo")
+      }
+    })
   }
 
-  const valorFormatado = form.valor
-    ? parseFloat(form.valor).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      })
-    : "R$ 0,00"
+  const valorFormatado = form.valor ? formatMoney(parseFloat(form.valor)) : "R$ 0,00"
 
   const dataFormatada = form.dataPagamento
     ? new Date(form.dataPagamento + "T12:00:00").toLocaleDateString("pt-BR")
@@ -112,7 +109,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
               className="flex items-center gap-2"
             >
               <Printer className="size-4" />
-              {salvando ? "Salvando..." : "Imprimir PDF"}
+              {salvando ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Imprimir PDF"}
             </Button>
           }
         />
@@ -178,19 +175,18 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
               </div>
               <div className="flex flex-col gap-1">
                 <label htmlFor="forma" className="text-sm font-medium">Forma de Pagamento</label>
-                <select
-                  id="forma"
-                  name="forma"
-                  value={form.forma}
-                  onChange={handleChange}
-                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                >
-                  <option>PIX</option>
-                  <option>Dinheiro</option>
-                  <option>Transferência</option>
-                  <option>Cartão</option>
-                  <option>Boleto</option>
-                </select>
+                <Select value={form.forma} onValueChange={(v) => { if (v) setForm((prev) => ({ ...prev, forma: v })) }}>
+                  <SelectTrigger id="forma">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PIX">PIX</SelectItem>
+                    <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="Transferência">Transferência</SelectItem>
+                    <SelectItem value="Cartão">Cartão</SelectItem>
+                    <SelectItem value="Boleto">Boleto</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="col-span-2 flex flex-col gap-1">
                 <label htmlFor="dataPagamento" className="text-sm font-medium">Data do Pagamento</label>
