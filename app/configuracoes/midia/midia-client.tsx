@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
-import { Film, Image as ImageIcon, Trash2, Plus, Play } from "lucide-react"
+import { Film, Image as ImageIcon, Trash2, Plus, Play, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -114,7 +114,7 @@ export function MidiaClient({
   campeonatos: Campeonato[]
 }) {
   const [open, setOpen] = useState(false)
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, startPending] = useTransition()
   const [videoPlayer, setVideoPlayer] = useState<string | null>(null)
   const [form, setForm] = useState({
     tipo: "video" as "video" | "fotos",
@@ -125,24 +125,25 @@ export function MidiaClient({
     campeonatoId: "",
   })
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setIsPending(true)
-    try {
-      const result = await adicionarMidia({
-        tipo: form.tipo,
-        titulo: form.titulo,
-        url: form.url,
-        partidaId: form.vinculo === "partida" && form.partidaId ? Number(form.partidaId) : undefined,
-        campeonatoId: form.vinculo === "campeonato" && form.campeonatoId ? Number(form.campeonatoId) : undefined,
-      })
-      if (result && "error" in result) { toast.error(result.error); return }
-      toast.success("Mídia adicionada!")
-      setOpen(false)
-      setForm({ tipo: "video", titulo: "", url: "", vinculo: "", partidaId: "", campeonatoId: "" })
-    } finally {
-      setIsPending(false)
-    }
+    startPending(async () => {
+      try {
+        const result = await adicionarMidia({
+          tipo: form.tipo,
+          titulo: form.titulo,
+          url: form.url,
+          partidaId: form.vinculo === "partida" && form.partidaId ? Number(form.partidaId) : undefined,
+          campeonatoId: form.vinculo === "campeonato" && form.campeonatoId ? Number(form.campeonatoId) : undefined,
+        })
+        if (result && "error" in result) { toast.error(result.error); return }
+        toast.success("Mídia adicionada!")
+        setOpen(false)
+        setForm({ tipo: "video", titulo: "", url: "", vinculo: "", partidaId: "", campeonatoId: "" })
+      } catch {
+        toast.error("Erro ao adicionar mídia")
+      }
+    })
   }
 
   async function handleRemover(id: number) {
@@ -228,7 +229,9 @@ export function MidiaClient({
                   </Select>
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={isPending}>Adicionar</Button>
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? <><Loader2 className="size-4 animate-spin" /> Adicionando...</> : "Adicionar"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
