@@ -312,7 +312,7 @@ export function CustosClient({
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Total do mês</p>
           <p className="text-xl font-bold font-heading text-danger-600">
-            R$ {total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            {formatMoney(total)}
           </p>
         </div>
         <div className="ml-auto flex flex-col items-end gap-2">
