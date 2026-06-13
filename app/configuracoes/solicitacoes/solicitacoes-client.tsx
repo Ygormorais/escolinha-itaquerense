@@ -8,6 +8,7 @@ import { Search, CheckCircle2, XCircle, MessageSquare } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
@@ -121,7 +122,7 @@ function ResponderForm({ id, onResponder }: { id: number; onResponder: (id: numb
 
   return (
     <div className="mt-3 space-y-2">
-      <textarea value={resposta} onChange={(e) => setResposta(e.target.value)} rows={3} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm" placeholder="Escreva sua resposta..." />
+      <Textarea value={resposta} onChange={(e) => setResposta(e.target.value)} placeholder="Escreva sua resposta..." />
       <div className="flex gap-2">
         <Button size="sm" onClick={() => { onResponder(id, "resolvida", resposta); setAberto(false) }} className="bg-success-600 text-white"><CheckCircle2 className="size-4" /> Resolver</Button>
         <Button size="sm" variant="outline" onClick={() => { onResponder(id, "recusada", resposta); setAberto(false) }} className="text-destructive border-destructive"><XCircle className="size-4" /> Recusar</Button>
