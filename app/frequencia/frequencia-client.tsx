@@ -175,7 +175,7 @@ export function FrequenciaClient() {
                 disabled={saving || alunos.length === 0}
                 className="bg-brand-800 text-white hover:bg-brand-900"
               >
-                <SaveIcon className="size-4" />
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <SaveIcon className="size-4" />}
                 {saving ? "Salvando..." : "Salvar Frequência"}
               </Button>
             </div>
