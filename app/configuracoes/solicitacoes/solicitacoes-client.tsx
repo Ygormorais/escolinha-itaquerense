@@ -8,6 +8,9 @@ import { Search, CheckCircle2, XCircle, MessageSquare } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { responderSolicitacao } from "@/app/actions/solicitacoes"
 
 type Solicitacao = {
@@ -54,13 +57,18 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Buscar..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
         </div>
-        <select value={filtro} onChange={(e) => setFiltro(e.target.value)} aria-label="Filtrar por status" className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
-          <option value="todas">Todas</option>
-          <option value="pendente">Pendentes</option>
-          <option value="em_andamento">Em andamento</option>
-          <option value="resolvida">Resolvidas</option>
-          <option value="recusada">Recusadas</option>
-        </select>
+        <Select value={filtro} onValueChange={(v) => setFiltro(v ?? "todas")}>
+          <SelectTrigger className="h-10 w-44" aria-label="Filtrar por status">
+            <SelectValue placeholder="Todas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas</SelectItem>
+            <SelectItem value="pendente">Pendentes</SelectItem>
+            <SelectItem value="em_andamento">Em andamento</SelectItem>
+            <SelectItem value="resolvida">Resolvidas</SelectItem>
+            <SelectItem value="recusada">Recusadas</SelectItem>
+          </SelectContent>
+        </Select>
         <span className="text-sm text-muted-foreground">{plural(filtradas.length, "registro", "registros", "nenhum")}</span>
       </div>
 
