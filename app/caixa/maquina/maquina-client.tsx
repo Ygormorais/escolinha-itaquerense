@@ -230,17 +230,17 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Mês de Referência</Label>
-              <input
+              <Label htmlFor="mes-ref">Mês de Referência</Label>
+              <Input
+                id="mes-ref"
                 type="month"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={mesRef}
                 onChange={(e) => setMesRef(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Observações</Label>
-              <Input value={obs} onChange={(e) => setObs(e.target.value)} />
+              <Label htmlFor="obs-reconcile">Observações</Label>
+              <Input id="obs-reconcile" value={obs} onChange={(e) => setObs(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
