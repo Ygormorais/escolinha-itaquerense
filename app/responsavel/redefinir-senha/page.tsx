@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Lock, ArrowLeft, CheckCircle2 } from "lucide-react"
+import { Lock, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,7 @@ export default function RedefinirSenhaPage() {
 
   const [senha, setSenha] = useState("")
   const [confirmar, setConfirmar] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
   const [redefinido, setRedefinido] = useState(false)
 
   if (!token) {
@@ -46,12 +46,11 @@ export default function RedefinirSenhaPage() {
     )
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (senha.length < 6) { toast.error("A senha deve ter no mínimo 6 caracteres"); return }
     if (senha !== confirmar) { toast.error("As senhas não conferem"); return }
-    setLoading(true)
-    try {
+    startLoading(async () => {
       const res = await fetch("/api/responsavel/redefinir-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,9 +59,7 @@ export default function RedefinirSenhaPage() {
       const data = await res.json()
       if (!res.ok) { toast.error(data.error); return }
       setRedefinido(true)
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   if (redefinido) {
@@ -151,7 +148,7 @@ export default function RedefinirSenhaPage() {
             </div>
           </div>
           <Button type="submit" className="w-full" size="lg" disabled={loading}>
-            {loading ? "Salvando..." : "Redefinir senha"}
+            {loading ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Redefinir senha"}
           </Button>
         </form>
       </div>
