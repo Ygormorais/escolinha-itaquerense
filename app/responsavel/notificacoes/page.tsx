@@ -1,6 +1,6 @@
 "use client"
-import { useEffect, useState } from "react"
-import { Bell } from "lucide-react"
+import { useEffect, useState, useTransition } from "react"
+import { Bell, Loader2 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -18,7 +18,7 @@ type Prefs = Record<string, boolean>
 export default function NotificacoesPage() {
   const [prefs, setPrefs] = useState<Prefs>({ vencimento: true, pagamentoConfirmado: true, falta: false, convocacao: true, comunicado: true })
   const [ativo, setAtivo] = useState(false)
-  const [salvando, setSalvando] = useState(false)
+  const [salvando, startSalvando] = useTransition()
 
   useEffect(() => {
     fetch("/api/push/preferencias").then((r) => r.json()).then(setPrefs).catch(() => {})
@@ -42,11 +42,11 @@ export default function NotificacoesPage() {
     toast.success("Notificações ativadas!")
   }
 
-  async function salvarPreferencias() {
-    setSalvando(true)
-    await fetch("/api/push/preferencias", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(prefs) })
-    setSalvando(false)
-    toast.success("Preferências salvas")
+  function salvarPreferencias() {
+    startSalvando(async () => {
+      await fetch("/api/push/preferencias", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(prefs) })
+      toast.success("Preferências salvas")
+    })
   }
 
   return (
@@ -76,7 +76,7 @@ export default function NotificacoesPage() {
         ))}
       </div>
       <Button onClick={salvarPreferencias} disabled={salvando || !ativo} className="w-full">
-        {salvando ? "Salvando..." : "Salvar preferências"}
+        {salvando ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Salvar preferências"}
       </Button>
     </div>
   )
