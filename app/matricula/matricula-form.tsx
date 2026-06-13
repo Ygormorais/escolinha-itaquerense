@@ -1,10 +1,15 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { TURMAS, HORARIOS } from "@/lib/constants"
 import { criarPreMatricula } from "@/app/actions/matricula"
 
@@ -18,33 +23,32 @@ export function MatriculaForm() {
   const [email, setEmail] = useState("")
   const [observacoes, setObservacoes] = useState("")
   const [documentos, setDocumentos] = useState<{ url: string; name: string }[]>([])
-  const [uploading, setUploading] = useState(false)
+  const [uploading, startUploading] = useTransition()
   const [pending, startTransition] = useTransition()
   const [enviado, setEnviado] = useState(false)
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-
-    setUploading(true)
-    const formData = new FormData()
-    formData.append("documento", file)
-
-    try {
-      const res = await fetch("/api/upload/matricula", { method: "POST", body: formData })
-      const data = await res.json()
-      if (res.ok) {
-        setDocumentos((prev) => [...prev, { url: data.url, name: data.name }])
-        toast.success("Arquivo enviado")
-      } else {
-        toast.error(data.error ?? "Erro ao enviar arquivo")
+    const input = e.target
+    startUploading(async () => {
+      const formData = new FormData()
+      formData.append("documento", file)
+      try {
+        const res = await fetch("/api/upload/matricula", { method: "POST", body: formData })
+        const data = await res.json()
+        if (res.ok) {
+          setDocumentos((prev) => [...prev, { url: data.url, name: data.name }])
+          toast.success("Arquivo enviado")
+        } else {
+          toast.error(data.error ?? "Erro ao enviar arquivo")
+        }
+      } catch {
+        toast.error("Erro ao enviar arquivo")
+      } finally {
+        input.value = ""
       }
-    } catch {
-      toast.error("Erro ao enviar arquivo")
-    } finally {
-      setUploading(false)
-      e.target.value = ""
-    }
+    })
   }
 
   function validar(): string | null {
@@ -115,26 +119,26 @@ export function MatriculaForm() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="turma">Turma</Label>
-              <select
-                id="turma"
-                value={turma}
-                onChange={(e) => setTurma(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-input bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-              >
-                {TURMAS.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
+              <Label>Turma</Label>
+              <Select value={turma} onValueChange={(v) => { if (v) setTurma(v) }}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
-              <Label htmlFor="horario">Horário</Label>
-              <select
-                id="horario"
-                value={horario}
-                onChange={(e) => setHorario(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-input bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-              >
-                {HORARIOS.map((h) => <option key={h} value={h}>{h}</option>)}
-              </select>
+              <Label>Horário</Label>
+              <Select value={horario} onValueChange={(v) => { if (v) setHorario(v) }}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {HORARIOS.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -181,17 +185,16 @@ export function MatriculaForm() {
 
       <div>
         <Label htmlFor="observacoes">Observações</Label>
-        <textarea
+        <Textarea
           id="observacoes"
           value={observacoes}
           onChange={(e) => setObservacoes(e.target.value)}
-          rows={3}
-          className="mt-1 block w-full rounded-lg border border-input bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          className="mt-1"
         />
       </div>
 
       <Button type="submit" disabled={pending} className="w-full bg-brand-800 text-white hover:bg-brand-900">
-        {pending ? "Enviando..." : "Enviar Pré-Matrícula"}
+        {pending ? <><Loader2 className="size-4 animate-spin" /> Enviando...</> : "Enviar Pré-Matrícula"}
       </Button>
     </form>
   )
