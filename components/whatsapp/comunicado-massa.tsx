@@ -70,7 +70,6 @@ export function ComunicadoMassa() {
           title="Enviar comunicado em massa?"
           description={`A mensagem será enviada via WhatsApp para ${turma === "Todas" ? "todas as turmas" : `a turma ${turma}`}. Esta ação não pode ser desfeita.`}
           confirmLabel="Enviar"
-          cancelLabel="Cancelar"
           variant="warning"
           onConfirm={handleEnviar}
         >
