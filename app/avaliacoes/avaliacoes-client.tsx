@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { plural } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
-import { Plus, Pencil, Trash2, ClipboardX } from "lucide-react"
+import { Plus, Pencil, Trash2, ClipboardX, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -76,7 +76,7 @@ function freqBadgeColor(valor: number | null): "default" | "destructive" | "seco
 
 function NovaAvaliacaoDialog({ alunos }: { alunos: AlunoResumo[] }) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [pending, startPending] = useTransition()
   const router = useRouter()
 
   const form = useForm<CreateFormValues>({
@@ -91,28 +91,27 @@ function NovaAvaliacaoDialog({ alunos }: { alunos: AlunoResumo[] }) {
     },
   })
 
-  async function onSubmit(values: CreateFormValues) {
-    setLoading(true)
-    try {
-      const payload = {
-        alunoId: Number(values.alunoId),
-        periodo: values.periodo,
-        notaTecnica: values.notaTecnica ? Number(values.notaTecnica) : undefined,
-        notaFisica: values.notaFisica ? Number(values.notaFisica) : undefined,
-        notaComportamento: values.notaComportamento ? Number(values.notaComportamento) : undefined,
-        frequencia: values.frequencia ? Number(values.frequencia) : undefined,
-        observacoes: values.observacoes || undefined,
+  function onSubmit(values: CreateFormValues) {
+    startPending(async () => {
+      try {
+        const payload = {
+          alunoId: Number(values.alunoId),
+          periodo: values.periodo,
+          notaTecnica: values.notaTecnica ? Number(values.notaTecnica) : undefined,
+          notaFisica: values.notaFisica ? Number(values.notaFisica) : undefined,
+          notaComportamento: values.notaComportamento ? Number(values.notaComportamento) : undefined,
+          frequencia: values.frequencia ? Number(values.frequencia) : undefined,
+          observacoes: values.observacoes || undefined,
+        }
+        await criarAvaliacao(payload)
+        toast.success("Avaliação cadastrada")
+        setOpen(false)
+        form.reset()
+        router.refresh()
+      } catch {
+        toast.error("Erro ao cadastrar avaliação")
       }
-      await criarAvaliacao(payload)
-      toast.success("Avaliação cadastrada")
-      setOpen(false)
-      form.reset()
-      router.refresh()
-    } catch {
-      toast.error("Erro ao cadastrar avaliação")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -201,8 +200,8 @@ function NovaAvaliacaoDialog({ alunos }: { alunos: AlunoResumo[] }) {
             </div>
 
             <DialogFooter showCloseButton>
-              <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                {loading ? "Salvando..." : "Cadastrar"}
+              <Button type="submit" disabled={pending} className="bg-brand-800 text-white hover:bg-brand-900">
+                {pending ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Cadastrar"}
               </Button>
             </DialogFooter>
           </form>
@@ -214,7 +213,7 @@ function NovaAvaliacaoDialog({ alunos }: { alunos: AlunoResumo[] }) {
 
 function EditarAvaliacaoDialog({ avaliacao }: { avaliacao: Avaliacao }) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [pending, startPending] = useTransition()
   const router = useRouter()
 
   const form = useForm<EditFormValues>({
@@ -227,25 +226,24 @@ function EditarAvaliacaoDialog({ avaliacao }: { avaliacao: Avaliacao }) {
     },
   })
 
-  async function onSubmit(values: EditFormValues) {
-    setLoading(true)
-    try {
-      const payload = {
-        notaTecnica: values.notaTecnica ? Number(values.notaTecnica) : undefined,
-        notaFisica: values.notaFisica ? Number(values.notaFisica) : undefined,
-        notaComportamento: values.notaComportamento ? Number(values.notaComportamento) : undefined,
-        frequencia: values.frequencia ? Number(values.frequencia) : undefined,
-        observacoes: values.observacoes || undefined,
+  function onSubmit(values: EditFormValues) {
+    startPending(async () => {
+      try {
+        const payload = {
+          notaTecnica: values.notaTecnica ? Number(values.notaTecnica) : undefined,
+          notaFisica: values.notaFisica ? Number(values.notaFisica) : undefined,
+          notaComportamento: values.notaComportamento ? Number(values.notaComportamento) : undefined,
+          frequencia: values.frequencia ? Number(values.frequencia) : undefined,
+          observacoes: values.observacoes || undefined,
+        }
+        await atualizarAvaliacao(avaliacao.id, payload)
+        toast.success("Avaliação atualizada")
+        setOpen(false)
+        router.refresh()
+      } catch {
+        toast.error("Erro ao atualizar avaliação")
       }
-      await atualizarAvaliacao(avaliacao.id, payload)
-      toast.success("Avaliação atualizada")
-      setOpen(false)
-      router.refresh()
-    } catch {
-      toast.error("Erro ao atualizar avaliação")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -304,8 +302,8 @@ function EditarAvaliacaoDialog({ avaliacao }: { avaliacao: Avaliacao }) {
             </div>
 
             <DialogFooter showCloseButton>
-              <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                {loading ? "Salvando..." : "Salvar"}
+              <Button type="submit" disabled={pending} className="bg-brand-800 text-white hover:bg-brand-900">
+                {pending ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Salvar"}
               </Button>
             </DialogFooter>
           </form>
