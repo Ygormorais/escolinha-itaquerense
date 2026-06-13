@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { PageHeader } from "@/components/layout/page-header"
 import type { RscDate } from "@/lib/rsc-date"
 
@@ -119,19 +122,29 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
           <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input className="pl-8" placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <select className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm" value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} aria-label="Filtrar por tipo">
-          <option value="todos">Todos tipos</option>
-          {tipos.map((t) => (
-            <option key={t} value={t}>{TIPO_CONFIG[t]?.label ?? t}</option>
-          ))}
-        </select>
-        {usuarios.length > 0 && (
-          <select className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm" value={filtroUsuario} onChange={(e) => setFiltroUsuario(e.target.value)} aria-label="Filtrar por usuário">
-            <option value="todos">Todos usuários</option>
-            {usuarios.map((u) => (
-              <option key={u} value={u}>{u}</option>
+        <Select value={filtroTipo} onValueChange={(v) => setFiltroTipo(v ?? "todos")}>
+          <SelectTrigger className="h-10 w-40" aria-label="Filtrar por tipo">
+            <SelectValue placeholder="Todos tipos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos tipos</SelectItem>
+            {tipos.map((t) => (
+              <SelectItem key={t} value={t}>{TIPO_CONFIG[t]?.label ?? t}</SelectItem>
             ))}
-          </select>
+          </SelectContent>
+        </Select>
+        {usuarios.length > 0 && (
+          <Select value={filtroUsuario} onValueChange={(v) => setFiltroUsuario(v ?? "todos")}>
+            <SelectTrigger className="h-10 w-44" aria-label="Filtrar por usuário">
+              <SelectValue placeholder="Todos usuários" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos usuários</SelectItem>
+              {usuarios.map((u) => (
+                <SelectItem key={u} value={u}>{u}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 
