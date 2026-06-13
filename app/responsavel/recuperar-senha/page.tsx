@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
-import { Mail, ArrowLeft, Send } from "lucide-react"
+import { Mail, ArrowLeft, Send, Loader2 } from "lucide-react"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,14 +11,13 @@ import { toast } from "sonner"
 
 export default function RecuperarSenhaPage() {
   const [email, setEmail] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
   const [enviado, setEnviado] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email) { toast.error("Digite seu email"); return }
-    setLoading(true)
-    try {
+    startLoading(async () => {
       const res = await fetch("/api/responsavel/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,9 +26,7 @@ export default function RecuperarSenhaPage() {
       const data = await res.json()
       if (!res.ok) { toast.error(data.error); return }
       setEnviado(true)
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -91,7 +88,7 @@ export default function RecuperarSenhaPage() {
               </div>
             </div>
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              <Send className="size-4" /> {loading ? "Enviando..." : "Enviar link"}
+              {loading ? <><Loader2 className="size-4 animate-spin" /> Enviando...</> : <><Send className="size-4" /> Enviar link</>}
             </Button>
           </form>
         )}
