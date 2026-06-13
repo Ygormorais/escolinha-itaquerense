@@ -104,16 +104,17 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
             className="pl-9"
           />
         </div>
-        <select
-          value={filtroStatus}
-          onChange={(e) => setFiltroStatus(e.target.value)}
-          className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="todas">Todos os status</option>
-          <option value="pendente">Pendentes</option>
-          <option value="aprovada">Aprovadas</option>
-          <option value="recusada">Recusadas</option>
-        </select>
+        <Select value={filtroStatus} onValueChange={(v) => { if (v) setFiltroStatus(v) }}>
+          <SelectTrigger className="w-44" aria-label="Filtrar por status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todos os status</SelectItem>
+            <SelectItem value="pendente">Pendentes</SelectItem>
+            <SelectItem value="aprovada">Aprovadas</SelectItem>
+            <SelectItem value="recusada">Recusadas</SelectItem>
+          </SelectContent>
+        </Select>
         <span className="text-sm text-muted-foreground">{plural(filtradas.length, "registro", "registros", "nenhum")}</span>
       </div>
 
