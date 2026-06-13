@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { sanitizeCSVCell, plural, formatPhone, formatMoney } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays } from "date-fns"
-import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send } from "lucide-react"
+import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send, Loader2 } from "lucide-react"
 import { EmailNotifButton } from "@/components/ui/email-notif-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -176,7 +176,7 @@ export function InadimplenciaClient({
   const [search, setSearch] = useState("")
   const [turmaFilter, setTurmaFilter] = useState("Todas")
   const [nivelFilter, setNivelFilter] = useState("Todos")
-  const [enviando, setEnviando] = useState(false)
+  const [enviando, startEnviando] = useTransition()
 
   const TURMAS = [...new Set(inadimplentes.map((a) => a.turma))].sort()
 
@@ -190,14 +190,14 @@ export function InadimplenciaClient({
     return nivelFilter === "Crítico" ? isCritico : !isCritico
   })
 
-  async function handleNotificarEmLote() {
+  function handleNotificarEmLote() {
     if (filtered.length === 0) return
-    setEnviando(true)
-    for (let i = 0; i < filtered.length; i++) {
-      window.open(gerarLinkWA(filtered[i], nomeClube ?? "Escolinha"), "_blank")
-      if (i < filtered.length - 1) await new Promise((r) => setTimeout(r, 800))
-    }
-    setEnviando(false)
+    startEnviando(async () => {
+      for (let i = 0; i < filtered.length; i++) {
+        window.open(gerarLinkWA(filtered[i], nomeClube ?? "Escolinha"), "_blank")
+        if (i < filtered.length - 1) await new Promise((r) => setTimeout(r, 800))
+      }
+    })
   }
 
   return (
@@ -236,7 +236,7 @@ export function InadimplenciaClient({
         <div className="flex gap-2">
           <ConfirmDialog title="Notificar inadimplentes?" description={`Abrir WhatsApp para ${plural(filtered.length, "inadimplente", "inadimplentes", "nenhum")}? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarEmLote}>
             <Button variant="outline" disabled={filtered.length === 0 || enviando} className="text-success-600 border-success-600/30 hover:bg-success-50">
-              <Send className="size-4" />
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
               {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}
             </Button>
           </ConfirmDialog>
