@@ -5,6 +5,10 @@ import { plural } from "@/lib/utils"
 import { Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { enviarComunicadoMassa } from "@/app/actions/whatsapp"
@@ -22,6 +26,7 @@ export function ComunicadoMassa() {
       const result = await enviarComunicadoMassa(mensagem, turma)
       if ("enviados" in result) {
         setResultado(result)
+        setMensagem("")
         toast.success(`Enviado para ${plural(result.enviados, "aluno", "alunos", "nenhum")}`)
       } else {
         toast.error(result.error ?? "Erro ao enviar comunicado")
@@ -36,18 +41,18 @@ export function ComunicadoMassa() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="turma">Turma</Label>
-          <select
-            id="turma"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            value={turma}
-            onChange={(e) => setTurma(e.target.value)}
-          >
-            <option value="Todas">Todas as turmas</option>
-            {TURMAS.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+          <Label htmlFor="comunicado-turma">Turma</Label>
+          <Select value={turma} onValueChange={(v) => { if (v) setTurma(v) }}>
+            <SelectTrigger id="comunicado-turma">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Todas">Todas as turmas</SelectItem>
+              {TURMAS.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
@@ -61,10 +66,19 @@ export function ComunicadoMassa() {
           />
         </div>
 
-        <Button onClick={handleEnviar} disabled={pending || !mensagem.trim()} className="gap-2">
-          {pending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-          Enviar Comunicado
-        </Button>
+        <ConfirmDialog
+          title="Enviar comunicado em massa?"
+          description={`A mensagem será enviada via WhatsApp para ${turma === "Todas" ? "todas as turmas" : `a turma ${turma}`}. Esta ação não pode ser desfeita.`}
+          confirmLabel="Enviar"
+          cancelLabel="Cancelar"
+          variant="warning"
+          onConfirm={handleEnviar}
+        >
+          <Button disabled={pending || !mensagem.trim()} className="gap-2">
+            {pending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+            Enviar Comunicado
+          </Button>
+        </ConfirmDialog>
 
         {resultado && (
           <div className="text-sm text-muted-foreground space-y-1 pt-2 border-t">
