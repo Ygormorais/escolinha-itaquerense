@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   Trophy, ArrowLeft, Pencil, Trash2, Plus, UserPlus,
   CheckCircle, XCircle, CircleDollarSign,
-  CreditCard, Calendar, MapPin, Users, AlertTriangle,
+  CreditCard, Calendar, MapPin, Users, AlertTriangle, Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,6 +22,10 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 import {
   editarCampeonato, deletarCampeonato,
@@ -106,6 +110,11 @@ export function CampeonatoDetailClient({
   const [inscreverOpen, setInscreverOpen] = useState(false)
   const [pagamentoOpen, setPagamentoOpen] = useState<Inscricao | null>(null)
 
+  const [editing, startEditing] = useTransition()
+  const [sincronizando, startSincronizando] = useTransition()
+  const [inscrevendo, startInscrevendo] = useTransition()
+  const [pagando, startPagando] = useTransition()
+
   const [form, setForm] = useState({
     nome: campeonato.nome,
     descricao: campeonato.descricao || "",
@@ -151,49 +160,53 @@ export function CampeonatoDetailClient({
     return s + (i.taxaPaga ? 0 : taxa)
   }, 0)
 
-  async function handleEdit() {
+  function handleEdit() {
     if (!form.nome.trim() || !form.dataInicio) {
       toast.error("Preencha nome e data de início")
       return
     }
-    await editarCampeonato(campeonato.id, {
-      nome: form.nome,
-      descricao: form.descricao || undefined,
-      dataInicio: form.dataInicio,
-      dataFim: form.dataFim || undefined,
-      local: form.local || undefined,
-      taxaInscricao: Number(form.taxaInscricao),
-      taxaJogo: Number(form.taxaJogo),
-      taxaArbitragem: Number(form.taxaArbitragem),
-      custoTransporte: Number(form.custoTransporte),
-      custoUniforme: Number(form.custoUniforme),
-      observacoes: form.observacoes || undefined,
-      status: form.status,
-      fpfsEventoId: form.fpfsEventoId ? Number(form.fpfsEventoId) : null,
-      fpfsTimeNome: form.fpfsTimeNome || null,
+    startEditing(async () => {
+      try {
+        await editarCampeonato(campeonato.id, {
+          nome: form.nome,
+          descricao: form.descricao || undefined,
+          dataInicio: form.dataInicio,
+          dataFim: form.dataFim || undefined,
+          local: form.local || undefined,
+          taxaInscricao: Number(form.taxaInscricao),
+          taxaJogo: Number(form.taxaJogo),
+          taxaArbitragem: Number(form.taxaArbitragem),
+          custoTransporte: Number(form.custoTransporte),
+          custoUniforme: Number(form.custoUniforme),
+          observacoes: form.observacoes || undefined,
+          status: form.status,
+          fpfsEventoId: form.fpfsEventoId ? Number(form.fpfsEventoId) : null,
+          fpfsTimeNome: form.fpfsTimeNome || null,
+        })
+        toast.success("Campeonato atualizado!")
+        setEditOpen(false)
+        router.refresh()
+      } catch {
+        toast.error("Erro ao atualizar campeonato")
+      }
     })
-    toast.success("Campeonato atualizado!")
-    setEditOpen(false)
-    router.refresh()
   }
 
-  const [sincronizando, setSincronizando] = useState(false)
-  async function handleSincronizarFpfs() {
+  function handleSincronizarFpfs() {
     if (campeonato.fpfsEventoId == null) {
       toast.error("Configure o ID do evento FPFS em Editar antes de sincronizar")
       return
     }
-    setSincronizando(true)
-    try {
-      const r = await sincronizarFpfs(campeonato.id)
-      if ("error" in r) { toast.error(r.error); return }
-      toast.success(`FPFS sincronizada: ${r.jogosNovos} novos, ${r.jogosAtualizados} atualizados, ${r.linhasClassificacao} na classificação`)
-      router.refresh()
-    } catch {
-      toast.error("Falha ao sincronizar com a FPFS")
-    } finally {
-      setSincronizando(false)
-    }
+    startSincronizando(async () => {
+      try {
+        const r = await sincronizarFpfs(campeonato.id)
+        if ("error" in r) { toast.error(r.error); return }
+        toast.success(`FPFS sincronizada: ${r.jogosNovos} novos, ${r.jogosAtualizados} atualizados, ${r.linhasClassificacao} na classificação`)
+        router.refresh()
+      } catch {
+        toast.error("Falha ao sincronizar com a FPFS")
+      }
+    })
   }
 
   async function handleDelete() {
@@ -202,20 +215,26 @@ export function CampeonatoDetailClient({
     router.push("/campeonatos")
   }
 
-  async function handleInscrever() {
+  function handleInscrever() {
     if (!inscForm.alunoId) {
       toast.error("Selecione um aluno")
       return
     }
-    await inscreverAluno(campeonato.id, Number(inscForm.alunoId), {
-      bolsa: inscForm.bolsa,
-      desconto: Number(inscForm.desconto),
-      observacoes: inscForm.observacoes || undefined,
+    startInscrevendo(async () => {
+      try {
+        await inscreverAluno(campeonato.id, Number(inscForm.alunoId), {
+          bolsa: inscForm.bolsa,
+          desconto: Number(inscForm.desconto),
+          observacoes: inscForm.observacoes || undefined,
+        })
+        toast.success("Aluno inscrito!")
+        setInscreverOpen(false)
+        setInscForm({ alunoId: "", bolsa: false, desconto: "0", observacoes: "" })
+        router.refresh()
+      } catch {
+        toast.error("Erro ao inscrever aluno")
+      }
     })
-    toast.success("Aluno inscrito!")
-    setInscreverOpen(false)
-    setInscForm({ alunoId: "", bolsa: false, desconto: "0", observacoes: "" })
-    router.refresh()
   }
 
   async function handleRemover(inscricaoId: number, ..._args: unknown[]) {
@@ -224,24 +243,30 @@ export function CampeonatoDetailClient({
     router.refresh()
   }
 
-  async function handlePagar() {
+  function handlePagar() {
     if (!pagamentoOpen) return
     if (!pagForm.valorPago || !pagForm.dataPagamento) {
       toast.error("Preencha valor e data de pagamento")
       return
     }
-    const result = await registrarPagamentoInscricao(pagamentoOpen.id, campeonato.id, {
-      valorPago: Number(pagForm.valorPago),
-      formaPagamento: pagForm.formaPagamento,
-      dataPagamento: pagForm.dataPagamento,
+    startPagando(async () => {
+      try {
+        const result = await registrarPagamentoInscricao(pagamentoOpen.id, campeonato.id, {
+          valorPago: Number(pagForm.valorPago),
+          formaPagamento: pagForm.formaPagamento,
+          dataPagamento: pagForm.dataPagamento,
+        })
+        if (result.success) {
+          toast.success("Pagamento registrado!")
+          setPagamentoOpen(null)
+          router.refresh()
+        } else {
+          toast.error(result.error || "Erro ao registrar pagamento")
+        }
+      } catch {
+        toast.error("Erro ao registrar pagamento")
+      }
     })
-    if (result.success) {
-      toast.success("Pagamento registrado!")
-      setPagamentoOpen(null)
-      router.refresh()
-    } else {
-      toast.error(result.error || "Erro ao registrar pagamento")
-    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -280,7 +305,7 @@ export function CampeonatoDetailClient({
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleSincronizarFpfs} disabled={sincronizando}>
-            {sincronizando ? "Atualizando..." : "Atualizar da FPFS"}
+            {sincronizando ? <><Loader2 className="size-4 animate-spin" /> Sincronizando...</> : "Sincronizar FPFS"}
           </Button>
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
@@ -294,75 +319,76 @@ export function CampeonatoDetailClient({
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
-                  <Label>Nome *</Label>
-                  <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+                  <Label htmlFor="det-nome">Nome *</Label>
+                  <Input id="det-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
                 </div>
                 <div className="col-span-2 space-y-2">
-                  <Label>Descrição</Label>
-                  <textarea className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
+                  <Label htmlFor="det-descricao">Descrição</Label>
+                  <Textarea id="det-descricao" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Data Início *</Label>
-                  <Input type="date" value={form.dataInicio} onChange={(e) => setForm({ ...form, dataInicio: e.target.value })} />
+                  <Label htmlFor="det-data-inicio">Data Início *</Label>
+                  <Input id="det-data-inicio" type="date" value={form.dataInicio} onChange={(e) => setForm({ ...form, dataInicio: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Data Fim</Label>
-                  <Input type="date" value={form.dataFim} onChange={(e) => setForm({ ...form, dataFim: e.target.value })} />
+                  <Label htmlFor="det-data-fim">Data Fim</Label>
+                  <Input id="det-data-fim" type="date" value={form.dataFim} onChange={(e) => setForm({ ...form, dataFim: e.target.value })} />
                 </div>
                 <div className="col-span-2 space-y-2">
-                  <Label>Local</Label>
-                  <Input value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} />
+                  <Label htmlFor="det-local">Local</Label>
+                  <Input id="det-local" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>ID Evento FPFS</Label>
-                  <Input type="number" min="0" placeholder="ex.: 920" value={form.fpfsEventoId} onChange={(e) => setForm({ ...form, fpfsEventoId: e.target.value })} />
+                  <Label htmlFor="det-fpfs-id">ID Evento FPFS</Label>
+                  <Input id="det-fpfs-id" type="number" min="0" placeholder="ex.: 920" value={form.fpfsEventoId} onChange={(e) => setForm({ ...form, fpfsEventoId: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Nome do time na FPFS</Label>
-                  <Input placeholder="igual ao site da FPFS" value={form.fpfsTimeNome} onChange={(e) => setForm({ ...form, fpfsTimeNome: e.target.value })} />
+                  <Label htmlFor="det-fpfs-nome">Nome do time na FPFS</Label>
+                  <Input id="det-fpfs-nome" placeholder="igual ao site da FPFS" value={form.fpfsTimeNome} onChange={(e) => setForm({ ...form, fpfsTimeNome: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Status</Label>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  >
-                    {STATUS_OPCOES.map((s) => (
-                      <option key={s} value={s}>
-                        {s === "aberto" ? "Aberto" : s === "andamento" ? "Em Andamento" : "Encerrado"}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={form.status} onValueChange={(v) => { if (v) setForm({ ...form, status: v }) }}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="aberto">Aberto</SelectItem>
+                      <SelectItem value="andamento">Em Andamento</SelectItem>
+                      <SelectItem value="encerrado">Encerrado</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Taxa Inscrição (R$)</Label>
-                  <Input type="number" step="0.01" min="0" value={form.taxaInscricao} onChange={(e) => setForm({ ...form, taxaInscricao: e.target.value })} />
+                  <Label htmlFor="det-taxa-inscricao">Taxa Inscrição (R$)</Label>
+                  <Input id="det-taxa-inscricao" type="number" step="0.01" min="0" value={form.taxaInscricao} onChange={(e) => setForm({ ...form, taxaInscricao: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Taxa Jogo (R$)</Label>
-                  <Input type="number" step="0.01" min="0" value={form.taxaJogo} onChange={(e) => setForm({ ...form, taxaJogo: e.target.value })} />
+                  <Label htmlFor="det-taxa-jogo">Taxa Jogo (R$)</Label>
+                  <Input id="det-taxa-jogo" type="number" step="0.01" min="0" value={form.taxaJogo} onChange={(e) => setForm({ ...form, taxaJogo: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Taxa Arbitragem (R$)</Label>
-                  <Input type="number" step="0.01" min="0" value={form.taxaArbitragem} onChange={(e) => setForm({ ...form, taxaArbitragem: e.target.value })} />
+                  <Label htmlFor="det-taxa-arbitragem">Taxa Arbitragem (R$)</Label>
+                  <Input id="det-taxa-arbitragem" type="number" step="0.01" min="0" value={form.taxaArbitragem} onChange={(e) => setForm({ ...form, taxaArbitragem: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Custo Transporte (R$)</Label>
-                  <Input type="number" step="0.01" min="0" value={form.custoTransporte} onChange={(e) => setForm({ ...form, custoTransporte: e.target.value })} />
+                  <Label htmlFor="det-custo-transporte">Custo Transporte (R$)</Label>
+                  <Input id="det-custo-transporte" type="number" step="0.01" min="0" value={form.custoTransporte} onChange={(e) => setForm({ ...form, custoTransporte: e.target.value })} />
                 </div>
                 <div className="col-span-2 space-y-2">
-                  <Label>Custo Uniforme (R$)</Label>
-                  <Input type="number" step="0.01" min="0" value={form.custoUniforme} onChange={(e) => setForm({ ...form, custoUniforme: e.target.value })} />
+                  <Label htmlFor="det-custo-uniforme">Custo Uniforme (R$)</Label>
+                  <Input id="det-custo-uniforme" type="number" step="0.01" min="0" value={form.custoUniforme} onChange={(e) => setForm({ ...form, custoUniforme: e.target.value })} />
                 </div>
                 <div className="col-span-2 space-y-2">
-                  <Label>Observações</Label>
-                  <textarea className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+                  <Label htmlFor="det-obs">Observações</Label>
+                  <Textarea id="det-obs" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
-                <Button onClick={handleEdit}>Salvar</Button>
+                <Button onClick={handleEdit} disabled={editing}>
+                  {editing ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Salvar"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -620,16 +646,16 @@ export function CampeonatoDetailClient({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Aluno</Label>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={inscForm.alunoId}
-                onChange={(e) => setInscForm({ ...inscForm, alunoId: e.target.value })}
-              >
-                <option value="">Selecionar aluno</option>
-                {alunosDisponiveis.map((a) => (
-                  <option key={a.id} value={a.id}>{a.nome} — {a.turma}</option>
-                ))}
-              </select>
+              <Select value={inscForm.alunoId} onValueChange={(v) => { if (v) setInscForm({ ...inscForm, alunoId: v }) }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar aluno" />
+                </SelectTrigger>
+                <SelectContent>
+                  {alunosDisponiveis.map((a) => (
+                    <SelectItem key={a.id} value={String(a.id)}>{a.nome} — {a.turma}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {alunosDisponiveis.length === 0 && (
                 <p className="text-xs text-warning-600">Todos os alunos ativos já estão inscritos.</p>
               )}
@@ -645,8 +671,9 @@ export function CampeonatoDetailClient({
               <Label htmlFor="bolsa" className="text-sm">Bolsa integral (isento de taxas)</Label>
             </div>
             <div className="space-y-2">
-              <Label>Desconto (R$) nas taxas</Label>
+              <Label htmlFor="insc-desconto">Desconto (R$) nas taxas</Label>
               <Input
+                id="insc-desconto"
                 type="number"
                 step="0.01"
                 min="0"
@@ -656,9 +683,9 @@ export function CampeonatoDetailClient({
               />
             </div>
             <div className="space-y-2">
-              <Label>Observações</Label>
-              <textarea
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              <Label htmlFor="insc-obs">Observações</Label>
+              <Textarea
+                id="insc-obs"
                 value={inscForm.observacoes}
                 onChange={(e) => setInscForm({ ...inscForm, observacoes: e.target.value })}
                 placeholder="Condições especiais, etc."
@@ -667,7 +694,9 @@ export function CampeonatoDetailClient({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInscreverOpen(false)}>Cancelar</Button>
-            <Button onClick={handleInscrever}>Inscrever</Button>
+            <Button onClick={handleInscrever} disabled={inscrevendo}>
+              {inscrevendo ? <><Loader2 className="size-4 animate-spin" /> Inscrevendo...</> : "Inscrever"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -688,8 +717,9 @@ export function CampeonatoDetailClient({
                 )}
               </p>
               <div className="space-y-2">
-                <Label>Valor Pago (R$)</Label>
+                <Label htmlFor="pag-valor">Valor Pago (R$)</Label>
                 <Input
+                  id="pag-valor"
                   type="number"
                   step="0.01"
                   min="0"
@@ -699,17 +729,19 @@ export function CampeonatoDetailClient({
               </div>
               <div className="space-y-2">
                 <Label>Forma de Pagamento</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={pagForm.formaPagamento}
-                  onChange={(e) => setPagForm({ ...pagForm, formaPagamento: e.target.value })}
-                >
-                  {FORMAS_PAGAMENTO.map((f) => <option key={f} value={f}>{f}</option>)}
-                </select>
+                <Select value={pagForm.formaPagamento} onValueChange={(v) => { if (v) setPagForm({ ...pagForm, formaPagamento: v }) }}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FORMAS_PAGAMENTO.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label>Data do Pagamento</Label>
+                <Label htmlFor="pag-data">Data do Pagamento</Label>
                 <Input
+                  id="pag-data"
                   type="date"
                   value={pagForm.dataPagamento}
                   onChange={(e) => setPagForm({ ...pagForm, dataPagamento: e.target.value })}
@@ -719,7 +751,9 @@ export function CampeonatoDetailClient({
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setPagamentoOpen(null)}>Cancelar</Button>
-            <Button onClick={handlePagar}>Confirmar Pagamento</Button>
+            <Button onClick={handlePagar} disabled={pagando}>
+              {pagando ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Confirmar Pagamento"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
