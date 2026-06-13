@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +11,7 @@ import { toast } from "sonner"
 
 export function ConfigForm({ config }: { config: ClubConfig }) {
   const [form, setForm] = useState(config)
-  const [saving, setSaving] = useState(false)
+  const [saving, startSaving] = useTransition()
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value, type } = e.target
@@ -20,17 +21,16 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
     }))
   }
 
-  async function handleSave(e: React.FormEvent) {
+  function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    setSaving(true)
-    try {
-      await updateClubConfig(form)
-      toast.success("Configurações salvas")
-    } catch {
-      toast.error("Erro ao salvar configurações")
-    } finally {
-      setSaving(false)
-    }
+    startSaving(async () => {
+      try {
+        await updateClubConfig(form)
+        toast.success("Configurações salvas")
+      } catch {
+        toast.error("Erro ao salvar configurações")
+      }
+    })
   }
 
   return (
@@ -152,7 +152,7 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
             </div>
 
             <Button type="submit" disabled={saving} className="bg-brand-800 text-white hover:bg-brand-900">
-              {saving ? "Salvando..." : "Salvar"}
+              {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Salvar"}
             </Button>
           </form>
         </CardContent>
