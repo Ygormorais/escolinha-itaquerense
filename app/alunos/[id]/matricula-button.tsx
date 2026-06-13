@@ -2,6 +2,7 @@
 
 import { FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { formatMoney } from "@/lib/utils"
 
 type Aluno = {
   nome: string
@@ -27,7 +28,6 @@ type Props = {
 export function MatriculaButton({ aluno, nomeClube, endereco, cidade, telefoneClube }: Props) {
   function handleImprimir() {
     const fmt = (d: Date) => new Date(d).toLocaleDateString("pt-BR")
-    const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -89,7 +89,7 @@ export function MatriculaButton({ aluno, nomeClube, endereco, cidade, telefoneCl
   <div class="secao">
     <div class="secao-titulo">Condições Financeiras</div>
     <div class="grid">
-      <div class="campo"><label>Mensalidade</label><span class="destaque">${moeda(aluno.mensalidade)}</span></div>
+      <div class="campo"><label>Mensalidade</label><span class="destaque">${formatMoney(aluno.mensalidade)}</span></div>
       <div class="campo"><label>Data de matrícula</label><span>${fmt(aluno.dataMatricula)}</span></div>
       <div class="campo"><label>Vencimento</label><span>Todo dia 10 de cada mês</span></div>
       <div class="campo"><label>Forma de pagamento</label><span>PIX / Dinheiro / Transferência</span></div>
