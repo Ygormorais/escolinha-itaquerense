@@ -176,8 +176,9 @@ export function MidiaClient({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Título</Label>
+                <Label htmlFor="midia-titulo">Título</Label>
                 <Input
+                  id="midia-titulo"
                   value={form.titulo}
                   onChange={(e) => setForm({ ...form, titulo: e.target.value })}
                   placeholder="Ex: Melhores momentos, Gol do João..."
@@ -185,8 +186,9 @@ export function MidiaClient({
                 />
               </div>
               <div className="space-y-2">
-                <Label>URL</Label>
+                <Label htmlFor="midia-url">URL</Label>
                 <Input
+                  id="midia-url"
                   value={form.url}
                   onChange={(e) => setForm({ ...form, url: e.target.value })}
                   placeholder="https://youtube.com/... ou https://photos.google.com/..."
