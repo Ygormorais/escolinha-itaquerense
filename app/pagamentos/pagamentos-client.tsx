@@ -585,7 +585,7 @@ export function PagamentosClient({
                       )}
                       {status !== "Pago" && (
                         <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
-                          <Button variant="ghost" size="icon-sm" title="Excluir pagamento">
+                          <Button variant="ghost" size="icon-sm" aria-label="Excluir pagamento">
                             <Trash2Icon className="size-3.5 text-danger-600" />
                           </Button>
                         </ConfirmDialog>
