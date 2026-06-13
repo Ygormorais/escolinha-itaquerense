@@ -144,7 +144,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
           className="rounded-lg object-contain"
           aria-hidden="true"
         />
-        <span className="font-heading text-sm font-bold leading-tight text-brand-900">
+        <span className="font-heading text-sm font-bold leading-tight text-brand-900 dark:text-brand-300">
           Escolinha<br />Itaquerense
         </span>
       </div>
