@@ -149,21 +149,22 @@ export function ResponsaveisClient({
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Nome *</Label>
-                <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+                <Label htmlFor="resp-nome">Nome *</Label>
+                <Input id="resp-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Email *</Label>
-                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                <Label htmlFor="resp-email">Email *</Label>
+                <Input id="resp-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Telefone</Label>
-                <Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
+                <Label htmlFor="resp-tel">Telefone</Label>
+                <Input id="resp-tel" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
               </div>
               {editId && (
                 <div className="space-y-2">
-                  <Label>CPF</Label>
+                  <Label htmlFor="resp-cpf">CPF</Label>
                   <Input
+                    id="resp-cpf"
                     value={form.cpf}
                     onChange={(e) => {
                       const raw = e.target.value.replace(/\D/g, "").slice(0, 11)
@@ -181,8 +182,8 @@ export function ResponsaveisClient({
               )}
               {!editId && (
                 <div className="space-y-2">
-                  <Label>Senha *</Label>
-                  <Input type="password" autoComplete="new-password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
+                  <Label htmlFor="resp-senha">Senha *</Label>
+                  <Input id="resp-senha" type="password" autoComplete="new-password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
                 </div>
               )}
             </div>
@@ -321,8 +322,9 @@ export function ResponsaveisClient({
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Mensagem</Label>
+            <Label htmlFor="whats-msg">Mensagem</Label>
             <Textarea
+              id="whats-msg"
               value={whatsMsg}
               onChange={(e) => setWhatsMsg(e.target.value)}
               placeholder="Digite a mensagem para enviar via WhatsApp..."
