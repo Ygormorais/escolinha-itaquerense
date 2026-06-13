@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 import Link from "next/link"
 import { criarPartida, editarPartida, deletarPartida } from "@/app/actions/campeonatos"
@@ -334,11 +337,16 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                   </div>
                   <div className="space-y-2">
                     <Label>Local</Label>
-                    <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })}>
-                      <option value="Casa">Casa</option>
-                      <option value="Fora">Fora</option>
-                      <option value="Neutro">Neutro</option>
-                    </select>
+                    <Select value={form.local} onValueChange={(v) => { if (v) setForm({ ...form, local: v }) }}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Casa">Casa</SelectItem>
+                        <SelectItem value="Fora">Fora</SelectItem>
+                        <SelectItem value="Neutro">Neutro</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Gols Pró</Label>
