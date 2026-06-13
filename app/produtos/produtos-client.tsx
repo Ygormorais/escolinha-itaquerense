@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Image from "next/image"
-import { Plus, ShoppingBag, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react"
+import { Plus, ShoppingBag, Pencil, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -85,7 +85,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, startPending] = useTransition()
   const [form, setForm] = useState<ProdutoForm>(defaultForm)
 
   function openNew() {
@@ -109,36 +109,35 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
     setOpen(true)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setIsPending(true)
-    try {
-      const data = {
-        nome: form.nome,
-        descricao: form.descricao || undefined,
-        preco: Number(form.preco),
-        categoria: form.categoria || undefined,
-        tamanhos: form.tamanhos || undefined,
-        estoque: Number(form.estoque),
-        ativo: form.ativo,
-        imagem: form.imagem || undefined,
+    startPending(async () => {
+      try {
+        const data = {
+          nome: form.nome,
+          descricao: form.descricao || undefined,
+          preco: Number(form.preco),
+          categoria: form.categoria || undefined,
+          tamanhos: form.tamanhos || undefined,
+          estoque: Number(form.estoque),
+          ativo: form.ativo,
+          imagem: form.imagem || undefined,
+        }
+        if (editingId) {
+          const r = await atualizarProduto(editingId, data)
+          if (r && "error" in r) { toast.error(r.error); return }
+          toast.success("Produto atualizado!")
+        } else {
+          const r = await criarProduto(data)
+          if (r && "error" in r) { toast.error(r.error); return }
+          toast.success("Produto criado!")
+        }
+        setOpen(false)
+        router.refresh()
+      } catch {
+        toast.error("Erro ao salvar produto")
       }
-      if (editingId) {
-        const r = await atualizarProduto(editingId, data)
-        if (r && "error" in r) { toast.error(r.error); return }
-        toast.success("Produto atualizado!")
-      } else {
-        const r = await criarProduto(data)
-        if (r && "error" in r) { toast.error(r.error); return }
-        toast.success("Produto criado!")
-      }
-      setOpen(false)
-      router.refresh()
-    } catch {
-      toast.error("Erro ao salvar produto")
-    } finally {
-      setIsPending(false)
-    }
+    })
   }
 
   async function handleRemover(id: number, _nome: string) {
@@ -250,7 +249,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
               Produto ativo
             </label>
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Salvando..." : editingId ? "Atualizar" : "Criar"}
+              {isPending ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : (editingId ? "Atualizar" : "Criar")}
             </Button>
           </form>
         </DialogContent>
