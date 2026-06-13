@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Mail, Lock, LogIn } from "lucide-react"
+import { Mail, Lock, LogIn, Loader2 } from "lucide-react"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,13 +14,12 @@ export default function ResponsavelLoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [senha, setSenha] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email || !senha) { toast.error("Preencha email e senha"); return }
-    setLoading(true)
-    try {
+    startLoading(async () => {
       const res = await fetch("/api/responsavel/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,9 +29,7 @@ export default function ResponsavelLoginPage() {
       if (!res.ok) { toast.error(data.error); return }
       toast.success(`Bem-vindo, ${data.nome}!`)
       router.push("/responsavel")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -94,7 +91,7 @@ export default function ResponsavelLoginPage() {
             </div>
           </div>
           <Button type="submit" className="w-full" size="lg" disabled={loading || !email || !senha}>
-            <LogIn className="size-4" /> {loading ? "Entrando..." : "Entrar"}
+            {loading ? <><Loader2 className="size-4 animate-spin" /> Entrando...</> : <><LogIn className="size-4" /> Entrar</>}
           </Button>
         </form>
       </div>
