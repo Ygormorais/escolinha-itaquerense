@@ -51,7 +51,7 @@ export function OnboardingTour() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl border bg-white p-6 shadow-lg">
+      <div className="w-full max-w-md rounded-2xl border bg-card p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-medium text-muted-foreground">
             Passo {currentStep + 1} de {totalSteps}
@@ -70,7 +70,7 @@ export function OnboardingTour() {
           ))}
         </div>
 
-        <h2 className="font-heading text-lg font-bold text-ink-950 mb-2">{step.title}</h2>
+        <h2 className="font-heading text-lg font-bold text-foreground mb-2">{step.title}</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
 
         <div className="mt-6 flex items-center justify-between">

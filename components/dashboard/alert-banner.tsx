@@ -29,9 +29,9 @@ export function AlertBanner({ alerts }: { alerts: AlertItem[] }) {
     <div className="space-y-2">
       {alerts.map((alert, i) => {
         const colorMap = {
-          danger: "border-destructive/30 bg-destructive-50 text-danger-600",
-          warning: "border-warning-600/30 bg-warning-50 text-warning-600",
-          info: "border-info-600/30 bg-info-50 text-info-600",
+          danger: "border-destructive/30 bg-danger-50 text-danger-600 dark:bg-danger-600/10 dark:text-danger-600",
+          warning: "border-warning-600/30 bg-warning-50 text-warning-600 dark:bg-warning-600/10",
+          info: "border-info-600/30 bg-info-50 text-info-600 dark:bg-info-600/10",
         }
         const Icon = ICONS[alert.icon]
         return (
