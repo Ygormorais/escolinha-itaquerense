@@ -98,9 +98,7 @@ export function RelatorioChart({
   categorias: [string, number][]
 }) {
   const fmtCurrency = (v: unknown) =>
-    typeof v === "number"
-      ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-      : String(v)
+    typeof v === "number" ? formatMoney(v) : String(v)
 
   const pieData = categorias.map(([name, value]) => ({ name, value }))
 
