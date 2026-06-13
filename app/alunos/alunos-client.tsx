@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload } from "lucide-react"
+import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload, Loader2 } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Pagination } from "@/components/ui/pagination"
@@ -70,7 +70,7 @@ export function AlunoFormDialog({
   trigger: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
   const router = useRouter()
 
   const form = useForm<FormValues>({
@@ -90,22 +90,23 @@ export function AlunoFormDialog({
     },
   })
 
-  async function onSubmit(values: FormValues) {
-    setLoading(true)
-    try {
-      const payload = { ...values, mensalidade: Number(values.mensalidade), desconto: Number(values.desconto ?? 0) }
-      const result = aluno ? await updateAluno(aluno.id, payload) : await createAluno(payload)
-      if ("error" in result) {
-        toast.error(result.error)
-        return
+  function onSubmit(values: FormValues) {
+    startLoading(async () => {
+      try {
+        const payload = { ...values, mensalidade: Number(values.mensalidade), desconto: Number(values.desconto ?? 0) }
+        const result = aluno ? await updateAluno(aluno.id, payload) : await createAluno(payload)
+        if ("error" in result) {
+          toast.error(result.error)
+          return
+        }
+        toast.success(aluno ? "Aluno atualizado" : "Aluno cadastrado")
+        setOpen(false)
+        form.reset()
+        router.refresh()
+      } catch {
+        toast.error("Erro ao salvar aluno")
       }
-      toast.success(aluno ? "Aluno atualizado" : "Aluno cadastrado")
-      setOpen(false)
-      form.reset()
-      router.refresh()
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -249,7 +250,7 @@ export function AlunoFormDialog({
 
             <DialogFooter showCloseButton>
               <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                {loading ? "Salvando..." : aluno ? "Salvar" : "Cadastrar"}
+                {loading ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : aluno ? "Salvar" : "Cadastrar"}
               </Button>
             </DialogFooter>
           </form>
