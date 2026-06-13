@@ -124,7 +124,7 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
           disabled={pending}
           className="bg-brand-800 text-white hover:bg-brand-900"
         >
-          <CheckCircle className="size-4" />
+          {pending ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4" />}
           {pending ? "Salvando..." : "Registrar Pagamento"}
         </Button>
       </DialogFooter>
