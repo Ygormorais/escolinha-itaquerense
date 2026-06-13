@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addDays, addMonths, subMonths, format, isSameMonth,
   isSameDay, getDay,
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +15,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { TURMAS } from "@/lib/constants"
 import { criarEvento, editarEvento, deletarEvento } from "@/app/actions/eventos"
 import { toast } from "sonner"
@@ -44,6 +48,8 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvento, setEditingEvento] = useState<Evento | null>(null)
   const router = useRouter()
+
+  const [saving, startSaving] = useTransition()
 
   const [form, setForm] = useState({
     titulo: "", tipo: "Treino", data: format(new Date(), "yyyy-MM-dd"),
@@ -93,7 +99,7 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
     setDialogOpen(true)
   }
 
-  async function handleSave() {
+  function handleSave() {
     if (!form.titulo.trim()) { toast.error("Título obrigatório"); return }
 
     const payload = {
@@ -105,19 +111,21 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
       descricao: form.descricao || undefined,
     }
 
-    try {
-      if (editingEvento) {
-        await editarEvento(editingEvento.id, payload)
-        toast.success("Evento atualizado")
-      } else {
-        await criarEvento(payload)
-        toast.success("Evento criado")
+    startSaving(async () => {
+      try {
+        if (editingEvento) {
+          await editarEvento(editingEvento.id, payload)
+          toast.success("Evento atualizado")
+        } else {
+          await criarEvento(payload)
+          toast.success("Evento criado")
+        }
+        setDialogOpen(false)
+        router.refresh()
+      } catch {
+        toast.error("Erro ao salvar evento")
       }
-      setDialogOpen(false)
-      router.refresh()
-    } catch {
-      toast.error("Erro ao salvar evento")
-    }
+    })
   }
 
   async function handleDelete(id: number) {
@@ -285,60 +293,63 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Título</Label>
-              <Input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
+              <Label htmlFor="agenda-titulo">Título</Label>
+              <Input id="agenda-titulo" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Tipo</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={form.tipo}
-                  onChange={(e) => setForm({ ...form, tipo: e.target.value })}
-                >
-                  <option value="Treino">Treino</option>
-                  <option value="Jogo">Jogo</option>
-                  <option value="Evento">Evento</option>
-                </select>
+                <Label htmlFor="agenda-tipo">Tipo</Label>
+                <Select value={form.tipo} onValueChange={(v) => { if (v) setForm({ ...form, tipo: v }) }}>
+                  <SelectTrigger id="agenda-tipo">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Treino">Treino</SelectItem>
+                    <SelectItem value="Jogo">Jogo</SelectItem>
+                    <SelectItem value="Evento">Evento</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label>Data</Label>
-                <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Hora Início</Label>
-                <Input type="time" value={form.horaInicio} onChange={(e) => setForm({ ...form, horaInicio: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Hora Fim</Label>
-                <Input type="time" value={form.horaFim} onChange={(e) => setForm({ ...form, horaFim: e.target.value })} />
+                <Label htmlFor="agenda-data">Data</Label>
+                <Input id="agenda-data" type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Local</Label>
-                <Input value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} />
+                <Label htmlFor="agenda-hora-inicio">Hora Início</Label>
+                <Input id="agenda-hora-inicio" type="time" value={form.horaInicio} onChange={(e) => setForm({ ...form, horaInicio: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Turmas</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={form.turmas}
-                  onChange={(e) => setForm({ ...form, turmas: e.target.value })}
-                >
-                  <option value="Todas">Todas</option>
-                  {TURMAS.map((t) => <option key={t} value={t}>{t}</option>)}
-                </select>
+                <Label htmlFor="agenda-hora-fim">Hora Fim</Label>
+                <Input id="agenda-hora-fim" type="time" value={form.horaFim} onChange={(e) => setForm({ ...form, horaFim: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agenda-local">Local</Label>
+                <Input id="agenda-local" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agenda-turmas">Turmas</Label>
+                <Select value={form.turmas} onValueChange={(v) => { if (v) setForm({ ...form, turmas: v }) }}>
+                  <SelectTrigger id="agenda-turmas">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Todas">Todas</SelectItem>
+                    {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Descrição</Label>
-              <textarea
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              <Label htmlFor="agenda-descricao">Descrição</Label>
+              <Textarea
+                id="agenda-descricao"
                 value={form.descricao}
                 onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+                rows={3}
               />
             </div>
           </div>
@@ -350,8 +361,8 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                 </Button>
               </ConfirmDialog>
             )}
-            <Button onClick={handleSave} className="gap-2">
-              {editingEvento ? "Salvar" : "Criar Evento"}
+            <Button onClick={handleSave} disabled={saving} className="gap-2">
+              {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : (editingEvento ? "Salvar" : "Criar Evento")}
             </Button>
           </DialogFooter>
         </DialogContent>
