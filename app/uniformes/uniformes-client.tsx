@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Search, CheckCircle, XCircle, Plus, Shirt } from "lucide-react"
+import { Search, CheckCircle, XCircle, Plus, Shirt, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -52,6 +52,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [itemForm, setItemForm] = useState("")
   const [tamanhoForm, setTamanhoForm] = useState("")
+  const [adicionando, startAdicionando] = useTransition()
 
   const TURMAS = [...new Set(alunos.map((a) => a.turma))].sort()
 
@@ -64,20 +65,22 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   const totalEntregues = alunos.reduce((s, a) => s + a.uniformes.filter((u) => u.entregue).length, 0)
   const totalPendentes = alunos.reduce((s, a) => s + a.uniformes.filter((u) => !u.entregue).length, 0)
 
-  async function handleAdicionar() {
+  function handleAdicionar() {
     if (!itemForm.trim() || !selectedAluno) return
-    const result = await adicionarUniforme(selectedAluno.id, {
-      item: itemForm,
-      tamanho: tamanhoForm || undefined,
+    startAdicionando(async () => {
+      const result = await adicionarUniforme(selectedAluno.id, {
+        item: itemForm,
+        tamanho: tamanhoForm || undefined,
+      })
+      if ("success" in result) {
+        toast.success("Item adicionado")
+        setItemForm("")
+        setTamanhoForm("")
+        router.refresh()
+      } else {
+        toast.error(result.error)
+      }
     })
-    if ("success" in result) {
-      toast.success("Item adicionado")
-      setItemForm("")
-      setTamanhoForm("")
-      router.refresh()
-    } else {
-      toast.error(result.error)
-    }
   }
 
   async function handleEntregar(id: number, alunoId: number) {
@@ -272,8 +275,8 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                                 value={tamanhoForm}
                                 onChange={(e) => setTamanhoForm(e.target.value)}
                               />
-                              <Button size="sm" onClick={handleAdicionar}>
-                                <Plus className="size-4" />
+                              <Button size="sm" onClick={handleAdicionar} disabled={adicionando} aria-label="Adicionar item">
+                                {adicionando ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
                               </Button>
                             </div>
                           </div>
