@@ -444,13 +444,13 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
                     />
                     {aluno.status === "Ativo" ? (
                       <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
-                        <Button variant="ghost" size="icon-sm" title="Inativar aluno">
+                        <Button variant="ghost" size="icon-sm" aria-label="Inativar aluno">
                           <UserXIcon className="size-3.5" />
                         </Button>
                       </ConfirmDialog>
                     ) : (
                       <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
-                        <Button variant="ghost" size="icon-sm" title="Reativar aluno">
+                        <Button variant="ghost" size="icon-sm" aria-label="Reativar aluno">
                           <UserCheckIcon className="size-3.5 text-success-600" />
                         </Button>
                       </ConfirmDialog>
