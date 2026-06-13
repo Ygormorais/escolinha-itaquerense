@@ -188,10 +188,10 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
                   <TableCell>
                     {t.status === "pendente" && (
                       <div className="flex gap-1">
-                        <Button size="icon-xs" variant="outline" onClick={() => openReconcile(t)} title="Reconciliar">
+                        <Button size="icon-xs" variant="outline" onClick={() => openReconcile(t)} aria-label="Reconciliar transação">
                           <CheckCircle className="size-3 text-success-600" />
                         </Button>
-                        <Button size="icon-xs" variant="ghost" onClick={() => handleIgnorar(t.id)} title="Ignorar">
+                        <Button size="icon-xs" variant="ghost" onClick={() => handleIgnorar(t.id)} aria-label="Ignorar transação">
                           <XCircle className="size-3 text-muted-foreground" />
                         </Button>
                       </div>
