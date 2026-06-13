@@ -8,6 +8,7 @@ import { formatMoney, plural } from "@/lib/utils"
 import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
@@ -355,9 +356,8 @@ export function PagamentosClient({
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium">Data do pagamento</label>
-              <input type="date" value={bulkData} onChange={(e) => setBulkData(e.target.value)}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <Label htmlFor="bulk-data">Data do pagamento</Label>
+              <Input id="bulk-data" type="date" value={bulkData} onChange={(e) => setBulkData(e.target.value)} className="mt-1" />
             </div>
             <div>
               <label className="text-sm font-medium">Forma de pagamento</label>
