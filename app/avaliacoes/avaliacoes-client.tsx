@@ -396,7 +396,7 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
                   <div className="flex gap-1">
                     <EditarAvaliacaoDialog key={a.id} avaliacao={a} />
                     <ConfirmDialog title="Remover avaliação?" description={`Remover avaliação de ${a.aluno.nome} (${a.periodo})?`} confirmLabel="Remover" onConfirm={() => handleDelete(a)}>
-                      <Button variant="ghost" size="icon-sm" title="Remover avaliação">
+                      <Button variant="ghost" size="icon-sm" aria-label="Remover avaliação">
                         <Trash2 className="size-3.5" />
                       </Button>
                     </ConfirmDialog>
