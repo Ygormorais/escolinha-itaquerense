@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Upload, CheckCircle, AlertCircle, FileText, Download } from "lucide-react"
+import { Upload, CheckCircle, AlertCircle, FileText, Download, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { importarAlunosCSV } from "@/app/actions/importar"
@@ -162,7 +162,7 @@ export function ImportarAlunosClient() {
                   disabled={pending}
                   className="bg-brand-800 text-white hover:bg-brand-900"
                 >
-                  {pending ? "Importando..." : `Importar ${plural(preview.length, "aluno", "alunos", "nenhum")}`}
+                  {pending ? <><Loader2 className="size-4 animate-spin" /> Importando...</> : `Importar ${plural(preview.length, "aluno", "alunos", "nenhum")}`}
                 </Button>
               )}
             </div>
