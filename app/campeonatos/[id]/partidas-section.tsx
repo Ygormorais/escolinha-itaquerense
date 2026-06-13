@@ -133,22 +133,24 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
     })
   }
 
-  async function handleSaveScore() {
+  function handleSaveScore() {
     if (!scoreDialog) return
-    const gp = scoreForm.golsPro ? Number(scoreForm.golsPro) : null
-    const gc = scoreForm.golsContra ? Number(scoreForm.golsContra) : null
-    await editarPartida(scoreDialog.id, {
-      rodada: scoreDialog.rodada,
-      data: format(new Date(scoreDialog.data), "yyyy-MM-dd"),
-      adversario: scoreDialog.adversario,
-      local: scoreDialog.local,
-      golsPro: gp,
-      golsContra: gc,
-      observacoes: scoreDialog.observacoes ?? undefined,
-    }, campeonatoId)
-    toast.success("Placar atualizado!")
-    setScoreDialog(null)
-    router.refresh()
+    startSaving(async () => {
+      const gp = scoreForm.golsPro ? Number(scoreForm.golsPro) : null
+      const gc = scoreForm.golsContra ? Number(scoreForm.golsContra) : null
+      await editarPartida(scoreDialog.id, {
+        rodada: scoreDialog.rodada,
+        data: format(new Date(scoreDialog.data), "yyyy-MM-dd"),
+        adversario: scoreDialog.adversario,
+        local: scoreDialog.local,
+        golsPro: gp,
+        golsContra: gc,
+        observacoes: scoreDialog.observacoes ?? undefined,
+      }, campeonatoId)
+      toast.success("Placar atualizado!")
+      setScoreDialog(null)
+      router.refresh()
+    })
   }
 
   const resultadoBadge = (r: string | null) => {
@@ -415,7 +417,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                   <TableCell>
                     <div className="flex gap-1">
                       <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
-                        <Button size="icon-sm" variant="ghost" title="Convocação" className={convocacoesMap.has(p.id) ? "text-success-600" : ""}>
+                        <Button size="icon-sm" variant="ghost" aria-label="Convocação" className={convocacoesMap.has(p.id) ? "text-success-600" : ""}>
                           <Shirt className="size-3.5" />
                         </Button>
                       </Link>
@@ -467,7 +469,9 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setScoreDialog(null)}>Cancelar</Button>
-            <Button onClick={handleSaveScore}>Salvar Placar</Button>
+            <Button onClick={handleSaveScore} disabled={saving}>
+              {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Salvar Placar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
