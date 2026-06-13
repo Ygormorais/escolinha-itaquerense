@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Loader2, Lock, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,32 +10,31 @@ export function LoginForm({ next }: { next?: string }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [show, setShow] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
   const [error, setError] = useState("")
   const router = useRouter()
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    setLoading(true)
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      })
-      if (!res.ok) {
-        const data = await res.json()
-        setError(data.error ?? "Usuário ou senha incorretos")
-        return
+    startLoading(async () => {
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        })
+        if (!res.ok) {
+          const data = await res.json()
+          setError(data.error ?? "Usuário ou senha incorretos")
+          return
+        }
+        router.replace(next && next.startsWith("/") ? next : "/dashboard")
+        router.refresh()
+      } catch {
+        setError("Erro ao conectar. Tente novamente.")
       }
-      router.replace(next && next.startsWith("/") ? next : "/dashboard")
-      router.refresh()
-    } catch {
-      setError("Erro ao conectar. Tente novamente.")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
