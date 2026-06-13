@@ -6,6 +6,10 @@ import { ptBR } from "date-fns/locale"
 import { ArrowLeft, Send, HelpCircle, CheckCircle2, Clock, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 import Link from "next/link"
 import { criarSolicitacao } from "@/app/actions/solicitacoes"
@@ -68,14 +72,19 @@ export function SolicitacoesClient({ responsavelId, solicitacoes }: { responsave
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="tipo" className="text-sm font-medium">Tipo</label>
-              <select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} className="mt-1 block w-full rounded-lg border border-input bg-white px-3 py-2 text-sm shadow-sm">
-                {TIPOS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
+              <label className="text-sm font-medium">Tipo</label>
+              <Select value={tipo} onValueChange={(v) => { if (v) setTipo(v) }}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label htmlFor="descricao" className="text-sm font-medium">Descrição</label>
-              <textarea id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={4} className="mt-1 block w-full rounded-lg border border-input bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500" placeholder="Descreva sua solicitação em detalhes..." />
+              <Textarea id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} className="mt-1 min-h-[96px]" placeholder="Descreva sua solicitação em detalhes..." />
             </div>
             <Button type="submit" disabled={pending} className="bg-brand-800 text-white hover:bg-brand-900">
               {pending ? "Enviando..." : "Enviar Solicitação"}
