@@ -4,7 +4,7 @@ import { useState, useTransition, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText } from "lucide-react"
+import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText, Loader2 } from "lucide-react"
 import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,7 +65,7 @@ function CustoFormDialog({
   trigger: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
   const router = useRouter()
 
   const form = useForm<FormValues>({
@@ -92,22 +92,23 @@ function CustoFormDialog({
         },
   })
 
-  async function onSubmit(values: FormValues) {
-    setLoading(true)
-    try {
-      const payload = { ...values, valor: Number(values.valor) }
-      const result = custo ? await updateCusto(custo.id, payload) : await createCusto(payload)
-      if ("error" in result) {
-        toast.error(result.error)
-        return
+  function onSubmit(values: FormValues) {
+    startLoading(async () => {
+      try {
+        const payload = { ...values, valor: Number(values.valor) }
+        const result = custo ? await updateCusto(custo.id, payload) : await createCusto(payload)
+        if ("error" in result) {
+          toast.error(result.error)
+          return
+        }
+        toast.success(custo ? "Custo atualizado" : "Custo registrado")
+        if (!custo) form.reset()
+        setOpen(false)
+        router.refresh()
+      } catch {
+        toast.error("Erro ao salvar custo")
       }
-      toast.success(custo ? "Custo atualizado" : "Custo registrado")
-      if (!custo) form.reset()
-      setOpen(false)
-      router.refresh()
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -211,7 +212,7 @@ function CustoFormDialog({
 
             <DialogFooter showCloseButton>
               <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                {loading ? "Salvando..." : custo ? "Salvar" : "Registrar"}
+                {loading ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : custo ? "Salvar" : "Registrar"}
               </Button>
             </DialogFooter>
           </form>
