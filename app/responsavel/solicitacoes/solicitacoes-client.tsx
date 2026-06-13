@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ArrowLeft, Send, HelpCircle, CheckCircle2, Clock, XCircle } from "lucide-react"
+import { ArrowLeft, Send, HelpCircle, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -87,7 +87,7 @@ export function SolicitacoesClient({ responsavelId, solicitacoes }: { responsave
               <Textarea id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} className="mt-1 min-h-[96px]" placeholder="Descreva sua solicitação em detalhes..." />
             </div>
             <Button type="submit" disabled={pending} className="bg-brand-800 text-white hover:bg-brand-900">
-              {pending ? "Enviando..." : "Enviar Solicitação"}
+              {pending ? <><Loader2 className="size-4 animate-spin" /> Enviando...</> : "Enviar Solicitação"}
             </Button>
           </form>
         </CardContent>
