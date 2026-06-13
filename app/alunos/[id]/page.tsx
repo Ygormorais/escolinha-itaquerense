@@ -6,6 +6,7 @@ import { ArrowLeft, IdCard, MessageCircle, Receipt, FileText } from "lucide-reac
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
@@ -125,14 +126,14 @@ export default async function AlunoDetailPage({
               />
               <Link
                 href={`/alunos/${aluno.id}/carteirinha`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
+                className={buttonVariants({ variant: "outline", size: "sm" })}
               >
                 <IdCard className="size-4" />
                 Carteirinha
               </Link>
               <Link
                 href={`/recibos/declaracao?alunoId=${aluno.id}&ano=${new Date().getFullYear()}`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
+                className={buttonVariants({ variant: "outline", size: "sm" })}
               >
                 <FileText className="size-4" />
                 Declaração anual
