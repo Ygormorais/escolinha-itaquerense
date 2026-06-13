@@ -3,6 +3,7 @@
 import { Printer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { printHTML } from "@/lib/print"
+import { formatMoney } from "@/lib/utils"
 
 export function AlunoPrintButton({ alunoId }: { alunoId: number }) {
   async function handlePrint() {
@@ -13,7 +14,7 @@ export function AlunoPrintButton({ alunoId }: { alunoId: number }) {
       if ("error" in data) return
 
       const pagamentosHtml = data.pagamentos.map((p: { mesReferencia: string; valorRecebido: number | null; dataPagamento: string | null; formaPagamento: string | null }) =>
-        `<tr><td>${p.mesReferencia}</td><td>${p.valorRecebido ? p.valorRecebido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td><td>${p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString("pt-BR") : "—"}</td><td>${p.formaPagamento ?? "—"}</td></tr>`
+        `<tr><td>${p.mesReferencia}</td><td>${p.valorRecebido ? formatMoney(p.valorRecebido) : "—"}</td><td>${p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString("pt-BR") : "—"}</td><td>${p.formaPagamento ?? "—"}</td></tr>`
       ).join("")
 
       const frequenciasHtml = data.frequencias.map((f: { data: string; presenca: string }) =>
@@ -32,7 +33,7 @@ export function AlunoPrintButton({ alunoId }: { alunoId: number }) {
           <div><dt>Horário</dt><dd>${data.horario}</dd></div>
           <div><dt>Responsável</dt><dd>${data.responsavel}</dd></div>
           <div><dt>Telefone</dt><dd>${data.telefone}</dd></div>
-          <div><dt>Mensalidade</dt><dd>${data.mensalidade.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</dd></div>
+          <div><dt>Mensalidade</dt><dd>${formatMoney(data.mensalidade)}</dd></div>
           <div><dt>Status</dt><dd><span class="badge ${data.status === "Ativo" ? "badge-success" : "badge-danger"}">${data.status}</span></dd></div>
           <div><dt>% Presença</dt><dd>${pctPresenca}%</dd></div>
         </dl>
