@@ -151,11 +151,11 @@ export function UniformesCard({ alunoId, uniformes }: { alunoId: number; uniform
               </div>
               <div className="flex items-center gap-1">
                 {!u.entregue && (
-                  <Button size="icon-sm" variant="ghost" title="Marcar como entregue" onClick={() => handleEntregue(u.id)} disabled={pending}>
+                  <Button size="icon-sm" variant="ghost" aria-label="Marcar como entregue" onClick={() => handleEntregue(u.id)} disabled={pending}>
                     <CheckCircle className="size-4 text-success-600" />
                   </Button>
                 )}
-                <Button size="icon-sm" variant="ghost" title="Remover" onClick={() => handleRemover(u.id)} disabled={pending}>
+                <Button size="icon-sm" variant="ghost" aria-label="Remover item de uniforme" onClick={() => handleRemover(u.id)} disabled={pending}>
                   <Trash2 className="size-4 text-danger-600" />
                 </Button>
               </div>
