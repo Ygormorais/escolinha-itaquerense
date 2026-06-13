@@ -6,6 +6,9 @@ import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
@@ -51,7 +54,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
     ).join("")
     printHTML(`
       <h1>Relatório de Alunos</h1>
-      <p>${filtrados.length} alunos · Receita mensal R$ ${totalMensalidade.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+      <p>${filtrados.length} alunos · Receita mensal ${formatMoney(totalMensalidade)}</p>
       <table>
         <thead><tr><th>Nome</th><th>Turma</th><th>Horário</th><th>Status</th><th>Responsável</th><th>Telefone</th><th>Mensalidade</th><th>Matrícula</th></tr></thead>
         <tbody>${linhas}</tbody>
@@ -87,7 +90,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Relatório de Alunos"
-        description={`${filtrados.length} alunos · Receita mensal R$ ${totalMensalidade.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+        description={`${filtrados.length} alunos · Receita mensal ${formatMoney(totalMensalidade)}`}
         action={
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={imprimirPDF}>
@@ -111,16 +114,15 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
             className="pl-9 h-9 text-sm"
           />
         </div>
-        <select
-          className="flex h-9 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          value={filtroTurma}
-          onChange={(e) => setFiltroTurma(e.target.value)}
-        >
-          <option value="todas">Todas turmas</option>
-          {turmas.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+        <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
+          <SelectTrigger className="h-9 w-36 text-sm" aria-label="Filtrar por turma">
+            <SelectValue placeholder="Todas turmas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas turmas</SelectItem>
+            {turmas.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <div className="flex gap-1">
           {[
             { key: "todos", label: "Todos" },
