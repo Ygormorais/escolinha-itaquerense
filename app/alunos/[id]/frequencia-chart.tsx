@@ -11,13 +11,40 @@ type Ponto = { label: string; total: number; presentes: number; pct: number | nu
 
 export function FrequenciaChart({ alunoId }: { alunoId: number }) {
   const [data, setData] = useState<Ponto[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getFrequenciaAluno(alunoId).then(setData)
+    getFrequenciaAluno(alunoId).then((d) => {
+      setData(d)
+      setLoading(false)
+    })
   }, [alunoId])
 
+  if (loading) return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Presença — últimos 6 meses</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-[180px] animate-pulse rounded-lg bg-muted" />
+      </CardContent>
+    </Card>
+  )
+
   const temDados = data.some((d) => d.total > 0)
-  if (!temDados) return null
+
+  if (!temDados) return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Presença — últimos 6 meses</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          Nenhum registro de frequência para este aluno ainda.
+        </p>
+      </CardContent>
+    </Card>
+  )
 
   return (
     <Card>
