@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { PlusIcon, Banknote } from "lucide-react"
+import { PlusIcon, Banknote, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -141,8 +141,8 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
         {modo === "avulso" ? (
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-1">
-              <Label>Descrição</Label>
-              <Input value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: Venda de uniforme" />
+              <Label htmlFor="din-descricao">Descrição</Label>
+              <Input id="din-descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: Venda de uniforme" />
             </div>
             <div className="space-y-1">
               <Label>Categoria</Label>
@@ -154,12 +154,12 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Valor (R$)</Label>
-              <Input type="number" step="0.01" value={valorAvulso} onChange={(e) => setValorAvulso(e.target.value)} />
+              <Label htmlFor="din-valor">Valor (R$)</Label>
+              <Input id="din-valor" type="number" step="0.01" value={valorAvulso} onChange={(e) => setValorAvulso(e.target.value)} />
             </div>
             <div className="col-span-2 space-y-1">
-              <Label>Data</Label>
-              <Input type="date" value={dataAvulso} onChange={(e) => setDataAvulso(e.target.value)} />
+              <Label htmlFor="din-data">Data</Label>
+              <Input id="din-data" type="date" value={dataAvulso} onChange={(e) => setDataAvulso(e.target.value)} />
             </div>
           </div>
         ) : (
@@ -185,19 +185,19 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Valor (R$)</Label>
-              <Input type="number" step="0.01" value={valorMens} onChange={(e) => setValorMens(e.target.value)} />
+              <Label htmlFor="din-valor-mens">Valor (R$)</Label>
+              <Input id="din-valor-mens" type="number" step="0.01" value={valorMens} onChange={(e) => setValorMens(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Data</Label>
-              <Input type="date" value={dataMens} onChange={(e) => setDataMens(e.target.value)} />
+              <Label htmlFor="din-data-mens">Data</Label>
+              <Input id="din-data-mens" type="date" value={dataMens} onChange={(e) => setDataMens(e.target.value)} />
             </div>
           </div>
         )}
 
         <DialogFooter showCloseButton>
           <Button onClick={handleSubmit} disabled={pending || !podeSalvar} className="bg-brand-800 text-white hover:bg-brand-900">
-            {pending ? "Salvando..." : "Registrar"}
+            {pending ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Registrar"}
           </Button>
         </DialogFooter>
       </DialogContent>
