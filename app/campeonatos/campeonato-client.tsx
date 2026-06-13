@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign } from "lucide-react"
+import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign, Loader2 } from "lucide-react"
 import { formatMoney, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 import { toast } from "sonner"
 import { criarCampeonato } from "@/app/actions/campeonatos"
@@ -47,6 +48,7 @@ export function CampeonatoClient({
   campeonatos: Campeonato[]
 }) {
   const router = useRouter()
+  const [creating, startCreating] = useTransition()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [form, setForm] = useState({
     nome: "",
@@ -67,32 +69,38 @@ export function CampeonatoClient({
   const encerrados = campeonatos.filter((c) => c.status === "encerrado").length
   const totalInscricoes = campeonatos.reduce((s, c) => s + c._count.inscricoes, 0)
 
-  async function handleCreate() {
+  function handleCreate() {
     if (!form.nome.trim() || !form.dataInicio) {
       toast.error("Preencha nome e data de início")
       return
     }
-    await criarCampeonato({
-      nome: form.nome,
-      descricao: form.descricao || undefined,
-      dataInicio: form.dataInicio,
-      dataFim: form.dataFim || undefined,
-      local: form.local || undefined,
-      taxaInscricao: Number(form.taxaInscricao),
-      taxaJogo: Number(form.taxaJogo),
-      taxaArbitragem: Number(form.taxaArbitragem),
-      custoTransporte: Number(form.custoTransporte),
-      custoUniforme: Number(form.custoUniforme),
-      observacoes: form.observacoes || undefined,
+    startCreating(async () => {
+      try {
+        await criarCampeonato({
+          nome: form.nome,
+          descricao: form.descricao || undefined,
+          dataInicio: form.dataInicio,
+          dataFim: form.dataFim || undefined,
+          local: form.local || undefined,
+          taxaInscricao: Number(form.taxaInscricao),
+          taxaJogo: Number(form.taxaJogo),
+          taxaArbitragem: Number(form.taxaArbitragem),
+          custoTransporte: Number(form.custoTransporte),
+          custoUniforme: Number(form.custoUniforme),
+          observacoes: form.observacoes || undefined,
+        })
+        toast.success("Campeonato criado!")
+        setDialogOpen(false)
+        setForm({
+          nome: "", descricao: "", dataInicio: "", dataFim: "", local: "",
+          taxaInscricao: "0", taxaJogo: "0", taxaArbitragem: "0",
+          custoTransporte: "0", custoUniforme: "0", observacoes: "",
+        })
+        router.refresh()
+      } catch {
+        toast.error("Erro ao criar campeonato")
+      }
     })
-    toast.success("Campeonato criado!")
-    setDialogOpen(false)
-    setForm({
-      nome: "", descricao: "", dataInicio: "", dataFim: "", local: "",
-      taxaInscricao: "0", taxaJogo: "0", taxaArbitragem: "0",
-      custoTransporte: "0", custoUniforme: "0", observacoes: "",
-    })
-    router.refresh()
   }
 
   return (
@@ -146,53 +154,55 @@ export function CampeonatoClient({
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 space-y-2">
-                <Label>Nome *</Label>
-                <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome do campeonato" />
+                <Label htmlFor="camp-nome">Nome *</Label>
+                <Input id="camp-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome do campeonato" />
               </div>
               <div className="col-span-2 space-y-2">
-                <Label>Descrição</Label>
-                <textarea className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Descrição..." />
+                <Label htmlFor="camp-descricao">Descrição</Label>
+                <Textarea id="camp-descricao" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Descrição..." />
               </div>
               <div className="space-y-2">
-                <Label>Data Início *</Label>
-                <Input type="date" value={form.dataInicio} onChange={(e) => setForm({ ...form, dataInicio: e.target.value })} />
+                <Label htmlFor="camp-data-inicio">Data Início *</Label>
+                <Input id="camp-data-inicio" type="date" value={form.dataInicio} onChange={(e) => setForm({ ...form, dataInicio: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Data Fim</Label>
-                <Input type="date" value={form.dataFim} onChange={(e) => setForm({ ...form, dataFim: e.target.value })} />
+                <Label htmlFor="camp-data-fim">Data Fim</Label>
+                <Input id="camp-data-fim" type="date" value={form.dataFim} onChange={(e) => setForm({ ...form, dataFim: e.target.value })} />
               </div>
               <div className="col-span-2 space-y-2">
-                <Label>Local</Label>
-                <Input value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} placeholder="Local do campeonato" />
+                <Label htmlFor="camp-local">Local</Label>
+                <Input id="camp-local" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} placeholder="Local do campeonato" />
               </div>
               <div className="space-y-2">
-                <Label>Taxa de Inscrição (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={form.taxaInscricao} onChange={(e) => setForm({ ...form, taxaInscricao: e.target.value })} />
+                <Label htmlFor="camp-taxa-inscricao">Taxa de Inscrição (R$)</Label>
+                <Input id="camp-taxa-inscricao" type="number" step="0.01" min="0" value={form.taxaInscricao} onChange={(e) => setForm({ ...form, taxaInscricao: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Taxa por Jogo (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={form.taxaJogo} onChange={(e) => setForm({ ...form, taxaJogo: e.target.value })} />
+                <Label htmlFor="camp-taxa-jogo">Taxa por Jogo (R$)</Label>
+                <Input id="camp-taxa-jogo" type="number" step="0.01" min="0" value={form.taxaJogo} onChange={(e) => setForm({ ...form, taxaJogo: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Taxa Arbitragem (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={form.taxaArbitragem} onChange={(e) => setForm({ ...form, taxaArbitragem: e.target.value })} />
+                <Label htmlFor="camp-taxa-arbitragem">Taxa Arbitragem (R$)</Label>
+                <Input id="camp-taxa-arbitragem" type="number" step="0.01" min="0" value={form.taxaArbitragem} onChange={(e) => setForm({ ...form, taxaArbitragem: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Custo Transporte (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={form.custoTransporte} onChange={(e) => setForm({ ...form, custoTransporte: e.target.value })} />
+                <Label htmlFor="camp-custo-transporte">Custo Transporte (R$)</Label>
+                <Input id="camp-custo-transporte" type="number" step="0.01" min="0" value={form.custoTransporte} onChange={(e) => setForm({ ...form, custoTransporte: e.target.value })} />
               </div>
               <div className="col-span-2 space-y-2">
-                <Label>Custo Uniforme (R$)</Label>
-                <Input type="number" step="0.01" min="0" value={form.custoUniforme} onChange={(e) => setForm({ ...form, custoUniforme: e.target.value })} />
+                <Label htmlFor="camp-custo-uniforme">Custo Uniforme (R$)</Label>
+                <Input id="camp-custo-uniforme" type="number" step="0.01" min="0" value={form.custoUniforme} onChange={(e) => setForm({ ...form, custoUniforme: e.target.value })} />
               </div>
               <div className="col-span-2 space-y-2">
-                <Label>Observações</Label>
-                <textarea className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+                <Label htmlFor="camp-obs">Observações</Label>
+                <Textarea id="camp-obs" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleCreate}>Criar Campeonato</Button>
+              <Button onClick={handleCreate} disabled={creating}>
+                {creating ? <><Loader2 className="size-4 animate-spin" /> Criando...</> : "Criar Campeonato"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
