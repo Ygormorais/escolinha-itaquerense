@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { plural } from "@/lib/utils"
+import { plural, formatMoney } from "@/lib/utils"
 import { useForm } from "react-hook-form"
 import { PlusIcon, PencilIcon, Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -185,7 +185,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
           <p className="text-sm text-muted-foreground">
             {plural(recorrentes.filter((r) => r.ativo).length, "modelo ativo", "modelos ativos", "nenhum")} —{" "}
             <span className="font-medium text-foreground">
-              R$ {total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} /mês
+              {formatMoney(total)} /mês
             </span>
           </p>
         </div>
@@ -227,7 +227,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
                 <TableCell>{r.fornecedor}</TableCell>
                 <TableCell>{r.formaPagamento}</TableCell>
                 <TableCell className="text-right">
-                  R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  {formatMoney(r.valor)}
                 </TableCell>
                 <TableCell className="text-center">
                   <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${r.ativo ? "bg-success-50 text-success-600" : "bg-muted text-muted-foreground"}`}>
