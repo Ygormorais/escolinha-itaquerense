@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import {
   criarResponsavel, editarResponsavel,
@@ -321,11 +322,11 @@ export function ResponsaveisClient({
           </DialogHeader>
           <div className="space-y-2">
             <Label>Mensagem</Label>
-            <textarea
-              className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            <Textarea
               value={whatsMsg}
               onChange={(e) => setWhatsMsg(e.target.value)}
               placeholder="Digite a mensagem para enviar via WhatsApp..."
+              className="min-h-[120px]"
             />
             <p className="text-xs text-muted-foreground">
               Telefone: {whatsOpen?.telefone || "—"}
