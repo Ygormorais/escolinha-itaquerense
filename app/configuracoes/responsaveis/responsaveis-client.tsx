@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare } from "lucide-react"
+import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -55,37 +55,41 @@ export function ResponsaveisClient({
   const [form, setForm] = useState({
     nome: "", email: "", telefone: "", senha: "", cpf: "",
   })
+  const [submitting, startSubmitting] = useTransition()
+  const [whatsEnviando, startWhatsEnviando] = useTransition()
 
   const filtered = responsaveis.filter((r) =>
     r.nome.toLowerCase().includes(search.toLowerCase()) ||
     r.email.toLowerCase().includes(search.toLowerCase())
   )
 
-  async function handleSubmit() {
+  function handleSubmit() {
     if (!form.nome.trim() || !form.email.trim()) {
       toast.error("Preencha nome e email")
       return
     }
-    if (editId) {
-      const result = await editarResponsavel(editId, {
-        nome: form.nome,
-        email: form.email,
-        telefone: form.telefone,
-        cpf: form.cpf || null,
-      })
-      if (result && "error" in result) { toast.error(result.error); return }
-      toast.success("Responsável atualizado!")
-    } else {
-      if (!form.senha) { toast.error("Defina uma senha"); return }
-      const result = await criarResponsavel({
-        nome: form.nome, email: form.email, telefone: form.telefone, senha: form.senha,
-      })
-      if ("error" in result) { toast.error(result.error); return }
-      toast.success("Responsável criado!")
-    }
-    setDialogOpen(false)
-    resetForm()
-    router.refresh()
+    startSubmitting(async () => {
+      if (editId) {
+        const result = await editarResponsavel(editId, {
+          nome: form.nome,
+          email: form.email,
+          telefone: form.telefone,
+          cpf: form.cpf || null,
+        })
+        if (result && "error" in result) { toast.error(result.error); return }
+        toast.success("Responsável atualizado!")
+      } else {
+        if (!form.senha) { toast.error("Defina uma senha"); return }
+        const result = await criarResponsavel({
+          nome: form.nome, email: form.email, telefone: form.telefone, senha: form.senha,
+        })
+        if ("error" in result) { toast.error(result.error); return }
+        toast.success("Responsável criado!")
+      }
+      setDialogOpen(false)
+      resetForm()
+      router.refresh()
+    })
   }
 
   function resetForm() {
@@ -118,16 +122,18 @@ export function ResponsaveisClient({
     router.refresh()
   }
 
-  async function handleWhatsAppEnviar() {
+  function handleWhatsAppEnviar() {
     if (!whatsOpen || !whatsMsg.trim()) {
       toast.error("Digite uma mensagem")
       return
     }
-    const result = await enviarWhatsAppResponsavel(whatsOpen.id, whatsMsg.trim())
-    if ("error" in result) { toast.error(result.error); return }
-    toast.success("WhatsApp enviado!")
-    setWhatsOpen(null)
-    setWhatsMsg("")
+    startWhatsEnviando(async () => {
+      const result = await enviarWhatsAppResponsavel(whatsOpen.id, whatsMsg.trim())
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("WhatsApp enviado!")
+      setWhatsOpen(null)
+      setWhatsMsg("")
+    })
   }
 
   return (
@@ -189,7 +195,9 @@ export function ResponsaveisClient({
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm() }}>Cancelar</Button>
-              <Button onClick={handleSubmit}>{editId ? "Salvar" : "Criar"}</Button>
+              <Button onClick={handleSubmit} disabled={submitting}>
+                {submitting ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : editId ? "Salvar" : "Criar"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -294,7 +302,7 @@ export function ResponsaveisClient({
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button size="icon-sm" variant="ghost" onClick={() => { setWhatsOpen(r); setWhatsMsg("") }} title="Enviar WhatsApp">
+                      <Button size="icon-sm" variant="ghost" onClick={() => { setWhatsOpen(r); setWhatsMsg("") }} aria-label="Enviar WhatsApp">
                         <MessageSquare className="size-3.5 text-brand-600" />
                       </Button>
                       <Button size="icon-sm" variant="ghost" onClick={() => handleEdit(r)} aria-label="Editar responsável">
@@ -336,8 +344,8 @@ export function ResponsaveisClient({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setWhatsOpen(null)}>Cancelar</Button>
-            <Button onClick={handleWhatsAppEnviar}>
-              <MessageSquare className="size-4" /> Enviar
+            <Button onClick={handleWhatsAppEnviar} disabled={whatsEnviando}>
+              {whatsEnviando ? <><Loader2 className="size-4 animate-spin" /> Enviando...</> : <><MessageSquare className="size-4" /> Enviar</>}
             </Button>
           </DialogFooter>
         </DialogContent>
