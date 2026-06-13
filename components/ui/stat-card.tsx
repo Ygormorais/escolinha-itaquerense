@@ -61,7 +61,7 @@ export function StatCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="font-heading text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl truncate tabular-nums">
+        <div className="font-heading text-xl font-extrabold tracking-tight text-foreground min-[420px]:text-2xl sm:text-3xl truncate tabular-nums" title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>
           {value}
         </div>
         {trend && (

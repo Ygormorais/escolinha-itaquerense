@@ -16,7 +16,8 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0 }: 
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <>
+    // o body é flex-row; sem este wrapper o header mobile virava uma coluna ao lado do main
+    <div className="flex h-full w-full flex-col md:flex-row">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:m-2 focus:rounded-lg focus:bg-brand-800 focus:p-3 focus:text-white">
         Pular para o conteúdo principal
       </a>
@@ -46,6 +47,6 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0 }: 
       </main>
 
       <BottomNav />
-    </>
+    </div>
   )
 }
