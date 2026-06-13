@@ -76,7 +76,7 @@ function CobrancaBadge({ status }: { status: string | null }) {
 
 function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
   const [done, setDone] = useState(false)
   const [reciboUrl, setReciboUrl] = useState("")
   const router = useRouter()
@@ -95,32 +95,33 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
     setOpen(isOpen)
   }
 
-  async function onSubmit(values: { dataPagamento: string; formaPagamento: string; valorRecebido: string; observacoes?: string }) {
-    setLoading(true)
-    try {
-      const result = await registrarPagamento(pagamento.id, {
-        dataPagamento: values.dataPagamento,
-        formaPagamento: values.formaPagamento,
-        valorRecebido: Number(values.valorRecebido),
-        observacoes: values.observacoes || undefined,
-      })
-      if ("error" in result) {
-        toast.error(result.error)
-        return
+  function onSubmit(values: { dataPagamento: string; formaPagamento: string; valorRecebido: string; observacoes?: string }) {
+    startLoading(async () => {
+      try {
+        const result = await registrarPagamento(pagamento.id, {
+          dataPagamento: values.dataPagamento,
+          formaPagamento: values.formaPagamento,
+          valorRecebido: Number(values.valorRecebido),
+          observacoes: values.observacoes || undefined,
+        })
+        if ("error" in result) {
+          toast.error(result.error)
+          return
+        }
+        const params = new URLSearchParams({
+          aluno: pagamento.aluno.nome,
+          referencia: pagamento.mesReferencia,
+          valor: String(values.valorRecebido),
+          forma: values.formaPagamento,
+          data: values.dataPagamento,
+        })
+        setReciboUrl(`/recibos?${params.toString()}`)
+        setDone(true)
+        router.refresh()
+      } catch {
+        toast.error("Erro ao registrar pagamento")
       }
-      const params = new URLSearchParams({
-        aluno: pagamento.aluno.nome,
-        referencia: pagamento.mesReferencia,
-        valor: String(values.valorRecebido),
-        forma: values.formaPagamento,
-        data: values.dataPagamento,
-      })
-      setReciboUrl(`/recibos?${params.toString()}`)
-      setDone(true)
-      router.refresh()
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -198,7 +199,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
                 )} />
                 <DialogFooter showCloseButton>
                   <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                    {loading ? "Salvando..." : "Confirmar"}
+                    {loading ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Confirmar"}
                   </Button>
                 </DialogFooter>
               </form>
