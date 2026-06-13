@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, Printer, QrCode, ClipboardList } from "lucide-react"
+import { SaveIcon, Printer, QrCode, ClipboardList, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -98,9 +98,9 @@ export function FrequenciaClient() {
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Turma</label>
+          <label htmlFor="freq-turma" className="text-sm font-medium text-muted-foreground">Turma</label>
           <Select value={turma} onValueChange={(v) => { setTurma(v ?? turma); setLoaded(false) }}>
-            <SelectTrigger className="mt-1 w-36">
+            <SelectTrigger id="freq-turma" className="mt-1 w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -109,20 +109,17 @@ export function FrequenciaClient() {
           </Select>
         </div>
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Data</label>
+          <label htmlFor="freq-data" className="text-sm font-medium text-muted-foreground">Data</label>
           <Input
+            id="freq-data"
             type="date"
             value={data}
             onChange={(e) => { setData(e.target.value); setLoaded(false) }}
             className="mt-1 w-40"
           />
         </div>
-        <Button
-          onClick={handleLoad}
-          disabled={loading}
-          variant="outline"
-        >
-          {loading ? "Carregando..." : "Carregar"}
+        <Button onClick={handleLoad} disabled={loading} variant="outline">
+          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Carregar"}
         </Button>
         <Link href={`/frequencia/scanner?data=${data}`}>
           <Button variant="outline" size="sm" className="gap-2"><QrCode className="size-4" /> Scanner QR</Button>
@@ -144,20 +141,24 @@ export function FrequenciaClient() {
                 {presentes} de {alunos.length} presentes
               </p>
               <div className="flex gap-1">
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => marcarTodos("Presente")}
-                  className="rounded-full bg-success-100 px-2.5 py-1 text-xs font-medium text-success-700 hover:bg-success-200 transition-colors"
+                  className="h-7 rounded-full bg-success-100 px-2.5 text-xs font-medium text-success-700 hover:bg-success-200 border-0"
                 >
                   Todos presentes
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => marcarTodos("Ausente")}
-                  className="rounded-full bg-danger-100 px-2.5 py-1 text-xs font-medium text-danger-700 hover:bg-danger-200 transition-colors"
+                  className="h-7 rounded-full bg-danger-100 px-2.5 text-xs font-medium text-danger-700 hover:bg-danger-200 border-0"
                 >
                   Todos ausentes
-                </button>
+                </Button>
               </div>
             </div>
             <div className="flex gap-2">
@@ -174,7 +175,7 @@ export function FrequenciaClient() {
                 disabled={saving || alunos.length === 0}
                 className="bg-brand-800 text-white hover:bg-brand-900"
               >
-                <SaveIcon className="size-4" />
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <SaveIcon className="size-4" />}
                 {saving ? "Salvando..." : "Salvar Frequência"}
               </Button>
             </div>

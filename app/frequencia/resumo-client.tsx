@@ -10,7 +10,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { Download } from "lucide-react"
+import { Download, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { getResumoFrequenciaMes, getPresencaPorTurma } from "@/app/actions/frequencia"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -90,9 +90,9 @@ export function ResumoFrequenciaClient() {
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Turma</label>
+          <label htmlFor="resumo-turma" className="text-sm font-medium text-muted-foreground">Turma</label>
           <Select value={turma} onValueChange={(v) => { if (v) { setTurma(v); setLoaded(false) } }}>
-            <SelectTrigger className="mt-1 w-36">
+            <SelectTrigger id="resumo-turma" className="mt-1 w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -101,8 +101,9 @@ export function ResumoFrequenciaClient() {
           </Select>
         </div>
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Mês</label>
+          <label htmlFor="resumo-mes" className="text-sm font-medium text-muted-foreground">Mês</label>
           <Input
+            id="resumo-mes"
             type="month"
             value={mes}
             onChange={(e) => { setMes(e.target.value); setLoaded(false) }}
@@ -110,7 +111,7 @@ export function ResumoFrequenciaClient() {
           />
         </div>
         <Button onClick={handleCarregar} disabled={loading} variant="outline">
-          {loading ? "Carregando..." : "Gerar Resumo"}
+          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar Resumo"}
         </Button>
         {loaded && resumo.length > 0 && (
           <Button variant="outline" onClick={() => exportarCSV(resumo, turma, mes)}>

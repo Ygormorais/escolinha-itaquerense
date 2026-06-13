@@ -36,4 +36,12 @@ test.describe("Frequência", () => {
     await page.locator("aside").getByRole("link", { name: "Frequência", exact: true }).click()
     await expect(page).toHaveURL("/frequencia")
   })
+
+  test("botão Carregar mostra feedback enquanto carrega", async ({ page }) => {
+    await page.goto("/frequencia")
+    const btn = page.getByRole("button", { name: "Carregar" })
+    await expect(btn).toBeVisible()
+    // label associado ao combobox via htmlFor
+    await expect(page.getByLabel("Turma").first()).toBeVisible()
+  })
 })

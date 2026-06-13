@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { sanitizeCSVCell, plural, formatPhone } from "@/lib/utils"
+import { sanitizeCSVCell, plural, formatPhone, formatMoney } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays } from "date-fns"
 import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send } from "lucide-react"
@@ -73,9 +73,9 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
 
       <div className="space-y-4 py-2">
         <div>
-          <label className="text-sm font-medium">Mês de referência</label>
+          <label htmlFor="pagar-mes" className="text-sm font-medium">Mês de referência</label>
           <Select value={String(pagamentoId)} onValueChange={(v) => setPagamentoId(Number(v))}>
-            <SelectTrigger className="mt-1">
+            <SelectTrigger id="pagar-mes" className="mt-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -89,14 +89,14 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
         </div>
 
         <div>
-          <label className="text-sm font-medium">Data do pagamento</label>
-          <Input type="date" value={data} onChange={(e) => setData(e.target.value)} className="mt-1" />
+          <label htmlFor="pagar-data" className="text-sm font-medium">Data do pagamento</label>
+          <Input id="pagar-data" type="date" value={data} onChange={(e) => setData(e.target.value)} className="mt-1" />
         </div>
 
         <div>
-          <label className="text-sm font-medium">Forma de pagamento</label>
+          <label htmlFor="pagar-forma" className="text-sm font-medium">Forma de pagamento</label>
           <Select value={forma} onValueChange={(v) => { if (v) setForma(v) }}>
-            <SelectTrigger className="mt-1">
+            <SelectTrigger id="pagar-forma" className="mt-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -106,8 +106,9 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
         </div>
 
         <div>
-          <label className="text-sm font-medium">Valor recebido (R$)</label>
+          <label htmlFor="pagar-valor" className="text-sm font-medium">Valor recebido (R$)</label>
           <Input
+            id="pagar-valor"
             type="number"
             step="0.01"
             value={valor}
@@ -305,7 +306,7 @@ export function InadimplenciaClient({
                   </TableCell>
                   <TableCell className="text-center">{a.pagamentos.length}</TableCell>
                   <TableCell className="text-right">
-                    R$ {valorAberto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatMoney(valorAberto)}
                   </TableCell>
                   <TableCell className="text-danger-600">
                     {format(maisAntigo, "dd/MM/yyyy")}

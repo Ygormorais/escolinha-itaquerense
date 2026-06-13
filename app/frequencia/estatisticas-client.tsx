@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getEstatisticasFrequencia } from "@/app/actions/frequencia"
 import { format } from "date-fns"
-import { TrendingDown } from "lucide-react"
+import { TrendingDown, Loader2 } from "lucide-react"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts"
@@ -52,8 +52,9 @@ export function EstatisticasFrequencia() {
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex items-end gap-3">
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Mês</label>
+          <label htmlFor="estat-mes" className="text-sm font-medium text-muted-foreground">Mês</label>
           <Input
+            id="estat-mes"
             type="month"
             value={mes}
             onChange={(e) => { setMes(e.target.value); setLoaded(false) }}
@@ -61,7 +62,7 @@ export function EstatisticasFrequencia() {
           />
         </div>
         <Button onClick={handleCarregar} disabled={loading} variant="outline">
-          {loading ? "Carregando..." : "Gerar Estatísticas"}
+          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar Estatísticas"}
         </Button>
       </div>
 
