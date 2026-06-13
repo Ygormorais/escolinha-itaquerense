@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { adicionarUniforme, marcarEntregue, removerUniforme } from "@/app/actions/uniformes"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
@@ -136,14 +139,15 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
             className="pl-8 max-w-xs"
           />
         </div>
-        <select
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          value={turmaFilter}
-          onChange={(e) => setTurmaFilter(e.target.value)}
-        >
-          <option value="Todas">Todas as turmas</option>
-          {TURMAS.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
+        <Select value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
+          <SelectTrigger className="w-44" aria-label="Filtrar por turma">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Todas">Todas as turmas</SelectItem>
+            {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-xl border bg-card">
@@ -252,16 +256,16 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                           <div className="border-t pt-4 space-y-3">
                             <p className="text-sm font-semibold">Adicionar item</p>
                             <div className="flex gap-2">
-                              <select
-                                className="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                value={itemForm}
-                                onChange={(e) => setItemForm(e.target.value)}
-                              >
-                                <option value="">Selecionar item</option>
-                                {ITENS_PADRAO.map((item) => (
-                                  <option key={item} value={item}>{item}</option>
-                                ))}
-                              </select>
+                              <Select value={itemForm} onValueChange={(v) => { if (v) setItemForm(v) }}>
+                                <SelectTrigger className="flex-1">
+                                  <SelectValue placeholder="Selecionar item" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ITENS_PADRAO.map((item) => (
+                                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <Input
                                 placeholder="Tamanho"
                                 className="w-20"
