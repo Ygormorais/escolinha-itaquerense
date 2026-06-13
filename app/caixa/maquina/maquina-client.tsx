@@ -17,6 +17,9 @@ import { toast } from "sonner"
 import { importarCSV, reconciliarTransacao, reconciliarAuto, ignorarTransacao } from "@/app/actions/maquina"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select"
 import { toDate, type RscDate } from "@/lib/rsc-date"
 
 type Transacao = {
@@ -215,16 +218,16 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
             )}
             <div className="space-y-2">
               <Label>Aluno</Label>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={alunoId}
-                onChange={(e) => setAlunoId(e.target.value)}
-              >
-                <option value="">Selecione um aluno...</option>
-                {alunos.map((a) => (
-                  <option key={a.id} value={a.id}>{a.nome} ({a.responsavel})</option>
-                ))}
-              </select>
+              <Select value={alunoId} onValueChange={(v) => { if (v) setAlunoId(v) }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um aluno..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {alunos.map((a) => (
+                    <SelectItem key={a.id} value={String(a.id)}>{a.nome} ({a.responsavel})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Mês de Referência</Label>
