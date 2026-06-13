@@ -4,6 +4,7 @@ import { StatCard } from "@/components/ui/stat-card"
 import { AlertTriangle, DollarSign } from "lucide-react"
 import { InadimplenciaClient } from "./inadimplencia-client"
 import { getConfig } from "@/lib/config"
+import { formatMoney } from "@/lib/utils"
 
 export const metadata = { title: "Inadimplência — Escolinha Itaquerense" }
 
@@ -90,7 +91,7 @@ export default async function InadimplenciaPage() {
         />
         <StatCard
           title="Valor Total em Aberto"
-          value={`R$ ${valorTotalAberto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+          value={formatMoney(valorTotalAberto)}
           description="Soma das mensalidades em atraso"
           icon={DollarSign}
         />
