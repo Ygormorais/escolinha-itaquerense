@@ -462,7 +462,7 @@ export function PagamentosClient({
         <div className="ml-auto text-right">
           <p className="text-sm text-muted-foreground">Total recebido</p>
           <p className="text-xl font-bold font-heading text-success-600">
-            R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            {formatMoney(totalPago)}
           </p>
         </div>
       </div>
