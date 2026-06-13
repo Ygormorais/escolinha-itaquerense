@@ -5,6 +5,8 @@ import { Camera, Loader2, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 export function FotoUpload({
   alunoId,
@@ -14,33 +16,33 @@ export function FotoUpload({
   fotoAtual: string | null
 }) {
   const [preview, setPreview] = useState<string | null>(fotoAtual)
-  const [uploading, setUploading] = useState(false)
+  const [uploading, startUploading] = useTransition()
   const [removing, startRemoving] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setUploading(true)
+    if (inputRef.current) inputRef.current.value = ""
+
     const formData = new FormData()
     formData.append("foto", file)
     formData.append("alunoId", String(alunoId))
 
-    try {
-      const res = await fetch("/api/upload/foto", { method: "POST", body: formData })
-      const data = await res.json()
-      if (!res.ok) { toast.error(data.error); return }
-      setPreview(data.url + "?t=" + Date.now())
-      toast.success("Foto atualizada")
-      router.refresh()
-    } catch {
-      toast.error("Erro ao enviar foto")
-    } finally {
-      setUploading(false)
-      if (inputRef.current) inputRef.current.value = ""
-    }
+    startUploading(async () => {
+      try {
+        const res = await fetch("/api/upload/foto", { method: "POST", body: formData })
+        const data = await res.json()
+        if (!res.ok) { toast.error(data.error); return }
+        setPreview(data.url + "?t=" + Date.now())
+        toast.success("Foto atualizada")
+        router.refresh()
+      } catch {
+        toast.error("Erro ao enviar foto")
+      }
+    })
   }
 
   function handleRemover() {
@@ -77,7 +79,10 @@ export function FotoUpload({
           )}
         </div>
 
-        <label className="absolute -bottom-2 -right-2 flex size-8 cursor-pointer items-center justify-center rounded-full border border-border bg-card shadow-sm hover:bg-muted transition-colors">
+        <label
+          aria-label="Alterar foto do aluno"
+          className="absolute -bottom-2 -right-2 flex size-8 cursor-pointer items-center justify-center rounded-full border border-border bg-card shadow-sm hover:bg-muted transition-colors"
+        >
           <Camera className="size-4 text-muted-foreground" />
           <input
             ref={inputRef}
@@ -92,14 +97,24 @@ export function FotoUpload({
       <div className="flex flex-col items-center gap-1">
         <p className="text-xs text-muted-foreground">Foto 3×4</p>
         {preview && (
-          <button
-            onClick={handleRemover}
-            disabled={removing}
-            className="flex items-center gap-1 text-xs text-danger-600 hover:underline"
+          <ConfirmDialog
+            title="Remover foto?"
+            description="A foto do aluno será excluída permanentemente."
+            confirmLabel="Remover"
+            variant="danger"
+            onConfirm={handleRemover}
           >
-            <Trash2 className="size-3" />
-            Remover
-          </button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={removing}
+              className="h-auto gap-1 p-0 text-xs text-danger-600 hover:text-danger-700 hover:bg-transparent"
+            >
+              <Trash2 className="size-3" />
+              Remover
+            </Button>
+          </ConfirmDialog>
         )}
       </div>
     </div>
