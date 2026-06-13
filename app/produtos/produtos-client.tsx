@@ -169,24 +169,27 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Nome</Label>
+              <Label htmlFor="prod-nome">Nome</Label>
               <Input
+                id="prod-nome"
                 value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value })}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label>Descrição</Label>
+              <Label htmlFor="prod-desc">Descrição</Label>
               <Textarea
+                id="prod-desc"
                 value={form.descricao}
                 onChange={(e) => setForm({ ...form, descricao: e.target.value })}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Preço (R$)</Label>
+                <Label htmlFor="prod-preco">Preço (R$)</Label>
                 <Input
+                  id="prod-preco"
                   type="number"
                   step="0.01"
                   min="0"
