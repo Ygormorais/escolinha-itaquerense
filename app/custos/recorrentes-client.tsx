@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { plural, formatMoney } from "@/lib/utils"
 import { useForm } from "react-hook-form"
-import { PlusIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { PlusIcon, PencilIcon, Trash2Icon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -49,7 +49,7 @@ type FormValues = {
 
 function RecorrenteFormDialog({ recorrente, trigger }: { recorrente?: Recorrente; trigger: React.ReactNode }) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useTransition()
   const router = useRouter()
 
   const form = useForm<FormValues>({
@@ -63,21 +63,22 @@ function RecorrenteFormDialog({ recorrente, trigger }: { recorrente?: Recorrente
     },
   })
 
-  async function onSubmit(values: FormValues) {
-    setLoading(true)
-    try {
-      const payload = { ...values, valor: Number(values.valor) }
-      const result = recorrente
-        ? await updateCustoRecorrente(recorrente.id, payload)
-        : await createCustoRecorrente(payload)
-      if ("error" in result) { toast.error(result.error); return }
-      toast.success(recorrente ? "Modelo atualizado" : "Modelo cadastrado")
-      setOpen(false)
-      form.reset()
-      router.refresh()
-    } finally {
-      setLoading(false)
-    }
+  function onSubmit(values: FormValues) {
+    startLoading(async () => {
+      try {
+        const payload = { ...values, valor: Number(values.valor) }
+        const result = recorrente
+          ? await updateCustoRecorrente(recorrente.id, payload)
+          : await createCustoRecorrente(payload)
+        if ("error" in result) { toast.error(result.error); return }
+        toast.success(recorrente ? "Modelo atualizado" : "Modelo cadastrado")
+        setOpen(false)
+        form.reset()
+        router.refresh()
+      } catch {
+        toast.error("Erro ao salvar modelo")
+      }
+    })
   }
 
   return (
@@ -153,7 +154,7 @@ function RecorrenteFormDialog({ recorrente, trigger }: { recorrente?: Recorrente
             )}
             <DialogFooter showCloseButton>
               <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                {loading ? "Salvando..." : recorrente ? "Salvar" : "Cadastrar"}
+                {loading ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : recorrente ? "Salvar" : "Cadastrar"}
               </Button>
             </DialogFooter>
           </form>
