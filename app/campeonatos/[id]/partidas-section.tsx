@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, Swords, Trophy, Search, Shirt } from "lucide-react"
+import { Plus, Pencil, Trash2, Swords, Trophy, Search, Shirt, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -52,6 +52,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
   const [filtroStatus, setFiltroStatus] = useState<"todas" | "realizadas" | "pendentes">("todas")
   const [scoreDialog, setScoreDialog] = useState<Partida | null>(null)
   const [scoreForm, setScoreForm] = useState({ golsPro: "", golsContra: "" })
+  const [saving, startSaving] = useTransition()
 
   const classificacao = calcularClassificacao(partidas)
   const stats = classificacao[0]
@@ -67,39 +68,41 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
     })
   }, [partidas, filtroStatus, search])
 
-  async function handleSubmit() {
+  function handleSubmit() {
     if (!form.data || !form.adversario.trim()) {
       toast.error("Preencha data e adversário")
       return
     }
-    if (editing) {
-      await editarPartida(editing.id, {
-        rodada: Number(form.rodada),
-        data: form.data,
-        adversario: form.adversario,
-        local: form.local,
-        golsPro: form.golsPro ? Number(form.golsPro) : null,
-        golsContra: form.golsContra ? Number(form.golsContra) : null,
-        observacoes: form.observacoes || undefined,
-      }, campeonatoId)
-      toast.success("Partida atualizada!")
-    } else {
-      await criarPartida({
-        campeonatoId,
-        rodada: Number(form.rodada),
-        data: form.data,
-        adversario: form.adversario,
-        local: form.local,
-        golsPro: form.golsPro ? Number(form.golsPro) : null,
-        golsContra: form.golsContra ? Number(form.golsContra) : null,
-        observacoes: form.observacoes || undefined,
-      })
-      toast.success("Partida criada!")
-    }
-    setOpen(false)
-    setEditing(null)
-    setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" })
-    router.refresh()
+    startSaving(async () => {
+      if (editing) {
+        await editarPartida(editing.id, {
+          rodada: Number(form.rodada),
+          data: form.data,
+          adversario: form.adversario,
+          local: form.local,
+          golsPro: form.golsPro ? Number(form.golsPro) : null,
+          golsContra: form.golsContra ? Number(form.golsContra) : null,
+          observacoes: form.observacoes || undefined,
+        }, campeonatoId)
+        toast.success("Partida atualizada!")
+      } else {
+        await criarPartida({
+          campeonatoId,
+          rodada: Number(form.rodada),
+          data: form.data,
+          adversario: form.adversario,
+          local: form.local,
+          golsPro: form.golsPro ? Number(form.golsPro) : null,
+          golsContra: form.golsContra ? Number(form.golsContra) : null,
+          observacoes: form.observacoes || undefined,
+        })
+        toast.success("Partida criada!")
+      }
+      setOpen(false)
+      setEditing(null)
+      setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" })
+      router.refresh()
+    })
   }
 
   function handleEdit(p: Partida) {
@@ -324,16 +327,16 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Rodada</Label>
-                    <Input type="number" min="1" value={form.rodada} onChange={(e) => setForm({ ...form, rodada: e.target.value })} />
+                    <Label htmlFor="pt-rodada">Rodada</Label>
+                    <Input id="pt-rodada" type="number" min="1" value={form.rodada} onChange={(e) => setForm({ ...form, rodada: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Data *</Label>
-                    <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
+                    <Label htmlFor="pt-data">Data *</Label>
+                    <Input id="pt-data" type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <Label>Adversário *</Label>
-                    <Input value={form.adversario} onChange={(e) => setForm({ ...form, adversario: e.target.value })} />
+                    <Label htmlFor="pt-adversario">Adversário *</Label>
+                    <Input id="pt-adversario" value={form.adversario} onChange={(e) => setForm({ ...form, adversario: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label>Local</Label>
@@ -349,21 +352,23 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Gols Pró</Label>
-                    <Input type="number" min="0" value={form.golsPro} onChange={(e) => setForm({ ...form, golsPro: e.target.value })} placeholder="—" />
+                    <Label htmlFor="pt-gols-pro">Gols Pró</Label>
+                    <Input id="pt-gols-pro" type="number" min="0" value={form.golsPro} onChange={(e) => setForm({ ...form, golsPro: e.target.value })} placeholder="—" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Gols Contra</Label>
-                    <Input type="number" min="0" value={form.golsContra} onChange={(e) => setForm({ ...form, golsContra: e.target.value })} placeholder="—" />
+                    <Label htmlFor="pt-gols-contra">Gols Contra</Label>
+                    <Input id="pt-gols-contra" type="number" min="0" value={form.golsContra} onChange={(e) => setForm({ ...form, golsContra: e.target.value })} placeholder="—" />
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <Label>Observações</Label>
-                    <Input value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+                    <Label htmlFor="pt-obs">Observações</Label>
+                    <Input id="pt-obs" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
                   </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => { setOpen(false); setEditing(null) }}>Cancelar</Button>
-                  <Button onClick={handleSubmit}>{editing ? "Salvar" : "Criar"}</Button>
+                  <Button onClick={handleSubmit} disabled={saving}>
+                    {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : editing ? "Salvar" : "Criar"}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
