@@ -360,7 +360,7 @@ export function PagamentosClient({
               <Input id="bulk-data" type="date" value={bulkData} onChange={(e) => setBulkData(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium">Forma de pagamento</label>
+              <Label>Forma de pagamento</Label>
               <Select value={bulkForma} onValueChange={(v) => { if (v) setBulkForma(v) }}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
@@ -409,8 +409,8 @@ export function PagamentosClient({
       </div>
       <div className="flex items-center gap-4">
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Mês de referência</label>
-          <Input type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
+          <Label htmlFor="pag-mes" className="text-muted-foreground">Mês de referência</Label>
+          <Input id="pag-mes" type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
         </div>
         <Button
           variant="outline"

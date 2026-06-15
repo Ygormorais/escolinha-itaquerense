@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner"
 import { marcarComoPago } from "@/app/actions/pagamentos"
 import { PixButton } from "@/components/ui/pix-modal"
+import { Label } from "@/components/ui/label"
 
 type Pagamento = {
   id: number
@@ -73,9 +74,9 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
 
       <div className="space-y-4 py-2">
         <div>
-          <label htmlFor="pagar-mes" className="text-sm font-medium">Mês de referência</label>
+          <Label>Mês de referência</Label>
           <Select value={String(pagamentoId)} onValueChange={(v) => setPagamentoId(Number(v))}>
-            <SelectTrigger id="pagar-mes" className="mt-1">
+            <SelectTrigger className="mt-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -89,14 +90,14 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
         </div>
 
         <div>
-          <label htmlFor="pagar-data" className="text-sm font-medium">Data do pagamento</label>
+          <Label htmlFor="pagar-data">Data do pagamento</Label>
           <Input id="pagar-data" type="date" value={data} onChange={(e) => setData(e.target.value)} className="mt-1" />
         </div>
 
         <div>
-          <label htmlFor="pagar-forma" className="text-sm font-medium">Forma de pagamento</label>
+          <Label>Forma de pagamento</Label>
           <Select value={forma} onValueChange={(v) => { if (v) setForma(v) }}>
-            <SelectTrigger id="pagar-forma" className="mt-1">
+            <SelectTrigger className="mt-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -106,7 +107,7 @@ function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimplente; on
         </div>
 
         <div>
-          <label htmlFor="pagar-valor" className="text-sm font-medium">Valor recebido (R$)</label>
+          <Label htmlFor="pagar-valor">Valor recebido (R$)</Label>
           <Input
             id="pagar-valor"
             type="number"

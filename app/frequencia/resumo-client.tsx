@@ -11,6 +11,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { Download, Loader2 } from "lucide-react"
+import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { getResumoFrequenciaMes, getPresencaPorTurma } from "@/app/actions/frequencia"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -90,9 +91,9 @@ export function ResumoFrequenciaClient() {
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label htmlFor="resumo-turma" className="text-sm font-medium text-muted-foreground">Turma</label>
+          <Label className="text-muted-foreground">Turma</Label>
           <Select value={turma} onValueChange={(v) => { if (v) { setTurma(v); setLoaded(false) } }}>
-            <SelectTrigger id="resumo-turma" className="mt-1 w-36">
+            <SelectTrigger className="mt-1 w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

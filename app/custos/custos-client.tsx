@@ -15,6 +15,7 @@ import {
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
+import { Label } from "@/components/ui/label"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
@@ -307,8 +308,8 @@ export function CustosClient({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4">
         <div>
-          <label className="text-sm font-medium text-muted-foreground">Mês</label>
-          <Input type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
+          <Label htmlFor="custos-mes" className="text-muted-foreground">Mês</Label>
+          <Input id="custos-mes" type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Total do mês</p>

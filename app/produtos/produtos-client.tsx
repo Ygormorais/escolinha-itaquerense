@@ -216,8 +216,9 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Tamanhos</Label>
+              <Label htmlFor="prod-tamanhos">Tamanhos</Label>
               <Input
+                id="prod-tamanhos"
                 value={form.tamanhos}
                 onChange={(e) => setForm({ ...form, tamanhos: e.target.value })}
                 placeholder="Ex: P, M, G, GG ou Único"
@@ -225,8 +226,9 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Estoque</Label>
+                <Label htmlFor="prod-estoque">Estoque</Label>
                 <Input
+                  id="prod-estoque"
                   type="number"
                   min="0"
                   value={form.estoque}
@@ -234,8 +236,9 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Imagem (URL)</Label>
+                <Label htmlFor="prod-imagem">Imagem (URL)</Label>
                 <Input
+                  id="prod-imagem"
                   value={form.imagem}
                   onChange={(e) => setForm({ ...form, imagem: e.target.value })}
                   placeholder="https://..."
