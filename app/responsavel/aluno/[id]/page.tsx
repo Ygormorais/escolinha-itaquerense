@@ -112,7 +112,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
             <div className="space-y-2">
               {aluno.pagamentos.slice(0, 6).map((p, i) => (
                 <div
-                  key={i}
+                  key={p.id}
                   className="flex items-center justify-between rounded-lg border border-black/5 bg-[var(--color-paper-50)] px-3 py-2 text-sm"
                 >
                   <span className="font-medium text-[var(--color-ink-900)]">{p.mesReferencia}</span>
@@ -146,7 +146,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
           ) : (
             <div className="divide-y divide-border">
               {freqRecente.map((f, i) => (
-                <div key={i} className="flex items-center justify-between px-6 py-3">
+                <div key={f.id} className="flex items-center justify-between px-6 py-3">
                   <span className="text-sm font-medium">
                     {format(new Date(f.data), "EEE, dd/MM", { locale: ptBR })}
                   </span>
@@ -190,11 +190,11 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {aluno.uniformes.map((u, i) => (
                 <div
-                  key={i}
+                  key={u.id}
                   className={`rounded-xl border p-3 text-sm ${
                     u.entregue
                       ? "border-success-200 bg-success-50"
-                      : "border-black/8 bg-[var(--color-paper-50)]"
+                      : "border-black/5 bg-[var(--color-paper-50)]"
                   }`}
                 >
                   <p className="font-semibold text-[var(--color-ink-900)]">{u.item}</p>
