@@ -14,6 +14,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { salvarFrequencia, getFrequenciaPorTurmaData } from "@/app/actions/frequencia"
+import { Label } from "@/components/ui/label"
 import { TURMAS } from "@/lib/constants"
 
 type AlunoFrequencia = { id: number; nome: string; presenca: string | null }
@@ -98,9 +99,9 @@ export function FrequenciaClient() {
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label htmlFor="freq-turma" className="text-sm font-medium text-muted-foreground">Turma</label>
+          <Label className="text-muted-foreground">Turma</Label>
           <Select value={turma} onValueChange={(v) => { setTurma(v ?? turma); setLoaded(false) }}>
-            <SelectTrigger id="freq-turma" className="mt-1 w-36">
+            <SelectTrigger className="mt-1 w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -109,7 +110,7 @@ export function FrequenciaClient() {
           </Select>
         </div>
         <div>
-          <label htmlFor="freq-data" className="text-sm font-medium text-muted-foreground">Data</label>
+          <Label htmlFor="freq-data" className="text-muted-foreground">Data</Label>
           <Input
             id="freq-data"
             type="date"

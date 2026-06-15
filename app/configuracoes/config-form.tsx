@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateClubConfig } from "@/app/actions/config"
 import type { ClubConfig } from "@/lib/config"
@@ -42,27 +43,28 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
         <CardContent>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium">Nome do Clube</label>
-              <Input name="nome" value={form.nome} onChange={handleChange} />
+              <Label htmlFor="cfg-nome">Nome do Clube</Label>
+              <Input id="cfg-nome" name="nome" value={form.nome} onChange={handleChange} />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Endereço</label>
-              <Input name="endereco" value={form.endereco} onChange={handleChange} />
+              <Label htmlFor="cfg-endereco">Endereço</Label>
+              <Input id="cfg-endereco" name="endereco" value={form.endereco} onChange={handleChange} />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Cidade/UF</label>
-              <Input name="cidade" value={form.cidade} onChange={handleChange} />
+              <Label htmlFor="cfg-cidade">Cidade/UF</Label>
+              <Input id="cfg-cidade" name="cidade" value={form.cidade} onChange={handleChange} />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Telefone</label>
-              <Input name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
+              <Label htmlFor="cfg-telefone">Telefone</Label>
+              <Input id="cfg-telefone" name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" />
             </div>
 
             <div className="border-t pt-4 space-y-4">
               <p className="text-sm font-semibold text-foreground">PIX</p>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Chave PIX</label>
+                <Label htmlFor="cfg-pix">Chave PIX</Label>
                 <Input
+                  id="cfg-pix"
                   name="chavePix"
                   value={form.chavePix ?? ""}
                   onChange={handleChange}
@@ -75,8 +77,9 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
             <div className="border-t pt-4 space-y-4">
               <p className="text-sm font-semibold text-foreground">WhatsApp</p>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Número da Escolinha</label>
+                <Label htmlFor="cfg-whatsapp">Número da Escolinha</Label>
                 <Input
+                  id="cfg-whatsapp"
                   name="whatsapp"
                   value={form.whatsapp ?? ""}
                   onChange={handleChange}
@@ -92,8 +95,9 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
               <p className="text-sm font-semibold text-foreground">Metas & Capacidade</p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Meta mensal (R$)</label>
+                  <Label htmlFor="cfg-meta">Meta mensal (R$)</Label>
                   <Input
+                    id="cfg-meta"
                     type="number"
                     name="metaMensal"
                     value={form.metaMensal || ""}
@@ -105,8 +109,9 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
                   <p className="text-xs text-muted-foreground">Receita alvo por mês</p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Capacidade por turma</label>
+                  <Label htmlFor="cfg-capacidade">Capacidade por turma</Label>
                   <Input
+                    id="cfg-capacidade"
                     type="number"
                     name="capacidadeTurma"
                     value={form.capacidadeTurma || ""}
@@ -118,8 +123,9 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
                   <p className="text-xs text-muted-foreground">Máximo de alunos por turma</p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Dia de vencimento</label>
+                  <Label htmlFor="cfg-vencimento">Dia de vencimento</Label>
                   <Input
+                    id="cfg-vencimento"
                     type="number"
                     name="diaVencimento"
                     value={form.diaVencimento || 10}
@@ -137,8 +143,9 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
             <div className="border-t pt-4 space-y-4">
               <p className="text-sm font-semibold text-foreground">Google Calendar</p>
               <div className="space-y-1">
-                <label className="text-sm font-medium">ID do Google Calendar</label>
+                <Label htmlFor="cfg-calendar">ID do Google Calendar</Label>
                 <Input
+                  id="cfg-calendar"
                   name="googleCalendarId"
                   value={form.googleCalendarId ?? ""}
                   onChange={handleChange}

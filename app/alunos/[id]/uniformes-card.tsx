@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { adicionarUniforme, marcarEntregue, removerUniforme } from "@/app/actions/uniformes"
+import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { useRouter } from "next/navigation"
@@ -77,7 +78,7 @@ export function UniformesCard({ alunoId, uniformes }: { alunoId: number; uniform
           <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="text-xs font-medium text-muted-foreground">Item</label>
+                <Label htmlFor="uni-item" className="text-xs text-muted-foreground">Item</Label>
                 <div className="mt-1 flex flex-wrap gap-1 mb-2">
                   {ITENS_PADRAO.map((i) => (
                     <button
@@ -93,6 +94,7 @@ export function UniformesCard({ alunoId, uniformes }: { alunoId: number; uniform
                   ))}
                 </div>
                 <Input
+                  id="uni-item"
                   value={item}
                   onChange={(e) => setItem(e.target.value)}
                   placeholder="Ou digite outro item..."
@@ -100,8 +102,9 @@ export function UniformesCard({ alunoId, uniformes }: { alunoId: number; uniform
                 />
               </div>
               <div className="w-28">
-                <label className="text-xs font-medium text-muted-foreground">Tamanho</label>
+                <Label htmlFor="uni-tamanho" className="text-xs text-muted-foreground">Tamanho</Label>
                 <Input
+                  id="uni-tamanho"
                   value={tamanho}
                   onChange={(e) => setTamanho(e.target.value)}
                   placeholder="Ex: M, 14"
@@ -110,8 +113,9 @@ export function UniformesCard({ alunoId, uniformes }: { alunoId: number; uniform
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Observações</label>
+              <Label htmlFor="uni-obs" className="text-xs text-muted-foreground">Observações</Label>
               <Input
+                id="uni-obs"
                 value={obs}
                 onChange={(e) => setObs(e.target.value)}
                 placeholder="Opcional..."

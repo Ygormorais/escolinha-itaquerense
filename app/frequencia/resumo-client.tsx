@@ -102,7 +102,7 @@ export function ResumoFrequenciaClient() {
           </Select>
         </div>
         <div>
-          <label htmlFor="resumo-mes" className="text-sm font-medium text-muted-foreground">Mês</label>
+          <Label htmlFor="resumo-mes" className="text-muted-foreground">Mês</Label>
           <Input
             id="resumo-mes"
             type="month"

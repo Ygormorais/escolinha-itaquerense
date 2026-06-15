@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getEstatisticasFrequencia } from "@/app/actions/frequencia"
+import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { TrendingDown, Loader2 } from "lucide-react"
 import {
@@ -52,7 +53,7 @@ export function EstatisticasFrequencia() {
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex items-end gap-3">
         <div>
-          <label htmlFor="estat-mes" className="text-sm font-medium text-muted-foreground">Mês</label>
+          <Label htmlFor="estat-mes" className="text-muted-foreground">Mês</Label>
           <Input
             id="estat-mes"
             type="month"

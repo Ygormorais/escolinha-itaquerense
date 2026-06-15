@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner"
 import Link from "next/link"
 import { criarSolicitacao } from "@/app/actions/solicitacoes"
+import { Label } from "@/components/ui/label"
 import type { RscDate } from "@/lib/rsc-date"
 
 type Solicitacao = {
@@ -72,7 +73,7 @@ export function SolicitacoesClient({ responsavelId, solicitacoes }: { responsave
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Tipo</label>
+              <Label>Tipo</Label>
               <Select value={tipo} onValueChange={(v) => { if (v) setTipo(v) }}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
@@ -83,7 +84,7 @@ export function SolicitacoesClient({ responsavelId, solicitacoes }: { responsave
               </Select>
             </div>
             <div>
-              <label htmlFor="descricao" className="text-sm font-medium">Descrição</label>
+              <Label htmlFor="descricao">Descrição</Label>
               <Textarea id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} className="mt-1 min-h-[96px]" placeholder="Descreva sua solicitação em detalhes..." />
             </div>
             <Button type="submit" disabled={pending} className="bg-brand-800 text-white hover:bg-brand-900">
