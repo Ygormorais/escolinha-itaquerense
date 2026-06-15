@@ -6,8 +6,11 @@ import { ehAniversarioNoDia } from "@/lib/aniversariantes"
 
 export async function runEnviarLembretesWhatsAppInadimplencia() {
   const config = getConfig()
-  let erros = 0
+  const intervaloMs = (config.intervaloDiasLembreteInadimplencia ?? 7) * 24 * 60 * 60 * 1000
+  let enviados = 0
+  let pulados = 0
   let semTelefone = 0
+  let erros = 0
 
   const atrasadas = await db.pagamento.findMany({
     where: {
@@ -19,19 +22,41 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
     },
   })
 
+  // Agrupa por alunoId para consolidar múltiplos meses em 1 mensagem
+  const porAluno = new Map<number, typeof atrasadas>()
   for (const p of atrasadas) {
-    const tel = p.aluno.telefone?.replace(/\D/g, "")
+    const lista = porAluno.get(p.aluno.id) ?? []
+    lista.push(p)
+    porAluno.set(p.aluno.id, lista)
+  }
+
+  for (const [alunoId, pagamentos] of porAluno) {
+    const aluno = pagamentos[0].aluno
+    const tel = aluno.telefone?.replace(/\D/g, "")
     if (!tel || tel.length < 8) { semTelefone++; continue }
 
-    const mesesAtraso = Math.floor(
-      (Date.now() - new Date(p.dataVencimento).getTime()) / (1000 * 60 * 60 * 24 * 30)
-    )
+    // Dedup: verifica último envio para este aluno
+    const ultimoEnvio = await db.whatsAppMensagem.findFirst({
+      where: { alunoId, origem: "lembrete-inadimplencia" },
+      orderBy: { createdAt: "desc" },
+    })
+    if (ultimoEnvio && Date.now() - new Date(ultimoEnvio.createdAt).getTime() < intervaloMs) {
+      pulados++
+      continue
+    }
+
+    const nome = aluno.responsavel?.split(" ")[0] ?? "responsável"
+    const linhasMeses = pagamentos.map((p) => `• ${p.mesReferencia} — ${formatMoney(aluno.mensalidade)}`)
+    const total = formatMoney(pagamentos.length * aluno.mensalidade)
+
     const msg = [
-      `Olá ${p.aluno.responsavel?.split(" ")[0] ?? "responsável"}!`,
+      `Olá ${nome}!`,
       ``,
-      `Lembrete: a mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em atraso (${mesesAtraso} ${mesesAtraso === 1 ? "mês" : "meses"}).`,
+      `Lembrete: mensalidades de *${aluno.nome}* em atraso:`,
       ``,
-      `Valor: *${formatMoney(p.aluno.mensalidade)}*`,
+      ...linhasMeses,
+      ``,
+      `Total: *${total}*`,
       config.chavePix ? `PIX: ${config.chavePix}` : ``,
       ``,
       `Qualquer dúvida, entre em contato.`,
@@ -39,12 +64,24 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
 
     try {
       await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+      await db.whatsAppMensagem.create({
+        data: {
+          alunoId,
+          telefone: tel,
+          mensagem: msg,
+          origem: "lembrete-inadimplencia",
+          direcao: "outgoing",
+          status: "sent",
+          instancia: "escolinha",
+        },
+      })
+      enviados++
     } catch {
       erros++
     }
   }
 
-  return { enviados: atrasadas.length - semTelefone, erros, semTelefone }
+  return { enviados, pulados, erros, semTelefone }
 }
 
 export async function runEnviarLembretesWhatsAppVencendo() {
