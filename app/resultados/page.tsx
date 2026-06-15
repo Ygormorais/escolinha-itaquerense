@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Image from "next/image"
+import Link from "next/link"
 
 export const metadata = {
   title: "Resultados — E.C. Itaquerense",
@@ -149,9 +150,9 @@ export default async function ResultadosPage() {
         })}
 
         <footer>
-          <a href="/responsavel">Portal do Responsável</a>
-          <a href="/matricula">Pré-Matrícula</a>
-          <a href="/">← Voltar ao site</a>
+          <Link href="/responsavel">Portal do Responsável</Link>
+          <Link href="/matricula">Pré-Matrícula</Link>
+          <Link href="/">← Voltar ao site</Link>
         </footer>
       </div>
     </div>

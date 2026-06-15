@@ -123,12 +123,12 @@ describe("aprovarPreMatricula", () => {
 
   it("gera 3 mensalidades quando meses = 3", async () => {
     const createSpy = vi.fn().mockResolvedValue({ id: 5 })
-    ;(db as unknown as any).pagamento = { create: createSpy }
+    ;(db as unknown as Record<string, unknown>).pagamento = { create: createSpy }
 
     await aprovarPreMatricula(1, { mensalidade: 200, meses: 3 })
 
     expect(createSpy).toHaveBeenCalledTimes(3)
-    const mesesRef = createSpy.mock.calls.map((c: any) => c[0].data.mesReferencia)
+    const mesesRef = createSpy.mock.calls.map((c) => (c[0] as { data: { mesReferencia: string } }).data.mesReferencia)
     expect(mesesRef).toHaveLength(3)
     // Todos devem ser strings "YYYY-MM"
     mesesRef.forEach((m: string) => expect(m).toMatch(/^\d{4}-\d{2}$/))
@@ -136,7 +136,7 @@ describe("aprovarPreMatricula", () => {
 
   it("nao gera mensalidades quando meses = 0", async () => {
     const createSpy = vi.fn().mockResolvedValue({ id: 5 })
-    ;(db as unknown as any).pagamento = { create: createSpy }
+    ;(db as unknown as Record<string, unknown>).pagamento = { create: createSpy }
 
     await aprovarPreMatricula(1, { mensalidade: 200, meses: 0 })
     expect(createSpy).not.toHaveBeenCalled()

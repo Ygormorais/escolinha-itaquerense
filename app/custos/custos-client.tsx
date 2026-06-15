@@ -387,7 +387,7 @@ export function CustosClient({
             {custos.length > 0 && custosFiltrados.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
-                  Nenhum custo encontrado para "{busca}".
+                  Nenhum custo encontrado para &ldquo;{busca}&rdquo;.
                 </TableCell>
               </TableRow>
             )}

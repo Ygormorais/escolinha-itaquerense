@@ -90,7 +90,6 @@ type PartidaItem = {
   observacoes: string | null
 }
 
-const STATUS_OPCOES = ["aberto", "andamento", "encerrado"]
 
 const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
 

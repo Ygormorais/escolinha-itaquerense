@@ -17,12 +17,13 @@ type Prefs = Record<string, boolean>
 
 export default function NotificacoesPage() {
   const [prefs, setPrefs] = useState<Prefs>({ vencimento: true, pagamentoConfirmado: true, falta: false, convocacao: true, comunicado: true })
-  const [ativo, setAtivo] = useState(false)
+  const [ativo, setAtivo] = useState(() =>
+    typeof Notification !== "undefined" && Notification.permission === "granted"
+  )
   const [salvando, startSalvando] = useTransition()
 
   useEffect(() => {
     fetch("/api/push/preferencias").then((r) => r.json()).then(setPrefs).catch(() => {})
-    if (typeof Notification !== "undefined") setAtivo(Notification.permission === "granted")
   }, [])
 
   async function ativarNotificacoes() {
