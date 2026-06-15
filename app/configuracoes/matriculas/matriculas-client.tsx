@@ -8,6 +8,7 @@ import { Check, X, Trash2, ExternalLink, Search, GraduationCap } from "lucide-re
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog,
@@ -242,9 +243,10 @@ function AprovarDialog({
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            <label className="grid gap-1.5 text-sm">
-              <span className="font-medium">Mensalidade (R$)</span>
+            <div className="grid gap-1.5">
+              <Label htmlFor="mat-mensalidade">Mensalidade (R$)</Label>
               <Input
+                id="mat-mensalidade"
                 type="number"
                 min={0}
                 step="0.01"
@@ -253,10 +255,11 @@ function AprovarDialog({
                 placeholder="Ex.: 200"
                 autoFocus
               />
-            </label>
-            <label className="grid gap-1.5 text-sm">
-              <span className="font-medium">Desconto (R$) — opcional</span>
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="mat-desconto">Desconto (R$) — opcional</Label>
               <Input
+                id="mat-desconto"
                 type="number"
                 min={0}
                 step="0.01"
@@ -264,9 +267,9 @@ function AprovarDialog({
                 onChange={(e) => setDesconto(e.target.value)}
                 placeholder="0"
               />
-            </label>
-            <label className="grid gap-1.5 text-sm">
-              <span className="font-medium">Gerar mensalidades</span>
+            </div>
+            <div className="grid gap-1.5">
+              <Label>Gerar mensalidades</Label>
               <Select value={meses} onValueChange={(v) => setMeses(v ?? "3")}>
                 <SelectTrigger>
                   <SelectValue />
@@ -279,7 +282,7 @@ function AprovarDialog({
                   <SelectItem value="12">12 meses (ano letivo)</SelectItem>
                 </SelectContent>
               </Select>
-            </label>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>

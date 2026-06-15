@@ -18,7 +18,7 @@ export function OnboardingRestart() {
     <button
       onClick={handleRestart}
       className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      title="Ajuda / Tour"
+      aria-label="Ajuda / Tour"
     >
       <HelpCircle className="size-4" />
     </button>

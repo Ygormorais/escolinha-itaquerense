@@ -1,12 +1,16 @@
 "use client"
 
-import { Printer } from "lucide-react"
+import { useTransition } from "react"
+import { Printer, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { printHTML } from "@/lib/print"
 import { formatMoney } from "@/lib/utils"
 
 export function AlunoPrintButton({ alunoId }: { alunoId: number }) {
-  async function handlePrint() {
+  const [isPending, startTransition] = useTransition()
+
+  function handlePrint() {
+    startTransition(async () => {
     try {
       const res = await fetch(`/api/alunos/${alunoId}/print`)
       if (!res.ok) return
@@ -51,11 +55,12 @@ export function AlunoPrintButton({ alunoId }: { alunoId: number }) {
     } catch {
       // ignore
     }
+    })
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handlePrint}>
-      <Printer className="size-4" />
+    <Button variant="outline" size="sm" onClick={handlePrint} disabled={isPending}>
+      {isPending ? <Loader2 className="size-4 animate-spin" /> : <Printer className="size-4" />}
       Imprimir PDF
     </Button>
   )

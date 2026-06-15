@@ -49,7 +49,7 @@ export function NavResponsavel() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <NotificacaoBell />
-            <Button variant="outline" size="sm" onClick={handleLogout} title="Sair">
+            <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="size-4" />
               Sair
             </Button>
