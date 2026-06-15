@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, Printer, QrCode, ClipboardList, Loader2 } from "lucide-react"
+import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import {
 import { salvarFrequencia, getFrequenciaPorTurmaData } from "@/app/actions/frequencia"
 import { Label } from "@/components/ui/label"
 import { TURMAS } from "@/lib/constants"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 type AlunoFrequencia = { id: number; nome: string; presenca: string | null }
 type PresencaValue = "Presente" | "Ausente" | "Justificado"
@@ -95,6 +96,26 @@ export function FrequenciaClient() {
     win.print()
   }
 
+  function exportarCSV() {
+    const linhas = [
+      ["Aluno", "Turma", "Data", "Presença"],
+      ...alunos.map((a) => [
+        a.nome,
+        turma,
+        new Date(data + "T12:00:00").toLocaleDateString("pt-BR"),
+        presencas[a.id] ?? "Ausente",
+      ]),
+    ]
+    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `frequencia-${turma.replace(/\s+/g, "-")}-${data}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
@@ -163,6 +184,10 @@ export function FrequenciaClient() {
               </div>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={exportarCSV} disabled={alunos.length === 0}>
+                <Download className="size-4" />
+                Exportar CSV
+              </Button>
               <Button
                 variant="outline"
                 onClick={handleImprimir}
