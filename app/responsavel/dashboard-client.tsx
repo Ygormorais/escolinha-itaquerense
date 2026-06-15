@@ -211,7 +211,13 @@ export function ResponsavelDashboardClient({
                     {aluno.uniformes.filter((u) => u.entregue).length}/{aluno.uniformes.length} itens
                   </p>
                 </div>
-                <div className="flex items-stretch">
+                <div className="flex flex-col gap-2">
+                  <Link href={`/responsavel/aluno/${aluno.id}`} className="flex w-full">
+                    <Button size="lg" className="w-full justify-between bg-brand-800 hover:bg-brand-900">
+                      Ver Perfil
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  </Link>
                   <Link href={`/responsavel/mensalidades?alunoId=${aluno.id}`} className="flex w-full">
                     <Button variant="outline" size="lg" className="w-full justify-between">
                       Ver Mensalidades
