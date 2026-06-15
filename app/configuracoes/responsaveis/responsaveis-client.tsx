@@ -57,6 +57,7 @@ export function ResponsaveisClient({
   })
   const [submitting, startSubmitting] = useTransition()
   const [whatsEnviando, startWhatsEnviando] = useTransition()
+  const [vinculando, startVinculando] = useTransition()
 
   const filtered = responsaveis.filter((r) =>
     r.nome.toLowerCase().includes(search.toLowerCase()) ||
@@ -109,11 +110,13 @@ export function ResponsaveisClient({
     router.refresh()
   }
 
-  async function handleVincular(alunoId: number) {
+  function handleVincular(alunoId: number) {
     if (!vincularOpen) return
-    await vincularAluno(vincularOpen.id, alunoId)
-    toast.success("Aluno vinculado!")
-    router.refresh()
+    startVinculando(async () => {
+      await vincularAluno(vincularOpen.id, alunoId)
+      toast.success("Aluno vinculado!")
+      router.refresh()
+    })
   }
 
   async function handleDesvincular(alunoId: number, _alunoNome: string) {
@@ -283,8 +286,9 @@ export function ResponsaveisClient({
                             {alunosDisponiveis.map((a) => (
                               <button
                                 key={a.id}
-                                className="flex w-full items-center justify-between rounded-lg border p-3 text-sm hover:bg-muted transition-colors text-left"
+                                className="flex w-full items-center justify-between rounded-lg border p-3 text-sm hover:bg-muted transition-colors text-left disabled:opacity-50"
                                 onClick={() => handleVincular(a.id)}
+                                disabled={vinculando}
                               >
                                 <span className="font-medium">{a.nome}</span>
                                 <Badge variant="secondary" className="text-[10px]">{a.turma}</Badge>
