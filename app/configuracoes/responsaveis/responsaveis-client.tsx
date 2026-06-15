@@ -261,7 +261,7 @@ export function ResponsaveisClient({
                         <span key={a.id} className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px]">
                           {a.nome} ({a.turma})
                           <ConfirmDialog title="Desvincular aluno?" description={`Desvincular ${a.nome} do responsável?`} confirmLabel="Desvincular" onConfirm={() => handleDesvincular(a.id, a.nome)}>
-                            <button className="text-danger-600 hover:text-danger-800">
+                            <button className="text-danger-600 hover:text-danger-800" aria-label="Desvincular aluno">
                               <UserX className="size-3" />
                             </button>
                           </ConfirmDialog>

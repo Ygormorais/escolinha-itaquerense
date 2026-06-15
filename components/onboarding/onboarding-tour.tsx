@@ -56,7 +56,7 @@ export function OnboardingTour() {
           <span className="text-xs font-medium text-muted-foreground">
             Passo {currentStep + 1} de {totalSteps}
           </span>
-          <button onClick={skip} className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted">
+          <button onClick={skip} className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted" aria-label="Fechar tour">
             <X className="size-4" />
           </button>
         </div>

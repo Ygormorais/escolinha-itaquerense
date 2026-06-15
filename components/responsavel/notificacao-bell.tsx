@@ -84,7 +84,7 @@ export function NotificacaoBell() {
               <span className="text-xs font-semibold text-muted-foreground">
                 {naoLidas > 0 ? `${naoLidas} não ${naoLidas === 1 ? "lida" : "lidas"}` : "Todas lidas"}
               </span>
-              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
+              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground" aria-label="Fechar notificações">
                 <X className="size-3.5" />
               </button>
             </div>
