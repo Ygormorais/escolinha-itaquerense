@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -12,7 +11,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { TriangleAlert } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { TriangleAlert, Loader2 } from "lucide-react"
 
 interface ConfirmDialogProps {
   title: string
@@ -20,7 +20,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   variant?: "danger" | "warning"
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
   children: React.ReactNode
 }
 
@@ -34,9 +34,17 @@ export function ConfirmDialog({
   children,
 }: ConfirmDialogProps) {
   const [open, setOpen] = useState(false)
+  const [pending, startPending] = useTransition()
+
+  function handleConfirm() {
+    startPending(async () => {
+      await onConfirm()
+      setOpen(false)
+    })
+  }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open} onOpenChange={(o) => { if (!pending) setOpen(o) }}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -47,13 +55,14 @@ export function ConfirmDialog({
           <AlertDialogDescription className="text-center">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-center">
-          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
+          <AlertDialogCancel disabled={pending}>{cancelLabel}</AlertDialogCancel>
+          <Button
+            onClick={handleConfirm}
+            disabled={pending}
             className={variant === "danger" ? "bg-danger-600 text-white hover:bg-danger-700" : "bg-warning-600 text-white hover:bg-warning-700"}
           >
-            {confirmLabel}
-          </AlertDialogAction>
+            {pending ? <><Loader2 className="size-4 animate-spin" /> Aguarde...</> : confirmLabel}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
