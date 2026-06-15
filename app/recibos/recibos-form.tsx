@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -121,62 +122,29 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
           <CardContent>
             <div className="grid grid-cols-2 gap-x-4 gap-y-5">
               <div className="flex flex-col gap-1">
-                <label htmlFor="numero" className="text-sm font-medium">Número</label>
-                <input
-                  id="numero"
-                  name="numero"
-                  value={form.numero}
-                  onChange={handleChange}
-                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                />
+                <Label htmlFor="rec-numero">Número</Label>
+                <Input id="rec-numero" name="numero" value={form.numero} onChange={handleChange} />
               </div>
               <div className="flex flex-col gap-1">
-                <label htmlFor="referencia" className="text-sm font-medium">Referência</label>
-                <input
-                  id="referencia"
-                  name="referencia"
-                  placeholder="Ex: Abril/2025"
-                  value={form.referencia}
-                  onChange={handleChange}
-                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                />
+                <Label htmlFor="rec-referencia">Referência</Label>
+                <Input id="rec-referencia" name="referencia" placeholder="Ex: Abril/2025" value={form.referencia} onChange={handleChange} />
               </div>
               <div className="col-span-2 flex flex-col gap-1">
-                <label htmlFor="aluno" className="text-sm font-medium">Aluno</label>
-                <input
-                  id="aluno"
-                  name="aluno"
-                  value={form.aluno}
-                  onChange={handleChange}
-                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                />
+                <Label htmlFor="rec-aluno">Aluno</Label>
+                <Input id="rec-aluno" name="aluno" value={form.aluno} onChange={handleChange} />
               </div>
               <div className="col-span-2 flex flex-col gap-1">
-                <label htmlFor="responsavel" className="text-sm font-medium">Responsável</label>
-                <input
-                  id="responsavel"
-                  name="responsavel"
-                  value={form.responsavel}
-                  onChange={handleChange}
-                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                />
+                <Label htmlFor="rec-responsavel">Responsável</Label>
+                <Input id="rec-responsavel" name="responsavel" value={form.responsavel} onChange={handleChange} />
               </div>
               <div className="flex flex-col gap-1">
-                <label htmlFor="valor" className="text-sm font-medium">Valor (R$)</label>
-                <input
-                  id="valor"
-                  name="valor"
-                  type="number"
-                  step="0.01"
-                  value={form.valor}
-                  onChange={handleChange}
-                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                />
+                <Label htmlFor="rec-valor">Valor (R$)</Label>
+                <Input id="rec-valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} />
               </div>
               <div className="flex flex-col gap-1">
-                <label htmlFor="forma" className="text-sm font-medium">Forma de Pagamento</label>
+                <Label>Forma de Pagamento</Label>
                 <Select value={form.forma} onValueChange={(v) => { if (v) setForm((prev) => ({ ...prev, forma: v })) }}>
-                  <SelectTrigger id="forma">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -189,14 +157,13 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                 </Select>
               </div>
               <div className="col-span-2 flex flex-col gap-1">
-                <label htmlFor="dataPagamento" className="text-sm font-medium">Data do Pagamento</label>
-                <input
-                  id="dataPagamento"
+                <Label htmlFor="rec-data">Data do Pagamento</Label>
+                <Input
+                  id="rec-data"
                   name="dataPagamento"
                   type="date"
                   value={form.dataPagamento}
                   onChange={handleChange}
-                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
                 />
               </div>
             </div>
