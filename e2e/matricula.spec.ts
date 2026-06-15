@@ -16,10 +16,12 @@ test.describe("Pré-Matrícula Pública", () => {
 
   test("formulário exibe turmas e horários corretamente", async ({ page }) => {
     await page.goto("/matricula")
-    const turmaSelect = page.locator('select[id="turma"]')
+    const turmaSelect = page.getByRole("combobox").first()
     await expect(turmaSelect).toBeVisible()
-    const options = await turmaSelect.locator("option").allTextContents()
-    expect(options.length).toBeGreaterThanOrEqual(6)
+    await turmaSelect.click()
+    const opcoes = await page.locator('[role="option"]').allTextContents()
+    expect(opcoes.length).toBeGreaterThanOrEqual(6)
+    await page.keyboard.press("Escape")
   })
 
   test("envio bem-sucedido exibe mensagem de confirmação", async ({ page }) => {

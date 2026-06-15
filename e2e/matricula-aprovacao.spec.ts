@@ -46,8 +46,8 @@ test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
   test("página de pré-matrículas carrega com título e filtros", async ({ page }) => {
     await page.goto("/configuracoes/matriculas")
     await expect(page.getByRole("heading", { name: /Pré-Matrículas/i })).toBeVisible()
-    // filtro de status presente
-    await expect(page.locator('select').first()).toBeVisible()
+    // filtro de status presente (shadcn Select)
+    await expect(page.getByRole("combobox").first()).toBeVisible()
   })
 
   test("campo de busca filtra pré-matrículas por nome", async ({ page }) => {

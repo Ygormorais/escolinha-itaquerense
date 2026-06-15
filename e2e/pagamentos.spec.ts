@@ -40,7 +40,7 @@ test.describe("Pagamentos — registro manual", () => {
     await expect(page.locator("table tbody tr").first()).toBeVisible()
 
     // procura um pagamento pendente (sem data)
-    const btnPagar = page.locator('button[title*="Registrar"], button[aria-label*="pagamento"]').first()
+    const btnPagar = page.locator("table tbody tr").first().getByRole("button", { name: /Registrar/i })
     if (await btnPagar.isVisible({ timeout: 3000 }).catch(() => false)) {
       await btnPagar.click()
       const dialog = page.getByRole("dialog")

@@ -144,7 +144,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
               <div className="flex flex-col gap-1">
                 <Label>Forma de Pagamento</Label>
                 <Select value={form.forma} onValueChange={(v) => { if (v) setForm((prev) => ({ ...prev, forma: v })) }}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Forma de Pagamento">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

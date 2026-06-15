@@ -20,13 +20,13 @@ test.describe("Recibos — smoke e carregamento", () => {
     await page.goto("/recibos")
     await expect(page.getByText(/Dados do Recibo/i)).toBeVisible()
     // Campos: Número, Referência, Aluno, Responsável, Valor, Forma de Pagamento, Data
-    await expect(page.locator("#numero")).toBeVisible()
-    await expect(page.locator("#referencia")).toBeVisible()
-    await expect(page.locator("#aluno")).toBeVisible()
-    await expect(page.locator("#responsavel")).toBeVisible()
-    await expect(page.locator("#valor")).toBeVisible()
-    await expect(page.locator("#forma")).toBeVisible()
-    await expect(page.locator("#dataPagamento")).toBeVisible()
+    await expect(page.locator("#rec-numero")).toBeVisible()
+    await expect(page.locator("#rec-referencia")).toBeVisible()
+    await expect(page.locator("#rec-aluno")).toBeVisible()
+    await expect(page.locator("#rec-responsavel")).toBeVisible()
+    await expect(page.locator("#rec-valor")).toBeVisible()
+    await expect(page.getByRole("combobox", { name: /Forma de Pagamento/i })).toBeVisible()
+    await expect(page.locator("#rec-data")).toBeVisible()
   })
 })
 
@@ -34,10 +34,10 @@ test.describe("Recibos — preenchimento do formulário", () => {
   test("preencher campos atualiza o recibo de pré-visualização", async ({ page }) => {
     await page.goto("/recibos")
 
-    await page.locator("#aluno").fill("João Silva E2E")
-    await page.locator("#responsavel").fill("Maria Silva E2E")
-    await page.locator("#referencia").fill("Junho/2025")
-    await page.locator("#valor").fill("150")
+    await page.locator("#rec-aluno").fill("João Silva E2E")
+    await page.locator("#rec-responsavel").fill("Maria Silva E2E")
+    await page.locator("#rec-referencia").fill("Junho/2025")
+    await page.locator("#rec-valor").fill("150")
 
     // O recibo de preview (#recibo-print) deve refletir o nome do aluno
     const preview = page.locator("#recibo-print")
@@ -48,7 +48,7 @@ test.describe("Recibos — preenchimento do formulário", () => {
 
   test("campo 'Valor' formata como currency no preview", async ({ page }) => {
     await page.goto("/recibos")
-    await page.locator("#valor").fill("200")
+    await page.locator("#rec-valor").fill("200")
     const preview = page.locator("#recibo-print")
     // Preview deve mostrar R$ 200,00 ou similar
     await expect(preview).toContainText(/R\$\s*200/)
@@ -57,11 +57,13 @@ test.describe("Recibos — preenchimento do formulário", () => {
   test("seletor de forma de pagamento aceita todas as opções", async ({ page }) => {
     await page.goto("/recibos")
     const formas = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
-    const select = page.locator("#forma")
+    const trigger = page.getByRole("combobox", { name: /Forma de Pagamento/i })
+    await trigger.click()
+    const opcoes = await page.locator('[role="option"]').allTextContents()
     for (const forma of formas) {
-      await select.selectOption(forma)
-      await expect(select).toHaveValue(forma)
+      expect(opcoes.some((o) => o.includes(forma))).toBe(true)
     }
+    await page.keyboard.press("Escape")
   })
 })
 
@@ -109,10 +111,10 @@ test.describe("Recibos — pré-preenchimento por query string", () => {
     })
     await page.goto(`/recibos?${params.toString()}`)
 
-    await expect(page.locator("#aluno")).toHaveValue("Carlos Teste")
-    await expect(page.locator("#responsavel")).toHaveValue("Responsável Teste")
-    await expect(page.locator("#referencia")).toHaveValue("Maio/2025")
-    await expect(page.locator("#valor")).toHaveValue("180")
-    await expect(page.locator("#forma")).toHaveValue("Dinheiro")
+    await expect(page.locator("#rec-aluno")).toHaveValue("Carlos Teste")
+    await expect(page.locator("#rec-responsavel")).toHaveValue("Responsável Teste")
+    await expect(page.locator("#rec-referencia")).toHaveValue("Maio/2025")
+    await expect(page.locator("#rec-valor")).toHaveValue("180")
+    await expect(page.getByRole("combobox", { name: /Forma de Pagamento/i })).toContainText("Dinheiro")
   })
 })

@@ -45,9 +45,11 @@ test.describe("Uniformes — filtros", () => {
 
   test("seletor de turma está visível e tem opção 'Todas as turmas'", async ({ page }) => {
     await page.goto("/uniformes")
-    const selectTurma = page.locator('select').first()
+    const selectTurma = page.getByRole("combobox", { name: /Filtrar por turma/i })
     await expect(selectTurma).toBeVisible()
-    await expect(selectTurma).toContainText(/Todas as turmas/i)
+    await selectTurma.click()
+    await expect(page.getByRole("option", { name: /Todas as turmas/i })).toBeVisible()
+    await page.keyboard.press("Escape")
   })
 
   test("filtrar por turma específica atualiza a tabela", async ({ page }) => {
@@ -97,13 +99,13 @@ test.describe("Uniformes — gerenciar itens de um aluno", () => {
       await expect(dialog).toBeVisible()
 
       // Select com itens padrão (Camisa, Short, etc.)
-      const selectItem = dialog.locator("select").first()
+      const selectItem = dialog.getByRole("combobox")
       await expect(selectItem).toBeVisible()
       // Campo tamanho
       const inputTamanho = dialog.locator('input[placeholder="Tamanho"]')
       await expect(inputTamanho).toBeVisible()
       // Botão de adicionar
-      const btnAdicionar = dialog.locator("button").last()
+      const btnAdicionar = dialog.getByRole("button", { name: /Adicionar item/i })
       await expect(btnAdicionar).toBeVisible()
     }
   })
@@ -120,12 +122,14 @@ test.describe("Uniformes — gerenciar itens de um aluno", () => {
       const dialog = page.getByRole("dialog")
       await expect(dialog).toBeVisible()
 
-      const selectItem = dialog.locator("select").first()
-      const opcoes = await selectItem.locator("option").allTextContents()
+      const selectItem = dialog.getByRole("combobox")
+      await selectItem.click()
+      const opcoes = await page.locator('[role="option"]').allTextContents()
       const itensEsperados = ["Camisa", "Short", "Meião", "Agasalho", "Chuteira"]
       for (const item of itensEsperados) {
         expect(opcoes.some((o) => o.includes(item))).toBe(true)
       }
+      await page.keyboard.press("Escape")
     }
   })
 })

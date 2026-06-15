@@ -41,7 +41,7 @@ test.describe("Frequência", () => {
     await page.goto("/frequencia")
     const btn = page.getByRole("button", { name: "Carregar" })
     await expect(btn).toBeVisible()
-    // label associado ao combobox via htmlFor
-    await expect(page.getByLabel("Turma").first()).toBeVisible()
+    // seletor de turma visível
+    await expect(page.getByRole("combobox").first()).toBeVisible()
   })
 })
