@@ -110,7 +110,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
             <p className="text-sm text-muted-foreground">Nenhum histórico de pagamento.</p>
           ) : (
             <div className="space-y-2">
-              {aluno.pagamentos.slice(0, 6).map((p, i) => (
+              {aluno.pagamentos.slice(0, 6).map((p) => (
                 <div
                   key={p.id}
                   className="flex items-center justify-between rounded-lg border border-black/5 bg-[var(--color-paper-50)] px-3 py-2 text-sm"
@@ -145,7 +145,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
             <p className="px-6 py-4 text-sm text-muted-foreground">Nenhum registro de frequência ainda.</p>
           ) : (
             <div className="divide-y divide-border">
-              {freqRecente.map((f, i) => (
+              {freqRecente.map((f) => (
                 <div key={f.id} className="flex items-center justify-between px-6 py-3">
                   <span className="text-sm font-medium">
                     {format(new Date(f.data), "EEE, dd/MM", { locale: ptBR })}
@@ -188,7 +188,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
             <p className="text-sm text-muted-foreground">Nenhum item de uniforme registrado.</p>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {aluno.uniformes.map((u, i) => (
+              {aluno.uniformes.map((u) => (
                 <div
                   key={u.id}
                   className={`rounded-xl border p-3 text-sm ${
