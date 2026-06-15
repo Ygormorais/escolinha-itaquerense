@@ -53,6 +53,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
   const [itemForm, setItemForm] = useState("")
   const [tamanhoForm, setTamanhoForm] = useState("")
   const [adicionando, startAdicionando] = useTransition()
+  const [entregando, startEntregando] = useTransition()
 
   const TURMAS = [...new Set(alunos.map((a) => a.turma))].sort()
 
@@ -83,14 +84,16 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
     })
   }
 
-  async function handleEntregar(id: number, alunoId: number) {
-    const result = await marcarEntregue(id, alunoId)
-    if ("success" in result) {
-      toast.success("Entrega registrada")
-      router.refresh()
-    } else {
-      toast.error(result.error)
-    }
+  function handleEntregar(id: number, alunoId: number) {
+    startEntregando(async () => {
+      const result = await marcarEntregue(id, alunoId)
+      if ("success" in result) {
+        toast.success("Entrega registrada")
+        router.refresh()
+      } else {
+        toast.error(result.error)
+      }
+    })
   }
 
   async function handleRemover(id: number, alunoId: number) {
@@ -237,8 +240,8 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                                 </div>
                                 <div className="flex gap-1">
                                   {!u.entregue && (
-                                    <Button size="icon-sm" variant="outline" onClick={() => handleEntregar(u.id, aluno.id)} aria-label="Marcar como entregue">
-                                      <CheckCircle className="size-4 text-success-600" />
+                                    <Button size="icon-sm" variant="outline" onClick={() => handleEntregar(u.id, aluno.id)} aria-label="Marcar como entregue" disabled={entregando}>
+                                      {entregando ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4 text-success-600" />}
                                     </Button>
                                   )}
                                   <ConfirmDialog title="Remover item?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleRemover(u.id, aluno.id)}>
