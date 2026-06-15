@@ -162,7 +162,7 @@ export function TurmasClient({
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center size-6 rounded text-success-600 hover:bg-success-50 transition-colors"
-                            title="WhatsApp"
+                            aria-label="WhatsApp"
                           >
                             <MessageCircle className="size-3.5" />
                           </a>
@@ -170,7 +170,7 @@ export function TurmasClient({
                         <a
                           href={`tel:${a.telefone}`}
                           className="inline-flex items-center justify-center size-6 rounded text-brand-800 hover:bg-brand-50 transition-colors"
-                          title="Ligar"
+                          aria-label="Ligar"
                         >
                           <Phone className="size-3.5" />
                         </a>

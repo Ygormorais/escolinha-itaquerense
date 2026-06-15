@@ -336,7 +336,7 @@ export function InadimplenciaClient({
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        title="Registrar pagamento"
+                        aria-label="Registrar pagamento"
                         onClick={() => setDialogAluno(a)}
                       >
                         <CheckCircle className="size-4 text-success-600" />

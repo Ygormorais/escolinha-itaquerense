@@ -313,7 +313,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                           Re-imprimir
                         </button>
                         <ConfirmDialog title="Excluir recibo?" description={`Excluir recibo #${r.numero}?`} confirmLabel="Excluir" onConfirm={async () => { await deleteRecibo(r.id); router.refresh() }}>
-                          <button className="text-danger-600 hover:text-danger-600" title="Excluir recibo">
+                          <button className="text-danger-600 hover:text-danger-600" aria-label="Excluir recibo">
                             <Trash2 className="size-3.5" />
                           </button>
                         </ConfirmDialog>

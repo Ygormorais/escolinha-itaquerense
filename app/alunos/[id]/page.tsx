@@ -268,7 +268,7 @@ export default async function AlunoDetailPage({
                                 href={`https://wa.me/55${aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 😊 A mensalidade de *${p.mesReferencia}* está em aberto. Pode realizar o pagamento? Obrigado!`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                title="Cobrar via WhatsApp"
+                                aria-label="Cobrar via WhatsApp"
                                 className="inline-flex items-center justify-center rounded-md p-1.5 text-success-600 hover:bg-success-50 transition-colors"
                               >
                                 <MessageCircle className="size-3.5" />
@@ -280,7 +280,7 @@ export default async function AlunoDetailPage({
                             href={`/recibos?aluno=${encodeURIComponent(aluno.nome)}&responsavel=${encodeURIComponent(aluno.responsavel ?? "")}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            title="Imprimir recibo"
+                            aria-label="Imprimir recibo"
                             className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                           >
                             <Receipt className="size-3" />

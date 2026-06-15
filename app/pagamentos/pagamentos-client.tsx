@@ -478,7 +478,7 @@ export function PagamentosClient({
                   checked={allPendentesSelected}
                   onChange={toggleAll}
                   className="cursor-pointer"
-                  title="Selecionar todos pendentes"
+                  aria-label="Selecionar todos pendentes"
                 />
               </TableHead>
               <TableHead>Aluno</TableHead>
@@ -566,7 +566,7 @@ export function PagamentosClient({
                         <a
                           href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
                           target="_blank" rel="noopener noreferrer"
-                          title="Cobrar via WhatsApp"
+                          aria-label="Cobrar via WhatsApp"
                           className="inline-flex items-center justify-center size-7 rounded-md text-success-600 hover:bg-success-50 transition-colors"
                         >
                           <MessageCircle className="size-3.5" />
@@ -576,7 +576,7 @@ export function PagamentosClient({
                         <a
                           href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
                           target="_blank" rel="noopener noreferrer"
-                          title="Imprimir recibo"
+                          aria-label="Imprimir recibo"
                           className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         >
                           <Receipt className="size-3" />
