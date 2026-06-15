@@ -4,8 +4,8 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { formatMoney, plural } from "@/lib/utils"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode } from "lucide-react"
+import { formatMoney, plural, sanitizeCSVCell } from "@/lib/utils"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -304,6 +304,30 @@ export function PagamentosClient({
   const pendentesFiltered = filtered.filter((p) => getPagamentoStatus(p) !== "Pago")
   const allPendentesSelected = pendentesFiltered.length > 0 && pendentesFiltered.every((p) => selected.has(p.id))
 
+  function exportarCSV() {
+    const linhas = [
+      ["Nome", "Turma", "Mês Ref.", "Mensalidade (R$)", "Vencimento", "Data Pagamento", "Forma", "Status"],
+      ...filtered.map((p) => [
+        p.aluno.nome,
+        p.aluno.turma,
+        p.mesReferencia,
+        p.aluno.mensalidade.toFixed(2),
+        new Date(p.dataVencimento).toLocaleDateString("pt-BR"),
+        p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString("pt-BR") : "",
+        p.formaPagamento ?? "",
+        getPagamentoStatus(p),
+      ]),
+    ]
+    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `pagamentos-${mes}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   function toggleSelect(id: number) {
     setSelected((prev) => {
       const next = new Set(prev)
@@ -406,6 +430,10 @@ export function PagamentosClient({
             {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={exportarCSV} disabled={filtered.length === 0}>
+          <Download className="size-4" />
+          Exportar CSV
+        </Button>
       </div>
       <div className="flex items-center gap-4">
         <div>
