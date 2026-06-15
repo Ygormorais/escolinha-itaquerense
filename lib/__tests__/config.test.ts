@@ -13,7 +13,9 @@ const DEFAULT: ClubConfig = {
   capacidadeTurma: 20,
   chavePix: "ygorcamisa1@gmail.com",
   whatsapp: "5511999999999",
-  googleCalendarId: "", diaVencimento: 10,
+  googleCalendarId: "",
+  diaVencimento: 10,
+  intervaloDiasLembreteInadimplencia: 7,
 }
 
 describe("lib/config", () => {

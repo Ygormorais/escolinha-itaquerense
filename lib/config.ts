@@ -12,6 +12,7 @@ export type ClubConfig = {
   whatsapp: string
   googleCalendarId: string
   diaVencimento: number
+  intervaloDiasLembreteInadimplencia: number
 }
 
 const CONFIG_PATH = path.join(process.cwd(), "club.config.json")
@@ -27,6 +28,7 @@ const DEFAULT: ClubConfig = {
   whatsapp: "5511999999999",
   googleCalendarId: "",
   diaVencimento: 10,
+  intervaloDiasLembreteInadimplencia: 7,
 }
 
 export function getConfig(): ClubConfig {

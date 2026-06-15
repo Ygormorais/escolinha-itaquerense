@@ -137,6 +137,18 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
                   />
                   <p className="text-xs text-muted-foreground">Dia do mês em que as mensalidades vencem (1–28)</p>
                 </div>
+                <div className="space-y-1">
+                  <Label htmlFor="cfg-intervalo-lembrete">Intervalo entre lembretes de inadimplência (dias)</Label>
+                  <Input
+                    id="cfg-intervalo-lembrete"
+                    name="intervaloDiasLembreteInadimplencia"
+                    type="number"
+                    min={1}
+                    max={90}
+                    value={form.intervaloDiasLembreteInadimplencia}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
 
