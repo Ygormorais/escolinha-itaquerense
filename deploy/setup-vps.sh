@@ -41,7 +41,7 @@ fi
 cd "$APP_DIR"
 
 if [[ ! -f .env ]]; then
-  cp .env.example .env
+  cp .env.production.example .env
   echo
   echo "!!! Edite $APP_DIR/.env com os valores de produção antes de continuar !!"
   echo "    (DATABASE_URL=file:./prisma/prod.db, SESSION_SECRET, ADMIN_PASSWORD, etc.)"

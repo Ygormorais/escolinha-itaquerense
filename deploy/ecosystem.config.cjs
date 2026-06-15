@@ -5,7 +5,7 @@ module.exports = {
       cwd: __dirname + "/..",
       script: "npm",
       args: "start",
-      env: { NODE_ENV: "production" },
+      env: { NODE_ENV: "production", TZ: "UTC" },
       max_restarts: 10,
       restart_delay: 5000,
     },
