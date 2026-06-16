@@ -61,7 +61,11 @@ export function matchTransactions(
       }
     }
 
-    const pendentesAluno = pendentes.filter((p) => p.alunoId === alunoMatch.id)
+    // ordena por mesReferencia ("YYYY-MM" → ordem lexicográfica = cronológica)
+    // para que a seleção de "mais antiga" não dependa da ordem do array de entrada
+    const pendentesAluno = pendentes
+      .filter((p) => p.alunoId === alunoMatch.id)
+      .sort((a, b) => a.mesReferencia.localeCompare(b.mesReferencia))
 
     if (pendentesAluno.length === 1) {
       const pag = pendentesAluno[0]

@@ -57,6 +57,25 @@ describe("matchTransactions", () => {
     expect(result.confianca).toBe("baixa")
   })
 
+  it("com múltiplas pendentes, seleciona a mais antiga independente da ordem de entrada", () => {
+    const alunos = [{ id: 1, nome: "João Silva" }]
+    // entrada fora de ordem cronológica: mais recente primeiro
+    const pagamentos = [
+      { id: 11, alunoId: 1, mesReferencia: "2025-07", dataPagamento: null },
+      { id: 10, alunoId: 1, mesReferencia: "2025-05", dataPagamento: null },
+    ]
+
+    const [result] = matchTransactions(
+      [makeTransaction("PIX JOAO SILVA")],
+      alunos,
+      pagamentos
+    )
+
+    expect(result.confianca).toBe("baixa")
+    expect(result.pagamentoId).toBe(10)
+    expect(result.mesReferencia).toBe("2025-05")
+  })
+
   it("aluno sem mensalidades pendentes → confiança baixa (match mas sem pagamento)", () => {
     const alunos = [{ id: 1, nome: "João Silva" }]
     const pagamentos: ReturnType<typeof makePagamento>[] = []
