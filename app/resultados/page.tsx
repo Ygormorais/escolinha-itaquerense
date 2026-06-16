@@ -66,8 +66,11 @@ export default async function ResultadosPage() {
         )}
 
         {campeonatos.map((camp) => {
-          const realizadas = camp.partidas.filter((p) => p.golsPro != null).slice(0, 5)
-          const proximas = camp.partidas.filter((p) => p.golsPro == null && new Date(p.data) >= agora).slice(0, 5)
+          // só nossos jogos: o sync grava jogos de outros times do evento com
+          // local "Neutro"; exibi-los como "Itaquerense × ..." seria incorreto.
+          const nossas = camp.partidas.filter((p) => p.local !== "Neutro")
+          const realizadas = nossas.filter((p) => p.golsPro != null).slice(0, 5)
+          const proximas = nossas.filter((p) => p.golsPro == null && new Date(p.data) >= agora).slice(0, 5)
           const shareMsg = `Veja os resultados da Escolinha Itaquerense — ${camp.nome}: ${appUrl}/resultados`
           const waHref = `https://wa.me/?text=${encodeURIComponent(shareMsg)}`
 
