@@ -95,6 +95,67 @@ sqlite3 prisma/prod.db ".backup backups/prod-$(date +%F).db"   # backup manual
 Backup automático: agendar o comando acima no cron da VPS (diário) e copiar
 para fora da VM de tempos em tempos.
 
+---
+
+## Railway (alternativa ao Oracle Cloud)
+
+O Railway provê HTTPS automático, volume persistente e deploy via `git push`.
+Não requer gerenciar servidor — ideal para começar antes de ter a VPS pronta.
+
+### 1. Criar projeto
+
+1. Acesse [railway.app](https://railway.app) e faça login com GitHub.
+2. **New Project → Deploy from GitHub repo** → selecionar `Ygormorais/escolinha-itaquerense`.
+3. Railway detecta Next.js automaticamente e usa o `railway.toml` do repo.
+
+### 2. Criar volume persistente
+
+1. No projeto → **+ Add a service → Volume**.
+2. Montar em `/data` (o `start-railway.sh` cria os subdiretórios no primeiro boot).
+
+### 3. Variáveis de ambiente
+
+No painel do serviço → **Variables**, adicionar:
+
+| Variável | Valor |
+|----------|-------|
+| `DATABASE_URL` | `file:/data/prod.db` |
+| `UPLOADS_DIR` | `/data/uploads` |
+| `TZ` | `UTC` |
+| `NODE_ENV` | `production` |
+| `NEXT_PUBLIC_APP_URL` | `https://<projeto>.railway.app` |
+| `ADMIN_USERNAME` | `admin` |
+| `ADMIN_PASSWORD` | senha forte (use `gen-secrets.sh`) |
+| `SESSION_SECRET` | 32 bytes hex (use `gen-secrets.sh`) |
+| `CRON_SECRET` | idem |
+| `FPFS_SYNC_TOKEN` | idem |
+| demais vars | conforme `.env.production.example` |
+
+Para gerar os segredos localmente:
+```bash
+bash deploy/gen-secrets.sh
+```
+
+### 4. Deploy
+
+Railway faz deploy automático a cada push no branch configurado (padrão: `master`).
+Para forçar manualmente: painel → **Deploy → Redeploy**.
+
+### 5. Cron (lembretes e geração de mensalidades)
+
+O endpoint `/api/cron/lembretes` autentica por Bearer token. Configure no
+[cron-job.org](https://cron-job.org) (gratuito):
+
+- **URL:** `POST https://<projeto>.railway.app/api/cron/lembretes`
+- **Header:** `Authorization: Bearer <valor de CRON_SECRET>`
+- **Schedule:** diário às 10:00 UTC (07:00 BRT)
+
+### 6. Rollback
+
+Railway mantém histórico de deploys. No painel → **Deployments** → clique em qualquer
+deploy anterior → **Redeploy**. O volume `/data` (banco + uploads) persiste independente
+do deploy — não é afetado pelo rollback.
+
 ## Domínio
 
 Enquanto não houver domínio, o Caddyfile serve por IP na porta 80 (sem HTTPS —
