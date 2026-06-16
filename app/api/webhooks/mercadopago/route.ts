@@ -69,6 +69,8 @@ export async function POST(req: Request) {
 
     if (!pagamento) return NextResponse.json({ ok: true })
 
+    // idempotência: webhooks do MP são reentregues; só notifica na transição p/ pago
+    const jaPago = pagamento.dataPagamento != null
     const statusLocal = mpStatusToLocal(mpData.status as MpPaymentStatus)
     const updateData: Record<string, unknown> = { statusCobranca: statusLocal }
 
@@ -88,7 +90,7 @@ export async function POST(req: Request) {
     revalidatePath("/inadimplencia")
     revalidatePath("/")
 
-    if (statusLocal === "pago") {
+    if (statusLocal === "pago" && !jaPago) {
       const { notificarPagamentoConfirmado } = await import("@/lib/whatsapp-jobs")
       const { notificarPagamentoConfirmadoEmail } = await import("@/lib/email-jobs")
       void notificarPagamentoConfirmado(pagamento.id).catch((e) =>

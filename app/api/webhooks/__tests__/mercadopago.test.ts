@@ -27,6 +27,9 @@ vi.mock("@/lib/email-jobs", () => ({
 
 import { db } from "@/lib/db"
 import { mpPayment } from "@/lib/mercadopago"
+import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
+
+const notificar = notificarPagamentoConfirmado as unknown as ReturnType<typeof vi.fn>
 
 const m = db as unknown as {
   pagamento: {
@@ -103,6 +106,28 @@ describe("POST /api/webhooks/mercadopago", () => {
         }),
       })
     )
+  })
+
+  it("notifica na primeira confirmação (dataPagamento ainda nulo)", async () => {
+    mp.get.mockResolvedValue({ id: "mp-777", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 9, canalPrevisto: "PIX", dataPagamento: null,
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    m.pagamento.update.mockResolvedValue({})
+    await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
+    expect(notificar).toHaveBeenCalledWith(9)
+  })
+
+  it("não re-notifica quando o pagamento já estava pago (webhook duplicado)", async () => {
+    mp.get.mockResolvedValue({ id: "mp-777", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 9, canalPrevisto: "PIX", dataPagamento: new Date("2026-06-10T10:00:00Z"),
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    m.pagamento.update.mockResolvedValue({})
+    await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
+    expect(notificar).not.toHaveBeenCalled()
   })
 
   it("retorna 200 se pagamento não encontrado (idempotência)", async () => {
