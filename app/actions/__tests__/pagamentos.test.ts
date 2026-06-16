@@ -32,6 +32,7 @@ import {
   registrarPagamentosLote,
   gerarMensalidadesMes,
   deletePagamento,
+  marcarComoPago,
 } from "@/app/actions/pagamentos"
 import { db } from "@/lib/db"
 import { cancelarCobranca } from "@/app/actions/cobranca"
@@ -74,6 +75,38 @@ describe("registrarPagamento", () => {
     m.pagamento.update.mockRejectedValueOnce(new Error("constraint"))
     const res = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
     expect(res).toEqual({ error: "constraint" })
+  })
+})
+
+describe("marcarComoPago", () => {
+  it("rejeita valor inválido (<= 0) sem tocar no banco", async () => {
+    const res = await marcarComoPago(5, {
+      dataPagamento: "2026-06-10",
+      formaPagamento: "PIX",
+      valorRecebido: 0,
+    })
+    expect(res).toEqual({ error: "Valor inválido" })
+    expect(m.pagamento.update).not.toHaveBeenCalled()
+  })
+
+  it("rejeita valor não-finito (NaN) sem tocar no banco", async () => {
+    const res = await marcarComoPago(5, {
+      dataPagamento: "2026-06-10",
+      formaPagamento: "PIX",
+      valorRecebido: Number.NaN,
+    })
+    expect(res).toEqual({ error: "Valor inválido" })
+    expect(m.pagamento.update).not.toHaveBeenCalled()
+  })
+
+  it("registra quando o valor é válido", async () => {
+    const res = await marcarComoPago(5, {
+      dataPagamento: "2026-06-10",
+      formaPagamento: "PIX",
+      valorRecebido: 150,
+    })
+    expect(res).toEqual({ success: true })
+    expect(m.pagamento.update.mock.calls[0][0].data.valorRecebido).toBe(150)
   })
 })
 
