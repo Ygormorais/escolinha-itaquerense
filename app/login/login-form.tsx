@@ -29,7 +29,9 @@ export function LoginForm({ next }: { next?: string }) {
           setError(data.error ?? "Usuário ou senha incorretos")
           return
         }
-        router.replace(next && next.startsWith("/") ? next : "/dashboard")
+        // só caminhos internos; rejeita protocol-relative ("//evil.com") p/ evitar open redirect
+        const destino = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard"
+        router.replace(destino)
         router.refresh()
       } catch {
         setError("Erro ao conectar. Tente novamente.")
