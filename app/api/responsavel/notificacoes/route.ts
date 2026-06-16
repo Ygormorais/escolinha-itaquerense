@@ -12,27 +12,21 @@ export async function GET() {
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
-    select: { telefone: true },
+    select: { alunos: { select: { id: true } } },
   })
   if (!responsavel) {
     return NextResponse.json({ error: "Responsável não encontrado" }, { status: 404 })
   }
 
-  const telefone = responsavel.telefone?.replace(/\D/g, "")
+  // escopa pelos alunos do responsável (comunicados têm alunoId). Casar por
+  // sufixo de telefone vazava comunicados personalizados entre famílias.
+  const alunoIds = responsavel.alunos.map((a) => a.id)
+  const filtroBase = { origem: "comunicado", alunoId: { in: alunoIds } }
 
   const [naoLidas, ultimas] = await Promise.all([
-    db.whatsAppMensagem.count({
-      where: {
-        origem: "comunicado",
-        lida: false,
-        ...(telefone ? { telefone: { contains: telefone.slice(-8) } } : { telefone: "" }),
-      },
-    }),
+    db.whatsAppMensagem.count({ where: { ...filtroBase, lida: false } }),
     db.whatsAppMensagem.findMany({
-      where: {
-        origem: "comunicado",
-        ...(telefone ? { telefone: { contains: telefone.slice(-8) } } : { telefone: "" }),
-      },
+      where: filtroBase,
       orderBy: { createdAt: "desc" },
       take: 5,
       select: {
@@ -61,22 +55,16 @@ export async function PATCH() {
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
-    select: { telefone: true },
+    select: { alunos: { select: { id: true } } },
   })
   if (!responsavel) {
     return NextResponse.json({ error: "Responsável não encontrado" }, { status: 404 })
   }
 
-  const telefone = responsavel.telefone?.replace(/\D/g, "")
-
-  const where = {
-    origem: "comunicado",
-    lida: false,
-    ...(telefone ? { telefone: { contains: telefone.slice(-8) } } : { telefone: "" }),
-  }
+  const alunoIds = responsavel.alunos.map((a) => a.id)
 
   const updated = await db.whatsAppMensagem.updateMany({
-    where,
+    where: { origem: "comunicado", lida: false, alunoId: { in: alunoIds } },
     data: { lida: true },
   })
 
