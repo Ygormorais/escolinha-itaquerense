@@ -16,7 +16,7 @@ export function ImportarExtratoClient() {
   const [arquivo, setArquivo] = useState<File | null>(null)
   const [resultados, setResultados] = useState<MatchResult[]>([])
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
-  const [isPreviewing, startPreview] = useTransition()
+  const [isPreviewing, setIsPreviewing] = useState(false)
   const [isConfirming, startConfirm] = useTransition()
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -25,24 +25,28 @@ export function ImportarExtratoClient() {
 
   function handleAnalisar() {
     if (!arquivo) return
-    startPreview(async () => {
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const content = e.target?.result as string
-        const result = await previewOFX(content)
-        if ("error" in result) {
-          toast.error(result.error)
-          return
-        }
-        const alta = result
-          .filter((r) => r.confianca === "alta")
-          .map((r) => r.fitid)
-        setSelecionados(new Set(alta))
-        setResultados(result)
-        setFase("preview")
+    setIsPreviewing(true)
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const content = e.target?.result as string
+      const result = await previewOFX(content)
+      setIsPreviewing(false)
+      if ("error" in result) {
+        toast.error(result.error)
+        return
       }
-      reader.readAsText(arquivo, "latin1")
-    })
+      const alta = result
+        .filter((r) => r.confianca === "alta")
+        .map((r) => r.fitid)
+      setSelecionados(new Set(alta))
+      setResultados(result)
+      setFase("preview")
+    }
+    reader.onerror = () => {
+      setIsPreviewing(false)
+      toast.error("Erro ao ler o arquivo")
+    }
+    reader.readAsText(arquivo, "latin1")
   }
 
   function toggleSelecionado(fitid: string) {
