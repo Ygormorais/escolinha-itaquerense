@@ -82,6 +82,18 @@ describe("criarAvaliacao", () => {
     expect(m.avaliacao.create).toHaveBeenCalledWith({ data: input })
   })
 
+  it("rejeita nota fora de 0-10 sem criar", async () => {
+    const res = await criarAvaliacao({ alunoId: 1, periodo: "2026-06", notaTecnica: 50 })
+    expect(res).toEqual({ error: "Notas devem estar entre 0 e 10" })
+    expect(m.avaliacao.create).not.toHaveBeenCalled()
+  })
+
+  it("rejeita frequência fora de 0-100 sem criar", async () => {
+    const res = await criarAvaliacao({ alunoId: 1, periodo: "2026-06", frequencia: 150 })
+    expect(res).toEqual({ error: "Frequência deve estar entre 0 e 100" })
+    expect(m.avaliacao.create).not.toHaveBeenCalled()
+  })
+
   it("funciona com todas as notas preenchidas", async () => {
     const input = {
       alunoId: 5,
@@ -119,6 +131,12 @@ describe("atualizarAvaliacao", () => {
   it("revalida a página de configurações de avaliacoes", async () => {
     await atualizarAvaliacao(1, { notaTecnica: 8.5 })
     expect(revalidatePath).toHaveBeenCalledWith("/configuracoes/avaliacoes")
+  })
+
+  it("rejeita nota inválida no update sem gravar", async () => {
+    const res = await atualizarAvaliacao(1, { notaFisica: -5 })
+    expect(res).toEqual({ error: "Notas devem estar entre 0 e 10" })
+    expect(m.avaliacao.update).not.toHaveBeenCalled()
   })
 
   it("funciona com um único campo", async () => {

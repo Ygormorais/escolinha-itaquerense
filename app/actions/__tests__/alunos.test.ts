@@ -41,6 +41,20 @@ beforeEach(() => {
   m.pagamento.createMany.mockResolvedValue({ count: 12 })
 })
 
+describe("updateAluno — validação espelha createAluno", () => {
+  it("rejeita nome vazio sem atualizar", async () => {
+    const res = await updateAluno(1, { ...dadosValidos, nome: "   " })
+    expect(res).toEqual({ error: "Nome do aluno é obrigatório" })
+    expect(m.aluno.update).not.toHaveBeenCalled()
+  })
+
+  it("rejeita mensalidade negativa sem atualizar", async () => {
+    const res = await updateAluno(1, { ...dadosValidos, mensalidade: -10 })
+    expect(res).toEqual({ error: "Mensalidade inválida" })
+    expect(m.aluno.update).not.toHaveBeenCalled()
+  })
+})
+
 describe("createAluno", () => {
   it("exige autenticação", async () => {
     await createAluno(dadosValidos)

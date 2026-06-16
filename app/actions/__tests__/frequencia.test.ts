@@ -43,6 +43,15 @@ describe("salvarFrequencia", () => {
     expect(m.frequencia.upsert).toHaveBeenCalledTimes(2)
   })
 
+  it("rejeita presença fora da whitelist sem gravar nada", async () => {
+    const res = await salvarFrequencia([
+      { alunoId: 1, data: "2026-06-01", presenca: "Presente" },
+      { alunoId: 2, data: "2026-06-01", presenca: "Hacked" },
+    ])
+    expect(res).toEqual({ error: "Valor de presença inválido" })
+    expect(m.frequencia.upsert).not.toHaveBeenCalled()
+  })
+
   it("retorna erro amigável quando o upsert falha", async () => {
     m.frequencia.upsert.mockRejectedValueOnce(new Error("db down"))
     const res = await salvarFrequencia([{ alunoId: 1, data: "2026-06-01", presenca: "Presente" }])

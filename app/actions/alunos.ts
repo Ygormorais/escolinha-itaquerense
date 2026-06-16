@@ -109,13 +109,16 @@ export async function updateAluno(
   }
 ): Promise<ActionResult> {
   await requireAuth()
+  if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
+  const mensalidade = Number(data.mensalidade)
+  if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
   if (!dataValida(data.dataNascimento)) return { error: "Data de nascimento inválida" }
   if (!dataValida(data.dataMatricula)) return { error: "Data de matrícula inválida" }
   try {
     await db.aluno.update({
       where: { id },
       data: {
-        nome: data.nome,
+        nome: data.nome.trim(),
         dataNascimento: new Date(data.dataNascimento),
         turma: data.turma,
         horario: data.horario,
