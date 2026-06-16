@@ -10,11 +10,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatMoney } from "@/lib/utils"
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const aluno = await db.aluno.findUnique({ where: { id: Number(id) }, select: { nome: true } })
-  return { title: aluno ? `${aluno.nome} — Portal do Responsável` : "Perfil — Portal do Responsável" }
-}
+export const metadata = { title: "Perfil do Aluno — Portal do Responsável" }
 
 export default async function PerfilAlunoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

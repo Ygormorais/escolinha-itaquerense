@@ -64,6 +64,6 @@ test.describe("Portal autenticado — perfil do aluno", () => {
 
   test("ID inválido (999999) redireciona para /responsavel", async ({ page }) => {
     await page.goto("/responsavel/aluno/999999")
-    await expect(page).toHaveURL(/\/responsavel(\/login)?$/, { timeout: 5000 })
+    await expect(page).toHaveURL(/\/responsavel$/, { timeout: 5000 })
   })
 })
