@@ -39,7 +39,7 @@ const TIPOS = [
   { value: "outro", label: "Outro" },
 ]
 
-export function SolicitacoesClient({ responsavelId, solicitacoes }: { responsavelId: number; solicitacoes: Solicitacao[] }) {
+export function SolicitacoesClient({ solicitacoes }: { solicitacoes: Solicitacao[] }) {
   const [tipo, setTipo] = useState("outro")
   const [descricao, setDescricao] = useState("")
   const [pending, startTransition] = useTransition()
@@ -48,7 +48,7 @@ export function SolicitacoesClient({ responsavelId, solicitacoes }: { responsave
     e.preventDefault()
     if (!descricao.trim()) { toast.error("Descreva sua solicitação"); return }
     startTransition(async () => {
-      const res = await criarSolicitacao({ responsavelId, tipo, descricao })
+      const res = await criarSolicitacao({ tipo, descricao })
       if ("error" in res) toast.error(res.error)
       else { toast.success("Solicitação enviada!"); setDescricao(""); setTipo("outro") }
     })

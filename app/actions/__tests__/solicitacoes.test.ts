@@ -15,6 +15,10 @@ vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ user: "secretaria", role: "secretaria" }),
 }))
 
+vi.mock("@/lib/responsavel-session", () => ({
+  getResponsavelSession: vi.fn(),
+}))
+
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 import {
@@ -24,6 +28,7 @@ import {
 } from "@/app/actions/solicitacoes"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { getResponsavelSession } from "@/lib/responsavel-session"
 
 const m = db as unknown as {
   solicitacao: {
@@ -33,6 +38,7 @@ const m = db as unknown as {
   }
 }
 const auth = requireAuth as unknown as ReturnType<typeof vi.fn>
+const respSession = getResponsavelSession as unknown as ReturnType<typeof vi.fn>
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -40,17 +46,18 @@ beforeEach(() => {
   m.solicitacao.findMany.mockResolvedValue([])
   m.solicitacao.update.mockResolvedValue({})
   auth.mockResolvedValue({ user: "secretaria", role: "secretaria" })
+  respSession.mockResolvedValue({ authenticated: true, responsavelId: 1 })
 })
 
 describe("criarSolicitacao", () => {
   it("rejeita descrição vazia sem criar", async () => {
-    const res = await criarSolicitacao({ responsavelId: 1, tipo: "uniforme", descricao: "   " })
+    const res = await criarSolicitacao({ tipo: "uniforme", descricao: "   " })
     expect(res).toEqual({ error: "Descreva sua solicitação" })
     expect(m.solicitacao.create).not.toHaveBeenCalled()
   })
 
   it("cria com status pendente e descrição aparada", async () => {
-    const res = await criarSolicitacao({ responsavelId: 1, tipo: "horario", descricao: "  trocar de turma  " })
+    const res = await criarSolicitacao({ tipo: "horario", descricao: "  trocar de turma  " })
     expect(res).toEqual({ success: true, id: 42 })
     expect(m.solicitacao.create.mock.calls[0][0].data).toMatchObject({
       responsavelId: 1,
@@ -58,6 +65,19 @@ describe("criarSolicitacao", () => {
       descricao: "trocar de turma",
       status: "pendente",
     })
+  })
+
+  it("usa o responsavelId da sessão, não um valor arbitrário do cliente", async () => {
+    respSession.mockResolvedValue({ authenticated: true, responsavelId: 99 })
+    await criarSolicitacao({ tipo: "outro", descricao: "teste", responsavelId: 7 } as { tipo: string; descricao: string })
+    expect(m.solicitacao.create.mock.calls[0][0].data.responsavelId).toBe(99)
+  })
+
+  it("rejeita quando não autenticado, sem criar", async () => {
+    respSession.mockResolvedValue({ authenticated: false })
+    const res = await criarSolicitacao({ tipo: "outro", descricao: "teste" })
+    expect(res).toEqual({ error: "Não autenticado." })
+    expect(m.solicitacao.create).not.toHaveBeenCalled()
   })
 })
 
