@@ -1,23 +1,45 @@
-# Deploy — Oracle Cloud Always Free (sem Docker)
+# Deploy — VPS Ubuntu + Node/PM2/Caddy (sem Docker)
 
 O app roda direto com Node 20 + PM2, atrás do Caddy (HTTPS automático).
 O SQLite fica em arquivo no disco da VPS — **instância única, sempre**.
 
-## 1. Criar a conta e a instância (uma vez, no painel Oracle)
+Alvo de referência: **Hetzner CX22** (~€4/mês, 2 vCPU / 4 GB / 40 GB). Os passos
+servem igual para um droplet do **DigitalOcean** ou qualquer VPS Ubuntu — só muda
+o painel. Para Oracle Cloud Always Free, veja a nota no fim desta seção.
 
-1. Cadastro em https://www.oracle.com/cloud/free/ (pede cartão, não cobra).
-2. Compute → Create Instance:
-   - Image: **Ubuntu 24.04** (aarch64)
-   - Shape: **VM.Standard.A1.Flex** — 2 OCPUs / 12 GB já é sobra (Always Free permite até 4/24)
-   - Se der "Out of capacity", tente outra Availability Domain ou horário.
-3. Baixe a chave SSH gerada.
-4. Networking → VCN → Security List da subnet: adicionar Ingress Rules
-   TCP **80** e **443** de `0.0.0.0/0` (a 22 já vem liberada).
+## 1. Criar a conta e a instância (uma vez, no painel do provedor)
+
+### Hetzner Cloud (recomendado)
+
+1. Cadastro em https://console.hetzner.com/ (pede cartão; cobra ~€4/mês).
+2. New Project → **Add Server**:
+   - Location: qualquer (Alemanha/Finlândia; latência ~200 ms ao BR, ok).
+   - Image: **Ubuntu 24.04**
+   - Type: **CX22** (shared vCPU x86) — 2 vCPU / 4 GB / 40 GB é sobra.
+   - SSH Keys: adicione sua chave pública (cole o conteúdo de `~/.ssh/id_*.pub`).
+3. (Opcional) **Firewall** no painel Hetzner: liberar Inbound TCP **22, 80, 443**.
+   Sem firewall de nuvem, o Ubuntu já vem com tudo aberto — o `setup-vps.sh`
+   cuida do firewall do SO.
+
+### DigitalOcean (alternativa)
+
+1. Conta nova ganha US$200 de crédito por 60 dias (cartão exigido).
+2. Create → **Droplet**: Ubuntu 24.04, plano Basic **US$6/mês** (1 vCPU / 1 GB)
+   ou superior, região mais próxima, SSH key adicionada.
+3. (Opcional) **Cloud Firewall**: liberar Inbound TCP 22, 80, 443.
+
+> **Oracle Cloud Always Free** (se voltar a ser opção): Compute → Create Instance,
+> Ubuntu 24.04, shape **VM.Standard.A1.Flex** (Always Free até 4 OCPU / 24 GB).
+> O usuário SSH é `ubuntu`. Liberar 80/443 na **Security List da VCN** além do
+> firewall do SO. "Out of capacity" → tentar outra Availability Domain/horário.
 
 ## 2. Setup da VPS (uma vez)
 
+O usuário SSH depende do provedor: **`root`** no Hetzner e no DigitalOcean,
+**`ubuntu`** no Oracle. Ajuste o comando `ssh` abaixo conforme o seu.
+
 ```bash
-ssh -i chave.key ubuntu@IP_DA_VM
+ssh root@IP_DA_VM        # Oracle: ssh -i chave.key ubuntu@IP_DA_VM
 git clone https://github.com/Ygormorais/escolinha-itaquerense.git
 bash escolinha-itaquerense/deploy/setup-vps.sh   # para no .env na 1ª vez
 cp escolinha-itaquerense/.env.production.example escolinha-itaquerense/.env
@@ -54,7 +76,7 @@ Após o primeiro deploy, confirmar que `public/uploads/` está vazio ou inexiste
 ## 4. Atualizar o app (cada release)
 
 ```bash
-ssh -i chave.key ubuntu@IP_DA_VM "bash escolinha-itaquerense/deploy/deploy.sh"
+ssh root@IP_DA_VM "bash escolinha-itaquerense/deploy/deploy.sh"   # Oracle: ubuntu@
 ```
 
 O `deploy.sh` faz: `git checkout master` + `git pull` → backup do banco em
@@ -64,7 +86,7 @@ reload no PM2 → tag `deploy-*` (fazer merge develop → master antes).
 ## 5. Rollback (se a versão nova quebrar)
 
 ```bash
-ssh -i chave.key ubuntu@IP_DA_VM "bash escolinha-itaquerense/deploy/rollback.sh"
+ssh root@IP_DA_VM "bash escolinha-itaquerense/deploy/rollback.sh"   # Oracle: ubuntu@
 ```
 
 Sem argumento, volta para a tag `deploy-*` anterior à atual e rebuilda

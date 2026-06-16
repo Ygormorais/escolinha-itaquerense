@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Setup inicial da VPS (Oracle Cloud Always Free — Ubuntu 22.04/24.04, ARM ou x86).
-# Rodar como usuário ubuntu: bash setup-vps.sh
+# Setup inicial da VPS (Ubuntu 22.04/24.04, ARM ou x86 — Hetzner, DigitalOcean,
+# Oracle Cloud, etc.). Rodar como usuário com sudo (ubuntu/root): bash setup-vps.sh
 set -euo pipefail
 
 APP_DIR="$HOME/escolinha-itaquerense"
@@ -28,11 +28,19 @@ if ! command -v caddy >/dev/null; then
   sudo apt-get update && sudo apt-get install -y caddy
 fi
 
-echo "==> Firewall da VM (Oracle usa iptables; liberar 80/443)"
-sudo iptables -C INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
-sudo iptables -C INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null || sudo iptables -I INPUT -p tcp --dport 443 -j ACCEPT
-sudo apt-get install -y iptables-persistent || true
-sudo netfilter-persistent save || true
+echo "==> Firewall do SO: liberar 80/443"
+if command -v ufw >/dev/null && sudo ufw status 2>/dev/null | grep -q "Status: active"; then
+  # Ubuntu com ufw ativo (comum em DigitalOcean): abrir as portas no ufw
+  sudo ufw allow 80/tcp
+  sudo ufw allow 443/tcp
+else
+  # Sem ufw ativo (Hetzner/DO vêm com INPUT aberto; Oracle bloqueia por padrão):
+  # garante ACCEPT no iptables e persiste. No-op onde já está liberado.
+  sudo iptables -C INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+  sudo iptables -C INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null || sudo iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+  sudo apt-get install -y iptables-persistent || true
+  sudo netfilter-persistent save || true
+fi
 
 echo "==> Clone do app"
 if [[ ! -d "$APP_DIR" ]]; then
@@ -58,4 +66,5 @@ echo "==> Caddy"
 sudo cp "$APP_DIR/deploy/Caddyfile" /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 
-echo "==> Pronto. Lembre-se de liberar 80/443 também na Security List da VCN (painel Oracle)."
+echo "==> Pronto. Se o provedor tiver firewall de nuvem (Hetzner Cloud Firewall /"
+echo "    DO Cloud Firewall / Oracle VCN Security List), libere 80/443 lá também."
