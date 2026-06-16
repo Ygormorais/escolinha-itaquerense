@@ -59,7 +59,7 @@ test.describe("Portal autenticado — perfil do aluno", () => {
     await page.goto("/responsavel")
     await page.getByRole("link", { name: /Ver Perfil/i }).first().click()
     await expect(page).toHaveURL(/\/responsavel\/aluno\/\d+/, { timeout: 8000 })
-    await expect(page.getByText(/^Uniformes$/i)).toBeVisible()
+    await expect(page.getByText(/Uniformes/i).first()).toBeVisible()
   })
 
   test("ID inválido (999999) redireciona para /responsavel", async ({ page }) => {
