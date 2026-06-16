@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest"
+import path from "path"
 
 afterEach(() => {
   delete process.env.UPLOADS_DIR
@@ -12,7 +13,6 @@ describe("resolveUploadsDir", () => {
     const { resolveUploadsDir } = await import("../uploads-path")
     const fotos = resolveUploadsDir("fotos")
     const mats = resolveUploadsDir("matriculas")
-    const path = require("path")
     expect(fotos).toBe(path.join(process.cwd(), "uploads", "fotos"))
     expect(mats).toBe(path.join(process.cwd(), "uploads", "matriculas"))
   })
@@ -21,7 +21,7 @@ describe("resolveUploadsDir", () => {
     process.env.UPLOADS_DIR = "/data/uploads"
     vi.resetModules()
     const { resolveUploadsDir } = await import("../uploads-path")
-    expect(resolveUploadsDir("fotos")).toBe("/data/uploads/fotos")
-    expect(resolveUploadsDir("matriculas")).toBe("/data/uploads/matriculas")
+    expect(resolveUploadsDir("fotos")).toBe(path.join("/data/uploads", "fotos"))
+    expect(resolveUploadsDir("matriculas")).toBe(path.join("/data/uploads", "matriculas"))
   })
 })
