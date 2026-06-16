@@ -86,6 +86,7 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" sizes="500x500" />
         <script
           type="application/ld+json"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
