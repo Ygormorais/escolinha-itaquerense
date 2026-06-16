@@ -11,25 +11,24 @@ export async function previewOFX(
 ): Promise<MatchResult[] | { error: string }> {
   await requireAuth()
 
-  let transactions
   try {
-    transactions = parseOFX(content)
+    const transactions = parseOFX(content)
+
+    const [alunos, pagamentos] = await Promise.all([
+      db.aluno.findMany({
+        where: { status: "Ativo" },
+        select: { id: true, nome: true },
+      }),
+      db.pagamento.findMany({
+        where: { dataPagamento: null },
+        select: { id: true, alunoId: true, mesReferencia: true, dataPagamento: true },
+      }),
+    ])
+
+    return matchTransactions(transactions, alunos, pagamentos)
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao processar arquivo OFX" }
   }
-
-  const [alunos, pagamentos] = await Promise.all([
-    db.aluno.findMany({
-      where: { status: "Ativo" },
-      select: { id: true, nome: true },
-    }),
-    db.pagamento.findMany({
-      where: { dataPagamento: null },
-      select: { id: true, alunoId: true, mesReferencia: true, dataPagamento: true },
-    }),
-  ])
-
-  return matchTransactions(transactions, alunos, pagamentos)
 }
 
 export async function confirmarImportacaoOFX(

@@ -70,7 +70,9 @@ export async function GET(request: Request) {
 
   const geracaoMensal =
     now.getDate() === 1
-      ? await runGerarMensalidadesMes(format(now, "yyyy-MM"))
+      ? await runGerarMensalidadesMes(format(now, "yyyy-MM")).catch((e: unknown) => ({
+          error: e instanceof Error ? e.message : "Erro ao gerar mensalidades",
+        }))
       : null
 
   const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas] = await Promise.all([

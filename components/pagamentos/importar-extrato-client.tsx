@@ -28,19 +28,24 @@ export function ImportarExtratoClient() {
     setIsPreviewing(true)
     const reader = new FileReader()
     reader.onload = async (e) => {
-      const content = e.target?.result as string
-      const result = await previewOFX(content)
-      setIsPreviewing(false)
-      if ("error" in result) {
-        toast.error(result.error)
-        return
+      try {
+        const content = e.target?.result as string
+        const result = await previewOFX(content)
+        setIsPreviewing(false)
+        if ("error" in result) {
+          toast.error(result.error)
+          return
+        }
+        const alta = result
+          .filter((r) => r.confianca === "alta")
+          .map((r) => r.fitid)
+        setSelecionados(new Set(alta))
+        setResultados(result)
+        setFase("preview")
+      } catch {
+        setIsPreviewing(false)
+        toast.error("Erro ao processar o arquivo")
       }
-      const alta = result
-        .filter((r) => r.confianca === "alta")
-        .map((r) => r.fitid)
-      setSelecionados(new Set(alta))
-      setResultados(result)
-      setFase("preview")
     }
     reader.onerror = () => {
       setIsPreviewing(false)
