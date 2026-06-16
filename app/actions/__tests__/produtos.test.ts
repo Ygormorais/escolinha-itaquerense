@@ -54,8 +54,14 @@ describe("criarProduto", () => {
     expect(m.produto.create).toHaveBeenCalledWith({
       data: { nome: "Camisa Oficial", preco: 89.9, categoria: "uniforme" },
     })
-    expect(revalidatePath).toHaveBeenCalledWith("/configuracoes/produtos")
+    expect(revalidatePath).toHaveBeenCalledWith("/produtos")
     expect(revalidatePath).toHaveBeenCalledWith("/responsavel/lojinha")
+  })
+
+  it("rejeita estoque negativo sem criar", async () => {
+    const res = await criarProduto({ nome: "X", preco: 10, estoque: -5 })
+    expect(res).toEqual({ error: "Estoque inválido" })
+    expect(m.produto.create).not.toHaveBeenCalled()
   })
 })
 
@@ -74,7 +80,7 @@ describe("removerProduto", () => {
   it("remove produto pelo id e invalida caches", async () => {
     await removerProduto(3)
     expect(m.produto.delete).toHaveBeenCalledWith({ where: { id: 3 } })
-    expect(revalidatePath).toHaveBeenCalledWith("/configuracoes/produtos")
+    expect(revalidatePath).toHaveBeenCalledWith("/produtos")
     expect(revalidatePath).toHaveBeenCalledWith("/responsavel/lojinha")
   })
 })

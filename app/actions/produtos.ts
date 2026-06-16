@@ -14,8 +14,9 @@ export async function criarProduto(data: { nome: string; descricao?: string; pre
   if (!data.nome?.trim()) return { error: "Nome do produto é obrigatório" }
   const preco = Number(data.preco)
   if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
+  if (data.estoque !== undefined && (!Number.isFinite(data.estoque) || data.estoque < 0)) return { error: "Estoque inválido" }
   await db.produto.create({ data: { ...data, nome: data.nome.trim() } })
-  revalidatePath("/configuracoes/produtos")
+  revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
 }
@@ -26,8 +27,9 @@ export async function atualizarProduto(id: number, data: { nome?: string; descri
     const preco = Number(data.preco)
     if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
   }
+  if (data.estoque !== undefined && (!Number.isFinite(data.estoque) || data.estoque < 0)) return { error: "Estoque inválido" }
   await db.produto.update({ where: { id }, data })
-  revalidatePath("/configuracoes/produtos")
+  revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
 }
@@ -35,7 +37,7 @@ export async function atualizarProduto(id: number, data: { nome?: string; descri
 export async function removerProduto(id: number) {
   await requireAuth()
   await db.produto.delete({ where: { id } })
-  revalidatePath("/configuracoes/produtos")
+  revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
 }
