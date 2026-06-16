@@ -136,6 +136,8 @@ Para gerar os segredos localmente:
 bash deploy/gen-secrets.sh
 ```
 
+> A URL do Railway fica em: serviço → **Settings → Railway Domain** (ex: `meu-projeto.up.railway.app`).
+
 ### 4. Deploy
 
 Railway faz deploy automático a cada push no branch configurado (padrão: `master`).
@@ -155,6 +157,8 @@ O endpoint `/api/cron/lembretes` autentica por Bearer token. Configure no
 Railway mantém histórico de deploys. No painel → **Deployments** → clique em qualquer
 deploy anterior → **Redeploy**. O volume `/data` (banco + uploads) persiste independente
 do deploy — não é afetado pelo rollback.
+
+> **Atenção:** se o deploy falhar após rodar `prisma migrate deploy`, o schema do banco já foi alterado. Nesse caso, restaure o banco de um backup antes de fazer rollback do código (Railway não reverte migrations automaticamente).
 
 ## Domínio
 
