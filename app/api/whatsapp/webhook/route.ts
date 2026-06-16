@@ -16,6 +16,9 @@ export async function POST(req: NextRequest) {
     const { event, instance, data } = body
 
     if (event === "MESSAGE" && data?.key?.remoteJid) {
+      // ignora eco das próprias mensagens enviadas (evita loop: bot responde a si mesmo)
+      if (data.key.fromMe) return NextResponse.json({ ok: true })
+
       const telefone = data.key.remoteJid.replace(/@s\.whatsapp\.net$/, "")
       const textoRaw = data.message?.conversation || data.message?.extendedTextMessage?.text || ""
       const texto = textoRaw.slice(0, 4096) // trunca mensagens anormalmente longas
