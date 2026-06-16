@@ -41,7 +41,7 @@ const mParseCSV = parseCSV as unknown as ReturnType<typeof vi.fn>
 const mParseTransacoes = parseTransacoes as unknown as ReturnType<typeof vi.fn>
 
 function tx(over: Record<string, unknown> = {}) {
-  return { dataTransacao: new Date("2026-06-05"), valor: 200, parcelas: 1, bandeira: "Visa", tipo: "Crédito", nomeNoCartao: "MARIA SILVA", parcela: "", ...over }
+  return { id: 1, status: "pendente", dataTransacao: new Date("2026-06-05"), valor: 200, parcelas: 1, bandeira: "Visa", tipo: "Crédito", nomeNoCartao: "MARIA SILVA", parcela: "", ...over }
 }
 
 beforeEach(() => {
@@ -84,6 +84,20 @@ describe("reconciliarTransacao", () => {
     m.transacaoMaquina.findUnique.mockResolvedValue(null)
     const res = await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
     expect(res).toEqual({ error: "Transação não encontrada" })
+    expect(m.pagamento.create).not.toHaveBeenCalled()
+  })
+
+  it("não reconcilia transação já reconciliada (evita pagamento duplo/fantasma)", async () => {
+    m.transacaoMaquina.findUnique.mockResolvedValue(tx({ status: "reconciliado" }))
+    const res = await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(res).toEqual({ error: "Transação já reconciliada ou ignorada" })
+    expect(m.pagamento.create).not.toHaveBeenCalled()
+  })
+
+  it("rejeita valor inválido (<= 0) sem criar pagamento", async () => {
+    m.transacaoMaquina.findUnique.mockResolvedValue(tx({ valor: 0 }))
+    const res = await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(res).toEqual({ error: "Valor inválido na transação" })
     expect(m.pagamento.create).not.toHaveBeenCalled()
   })
 

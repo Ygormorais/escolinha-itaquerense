@@ -78,6 +78,8 @@ export async function reconciliarTransacao(
   await requireAuth()
   const transacao = await db.transacaoMaquina.findUnique({ where: { id } })
   if (!transacao) return { error: "Transação não encontrada" }
+  if (transacao.status !== "pendente") return { error: "Transação já reconciliada ou ignorada" }
+  if (!Number.isFinite(transacao.valor) || transacao.valor <= 0) return { error: "Valor inválido na transação" }
 
   const pagamento = await db.pagamento.create({
     data: {
