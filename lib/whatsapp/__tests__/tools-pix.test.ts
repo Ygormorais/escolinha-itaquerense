@@ -7,8 +7,9 @@ vi.mock("@/lib/db", () => ({
   },
 }))
 
+const { mpCreate } = vi.hoisted(() => ({ mpCreate: vi.fn() }))
 vi.mock("@/lib/mercadopago", () => ({
-  getMpPayment: vi.fn(() => ({ create: vi.fn() })),
+  getMpPayment: vi.fn(() => ({ create: mpCreate })),
   mpStatusToLocal: vi.fn((s: string) => s === "approved" ? "pago" : "pendente"),
 }))
 
@@ -25,6 +26,7 @@ const mesAtual = new Date().toISOString().slice(0, 7)
 beforeEach(() => {
   vi.clearAllMocks()
   m.pagamento.update.mockResolvedValue({})
+  mpCreate.mockResolvedValue({ id: "mp1", point_of_interaction: { transaction_data: { qr_code: "PIXQR" } } })
 })
 
 describe("executarObterPixMensalidade", () => {
@@ -49,6 +51,18 @@ describe("executarObterPixMensalidade", () => {
     })
     const res = await executarObterPixMensalidade({ responsavelId: 1 })
     expect(res.alunos[0].status).toBe("pago")
+  })
+
+  it("não tenta gerar PIX quando mensalidade <= 0 (bolsista) → sem_cobranca", async () => {
+    m.responsavel.findUnique.mockResolvedValue({ email: "r@test.com", alunos: [{ id: 1, nome: "João", mensalidade: 0 }] })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 10, mesReferencia: mesAtual, dataPagamento: null,
+      pixCopiaECola: null, statusCobranca: null,
+      aluno: { mensalidade: 0 },
+    })
+    const res = await executarObterPixMensalidade({ responsavelId: 1 })
+    expect(res.alunos[0].status).toBe("sem_cobranca")
+    expect(mpCreate).not.toHaveBeenCalled()
   })
 
   it("retorna sem_cobranca quando nao ha pagamento no mes", async () => {

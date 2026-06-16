@@ -317,6 +317,10 @@ export async function executarObterPixMensalidade(
       if (pag.pixCopiaECola && pag.statusCobranca === "pendente") {
         return { nome: aluno.nome, mes: mesAtual, valor: pag.aluno.mensalidade, pixCopiaECola: pag.pixCopiaECola, status: "pendente" as const }
       }
+      // valor inválido/zero (ex.: bolsista) não gera cobrança PIX
+      if (!Number.isFinite(pag.aluno.mensalidade) || pag.aluno.mensalidade <= 0) {
+        return { nome: aluno.nome, mes: mesAtual, valor: pag.aluno.mensalidade, pixCopiaECola: null, status: "sem_cobranca" as const }
+      }
       // Tenta gerar novo PIX
       try {
         const { getMpPayment } = await import("@/lib/mercadopago")
