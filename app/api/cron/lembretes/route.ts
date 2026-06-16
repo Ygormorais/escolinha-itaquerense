@@ -8,6 +8,8 @@ import { runHousekeeping } from "@/lib/housekeeping"
 import { db } from "@/lib/db"
 import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
 import { revalidatePath } from "next/cache"
+import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
+import { format } from "date-fns"
 
 async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
   const pendentes = await db.pagamento.findMany({
@@ -63,7 +65,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const isDomingo = new Date().getDay() === 0
+  const now = new Date()
+  const isDomingo = now.getDay() === 0
+
+  const geracaoMensal =
+    now.getDate() === 1
+      ? await runGerarMensalidadesMes(format(now, "yyyy-MM"))
+      : null
 
   const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas] = await Promise.all([
     runEnviarLembretesInadimplentes(),
@@ -81,6 +89,7 @@ export async function GET(request: Request) {
     whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo, aniversarios: waAniversarios },
     cobrancas,
     housekeeping,
+    geracaoMensal,
     executadoEm: new Date().toISOString(),
   })
 }
