@@ -16,12 +16,25 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
-import { createCusto, deleteCusto, gerarCustosRecorrentes } from "@/app/actions/custos"
+import {
+  createCusto,
+  deleteCusto,
+  gerarCustosRecorrentes,
+  createCustoRecorrente,
+  updateCustoRecorrente,
+  deleteCustoRecorrente,
+} from "@/app/actions/custos"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 const m = db as unknown as {
   custo: { create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn>; createMany: ReturnType<typeof vi.fn> }
-  custoRecorrente: { findMany: ReturnType<typeof vi.fn> }
+  custoRecorrente: {
+    findMany: ReturnType<typeof vi.fn>
+    create: ReturnType<typeof vi.fn>
+    update: ReturnType<typeof vi.fn>
+    delete: ReturnType<typeof vi.fn>
+  }
 }
 
 beforeEach(() => {
@@ -30,6 +43,9 @@ beforeEach(() => {
   m.custo.delete.mockResolvedValue({})
   m.custo.createMany.mockResolvedValue({ count: 0 })
   m.custoRecorrente.findMany.mockResolvedValue([])
+  m.custoRecorrente.create.mockResolvedValue({})
+  m.custoRecorrente.update.mockResolvedValue({})
+  m.custoRecorrente.delete.mockResolvedValue({})
 })
 
 describe("createCusto", () => {
@@ -84,5 +100,45 @@ describe("deleteCusto", () => {
     const res = await deleteCusto(3)
     expect(m.custo.delete).toHaveBeenCalledWith({ where: { id: 3 } })
     expect(res).toEqual({ success: true })
+  })
+})
+
+describe("autorização — toda mutação exige requireAuth", () => {
+  const reCustoModelo = {
+    categoria: "Aluguel",
+    descricao: "Campo",
+    fornecedor: "Arena X",
+    valor: 1200,
+    formaPagamento: "PIX",
+  }
+
+  it("deleteCusto não exclui quando requireAuth rejeita", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("Não autenticado"))
+    await expect(deleteCusto(3)).rejects.toThrow()
+    expect(m.custo.delete).not.toHaveBeenCalled()
+  })
+
+  it("gerarCustosRecorrentes não gera quando requireAuth rejeita", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("Não autenticado"))
+    await expect(gerarCustosRecorrentes("2026-06")).rejects.toThrow()
+    expect(m.custo.createMany).not.toHaveBeenCalled()
+  })
+
+  it("createCustoRecorrente não cria quando requireAuth rejeita", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("Não autenticado"))
+    await expect(createCustoRecorrente(reCustoModelo)).rejects.toThrow()
+    expect(m.custoRecorrente.create).not.toHaveBeenCalled()
+  })
+
+  it("updateCustoRecorrente não atualiza quando requireAuth rejeita", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("Não autenticado"))
+    await expect(updateCustoRecorrente(1, { ...reCustoModelo, ativo: true })).rejects.toThrow()
+    expect(m.custoRecorrente.update).not.toHaveBeenCalled()
+  })
+
+  it("deleteCustoRecorrente não exclui quando requireAuth rejeita", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("Não autenticado"))
+    await expect(deleteCustoRecorrente(1)).rejects.toThrow()
+    expect(m.custoRecorrente.delete).not.toHaveBeenCalled()
   })
 })
