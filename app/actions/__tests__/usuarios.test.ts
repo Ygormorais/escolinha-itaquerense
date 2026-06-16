@@ -3,13 +3,18 @@ import { createHmac } from "crypto"
 
 vi.mock("@/lib/db", () => {
   const db = {
-    usuario: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
+    usuario: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   }
   return { db }
 })
 
 vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ user: "admin", role: "admin" }),
+  ROLES: [
+    { value: "admin", label: "Administrador" },
+    { value: "secretaria", label: "Secretaria" },
+    { value: "tecnico", label: "Técnico" },
+  ],
 }))
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
@@ -20,15 +25,25 @@ vi.mock("bcryptjs", () => ({
   default: { hashSync: vi.fn(() => "bcrypt-hash"), compare: vi.fn() },
 }))
 
-import { criarUsuario, checkDbCredentials } from "@/app/actions/usuarios"
+import {
+  criarUsuario,
+  alterarSenha,
+  toggleUsuario,
+  deletarUsuario,
+  checkDbCredentials,
+} from "@/app/actions/usuarios"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import bcrypt from "bcryptjs"
+
+const auth = requireAuth as unknown as ReturnType<typeof vi.fn>
 
 const m = db as unknown as {
   usuario: {
     findUnique: ReturnType<typeof vi.fn>
     create: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
+    delete: ReturnType<typeof vi.fn>
   }
 }
 const compare = bcrypt.compare as unknown as ReturnType<typeof vi.fn>
@@ -38,7 +53,39 @@ beforeEach(() => {
   m.usuario.findUnique.mockResolvedValue(null)
   m.usuario.create.mockResolvedValue({})
   m.usuario.update.mockResolvedValue({})
+  m.usuario.delete.mockResolvedValue({})
   compare.mockResolvedValue(false)
+  auth.mockResolvedValue({ user: "admin", role: "admin" })
+})
+
+describe("gestão de usuários — restrita a admin", () => {
+  const input = { username: "joao", nome: "João", senha: "segredo", role: "secretaria" }
+
+  it("criarUsuario exige papel admin", async () => {
+    await criarUsuario(input)
+    expect(auth).toHaveBeenCalledWith(["admin"])
+  })
+
+  it("criarUsuario rejeita role fora da whitelist, sem criar", async () => {
+    const res = await criarUsuario({ ...input, role: "superadmin" })
+    expect(res).toEqual({ error: "Função inválida" })
+    expect(m.usuario.create).not.toHaveBeenCalled()
+  })
+
+  it("alterarSenha exige papel admin", async () => {
+    await alterarSenha(3, "novaSenha")
+    expect(auth).toHaveBeenCalledWith(["admin"])
+  })
+
+  it("toggleUsuario exige papel admin", async () => {
+    await toggleUsuario(3, false)
+    expect(auth).toHaveBeenCalledWith(["admin"])
+  })
+
+  it("deletarUsuario exige papel admin", async () => {
+    await deletarUsuario(3)
+    expect(auth).toHaveBeenCalledWith(["admin"])
+  })
 })
 
 describe("criarUsuario", () => {
