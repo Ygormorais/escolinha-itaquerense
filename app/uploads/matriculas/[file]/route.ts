@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import { readFile } from "fs/promises"
 import path from "path"
+import { resolveUploadsDir } from "@/lib/uploads-path"
 
 // Serve os documentos de matrícula gravados fora de public/. A rota não está
 // na allowlist do proxy.ts, então só passa com sessão admin válida.
@@ -27,7 +28,7 @@ export async function GET(
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 })
   }
 
-  const filePath = path.join(process.cwd(), "uploads", "matriculas", file)
+  const filePath = path.join(resolveUploadsDir("matriculas"), file)
 
   try {
     const buf = await readFile(filePath)

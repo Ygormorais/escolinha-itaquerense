@@ -5,6 +5,7 @@ import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { resolveUploadsDir } from "@/lib/uploads-path"
 
 const MAX_BYTES = 5 * 1024 * 1024
 
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
   // Fora de public/: documentos pessoais não podem ser servidos estaticamente
   // sem auth. A URL /uploads/matriculas/* é atendida por um route handler
   // protegido pelo middleware (app/uploads/matriculas/[file]/route.ts).
-  const uploadDir = path.join(process.cwd(), "uploads", "matriculas")
+  const uploadDir = resolveUploadsDir("matriculas")
   await mkdir(uploadDir, { recursive: true })
   await writeFile(path.join(uploadDir, safeName), Buffer.from(bytes))
 

@@ -7,6 +7,7 @@ import { db } from "@/lib/db"
 import { getSession } from "@/lib/session"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { parseFotoFilename, canAccessFoto } from "@/lib/foto-acesso"
+import { resolveUploadsDir } from "@/lib/uploads-path"
 
 // Serve as fotos de alunos gravadas fora de public/. A rota está na allowlist
 // do proxy.ts (o responsável não tem o cookie admin), então TODA a autorização
@@ -52,7 +53,7 @@ export async function GET(
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 })
   }
 
-  const filePath = path.join(process.cwd(), "uploads", "fotos", file)
+  const filePath = path.join(resolveUploadsDir("fotos"), file)
 
   try {
     const buf = await readFile(filePath)

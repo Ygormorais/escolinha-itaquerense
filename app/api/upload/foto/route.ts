@@ -6,6 +6,7 @@ import path from "path"
 import { db } from "@/lib/db"
 import { getSession } from "@/lib/session"
 import { validateFotoUpload } from "@/lib/upload-foto"
+import { resolveUploadsDir } from "@/lib/uploads-path"
 
 export async function POST(request: Request) {
   const session = await getSession()
@@ -35,13 +36,13 @@ export async function POST(request: Request) {
 
   const ext = validation.extension
   const filename = `${alunoId}.${ext}`
-  const uploadDir = path.join(process.cwd(), "uploads", "fotos")
+  const uploadDir = resolveUploadsDir("fotos")
 
   if (aluno!.foto) {
-    const rel = aluno!.foto.replace(/^\//, "")
-    // apaga no local novo e no legado (fotos antigas viviam em public/)
-    await unlink(path.join(process.cwd(), rel)).catch(() => {})
-    await unlink(path.join(process.cwd(), "public", rel)).catch(() => {})
+    const oldFilename = path.basename(aluno!.foto)
+    await unlink(path.join(uploadDir, oldFilename)).catch(() => {})
+    // legado: fotos antigas viviam em public/uploads/fotos/
+    await unlink(path.join(process.cwd(), "public", "uploads", "fotos", oldFilename)).catch(() => {})
   }
 
   await mkdir(uploadDir, { recursive: true })
@@ -63,9 +64,10 @@ export async function DELETE(request: Request) {
 
   const aluno = await db.aluno.findUnique({ where: { id: alunoId }, select: { foto: true } })
   if (aluno?.foto) {
-    const rel = aluno.foto.replace(/^\//, "")
-    await unlink(path.join(process.cwd(), rel)).catch(() => {})
-    await unlink(path.join(process.cwd(), "public", rel)).catch(() => {})
+    const oldFilename = path.basename(aluno.foto)
+    const uploadDir = resolveUploadsDir("fotos")
+    await unlink(path.join(uploadDir, oldFilename)).catch(() => {})
+    await unlink(path.join(process.cwd(), "public", "uploads", "fotos", oldFilename)).catch(() => {})
   }
 
   await db.aluno.update({ where: { id: alunoId }, data: { foto: null } })
