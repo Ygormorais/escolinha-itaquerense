@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
   const db: Record<string, unknown> = {
-    preMatricula: { findUnique: vi.fn(), update: vi.fn() },
+    preMatricula: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
     aluno: { create: vi.fn() },
     responsavel: { findFirst: vi.fn() },
     log: { create: vi.fn() },
@@ -22,7 +22,7 @@ import { aprovarPreMatricula, criarPreMatricula } from "@/app/actions/matricula"
 import { db } from "@/lib/db"
 
 const m = db as unknown as {
-  preMatricula: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }
+  preMatricula: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> }
   aluno: { create: ReturnType<typeof vi.fn> }
   responsavel: { findFirst: ReturnType<typeof vi.fn> }
 }
@@ -47,7 +47,30 @@ beforeEach(() => {
   m.preMatricula.findUnique.mockResolvedValue(prePendente)
   m.preMatricula.update.mockResolvedValue({ ...prePendente, status: "aprovada" })
   m.aluno.create.mockResolvedValue({ id: 99 })
+  m.preMatricula.create.mockResolvedValue({ id: 5 })
   m.responsavel.findFirst.mockResolvedValue(null)
+})
+
+describe("criarPreMatricula — sanitização de documentos", () => {
+  const base = {
+    nomeAluno: "Ana", dataNascimento: "2016-05-01", turma: "Sub-9", horario: "x",
+    nomeResponsavel: "Mãe", telefone: "11999998888", email: "m@e.com",
+  }
+
+  it("mantém só uploads internos e descarta URLs arbitrárias/javascript:", async () => {
+    await criarPreMatricula({
+      ...base,
+      documentos: ["/uploads/matriculas/a.pdf", "javascript:alert(1)", "https://evil.com/x", "/uploads/matriculas/b.jpg"],
+    })
+    const data = m.preMatricula.create.mock.calls[0][0].data
+    expect(JSON.parse(data.documentos)).toEqual(["/uploads/matriculas/a.pdf", "/uploads/matriculas/b.jpg"])
+  })
+
+  it("grava documentos nulo quando nenhum é um upload interno válido", async () => {
+    await criarPreMatricula({ ...base, documentos: ["javascript:alert(1)", "../../etc/passwd"] })
+    const data = m.preMatricula.create.mock.calls[0][0].data
+    expect(data.documentos).toBeNull()
+  })
 })
 
 describe("aprovarPreMatricula", () => {

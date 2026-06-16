@@ -30,6 +30,14 @@ export async function criarPreMatricula(data: {
   }
   const dataNasc = new Date(data.dataNascimento)
 
+  // Endpoint público: só aceita caminhos de upload internos (vindos de
+  // /api/upload/matricula). Descarta URLs arbitrárias/javascript: que o admin
+  // clicaria no painel (phishing/XSS via href).
+  const UPLOAD_RE = /^\/uploads\/matriculas\/[A-Za-z0-9._-]+$/
+  const docsValidos = (data.documentos ?? []).filter(
+    (d) => typeof d === "string" && UPLOAD_RE.test(d)
+  )
+
   try {
     await db.preMatricula.create({
       data: {
@@ -40,7 +48,7 @@ export async function criarPreMatricula(data: {
         nomeResponsavel: data.nomeResponsavel.trim(),
         telefone: data.telefone.trim(),
         email: data.email.trim(),
-        documentos: data.documentos ? JSON.stringify(data.documentos) : null,
+        documentos: docsValidos.length > 0 ? JSON.stringify(docsValidos) : null,
         observacoes: data.observacoes?.trim() || null,
         status: "pendente",
       },
