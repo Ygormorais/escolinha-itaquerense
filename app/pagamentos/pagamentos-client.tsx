@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { formatMoney, plural, sanitizeCSVCell } from "@/lib/utils"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download, FileUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -433,6 +433,10 @@ export function PagamentosClient({
         <Button variant="outline" onClick={exportarCSV} disabled={filtered.length === 0}>
           <Download className="size-4" />
           Exportar CSV
+        </Button>
+        <Button variant="outline" onClick={() => router.push("/pagamentos/importar")}>
+          <FileUp className="size-4" />
+          Importar OFX
         </Button>
       </div>
       <div className="flex items-center gap-4">
