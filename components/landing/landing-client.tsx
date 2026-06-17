@@ -163,6 +163,13 @@ const css = `
   .lp .sobre .foto{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md)}
   .lp .sobre .foto img{width:100%;height:100%;object-fit:cover}
   @media(max-width:900px){.lp .sobre .container{grid-template-columns:1fr;gap:28px}}
+  .lp .galeria{background:var(--bg-muted)}
+  .lp .galeria .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .lp .galeria .item{aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);transition:var(--transition)}
+  .lp .galeria .item:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+  .lp .galeria .item img{width:100%;height:100%;object-fit:cover}
+  @media(max-width:900px){.lp .galeria .grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.lp .galeria .grid{grid-template-columns:1fr}}
 `
 
 export function LandingClient({
@@ -268,6 +275,22 @@ export function LandingClient({
                 <Image src={sobre.foto} alt={sobre.titulo} width={560} height={420} />
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* ===== Galeria (guardado) ===== */}
+      {temGaleria() && (
+        <section className="galeria">
+          <div className="container">
+            <h2 className="section-title">Galeria</h2>
+            <div className="grid">
+              {galeria.map((f, i) => (
+                <div className="item" key={i}>
+                  <Image src={f.src} alt={f.alt} width={400} height={300} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
