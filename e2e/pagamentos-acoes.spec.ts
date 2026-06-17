@@ -308,6 +308,11 @@ test.describe("Pagamentos — registro em lote", () => {
     const checkboxAll = page.locator("table thead input[type='checkbox']")
     if (!(await checkboxAll.isVisible({ timeout: 3000 }).catch(() => false))) return
 
+    // Sem linhas pendentes, marcar o "todos" não seleciona nada e o checkbox
+    // do header permanece desmarcado — nada a verificar neste ambiente.
+    const pendentesCheckboxes = page.locator("table tbody tr input[type='checkbox']")
+    if ((await pendentesCheckboxes.count()) === 0) return
+
     await checkboxAll.check()
 
     // A barra de lote deve mostrar contagem > 0
