@@ -182,7 +182,7 @@ export async function ignorarTransacao(id: number) {
 
 export async function getResumoMaquina() {
   const [aggTotal, aggPendente, aggReconciliado, totalTransacoes] = await Promise.all([
-    db.transacaoMaquina.aggregate({ _sum: { valor: true } }),
+    db.transacaoMaquina.aggregate({ where: { status: { not: "ignorado" } }, _sum: { valor: true } }),
     db.transacaoMaquina.aggregate({ where: { status: "pendente" }, _sum: { valor: true }, _count: true }),
     db.transacaoMaquina.aggregate({ where: { status: "reconciliado" }, _sum: { valor: true }, _count: true }),
     db.transacaoMaquina.count(),

@@ -135,6 +135,10 @@ describe("getResumoMaquina", () => {
       .mockResolvedValueOnce({ _sum: { valor: 200 }, _count: 1 })
     m.transacaoMaquina.count.mockResolvedValue(3)
     const res = await getResumoMaquina()
+    // total exclui ignoradas → Importado = Pendente + Reconciliado
+    expect(m.transacaoMaquina.aggregate.mock.calls[0][0]).toMatchObject({
+      where: { status: { not: "ignorado" } },
+    })
     expect(res).toEqual({
       total: 350,
       totalPendente: 150,
