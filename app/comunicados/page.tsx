@@ -7,6 +7,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MessageSquare } from "lucide-react"
+import { plural } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "Comunicados — Escolinha Itaquerense",
@@ -66,7 +67,7 @@ export default async function ComunicadosPage() {
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600">
-                  {lote.total} enviado{lote.total > 1 ? "s" : ""}
+                  {plural(lote.total, "enviado", "enviados")}
                 </span>
               </div>
             ))}

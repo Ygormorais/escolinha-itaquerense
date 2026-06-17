@@ -12,21 +12,16 @@ export default async function SecretariaPage() {
   const mesInicio = startOfMonth(now)
   const mesFim = endOfMonth(now)
 
-  const [eventosHoje, aniversariantes, matriculasMes, inadimplentes, alunosAtivos] = await Promise.all([
+  const [eventosHoje, alunosComNascimento, matriculasMes, inadimplentes, alunosAtivos] = await Promise.all([
     db.evento.findMany({
       where: { data: { gte: hojeInicio, lte: hojeFim } },
       orderBy: { horaInicio: "asc" },
     }),
+    // Aniversariantes do mês: o nascimento é de anos passados, então filtramos pelo
+    // mês (ignorando o ano) em JS — comparar o range de datas deste ano nunca casaria.
     db.aluno.findMany({
-      where: {
-        status: "Ativo",
-        dataNascimento: {
-          gte: new Date(now.getFullYear(), now.getMonth(), 1),
-          lte: new Date(now.getFullYear(), now.getMonth() + 1, 0),
-        },
-      },
+      where: { status: "Ativo" },
       select: { id: true, nome: true, dataNascimento: true, turma: true, telefone: true },
-      orderBy: { dataNascimento: "asc" },
     }),
     db.aluno.count({
       where: { dataMatricula: { gte: mesInicio, lte: mesFim } },
@@ -42,6 +37,10 @@ export default async function SecretariaPage() {
     }).then((rows) => rows.length),
     db.aluno.count({ where: { status: "Ativo" } }),
   ])
+
+  const aniversariantes = alunosComNascimento
+    .filter((a) => a.dataNascimento.getMonth() === now.getMonth())
+    .sort((a, b) => a.dataNascimento.getDate() - b.dataNascimento.getDate())
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">

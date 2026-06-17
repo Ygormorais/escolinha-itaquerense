@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { AlunosClient, NovoAlunoButton } from "./alunos-client"
 import { PAGE_SIZE } from "@/lib/constants"
+import { plural } from "@/lib/utils"
 import { startOfMonth, endOfMonth } from "date-fns"
 
 export const metadata = { title: "Alunos — Escolinha Itaquerense" }
@@ -81,7 +82,7 @@ export default async function AlunosPage({
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Alunos"
-        description={`${totalAtivos} alunos ativos`}
+        description={plural(totalAtivos, "aluno ativo", "alunos ativos")}
         action={<NovoAlunoButton />}
       />
       <AlunosClient

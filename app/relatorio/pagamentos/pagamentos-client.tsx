@@ -155,7 +155,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido</p>
             <p className="mt-1 font-heading text-2xl font-bold text-success-600">
-              R$ {totalRecebido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              {formatMoney(totalRecebido)}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">{countPorStatus.pagos} pagamentos</p>
           </CardContent>
@@ -164,7 +164,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pendente</p>
             <p className="mt-1 font-heading text-2xl font-bold text-warning-600">
-              R$ {totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              {formatMoney(totalPendente)}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">{countPorStatus.pendentes} pagamentos</p>
           </CardContent>
@@ -173,7 +173,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Em atraso</p>
             <p className="mt-1 font-heading text-2xl font-bold text-danger-600">
-              R$ {totalAtrasado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              {formatMoney(totalAtrasado)}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">{countPorStatus.atrasados} pagamentos</p>
           </CardContent>
@@ -323,7 +323,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
                     <p className="font-medium">{item.canal}</p>
                     <p className="text-xs text-muted-foreground">{item.pagos}/{item.quantidade} pagos</p>
                   </div>
-                  <p className="font-semibold">R$ {item.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                  <p className="font-semibold">{formatMoney(item.total)}</p>
                 </button>
               ))}
             </div>
