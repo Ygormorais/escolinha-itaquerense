@@ -70,6 +70,10 @@ export async function POST(req: Request) {
     if (!pagamento) return NextResponse.json({ ok: true })
 
     const statusLocal = mpStatusToLocal(mpData.status as MpPaymentStatus)
+    // MP pode entregar o mesmo webhook várias vezes. Só notificamos na PRIMEIRA
+    // vez que a cobrança vira "pago" — senão o responsável recebe a confirmação
+    // repetida. O update em si é idempotente (reescreve os mesmos valores).
+    const jaConfirmado = pagamento.statusCobranca === "pago"
     const updateData: Record<string, unknown> = { statusCobranca: statusLocal }
 
     if (statusLocal === "pago") {
@@ -88,7 +92,7 @@ export async function POST(req: Request) {
     revalidatePath("/inadimplencia")
     revalidatePath("/")
 
-    if (statusLocal === "pago") {
+    if (statusLocal === "pago" && !jaConfirmado) {
       const { notificarPagamentoConfirmado } = await import("@/lib/whatsapp-jobs")
       const { notificarPagamentoConfirmadoEmail } = await import("@/lib/email-jobs")
       void notificarPagamentoConfirmado(pagamento.id).catch((e) =>
