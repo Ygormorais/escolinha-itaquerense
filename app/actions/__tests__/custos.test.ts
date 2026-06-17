@@ -82,6 +82,26 @@ describe("createCusto", () => {
     const res = await createCusto(input)
     expect(res).toEqual({ error: "db off" })
   })
+
+  it.each([0, -50, NaN, Infinity])("rejeita valor inválido (%s) sem gravar", async (valor) => {
+    const res = await createCusto({ ...input, valor })
+    expect(res).toEqual({ error: "Valor inválido" })
+    expect(m.custo.create).not.toHaveBeenCalled()
+  })
+})
+
+describe("validação de valor — custos recorrentes", () => {
+  const rec = { categoria: "c", descricao: "d", fornecedor: "f", valor: 10, formaPagamento: "PIX" }
+  it.each([0, -1, NaN, Infinity])("createCustoRecorrente rejeita valor %s", async (valor) => {
+    const res = await createCustoRecorrente({ ...rec, valor })
+    expect(res).toEqual({ error: "Valor inválido" })
+    expect(m.custoRecorrente.create).not.toHaveBeenCalled()
+  })
+  it.each([0, -1, NaN, Infinity])("updateCustoRecorrente rejeita valor %s", async (valor) => {
+    const res = await updateCustoRecorrente(1, { ...rec, valor, ativo: true })
+    expect(res).toEqual({ error: "Valor inválido" })
+    expect(m.custoRecorrente.update).not.toHaveBeenCalled()
+  })
 })
 
 describe("gerarCustosRecorrentes", () => {
