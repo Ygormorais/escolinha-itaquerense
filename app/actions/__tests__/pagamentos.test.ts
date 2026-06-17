@@ -32,6 +32,7 @@ import {
   registrarPagamentosLote,
   gerarMensalidadesMes,
   deletePagamento,
+  marcarComoPago,
 } from "@/app/actions/pagamentos"
 import { db } from "@/lib/db"
 import { cancelarCobranca } from "@/app/actions/cobranca"
@@ -131,5 +132,27 @@ describe("deletePagamento", () => {
 
     expect(cancelarCobranca).toHaveBeenCalledWith(3)
     expect(m.pagamento.delete).toHaveBeenCalledWith({ where: { id: 3 } })
+  })
+})
+
+describe("marcarComoPago", () => {
+  const base = { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 150 }
+
+  it("marca como pago com valor válido", async () => {
+    const res = await marcarComoPago(1, base)
+    expect(res).toEqual({ success: true })
+    expect(m.pagamento.update).toHaveBeenCalled()
+  })
+
+  it("rejeita data inválida sem gravar", async () => {
+    const res = await marcarComoPago(1, { ...base, dataPagamento: "2026-13-99" })
+    expect(res).toEqual({ error: "Data de pagamento inválida" })
+    expect(m.pagamento.update).not.toHaveBeenCalled()
+  })
+
+  it.each([0, -10, NaN, Infinity])("rejeita valorRecebido inválido (%s) sem gravar", async (valorRecebido) => {
+    const res = await marcarComoPago(1, { ...base, valorRecebido })
+    expect(res).toEqual({ error: "Valor inválido" })
+    expect(m.pagamento.update).not.toHaveBeenCalled()
   })
 })

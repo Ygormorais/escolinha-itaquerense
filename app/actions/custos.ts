@@ -21,6 +21,7 @@ export async function createCusto(data: {
   await requireAuth()
   if (!dataValida(data.data)) return { error: "Data inválida" }
   if (!data.descricao?.trim()) return { error: "Descrição é obrigatória" }
+  if (!Number.isFinite(data.valor) || data.valor <= 0) return { error: "Valor inválido" }
   try {
     await db.custo.create({
       data: {
@@ -55,6 +56,7 @@ export async function updateCusto(id: number, data: {
   await requireAuth()
   if (!dataValida(data.data)) return { error: "Data inválida" }
   if (!data.descricao?.trim()) return { error: "Descrição é obrigatória" }
+  if (!Number.isFinite(data.valor) || data.valor <= 0) return { error: "Valor inválido" }
   try {
     await db.custo.update({
       where: { id },
@@ -99,6 +101,7 @@ export async function createCustoRecorrente(data: {
   formaPagamento: string
 }): Promise<ActionResult> {
   await requireAuth()
+  if (!Number.isFinite(data.valor) || data.valor <= 0) return { error: "Valor inválido" }
   try {
     await db.custoRecorrente.create({ data })
     revalidatePath("/custos")
@@ -117,6 +120,7 @@ export async function updateCustoRecorrente(id: number, data: {
   ativo: boolean
 }): Promise<ActionResult> {
   await requireAuth()
+  if (!Number.isFinite(data.valor) || data.valor <= 0) return { error: "Valor inválido" }
   try {
     await db.custoRecorrente.update({ where: { id }, data })
     revalidatePath("/custos")
