@@ -7,6 +7,7 @@ import { JogosCarrossel } from "./jogos-carrossel"
 import type { CategoriaJogos, HeroView } from "@/lib/landing/jogos"
 import type { EstatisticasClube } from "@/lib/landing/stats"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
+import { temSobre, temGaleria, temDepoimentos } from "@/lib/landing/conteudo"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -156,6 +157,12 @@ const css = `
   .lp .stat b{display:block;font-family:var(--font-heading),Georgia,serif;font-size:42px;font-weight:800;color:var(--red);line-height:1;letter-spacing:-1px}
   .lp .stat span{display:block;margin-top:8px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted)}
   @media(max-width:600px){.lp .stats .container{grid-template-columns:repeat(2,1fr);gap:20px}.lp .stat b{font-size:34px}}
+  .lp .sobre .container{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+  .lp .sobre .txt p{color:var(--text-muted);margin-bottom:14px;line-height:1.7}
+  .lp .sobre .txt p:last-child{margin-bottom:0}
+  .lp .sobre .foto{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md)}
+  .lp .sobre .foto img{width:100%;height:100%;object-fit:cover}
+  @media(max-width:900px){.lp .sobre .container{grid-template-columns:1fr;gap:28px}}
 `
 
 export function LandingClient({
@@ -245,6 +252,25 @@ export function LandingClient({
       <div id="jogos">
         <JogosCarrossel categorias={categorias} />
       </div>
+
+      {/* ===== Sobre / História (guardado) ===== */}
+      {temSobre() && sobre && (
+        <section className="sobre">
+          <div className="container">
+            <div className="txt">
+              <h2 className="section-title">{sobre.titulo}</h2>
+              {sobre.paragrafos.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+            {sobre.foto && (
+              <div className="foto">
+                <Image src={sobre.foto} alt={sobre.titulo} width={560} height={420} />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ===== 4. MEMBERSHIP BANNER ===== */}
       <section className="membership">
