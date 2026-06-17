@@ -150,6 +150,12 @@ const css = `
   .lp .jc-empty{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:18px 0 6px}
   .lp .jc-empty .jc-badge{width:48px;height:48px;opacity:.95}
   .lp .jc-empty p{max-width:460px;font-size:15px;opacity:.92;line-height:1.5}
+  .lp .stats{background:var(--bg-muted);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .lp .stats .container{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding-top:48px;padding-bottom:48px}
+  .lp .stat{text-align:center}
+  .lp .stat b{display:block;font-family:var(--font-heading),Georgia,serif;font-size:42px;font-weight:800;color:var(--red);line-height:1;letter-spacing:-1px}
+  .lp .stat span{display:block;margin-top:8px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted)}
+  @media(max-width:600px){.lp .stats .container{grid-template-columns:repeat(2,1fr);gap:20px}.lp .stat b{font-size:34px}}
 `
 
 export function LandingClient({
@@ -214,6 +220,26 @@ export function LandingClient({
           <a href={hero.ctaHref} className="btn btn-white">{hero.ctaLabel}</a>
         </div>
       </div>
+
+      {/* ===== Números reais (guardado: só renderiza se há dados) ===== */}
+      {stats.temAlgo && (
+        <div className="stats">
+          <div className="container">
+            {stats.alunosAtivos > 0 && (
+              <div className="stat"><b>{stats.alunosAtivos}</b><span>Alunos ativos</span></div>
+            )}
+            {stats.categorias > 0 && (
+              <div className="stat"><b>{stats.categorias}</b><span>Categorias</span></div>
+            )}
+            {stats.jogosTemporada > 0 && (
+              <div className="stat"><b>{stats.jogosTemporada}</b><span>Jogos na temporada</span></div>
+            )}
+            {stats.vitorias > 0 && (
+              <div className="stat"><b>{stats.vitorias}</b><span>Vitórias</span></div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ===== 3. JOGOS ===== */}
       <div id="jogos">
