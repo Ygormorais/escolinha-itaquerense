@@ -58,7 +58,9 @@ const css = `
   @keyframes wa-pulse{0%,100%{box-shadow:0 4px 16px rgba(37,211,102,.4)}50%{box-shadow:0 4px 24px rgba(37,211,102,.7),0 0 0 8px rgba(37,211,102,.12)}}
   .lp header.site{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);box-shadow:0 1px 0 var(--border), var(--shadow-sm)}
   .lp .header-row{display:flex;align-items:center;height:76px;gap:14px;overflow:hidden}
-  .lp .header-row nav.main{flex:1;min-width:0;overflow:hidden}
+  .lp .header-row nav.main{flex:1;min-width:0;overflow:hidden;order:1}
+  .lp .header-row .access{order:2}
+  .lp .header-row .burger{order:3}
   .lp .brand{display:flex;align-items:center;gap:14px;flex-shrink:0}
   .lp .brand .shield{width:52px;height:52px}
   .lp .brand .name{font-family:var(--font-body),sans-serif;line-height:1.1}
@@ -71,6 +73,7 @@ const css = `
   .lp nav.main>ul>li>a::after{content:'';position:absolute;left:14px;right:14px;bottom:20px;height:2px;background:var(--red);transform:scaleX(0);transition:var(--transition);border-radius:2px}
   .lp nav.main>ul>li:hover>a::after{transform:scaleX(1)}
   .lp .burger{display:none;font-size:26px;color:var(--red);background:none;border:none;cursor:pointer}
+  .lp nav.main>ul>li.nav-access{display:none}
   .lp .hero{background:radial-gradient(ellipse at 80% 10%, rgba(255,255,255,.07) 0%, transparent 60%),linear-gradient(135deg, var(--red-deep) 0%, var(--red) 50%, var(--red-dark) 100%);color:#fff;position:relative;overflow:hidden}
   .lp .hero::before{content:'';position:absolute;right:-80px;top:-80px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%)}
   .lp .hero::after{content:'';position:absolute;left:-60px;bottom:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%)}
@@ -106,6 +109,7 @@ const css = `
     .lp nav.main>ul{flex-direction:column;align-items:stretch}
     .lp nav.main>ul>li>a{padding:16px 20px;border-bottom:1px solid var(--border)}
     .lp nav.main>ul>li>a::after{display:none}
+    .lp nav.main>ul>li.nav-access{display:block}
     .lp .burger{display:block}
     .lp .cat-grid{grid-template-columns:repeat(3,1fr)}
     .lp .foot-grid{grid-template-columns:1fr 1fr}
@@ -213,6 +217,12 @@ export function LandingClient({
             <span className="name"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
           </Link>
 
+          <div className="access">
+            <a href="/matricula" className="btn-access primary">Matrícula</a>
+            <a href="/responsavel" className="btn-access">Portal do Responsável</a>
+            <a href="/login" className="btn-access" aria-label="Área administrativa"><i className="ti ti-lock"></i> Entrar</a>
+          </div>
+
           <button className="burger" aria-label="Menu" aria-expanded={navOpen} aria-controls="nav" onClick={() => setNavOpen(o => !o)}><i className="ti ti-menu-2"></i></button>
 
           <nav className={"main" + (navOpen ? " open" : "")} id="nav">
@@ -220,14 +230,10 @@ export function LandingClient({
               <li><a href="/turmas">Turmas &amp; Horários</a></li>
               <li><a href="#jogos">Jogos</a></li>
               <li><a href="/resultados">Resultados</a></li>
+              <li className="nav-access"><a href="/responsavel">Portal do Responsável</a></li>
+              <li className="nav-access"><a href="/login">Entrar</a></li>
             </ul>
           </nav>
-
-          <div className="access">
-            <a href="/matricula" className="btn-access primary">Matrícula</a>
-            <a href="/responsavel" className="btn-access">Portal do Responsável</a>
-            <a href="/login" className="btn-access" aria-label="Área administrativa"><i className="ti ti-lock"></i> Entrar</a>
-          </div>
 
         </div>
       </header>
