@@ -28,13 +28,21 @@ export async function POST(request: Request) {
   const token = crypto.randomBytes(32).toString("hex")
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
 
-  await db.resetToken.create({
-    data: {
-      token,
-      responsavelId: responsavel.id,
-      expiresAt,
-    },
-  })
+  // Invalida tokens anteriores ainda não usados deste responsável — um novo
+  // pedido deve aposentar os links antigos (só o mais recente vale).
+  await db.$transaction([
+    db.resetToken.updateMany({
+      where: { responsavelId: responsavel.id, usado: false },
+      data: { usado: true },
+    }),
+    db.resetToken.create({
+      data: {
+        token,
+        responsavelId: responsavel.id,
+        expiresAt,
+      },
+    }),
+  ])
 
   const config = getConfig()
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
@@ -63,8 +71,10 @@ export async function POST(request: Request) {
 
   try {
     await enviarEmail(responsavel.email, `[${config.nome}] Recuperação de senha`, html)
-  } catch {
-    return NextResponse.json({ error: "Erro ao enviar email. Verifique as configurações de SMTP." }, { status: 500 })
+  } catch (e) {
+    // Não vaza se o email existe: falha de SMTP é registrada no servidor, mas a
+    // resposta ao cliente é sempre a mesma mensagem genérica (anti-enumeração).
+    console.error("[recuperar-senha] falha ao enviar email:", e)
   }
 
   return NextResponse.json({
