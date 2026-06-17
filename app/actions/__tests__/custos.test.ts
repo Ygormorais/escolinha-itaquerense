@@ -16,12 +16,15 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
-import { createCusto, deleteCusto, gerarCustosRecorrentes } from "@/app/actions/custos"
+import { createCusto, deleteCusto, gerarCustosRecorrentes, createCustoRecorrente, updateCustoRecorrente, deleteCustoRecorrente } from "@/app/actions/custos"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
+
+const requireAuthMock = requireAuth as unknown as ReturnType<typeof vi.fn>
 
 const m = db as unknown as {
   custo: { create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn>; createMany: ReturnType<typeof vi.fn> }
-  custoRecorrente: { findMany: ReturnType<typeof vi.fn> }
+  custoRecorrente: { findMany: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> }
 }
 
 beforeEach(() => {
@@ -30,6 +33,29 @@ beforeEach(() => {
   m.custo.delete.mockResolvedValue({})
   m.custo.createMany.mockResolvedValue({ count: 0 })
   m.custoRecorrente.findMany.mockResolvedValue([])
+  m.custoRecorrente.create.mockResolvedValue({})
+  m.custoRecorrente.update.mockResolvedValue({})
+  m.custoRecorrente.delete.mockResolvedValue({})
+})
+
+describe("autorização — mutações de custo exigem autenticação", () => {
+  const rec = { categoria: "c", descricao: "d", fornecedor: "f", valor: 10, formaPagamento: "PIX" }
+  it("deleteCusto chama requireAuth", async () => {
+    await deleteCusto(1)
+    expect(requireAuthMock).toHaveBeenCalled()
+  })
+  it("createCustoRecorrente chama requireAuth", async () => {
+    await createCustoRecorrente(rec)
+    expect(requireAuthMock).toHaveBeenCalled()
+  })
+  it("updateCustoRecorrente chama requireAuth", async () => {
+    await updateCustoRecorrente(1, { ...rec, ativo: true })
+    expect(requireAuthMock).toHaveBeenCalled()
+  })
+  it("deleteCustoRecorrente chama requireAuth", async () => {
+    await deleteCustoRecorrente(1)
+    expect(requireAuthMock).toHaveBeenCalled()
+  })
 })
 
 describe("createCusto", () => {
