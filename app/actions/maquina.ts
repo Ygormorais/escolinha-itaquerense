@@ -111,8 +111,10 @@ export async function reconciliarAuto() {
 
   let reconciliados = 0
   let naoEncontrados = 0
+  let invalidos = 0
 
   for (const t of pendentes) {
+    if (!Number.isFinite(t.valor) || t.valor <= 0) { invalidos++; continue }
     const nome = t.nomeNoCartao.toLowerCase().trim()
     const alunos = await db.aluno.findMany({
       where: {
@@ -166,7 +168,7 @@ export async function reconciliarAuto() {
 
   revalidatePath("/caixa/maquina")
   revalidatePath("/caixa/recebimentos")
-  return { reconciliados, naoEncontrados }
+  return { reconciliados, naoEncontrados, invalidos }
 }
 
 export async function ignorarTransacao(id: number) {

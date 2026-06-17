@@ -21,7 +21,7 @@ vi.mock("@/lib/maquina-csv", () => ({
   detectarFormato: vi.fn(() => "Cielo"),
 }))
 
-import { importarCSV, reconciliarTransacao, getResumoMaquina } from "@/app/actions/maquina"
+import { importarCSV, reconciliarTransacao, reconciliarAuto, getResumoMaquina } from "@/app/actions/maquina"
 import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes } from "@/lib/maquina-csv"
 
@@ -115,6 +115,15 @@ describe("reconciliarTransacao", () => {
       alunoId: 5,
       pagamentoId: 99,
     })
+  })
+})
+
+describe("reconciliarAuto", () => {
+  it("pula transação com valor inválido sem criar pagamento", async () => {
+    m.transacaoMaquina.findMany.mockResolvedValue([tx({ valor: 0 })])
+    const res = await reconciliarAuto()
+    expect(res).toMatchObject({ invalidos: 1 })
+    expect(m.pagamento.create).not.toHaveBeenCalled()
   })
 })
 
