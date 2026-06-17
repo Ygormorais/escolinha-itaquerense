@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -82,21 +83,21 @@ export default async function RelatorioPage({
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           title="Receita Total"
-          value={`R$ ${totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+          value={formatMoney(totalReceita)}
           description={`Ano ${ano}`}
           icon={TrendingUp}
           variant="brand"
         />
         <StatCard
           title="Custos Totais"
-          value={`R$ ${totalCustos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+          value={formatMoney(totalCustos)}
           description={`Ano ${ano}`}
           icon={TrendingDown}
           variant="danger"
         />
         <StatCard
           title="Saldo do Ano"
-          value={`R$ ${totalSaldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+          value={formatMoney(totalSaldo)}
           description="Receita menos custos"
           icon={Wallet}
           variant={totalSaldo >= 0 ? "success" : "danger"}
@@ -131,38 +132,32 @@ export default async function RelatorioPage({
                   <TableRow key={m.mes}>
                     <TableCell className="font-medium capitalize">{m.label}</TableCell>
                     <TableCell className="text-right text-success-600">
-                      {m.receita > 0
-                        ? `R$ ${m.receita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-                        : "—"}
+                      {m.receita > 0 ? formatMoney(m.receita) : "—"}
                     </TableCell>
                     <TableCell className="text-right text-danger-600">
-                      {m.custo > 0
-                        ? `R$ ${m.custo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-                        : "—"}
+                      {m.custo > 0 ? formatMoney(m.custo) : "—"}
                     </TableCell>
                     <TableCell
                       className={`text-right font-semibold ${
                         m.saldo > 0 ? "text-success-600" : m.saldo < 0 ? "text-danger-600" : "text-muted-foreground"
                       }`}
                     >
-                      {m.receita === 0 && m.custo === 0
-                        ? "—"
-                        : `R$ ${m.saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                      {m.receita === 0 && m.custo === 0 ? "—" : formatMoney(m.saldo)}
                     </TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="border-t-2 font-bold">
                   <TableCell>Total</TableCell>
                   <TableCell className="text-right text-success-600">
-                    R$ {totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatMoney(totalReceita)}
                   </TableCell>
                   <TableCell className="text-right text-danger-600">
-                    R$ {totalCustos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatMoney(totalCustos)}
                   </TableCell>
                   <TableCell
                     className={`text-right ${totalSaldo >= 0 ? "text-success-600" : "text-danger-600"}`}
                   >
-                    R$ {totalSaldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    {formatMoney(totalSaldo)}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -194,7 +189,7 @@ export default async function RelatorioPage({
                   <TableRow key={cat}>
                     <TableCell className="font-medium">{cat}</TableCell>
                     <TableCell className="text-right">
-                      R$ {valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      {formatMoney(valor)}
                     </TableCell>
                   </TableRow>
                 ))}

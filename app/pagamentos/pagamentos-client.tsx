@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
@@ -236,6 +236,13 @@ export function PagamentosClient({
   const [bulkData, setBulkData] = useState(format(new Date(), "yyyy-MM-dd"))
   const [bulkPending, startBulk] = useTransition()
 
+  // A navegação por mês (router.push ?mes=) não remonta este componente, então
+  // a seleção sobreviveria à troca de mês e o lote agiria sobre IDs fora da tela.
+  // Limpar ao trocar de mês mantém a seleção sempre dentro do mês visível.
+  useEffect(() => {
+    setSelected(new Set())
+  }, [mes])
+
   function handleGerar() {
     startGerando(async () => {
       const r = await gerarMensalidadesMes(mes)
@@ -462,7 +469,7 @@ export function PagamentosClient({
         <div className="ml-auto text-right">
           <p className="text-sm text-muted-foreground">Total recebido</p>
           <p className="text-xl font-bold font-heading text-success-600">
-            R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            {formatMoney(totalPago)}
           </p>
         </div>
       </div>

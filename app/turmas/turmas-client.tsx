@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { plural } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 import Link from "next/link"
 import { Phone, MessageCircle, TrendingUp, Search, Filter } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -121,7 +121,7 @@ export function TurmasClient({
                 <span>{pct}% ocupado · {plural(ativos, "ativo", "ativos", "nenhum")}</span>
                 <span className="flex items-center gap-1">
                   <TrendingUp className="size-3" />
-                  R$ {receitaMensal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}/mês
+                  {formatMoney(receitaMensal)}/mês
                 </span>
               </div>
             </CardHeader>

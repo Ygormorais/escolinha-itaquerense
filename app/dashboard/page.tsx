@@ -256,7 +256,7 @@ export default async function DashboardPage({
         />
         <StatCard
           title="Receita do Mês"
-          value={`R$ ${receitaMes.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+          value={formatMoney(receitaMes)}
           icon={TrendingUp}
           variant={config.metaMensal > 0 && receitaMes >= config.metaMensal ? "success" : "brand"}
           borderAccent
@@ -264,7 +264,7 @@ export default async function DashboardPage({
           progress={config.metaMensal > 0 ? {
             value: receitaMes,
             max: config.metaMensal,
-            label: `de R$ ${config.metaMensal.toLocaleString("pt-BR")}`,
+            label: `de ${formatMoney(config.metaMensal)}`,
           } : undefined}
         />
         <StatCard
