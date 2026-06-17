@@ -111,7 +111,7 @@ const css = `
     .lp nav.main>ul>li>a::after{display:none}
     .lp nav.main>ul>li.nav-access{display:block}
     .lp .burger{display:block}
-    .lp .cat-grid{grid-template-columns:repeat(3,1fr)}
+    .lp .cat-grid{grid-template-columns:repeat(2,1fr)}
     .lp .foot-grid{grid-template-columns:1fr 1fr}
     .lp .hero h1{font-size:38px}
     .lp section{padding:56px 0}
@@ -181,6 +181,7 @@ const css = `
   .lp .depo .autor b{display:block;font-size:14px;font-weight:700}
   .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
   @media(max-width:900px){.lp .depo .grid{grid-template-columns:1fr}}
+  .lp .modalidades{border-top:1px solid var(--border)}
 `
 
 export function LandingClient({
@@ -339,7 +340,7 @@ export function LandingClient({
       </section>
 
       {/* ===== 5. MODALIDADES ===== */}
-      <section>
+      <section className="modalidades">
         <div className="container">
           <h2 className="section-title">Modalidades</h2>
           <div className="cat-grid">
