@@ -212,6 +212,7 @@ export async function marcarComoPago(
 ): Promise<ActionResult> {
   await requireAuth()
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
+  if (!Number.isFinite(data.valorRecebido) || data.valorRecebido <= 0) return { error: "Valor inválido" }
   try {
     await db.pagamento.update({
       where: { id },
