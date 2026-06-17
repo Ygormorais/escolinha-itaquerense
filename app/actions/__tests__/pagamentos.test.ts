@@ -111,6 +111,14 @@ describe("gerarMensalidadesMes", () => {
     expect(res).toEqual({ criados: 0, ignorados: 1 })
     expect(m.pagamento.createMany).not.toHaveBeenCalled()
   })
+
+  it("corrida (unique P2002): retorna mensagem amigável, não erro cru", async () => {
+    m.aluno.findMany.mockResolvedValue([{ id: 1 }])
+    m.pagamento.findMany.mockResolvedValue([])
+    m.pagamento.createMany.mockRejectedValueOnce(Object.assign(new Error("unique"), { code: "P2002" }))
+    const res = await gerarMensalidadesMes("2026-06")
+    expect(res).toEqual({ error: "As mensalidades deste mês já foram geradas (por outro processo). Recarregue a página." })
+  })
 })
 
 describe("deletePagamento", () => {
