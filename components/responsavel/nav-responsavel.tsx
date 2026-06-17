@@ -11,6 +11,7 @@ const links = [
   { href: "/responsavel", label: "Portal" },
   { href: "/responsavel/galeria", label: "Mural" },
   { href: "/responsavel/jogos", label: "Jogos" },
+  { href: "/responsavel/calendario", label: "Calendário" },
   { href: "/responsavel/classificacao", label: "Classificação" },
   { href: "/responsavel/frequencia", label: "Frequência" },
   { href: "/responsavel/desempenho", label: "Desempenho" },
