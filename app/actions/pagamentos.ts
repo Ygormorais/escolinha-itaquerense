@@ -9,6 +9,11 @@ import { dataValida, plural } from "@/lib/utils"
 
 type ActionResult = { success: true } | { error: string }
 
+/** Erro de violação de unique do Prisma (P2002) — ex.: corrida ao gerar mensalidades. */
+function isUniqueViolation(e: unknown): boolean {
+  return typeof e === "object" && e !== null && "code" in e && (e as { code?: string }).code === "P2002"
+}
+
 export async function registrarPagamento(
   id: number,
   data: {
@@ -120,6 +125,9 @@ export async function gerarMensalidadesMes(
     const novos = alunos.filter((a) => !existentesSet.has(a.id))
 
     if (novos.length > 0) {
+      // O unique(alunoId, mesReferencia) é a rede de proteção contra a corrida
+      // cron×manual: se outro processo já gerou em paralelo, o banco rejeita a
+      // duplicata e caímos no catch de P2002 abaixo (sem cobrança em dobro).
       await db.pagamento.createMany({
         data: novos.map((a) => ({
           alunoId: a.id,
@@ -134,6 +142,9 @@ export async function gerarMensalidadesMes(
 
     return { criados: novos.length, ignorados: existentesSet.size }
   } catch (e) {
+    if (isUniqueViolation(e)) {
+      return { error: "As mensalidades deste mês já foram geradas (por outro processo). Recarregue a página." }
+    }
     return { error: e instanceof Error ? e.message : "Erro ao gerar mensalidades" }
   }
 }
