@@ -170,6 +170,13 @@ const css = `
   .lp .galeria .item img{width:100%;height:100%;object-fit:cover}
   @media(max-width:900px){.lp .galeria .grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:600px){.lp .galeria .grid{grid-template-columns:1fr}}
+  .lp .depo .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .lp .depo .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+  .lp .depo .quote{font-family:var(--font-heading),Georgia,serif;color:var(--red);font-size:40px;line-height:1;margin-bottom:8px}
+  .lp .depo .texto{color:var(--text);line-height:1.7;margin-bottom:18px}
+  .lp .depo .autor b{display:block;font-size:14px;font-weight:700}
+  .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
+  @media(max-width:900px){.lp .depo .grid{grid-template-columns:1fr}}
 `
 
 export function LandingClient({
@@ -288,6 +295,27 @@ export function LandingClient({
               {galeria.map((f, i) => (
                 <div className="item" key={i}>
                   <Image src={f.src} alt={f.alt} width={400} height={300} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ===== Depoimentos (guardado) ===== */}
+      {temDepoimentos() && (
+        <section className="depo">
+          <div className="container">
+            <h2 className="section-title">O que dizem os pais</h2>
+            <div className="grid">
+              {depoimentos.map((d, i) => (
+                <div className="card" key={i}>
+                  <div className="quote" aria-hidden="true">&ldquo;</div>
+                  <p className="texto">{d.texto}</p>
+                  <div className="autor">
+                    <b>{d.autor}</b>
+                    {d.categoria && <span>{d.categoria}</span>}
+                  </div>
                 </div>
               ))}
             </div>
