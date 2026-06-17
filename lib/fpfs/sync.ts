@@ -46,7 +46,11 @@ export async function syncCampeonato(campeonatoId: number): Promise<ResumoSync> 
     // Muitos jogos ainda nao tem link de sumula (fpfsJogoId null). Como NULLs sao
     // distintos no indice unico do SQLite, inserir por null duplicaria a cada sync.
     // Usamos uma chave estavel derivada de data+times para esses casos.
-    const chave = j.fpfsJogoId ?? `m:${j.data}|${j.mandante}|${j.visitante}`
+    const chaveSintetica = `m:${j.data}|${j.mandante}|${j.visitante}`
+    const chave = j.fpfsJogoId ?? chaveSintetica
+    // Quando a sumula aparece, a chave migra de sintetica -> id real; buscar por
+    // ambas evita criar uma 2a partida para o mesmo jogo.
+    const chavesBusca = j.fpfsJogoId ? [j.fpfsJogoId, chaveSintetica] : [chaveSintetica]
 
     const dados = {
       campeonatoId,
@@ -61,7 +65,7 @@ export async function syncCampeonato(campeonatoId: number): Promise<ResumoSync> 
       sumulaUrl: j.sumulaUrl,
     }
 
-    const existente = await db.partida.findFirst({ where: { campeonatoId, fpfsJogoId: chave } })
+    const existente = await db.partida.findFirst({ where: { campeonatoId, fpfsJogoId: { in: chavesBusca } } })
 
     if (existente) {
       await db.partida.update({ where: { id: existente.id }, data: dados })

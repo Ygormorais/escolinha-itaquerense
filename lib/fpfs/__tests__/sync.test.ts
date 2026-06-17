@@ -94,7 +94,7 @@ describe("syncCampeonato", () => {
     expect(criado.fpfsJogoId).toBe("m:2026-04-11|Time X|Time Y")
     // a busca de idempotencia usa a mesma chave
     expect(m.partida.findFirst).toHaveBeenCalledWith({
-      where: { campeonatoId: 1, fpfsJogoId: "m:2026-04-11|Time X|Time Y" },
+      where: { campeonatoId: 1, fpfsJogoId: { in: ["m:2026-04-11|Time X|Time Y"] } },
     })
 
     // 2a execucao: agora existe -> atualiza, nao duplica
@@ -110,6 +110,22 @@ describe("syncCampeonato", () => {
     ])
     m.partida.findFirst.mockResolvedValue({ id: 77 })
     await syncCampeonato(1)
+    expect(m.partida.create).not.toHaveBeenCalled()
+    expect(m.partida.update).toHaveBeenCalledTimes(1)
+  })
+
+  it("migra a partida (não duplica) quando a súmula aparece e a chave vira id real", async () => {
+    // agora o jogo tem fpfsJogoId real (súmula publicada); a busca deve incluir
+    // também a chave sintética usada antes, achando e atualizando o row antigo.
+    ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValue([
+      { fpfsJogoId: "555", rodada: 1, data: "2026-04-11", hora: "17:00", ginasio: "G1",
+        mandante: "E.C. Itaquerense", visitante: "Vila Real", golsMandante: 3, golsVisitante: 1, sumulaUrl: "s/555" },
+    ])
+    m.partida.findFirst.mockResolvedValue({ id: 88 })
+    await syncCampeonato(1)
+    expect(m.partida.findFirst).toHaveBeenCalledWith({
+      where: { campeonatoId: 1, fpfsJogoId: { in: ["555", "m:2026-04-11|E.C. Itaquerense|Vila Real"] } },
+    })
     expect(m.partida.create).not.toHaveBeenCalled()
     expect(m.partida.update).toHaveBeenCalledTimes(1)
   })
