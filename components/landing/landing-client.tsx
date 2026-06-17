@@ -135,6 +135,7 @@ const css = `
   .lp .btn-access:hover{background:var(--red);color:#fff}
   .lp .btn-access.primary{background:var(--red);color:#fff}
   .lp .btn-access.primary:hover{background:var(--red-warm);border-color:var(--red-warm);transform:translateY(-1px);box-shadow:0 6px 20px rgba(198,40,40,.35)}
+  /* No mobile: só Matrícula (primary) fica no header; Portal/Entrar migram para o menu via .nav-access */
   @media(max-width:900px){.lp .access .btn-access{display:none}.lp .access .btn-access.primary{display:flex}}
   .lp .jc{background:var(--red-deep);color:#fff;padding:40px 0}
   .lp .jc .section-title{color:#fff;border-left-color:#fff;margin-bottom:20px}

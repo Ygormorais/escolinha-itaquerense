@@ -14,6 +14,8 @@ export async function getEstatisticasClube(agora: Date = new Date()): Promise<Es
   const inicioProxAno = new Date(Date.UTC(agora.getUTCFullYear() + 1, 0, 1))
   const intervaloAno = { data: { gte: inicioAno, lt: inicioProxAno } }
 
+  // jogosTemporada/vitorias contam TODAS as partidas do ano — escopo intencionalmente
+  // mais amplo que o carrossel de jogos (jogos.ts só inclui campeonatos com fpfsEventoId).
   const [alunosAtivos, turmas, jogosTemporada, vitorias] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.aluno.findMany({ where: { status: "Ativo" }, select: { turma: true } }),
