@@ -5,6 +5,8 @@ import { Inter, Playfair_Display } from "next/font/google"
 import Link from "next/link"
 import { JogosCarrossel } from "./jogos-carrossel"
 import type { CategoriaJogos, HeroView } from "@/lib/landing/jogos"
+import type { EstatisticasClube } from "@/lib/landing/stats"
+import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -154,10 +156,18 @@ export function LandingClient({
   categorias,
   whatsapp,
   hero,
+  stats,
+  sobre,
+  galeria,
+  depoimentos,
 }: {
   categorias: CategoriaJogos[]
   whatsapp?: string
   hero: HeroView
+  stats: EstatisticasClube
+  sobre: SobreConteudo | null
+  galeria: FotoGaleria[]
+  depoimentos: Depoimento[]
 }) {
   const [navOpen, setNavOpen] = useState(false)
   const waNumber = whatsapp?.replace(/\D/g, "") || "5511999999999"

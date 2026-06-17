@@ -2,10 +2,13 @@ import { describe, it, expect } from "vitest"
 import { renderToStaticMarkup } from "react-dom/server"
 import { LandingClient } from "@/components/landing/landing-client"
 import { heroView } from "@/lib/landing/jogos"
+import type { EstatisticasClube } from "@/lib/landing/stats"
+
+const defaultStats: EstatisticasClube = { alunosAtivos: 0, categorias: 0, jogosTemporada: 0, vitorias: 0, temAlgo: false }
 
 describe("landing publica", () => {
   const hero = heroView({ tipo: "institucional" })
-  const html = renderToStaticMarkup(<LandingClient categorias={[]} hero={hero} />)
+  const html = renderToStaticMarkup(<LandingClient categorias={[]} hero={hero} stats={defaultStats} sobre={null} galeria={[]} depoimentos={[]} />)
 
   it("expoe o acesso a Administracao", () => {
     expect(html).toContain('href="/login"')
@@ -25,7 +28,7 @@ describe("landing publica", () => {
       tipo: "proximo", adversario: "Vila Real",
       data: new Date("2026-06-14T16:00:00"), local: "Casa", campeonato: "Sub-9 A3",
     })
-    const h = renderToStaticMarkup(<LandingClient categorias={[]} hero={proximo} />)
+    const h = renderToStaticMarkup(<LandingClient categorias={[]} hero={proximo} stats={defaultStats} sobre={null} galeria={[]} depoimentos={[]} />)
     expect(h).toContain("Próximo desafio: Itaquerense × Vila Real")
     expect(h).toContain('href="#jogos"')
   })
