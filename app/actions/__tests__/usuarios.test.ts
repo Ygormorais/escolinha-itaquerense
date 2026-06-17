@@ -3,7 +3,7 @@ import { createHmac } from "crypto"
 
 vi.mock("@/lib/db", () => {
   const db = {
-    usuario: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
+    usuario: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), findMany: vi.fn() },
   }
   return { db }
 })
@@ -20,15 +20,20 @@ vi.mock("bcryptjs", () => ({
   default: { hashSync: vi.fn(() => "bcrypt-hash"), compare: vi.fn() },
 }))
 
-import { criarUsuario, checkDbCredentials } from "@/app/actions/usuarios"
+import { criarUsuario, alterarSenha, toggleUsuario, deletarUsuario, getUsuarios, checkDbCredentials } from "@/app/actions/usuarios"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import bcrypt from "bcryptjs"
+
+const requireAuthMock = requireAuth as unknown as ReturnType<typeof vi.fn>
 
 const m = db as unknown as {
   usuario: {
     findUnique: ReturnType<typeof vi.fn>
     create: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
+    delete: ReturnType<typeof vi.fn>
+    findMany: ReturnType<typeof vi.fn>
   }
 }
 const compare = bcrypt.compare as unknown as ReturnType<typeof vi.fn>
@@ -38,7 +43,33 @@ beforeEach(() => {
   m.usuario.findUnique.mockResolvedValue(null)
   m.usuario.create.mockResolvedValue({})
   m.usuario.update.mockResolvedValue({})
+  m.usuario.delete.mockResolvedValue({})
+  m.usuario.findMany.mockResolvedValue([])
   compare.mockResolvedValue(false)
+  requireAuthMock.mockResolvedValue({ user: "admin", role: "admin" })
+})
+
+describe("autorização — gestão de usuários é só para admin", () => {
+  it("criarUsuario exige papel admin", async () => {
+    await criarUsuario({ username: "x", nome: "X", senha: "s", role: "secretaria" })
+    expect(requireAuthMock).toHaveBeenCalledWith(["admin"])
+  })
+  it("alterarSenha exige papel admin", async () => {
+    await alterarSenha(1, "nova")
+    expect(requireAuthMock).toHaveBeenCalledWith(["admin"])
+  })
+  it("toggleUsuario exige papel admin", async () => {
+    await toggleUsuario(1, false)
+    expect(requireAuthMock).toHaveBeenCalledWith(["admin"])
+  })
+  it("deletarUsuario exige papel admin", async () => {
+    await deletarUsuario(1)
+    expect(requireAuthMock).toHaveBeenCalledWith(["admin"])
+  })
+  it("getUsuarios exige papel admin", async () => {
+    await getUsuarios()
+    expect(requireAuthMock).toHaveBeenCalledWith(["admin"])
+  })
 })
 
 describe("criarUsuario", () => {

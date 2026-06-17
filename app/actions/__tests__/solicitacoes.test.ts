@@ -15,15 +15,23 @@ vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ user: "secretaria", role: "secretaria" }),
 }))
 
+vi.mock("@/lib/responsavel-session", () => ({
+  getResponsavelSession: vi.fn(),
+}))
+
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 import {
   criarSolicitacao,
+  listarSolicitacoes,
   adminListarSolicitacoes,
   responderSolicitacao,
 } from "@/app/actions/solicitacoes"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { getResponsavelSession } from "@/lib/responsavel-session"
+
+const session = getResponsavelSession as unknown as ReturnType<typeof vi.fn>
 
 const m = db as unknown as {
   solicitacao: {
@@ -40,24 +48,45 @@ beforeEach(() => {
   m.solicitacao.findMany.mockResolvedValue([])
   m.solicitacao.update.mockResolvedValue({})
   auth.mockResolvedValue({ user: "secretaria", role: "secretaria" })
+  session.mockResolvedValue({ authenticated: true, responsavelId: 5 })
 })
 
 describe("criarSolicitacao", () => {
   it("rejeita descrição vazia sem criar", async () => {
-    const res = await criarSolicitacao({ responsavelId: 1, tipo: "uniforme", descricao: "   " })
+    const res = await criarSolicitacao({ tipo: "uniforme", descricao: "   " })
     expect(res).toEqual({ error: "Descreva sua solicitação" })
     expect(m.solicitacao.create).not.toHaveBeenCalled()
   })
 
-  it("cria com status pendente e descrição aparada", async () => {
-    const res = await criarSolicitacao({ responsavelId: 1, tipo: "horario", descricao: "  trocar de turma  " })
+  it("usa o responsavelId da SESSÃO (não confia no cliente) e apara a descrição", async () => {
+    const res = await criarSolicitacao({ tipo: "horario", descricao: "  trocar de turma  " })
     expect(res).toEqual({ success: true, id: 42 })
     expect(m.solicitacao.create.mock.calls[0][0].data).toMatchObject({
-      responsavelId: 1,
+      responsavelId: 5,
       tipo: "horario",
       descricao: "trocar de turma",
       status: "pendente",
     })
+  })
+
+  it("rejeita sem sessão autenticada", async () => {
+    session.mockResolvedValue({ authenticated: false })
+    const res = await criarSolicitacao({ tipo: "horario", descricao: "x" })
+    expect(res).toEqual({ error: "Sessão expirada. Entre novamente." })
+    expect(m.solicitacao.create).not.toHaveBeenCalled()
+  })
+})
+
+describe("listarSolicitacoes", () => {
+  it("escopa pela sessão e não aceita id do cliente", async () => {
+    await listarSolicitacoes()
+    expect(m.solicitacao.findMany.mock.calls[0][0].where).toEqual({ responsavelId: 5 })
+  })
+
+  it("retorna vazio sem sessão", async () => {
+    session.mockResolvedValue({ authenticated: false })
+    expect(await listarSolicitacoes()).toEqual([])
+    expect(m.solicitacao.findMany).not.toHaveBeenCalled()
   })
 })
 

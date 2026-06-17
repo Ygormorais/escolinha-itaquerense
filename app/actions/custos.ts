@@ -77,6 +77,7 @@ export async function updateCusto(id: number, data: {
 }
 
 export async function deleteCusto(id: number): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.custo.delete({ where: { id } })
     revalidatePath("/custos")
@@ -97,6 +98,7 @@ export async function createCustoRecorrente(data: {
   valor: number
   formaPagamento: string
 }): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.custoRecorrente.create({ data })
     revalidatePath("/custos")
@@ -114,6 +116,7 @@ export async function updateCustoRecorrente(id: number, data: {
   formaPagamento: string
   ativo: boolean
 }): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.custoRecorrente.update({ where: { id }, data })
     revalidatePath("/custos")
@@ -124,6 +127,7 @@ export async function updateCustoRecorrente(id: number, data: {
 }
 
 export async function deleteCustoRecorrente(id: number): Promise<ActionResult> {
+  await requireAuth()
   try {
     await db.custoRecorrente.delete({ where: { id } })
     revalidatePath("/custos")

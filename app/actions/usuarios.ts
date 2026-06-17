@@ -11,6 +11,7 @@ function hashSenha(senha: string): string {
 }
 
 export async function getUsuarios() {
+  await requireAuth(["admin"])
   return db.usuario.findMany({ orderBy: { createdAt: "asc" } })
 }
 
@@ -20,7 +21,7 @@ export async function criarUsuario(data: {
   senha: string
   role: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin"])
   const existing = await db.usuario.findUnique({ where: { username: data.username } })
   if (existing) return { error: "Username já existe" }
 
@@ -37,7 +38,7 @@ export async function criarUsuario(data: {
 }
 
 export async function alterarSenha(id: number, novaSenha: string) {
-  await requireAuth()
+  await requireAuth(["admin"])
   await db.usuario.update({
     where: { id },
     data: { senha: hashSenha(novaSenha) },
@@ -47,13 +48,13 @@ export async function alterarSenha(id: number, novaSenha: string) {
 }
 
 export async function toggleUsuario(id: number, ativo: boolean) {
-  await requireAuth()
+  await requireAuth(["admin"])
   await db.usuario.update({ where: { id }, data: { ativo } })
   revalidatePath("/configuracoes/usuarios")
 }
 
 export async function deletarUsuario(id: number) {
-  await requireAuth()
+  await requireAuth(["admin"])
   await db.usuario.delete({ where: { id } })
   revalidatePath("/configuracoes/usuarios")
 }
