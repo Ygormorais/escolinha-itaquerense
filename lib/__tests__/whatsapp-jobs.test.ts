@@ -15,7 +15,10 @@ vi.mock("@/lib/whatsapp/provider", () => ({
   getWhatsAppProvider: vi.fn(),
 }))
 
-import { runEnviarLembretesWhatsAppInadimplencia } from "../whatsapp-jobs"
+import {
+  runEnviarLembretesWhatsAppInadimplencia,
+  runEnviarLembretesWhatsAppVencendo,
+} from "../whatsapp-jobs"
 import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
@@ -50,6 +53,52 @@ beforeEach(() => {
   mockGetProvider.mockReturnValue({ sendText: vi.fn().mockResolvedValue({}) })
   mockDb.whatsAppMensagem.findFirst.mockResolvedValue(null)
   mockDb.whatsAppMensagem.create.mockResolvedValue({})
+})
+
+function venc(over: { alunoId?: number; telefone?: string } = {}) {
+  return {
+    id: 1,
+    mesReferencia: "2026-07",
+    dataVencimento: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    aluno: {
+      id: over.alunoId ?? 1,
+      nome: "João Silva",
+      responsavel: "Maria Silva",
+      telefone: over.telefone ?? "11999999999",
+      mensalidade: 150,
+    },
+  }
+}
+
+describe("runEnviarLembretesWhatsAppVencendo", () => {
+  it("envia e registra o lembrete (origem lembrete-vencimento) quando não houve envio recente", async () => {
+    mockDb.pagamento.findMany.mockResolvedValue([venc()])
+    mockDb.whatsAppMensagem.findFirst.mockResolvedValue(null)
+    const res = await runEnviarLembretesWhatsAppVencendo()
+    expect(res.enviados).toBe(1)
+    expect(mockDb.whatsAppMensagem.create).toHaveBeenCalledTimes(1)
+    expect(mockDb.whatsAppMensagem.create.mock.calls[0][0].data.origem).toBe("lembrete-vencimento")
+  })
+
+  it("pula (dedup) quando já avisou o aluno nos últimos dias, sem reenviar", async () => {
+    const send = vi.fn().mockResolvedValue({})
+    mockGetProvider.mockReturnValue({ sendText: send })
+    mockDb.pagamento.findMany.mockResolvedValue([venc()])
+    mockDb.whatsAppMensagem.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) })
+    const res = await runEnviarLembretesWhatsAppVencendo()
+    expect(res.enviados).toBe(0)
+    expect(send).not.toHaveBeenCalled()
+    expect(mockDb.whatsAppMensagem.create).not.toHaveBeenCalled()
+  })
+
+  it("não conta erro de envio como enviado", async () => {
+    mockGetProvider.mockReturnValue({ sendText: vi.fn().mockRejectedValue(new Error("falhou")) })
+    mockDb.pagamento.findMany.mockResolvedValue([venc()])
+    mockDb.whatsAppMensagem.findFirst.mockResolvedValue(null)
+    const res = await runEnviarLembretesWhatsAppVencendo()
+    expect(res.enviados).toBe(0)
+    expect(res.erros).toBe(1)
+  })
 })
 
 describe("runEnviarLembretesWhatsAppInadimplencia", () => {

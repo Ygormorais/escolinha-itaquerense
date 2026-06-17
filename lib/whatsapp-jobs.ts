@@ -86,8 +86,15 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
 
 export async function runEnviarLembretesWhatsAppVencendo() {
   const config = getConfig()
+  let enviados = 0
+  let pulados = 0
   let erros = 0
   let semTelefone = 0
+
+  // Janela de dedup: o cron roda diário e a janela de vencimento é de 3 dias;
+  // sem isso o mesmo vencimento dispararia um lembrete por dia. 4 dias garante
+  // 1 lembrete por vencimento e libera o do próximo mês.
+  const DEDUP_MS = 4 * 24 * 60 * 60 * 1000
 
   const tresDias = new Date()
   tresDias.setDate(tresDias.getDate() + 3)
@@ -106,6 +113,16 @@ export async function runEnviarLembretesWhatsAppVencendo() {
     const tel = p.aluno.telefone?.replace(/\D/g, "")
     if (!tel || tel.length < 8) { semTelefone++; continue }
 
+    // Dedup: já avisamos este aluno sobre vencimento recentemente?
+    const ultimoEnvio = await db.whatsAppMensagem.findFirst({
+      where: { alunoId: p.aluno.id, origem: "lembrete-vencimento" },
+      orderBy: { createdAt: "desc" },
+    })
+    if (ultimoEnvio && Date.now() - new Date(ultimoEnvio.createdAt).getTime() < DEDUP_MS) {
+      pulados++
+      continue
+    }
+
     const dias = Math.ceil(
       (new Date(p.dataVencimento).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     )
@@ -120,12 +137,24 @@ export async function runEnviarLembretesWhatsAppVencendo() {
 
     try {
       await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+      await db.whatsAppMensagem.create({
+        data: {
+          alunoId: p.aluno.id,
+          telefone: tel,
+          mensagem: msg,
+          origem: "lembrete-vencimento",
+          direcao: "outgoing",
+          status: "sent",
+          instancia: "escolinha",
+        },
+      })
+      enviados++
     } catch {
       erros++
     }
   }
 
-  return { enviados: vencendo.length - semTelefone, erros, semTelefone }
+  return { enviados, pulados, erros, semTelefone }
 }
 
 export async function notificarPagamentoConfirmado(pagamentoId: number): Promise<void> {
