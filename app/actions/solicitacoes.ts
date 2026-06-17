@@ -3,17 +3,20 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { getResponsavelSession } from "@/lib/responsavel-session"
 
 export async function criarSolicitacao(data: {
-  responsavelId: number
   tipo: string
   descricao: string
 }) {
+  // responsavelId vem SEMPRE da sessão — nunca do cliente (evita IDOR/falsificação)
+  const session = await getResponsavelSession()
+  if (!session.authenticated || !session.responsavelId) return { error: "Sessão expirada. Entre novamente." }
   if (!data.tipo?.trim()) return { error: "Selecione o tipo de solicitação" }
   if (!data.descricao?.trim()) return { error: "Descreva sua solicitação" }
   const s = await db.solicitacao.create({
     data: {
-      responsavelId: data.responsavelId,
+      responsavelId: session.responsavelId,
       tipo: data.tipo,
       descricao: data.descricao.trim(),
       status: "pendente",
@@ -24,9 +27,12 @@ export async function criarSolicitacao(data: {
   return { success: true, id: s.id }
 }
 
-export async function listarSolicitacoes(responsavelId: number) {
+export async function listarSolicitacoes() {
+  // Escopo derivado da sessão — o responsável só vê as próprias solicitações.
+  const session = await getResponsavelSession()
+  if (!session.authenticated || !session.responsavelId) return []
   return db.solicitacao.findMany({
-    where: { responsavelId },
+    where: { responsavelId: session.responsavelId },
     orderBy: { createdAt: "desc" },
     take: 100,
   })

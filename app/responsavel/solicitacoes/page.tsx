@@ -15,5 +15,5 @@ export default async function SolicitacoesPage() {
     take: 50,
   })
 
-  return <SolicitacoesClient responsavelId={session.responsavelId!} solicitacoes={solicitacoes} />
+  return <SolicitacoesClient solicitacoes={solicitacoes} />
 }
