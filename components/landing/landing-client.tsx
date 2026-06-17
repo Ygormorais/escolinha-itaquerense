@@ -250,16 +250,10 @@ export function LandingClient({
         </div>
       </div>
 
-      {/* ===== Números reais (guardado: só renderiza se há dados) ===== */}
+      {/* ===== Números reais (só métricas públicas de competição; guardado) ===== */}
       {stats.temAlgo && (
         <div className="stats">
           <div className="container">
-            {stats.alunosAtivos > 0 && (
-              <div className="stat"><b>{stats.alunosAtivos}</b><span>Alunos ativos</span></div>
-            )}
-            {stats.categorias > 0 && (
-              <div className="stat"><b>{stats.categorias}</b><span>Categorias</span></div>
-            )}
             {stats.jogosTemporada > 0 && (
               <div className="stat"><b>{stats.jogosTemporada}</b><span>Jogos na temporada</span></div>
             )}

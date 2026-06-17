@@ -4,7 +4,7 @@ import { LandingClient } from "@/components/landing/landing-client"
 import { heroView } from "@/lib/landing/jogos"
 import type { EstatisticasClube } from "@/lib/landing/stats"
 
-const defaultStats: EstatisticasClube = { alunosAtivos: 0, categorias: 0, jogosTemporada: 0, vitorias: 0, temAlgo: false }
+const defaultStats: EstatisticasClube = { jogosTemporada: 0, vitorias: 0, temAlgo: false }
 
 describe("landing publica", () => {
   const hero = heroView({ tipo: "institucional" })

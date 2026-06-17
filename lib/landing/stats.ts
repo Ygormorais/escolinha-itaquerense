@@ -1,30 +1,24 @@
 import { db } from "@/lib/db"
 
 export interface EstatisticasClube {
-  alunosAtivos: number
-  categorias: number
   jogosTemporada: number
   vitorias: number
   temAlgo: boolean
 }
 
-/** Estatísticas reais do clube derivadas do banco. TZ=UTC em produção (datas em meia-noite UTC). */
+/** Estatísticas PÚBLICAS do clube para a landing — só métricas de competição.
+ * Não expõe tamanho do negócio (alunos/categorias). TZ=UTC em produção. */
 export async function getEstatisticasClube(agora: Date = new Date()): Promise<EstatisticasClube> {
   const inicioAno = new Date(Date.UTC(agora.getUTCFullYear(), 0, 1))
   const inicioProxAno = new Date(Date.UTC(agora.getUTCFullYear() + 1, 0, 1))
   const intervaloAno = { data: { gte: inicioAno, lt: inicioProxAno } }
 
-  // jogosTemporada/vitorias contam TODAS as partidas do ano — escopo intencionalmente
-  // mais amplo que o carrossel de jogos (jogos.ts só inclui campeonatos com fpfsEventoId).
-  const [alunosAtivos, turmas, jogosTemporada, vitorias] = await Promise.all([
-    db.aluno.count({ where: { status: "Ativo" } }),
-    db.aluno.findMany({ where: { status: "Ativo" }, select: { turma: true } }),
+  const [jogosTemporada, vitorias] = await Promise.all([
     db.partida.count({ where: { ...intervaloAno } }),
     db.partida.count({ where: { ...intervaloAno, resultado: "Vitoria" } }),
   ])
 
-  const categorias = new Set(turmas.map((t) => t.turma)).size
-  const temAlgo = alunosAtivos > 0 || categorias > 0 || jogosTemporada > 0 || vitorias > 0
+  const temAlgo = jogosTemporada > 0 || vitorias > 0
 
-  return { alunosAtivos, categorias, jogosTemporada, vitorias, temAlgo }
+  return { jogosTemporada, vitorias, temAlgo }
 }
