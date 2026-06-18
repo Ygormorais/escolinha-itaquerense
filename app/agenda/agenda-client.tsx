@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  addDays, addMonths, subMonths, format, isSameMonth,
-  isSameDay, getDay,
+  addDays, format, isSameMonth, isSameDay, getDay,
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Loader2, MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,20 +35,38 @@ type Evento = {
   descricao: string | null
 }
 
+type Jogo = {
+  id: number
+  data: Date
+  adversario: string
+  local: string
+  resultado: string | null
+  placar: string | null
+  campeonato: string | null
+}
+
 const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800 border-brand-300",
   Jogo: "bg-success-50 text-success-600 border-success-300",
   Evento: "bg-info-50 text-info-600 border-info-300",
 }
 
-export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: number; ano: number }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date(ano, mes - 1))
+function capMes(d: Date) {
+  return format(d, "MMMM yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())
+}
+
+export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; jogos: Jogo[]; mes: number; ano: number }) {
+  const currentMonth = new Date(ano, mes - 1)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvento, setEditingEvento] = useState<Evento | null>(null)
   const router = useRouter()
 
   const [saving, startSaving] = useTransition()
+  const [navegando, startNav] = useTransition()
+
+  // ao trocar de mês (via URL), limpa o dia selecionado do mês anterior
+  useEffect(() => { setSelectedDate(null) }, [mes, ano])
 
   const [form, setForm] = useState({
     titulo: "", tipo: "Treino", data: format(new Date(), "yyyy-MM-dd"),
@@ -68,12 +85,27 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
     day = addDays(day, 1)
   }
 
-  function getEventosForDate(date: Date) {
+  function eventosDoDia(date: Date) {
     return eventos.filter((e) => isSameDay(new Date(e.data), date))
   }
+  function jogosDoDia(date: Date) {
+    return jogos.filter((j) => isSameDay(new Date(j.data), date))
+  }
+  function totalDoDia(date: Date) {
+    return eventosDoDia(date).length + jogosDoDia(date).length
+  }
 
-  function prevMonth() { setCurrentMonth(subMonths(currentMonth, 1)) }
-  function nextMonth() { setCurrentMonth(addMonths(currentMonth, 1)) }
+  function irParaMes(d: Date) {
+    const alvo = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+    startNav(() => router.push(`/agenda?mes=${alvo}`))
+  }
+  function prevMonth() { irParaMes(new Date(ano, mes - 2, 1)) }
+  function nextMonth() { irParaMes(new Date(ano, mes, 1)) }
+  function irHoje() {
+    const hoje = new Date()
+    setSelectedDate(hoje)
+    irParaMes(hoje)
+  }
 
   function openNewEvento(date: Date) {
     setEditingEvento(null)
@@ -101,7 +133,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
 
   function handleSave() {
     if (!form.titulo.trim()) { toast.error("Título obrigatório"); return }
-
     const payload = {
       ...form,
       horaInicio: form.horaInicio || undefined,
@@ -110,7 +141,6 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
       turmas: form.turmas || undefined,
       descricao: form.descricao || undefined,
     }
-
     startSaving(async () => {
       try {
         if (editingEvento) {
@@ -139,6 +169,25 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
     }
   }
 
+  function avisarEvento(ev: Evento) {
+    const dia = format(new Date(ev.data), "EEEE, dd 'de' MMMM", { locale: ptBR })
+    const hora = ev.horaInicio ? `🕐 ${ev.horaInicio}${ev.horaFim ? ` às ${ev.horaFim}` : ""}\n` : ""
+    const local = ev.local ? `📍 ${ev.local}\n` : ""
+    const turmas = ev.turmas && ev.turmas !== "Todas" ? `👥 ${ev.turmas}\n` : ""
+    const desc = ev.descricao ? `\n${ev.descricao}` : ""
+    const msg = `📅 *${ev.titulo}*\n${dia}\n${hora}${local}${turmas}${desc}`
+    abrirWhatsApp(msg)
+  }
+  function avisarJogo(j: Jogo) {
+    const dia = format(new Date(j.data), "EEEE, dd 'de' MMMM 'às' HH:mm", { locale: ptBR })
+    const camp = j.campeonato ? ` (${j.campeonato})` : ""
+    const msg = `⚽ *Jogo vs ${j.adversario}*${camp}\n${dia}\n📍 ${j.local}`
+    abrirWhatsApp(msg)
+  }
+  function abrirWhatsApp(msg: string) {
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer")
+  }
+
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
   return (
@@ -146,16 +195,15 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Mês anterior">
+            <Button variant="ghost" size="icon" onClick={prevMonth} disabled={navegando} aria-label="Mês anterior">
               <ChevronLeft className="size-4" />
             </Button>
-            <CardTitle className="text-lg font-heading">
-              {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-            </CardTitle>
-            <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Próximo mês">
+            <CardTitle className="text-lg font-heading">{capMes(currentMonth)}</CardTitle>
+            <Button variant="ghost" size="icon" onClick={nextMonth} disabled={navegando} aria-label="Próximo mês">
               <ChevronRight className="size-4" />
             </Button>
           </div>
+          <Button variant="outline" size="sm" onClick={irHoje} disabled={navegando}>Hoje</Button>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-px">
@@ -165,9 +213,12 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
               </div>
             ))}
             {days.map((date, i) => {
-              const dayEventos = getEventosForDate(date)
+              const dayEventos = eventosDoDia(date)
+              const dayJogos = jogosDoDia(date)
+              const total = dayEventos.length + dayJogos.length
               const isToday = isSameDay(date, new Date())
               const isCurrentMonth = isSameMonth(date, currentMonth)
+              const isSelected = selectedDate != null && isSameDay(date, selectedDate)
               const dayOfWeek = getDay(date)
 
               return (
@@ -177,9 +228,12 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     "min-h-[100px] cursor-pointer rounded-lg border p-1.5 transition-colors hover:bg-muted/50",
                     !isCurrentMonth && "opacity-30",
                     isToday && "border-brand-600 bg-brand-50/30",
+                    isSelected && "ring-2 ring-brand-500 ring-offset-1",
                     dayOfWeek === 0 && "bg-muted/20",
                   )}
                   onClick={() => setSelectedDate(date)}
+                  onDoubleClick={() => openNewEvento(date)}
+                  title="Clique para ver • duplo-clique para novo evento"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className={cn(
@@ -188,24 +242,23 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     )}>
                       {format(date, "d")}
                     </span>
-                    {dayEventos.length > 0 && (
-                      <span className="text-[10px] font-semibold text-muted-foreground">{dayEventos.length}</span>
+                    {total > 0 && (
+                      <span className="text-[10px] font-semibold text-muted-foreground">{total}</span>
                     )}
                   </div>
                   <div className="space-y-0.5">
-                    {dayEventos.slice(0, 2).map((ev) => (
-                      <div
-                        key={ev.id}
-                        className={cn(
-                          "truncate rounded px-1 py-0.5 text-[10px] font-medium border",
-                          tipoStyles[ev.tipo] ?? "bg-muted text-muted-foreground border-border"
-                        )}
-                      >
+                    {dayJogos.slice(0, 2).map((j) => (
+                      <div key={`j${j.id}`} className={cn("truncate rounded px-1 py-0.5 text-[10px] font-medium border", tipoStyles.Jogo)}>
+                        ⚽ vs {j.adversario}
+                      </div>
+                    ))}
+                    {dayEventos.slice(0, Math.max(0, 2 - dayJogos.length)).map((ev) => (
+                      <div key={`e${ev.id}`} className={cn("truncate rounded px-1 py-0.5 text-[10px] font-medium border", tipoStyles[ev.tipo] ?? "bg-muted text-muted-foreground border-border")}>
                         {ev.horaInicio && `${ev.horaInicio} `}{ev.titulo}
                       </div>
                     ))}
-                    {dayEventos.length > 2 && (
-                      <p className="text-[10px] text-muted-foreground">+{dayEventos.length - 2} mais</p>
+                    {total > 2 && (
+                      <p className="text-[10px] text-muted-foreground">+{total - 2} mais</p>
                     )}
                   </div>
                 </div>
@@ -228,11 +281,32 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
             )}
           </CardHeader>
           <CardContent>
-            {selectedDate && getEventosForDate(selectedDate).length === 0 && (
+            {selectedDate && totalDoDia(selectedDate) === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento neste dia</p>
             )}
-            {selectedDate && getEventosForDate(selectedDate).map((ev) => (
-              <div key={ev.id} className={cn("rounded-lg border p-3 mb-2", tipoStyles[ev.tipo] ?? "")}>
+
+            {/* Jogos (somente leitura — vêm das partidas) */}
+            {selectedDate && jogosDoDia(selectedDate).map((j) => (
+              <div key={`j${j.id}`} className={cn("rounded-lg border p-3 mb-2", tipoStyles.Jogo)}>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold">⚽ Jogo vs {j.adversario}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {format(new Date(j.data), "HH:mm")} · {j.local}
+                      {j.campeonato && ` · ${j.campeonato}`}
+                    </p>
+                    {j.placar && <p className="text-xs font-semibold mt-0.5">{j.resultado ?? ""} {j.placar}</p>}
+                  </div>
+                  <Button variant="ghost" size="icon-sm" onClick={() => avisarJogo(j)} aria-label="Avisar no WhatsApp" title="Avisar no WhatsApp">
+                    <MessageCircle className="size-3.5 text-success-600" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            {/* Eventos (editáveis) */}
+            {selectedDate && eventosDoDia(selectedDate).map((ev) => (
+              <div key={`e${ev.id}`} className={cn("rounded-lg border p-3 mb-2", tipoStyles[ev.tipo] ?? "")}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold">{ev.titulo}</p>
@@ -248,6 +322,9 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                     )}
                   </div>
                   <div className="flex gap-1 shrink-0">
+                    <Button variant="ghost" size="icon-sm" onClick={() => avisarEvento(ev)} aria-label="Avisar no WhatsApp" title="Avisar no WhatsApp">
+                      <MessageCircle className="size-3.5 text-success-600" />
+                    </Button>
                     <Button variant="ghost" size="icon-sm" onClick={() => openEditEvento(ev)} aria-label="Editar evento">
                       <Pencil className="size-3" />
                     </Button>
@@ -263,8 +340,9 @@ export function AgendaClient({ eventos, mes, ano }: { eventos: Evento[]; mes: nu
                 )}
               </div>
             ))}
+
             {!selectedDate && (
-              <p className="text-sm text-muted-foreground text-center py-4">Clique em um dia para ver os eventos</p>
+              <p className="text-sm text-muted-foreground text-center py-4">Clique em um dia para ver os eventos (duplo-clique cria um novo).</p>
             )}
           </CardContent>
         </Card>
