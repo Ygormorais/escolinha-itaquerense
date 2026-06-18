@@ -47,7 +47,7 @@ export function StatCard({
 
   const inner = (
     <Card className={cn(
-      "transition-all duration-200",
+      "h-full transition-all duration-200",
       href && "cursor-pointer hover:-translate-y-px hover:shadow-md",
       borderAccent && "border-l-4 border-l-brand-600",
       className
@@ -96,6 +96,6 @@ export function StatCard({
     </Card>
   )
 
-  if (href) return <Link href={href}>{inner}</Link>
+  if (href) return <Link href={href} className="block h-full">{inner}</Link>
   return inner
 }
