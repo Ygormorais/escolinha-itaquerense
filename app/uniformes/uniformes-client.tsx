@@ -262,7 +262,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
 
                           <div className="border-t pt-4 space-y-3">
                             <p className="text-sm font-semibold">Adicionar item</p>
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-2">
                               <Select value={itemForm} onValueChange={(v) => { if (v) setItemForm(v) }}>
                                 <SelectTrigger className="flex-1">
                                   <SelectValue placeholder="Selecionar item" />
@@ -279,7 +279,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                                 value={tamanhoForm}
                                 onChange={(e) => setTamanhoForm(e.target.value)}
                               />
-                              <Button size="sm" onClick={handleAdicionar} disabled={adicionando} aria-label="Adicionar item">
+                              <Button onClick={handleAdicionar} disabled={adicionando} aria-label="Adicionar item" className="h-12 w-12 shrink-0">
                                 {adicionando ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
                               </Button>
                             </div>
