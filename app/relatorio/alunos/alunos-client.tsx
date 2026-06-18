@@ -115,7 +115,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
           />
         </div>
         <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
-          <SelectTrigger className="h-12 w-36 text-sm" aria-label="Filtrar por turma">
+          <SelectTrigger className="h-9 w-36 text-sm" aria-label="Filtrar por turma">
             <SelectValue placeholder="Todas turmas" />
           </SelectTrigger>
           <SelectContent>
