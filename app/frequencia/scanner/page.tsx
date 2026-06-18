@@ -46,17 +46,19 @@ export default function ScannerPage() {
       setAtivo(true)
     } catch (e) {
       setAtivo(false)
+      // O html5-qrcode às vezes embrulha o DOMException, então olhamos name E mensagem.
       const nome = e instanceof Error ? e.name : ""
-      const erro =
-        typeof window !== "undefined" && !window.isSecureContext
-          ? "A câmera exige conexão segura (HTTPS). Acesse o site por https://."
-          : nome === "NotFoundError" || nome === "OverconstrainedError" || nome === "DevicesNotFoundError"
-            ? "Nenhuma câmera encontrada neste dispositivo."
-            : nome === "NotAllowedError" || nome === "PermissionDeniedError"
-              ? "Permissão de câmera negada. Libere o acesso nas configurações do navegador e tente de novo."
-              : nome === "NotReadableError" || nome === "TrackStartError"
-                ? "A câmera está em uso por outro aplicativo."
-                : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente."
+      const msg = (e instanceof Error ? e.message : String(e)).toLowerCase()
+      const inseguro = typeof window !== "undefined" && !window.isSecureContext
+      const erro = inseguro
+        ? "A câmera exige conexão segura (HTTPS). Acesse o site por https:// (ou localhost)."
+        : nome === "NotFoundError" || nome === "OverconstrainedError" || nome === "DevicesNotFoundError" || /not\s?found|no camera|sem câmera|overconstrained|requested device/.test(msg)
+          ? "Nenhuma câmera encontrada neste dispositivo."
+          : nome === "NotAllowedError" || nome === "PermissionDeniedError" || /not\s?allowed|permission|denied|negad/.test(msg)
+            ? "Permissão de câmera negada. Libere o acesso nas configurações do navegador e tente de novo."
+            : nome === "NotReadableError" || nome === "TrackStartError" || /not\s?readable|in use|track\s?start/.test(msg)
+              ? "A câmera está em uso por outro aplicativo. Feche os outros apps e tente de novo."
+              : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente."
       setResultado({ ok: false, erro })
     }
   }
@@ -69,15 +71,22 @@ export default function ScannerPage() {
 
   useEffect(() => () => { pararScanner() }, [])
 
-  const dataFormatada = format(new Date(dataParam + "T12:00:00"), "EEEE, dd/MM/yyyy", { locale: ptBR })
+  const dataFormatada = format(new Date(dataParam + "T12:00:00"), "EEEE, dd/MM/yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())
 
   return (
     <div className="flex flex-col items-center gap-6 p-6 max-w-md mx-auto">
       <div className="text-center">
         <h1 className="font-heading text-2xl font-bold">Scanner de Presença</h1>
-        <p className="text-sm text-muted-foreground capitalize">{dataFormatada}</p>
+        <p className="text-sm text-muted-foreground">{dataFormatada}</p>
       </div>
-      <div id="qr-reader" className="w-full rounded-xl overflow-hidden border" style={{ minHeight: 280 }} />
+      {/* alvo de montagem do html5-qrcode (precisa existir no DOM); só mostra borda quando ativo */}
+      <div id="qr-reader" className={ativo ? "w-full overflow-hidden rounded-xl border" : "hidden"} />
+      {!ativo && (
+        <div className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground" style={{ minHeight: 280 }}>
+          <QrCode className="size-10 opacity-40" />
+          <p className="text-sm">Toque em “Iniciar Scanner” para ler o QR Code.</p>
+        </div>
+      )}
       {resultado && (
         <div className={`w-full rounded-xl p-4 flex items-center gap-3 text-white ${resultado.ok ? "bg-success-600" : "bg-danger-600"}`}>
           {resultado.ok ? <CheckCircle className="size-6 shrink-0" /> : <AlertCircle className="size-6 shrink-0" />}
