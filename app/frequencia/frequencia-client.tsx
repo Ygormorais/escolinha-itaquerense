@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { format } from "date-fns"
 import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download } from "lucide-react"
 import { toast } from "sonner"
@@ -23,9 +23,9 @@ type PresencaValue = "Presente" | "Ausente" | "Justificado"
 
 const OPCOES: PresencaValue[] = ["Presente", "Ausente", "Justificado"]
 
-export function FrequenciaClient() {
+export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
   const today = format(new Date(), "yyyy-MM-dd")
-  const [turma, setTurma] = useState(TURMAS[0])
+  const [turma, setTurma] = useState(turmaInicial ?? TURMAS[0])
   const [data, setData] = useState(today)
   const [alunos, setAlunos] = useState<AlunoFrequencia[]>([])
   const [loaded, setLoaded] = useState(false)
@@ -45,6 +45,12 @@ export function FrequenciaClient() {
       setLoaded(true)
     })
   }
+
+  // Carrega a lista assim que a tela abre, para o lançamento manual já aparecer.
+  useEffect(() => {
+    handleLoad()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function togglePresenca(id: number, value: PresencaValue) {
     setPresencas((prev) => ({ ...prev, [id]: value }))

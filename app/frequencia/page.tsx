@@ -3,10 +3,21 @@ import { FrequenciaClient } from "./frequencia-client"
 import { ResumoFrequenciaClient } from "./resumo-client"
 import { EstatisticasFrequencia } from "./estatisticas-client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { db } from "@/lib/db"
+import { TURMAS } from "@/lib/constants"
 
 export const metadata = { title: "Frequência — Escolinha Itaquerense" }
 
-export default function FrequenciaPage() {
+export default async function FrequenciaPage() {
+  // Abre numa turma que tenha alunos (evita cair em Sub-7 vazia), na ordem de TURMAS.
+  const comAlunos = await db.aluno.findMany({
+    where: { status: "Ativo" },
+    select: { turma: true },
+    distinct: ["turma"],
+  })
+  const presentes = new Set(comAlunos.map((t) => t.turma))
+  const turmaInicial = TURMAS.find((t) => presentes.has(t)) ?? TURMAS[0]
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
@@ -22,7 +33,7 @@ export default function FrequenciaPage() {
           </TabsList>
         </div>
         <TabsContent value="registro" className="mt-4">
-          <FrequenciaClient />
+          <FrequenciaClient turmaInicial={turmaInicial} />
         </TabsContent>
         <TabsContent value="resumo" className="mt-4">
           <ResumoFrequenciaClient />
