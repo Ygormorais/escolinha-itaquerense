@@ -120,7 +120,7 @@ export function FrequenciaClient() {
     <div className="space-y-4 p-6 lg:p-8">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <Label className="text-muted-foreground">Turma</Label>
+          <Label className="block text-muted-foreground">Turma</Label>
           <Select value={turma} onValueChange={(v) => { setTurma(v ?? turma); setLoaded(false) }}>
             <SelectTrigger className="mt-1 h-12 w-36">
               <SelectValue />
@@ -131,7 +131,7 @@ export function FrequenciaClient() {
           </Select>
         </div>
         <div>
-          <Label htmlFor="freq-data" className="text-muted-foreground">Data</Label>
+          <Label htmlFor="freq-data" className="block text-muted-foreground">Data</Label>
           <Input
             id="freq-data"
             type="date"
