@@ -5,7 +5,7 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -79,12 +79,10 @@ export default async function UniformesPage() {
               <CardTitle className="text-lg">{aluno.nome}</CardTitle>
               <p className="text-sm text-muted-foreground">{aluno.turma}</p>
             </div>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/responsavel/solicitacoes">
-                <ShoppingBag className="size-4" />
-                Solicitar item
-              </Link>
-            </Button>
+            <Link href="/responsavel/solicitacoes" className={buttonVariants({ variant: "outline", size: "sm" })}>
+              <ShoppingBag className="size-4" />
+              Solicitar item
+            </Link>
           </CardHeader>
           <CardContent className="pt-4">
             {aluno.uniformes.length === 0 ? (
