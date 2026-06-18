@@ -38,6 +38,14 @@ describe("calcularHistorico", () => {
     expect(result[0].status).toBe("sem-registro")
   })
 
+  it("marca como pendente quando vencimento é hoje (fronteira timezone)", () => {
+    // dataVencimento como ISO completo (meia-noite UTC) — mesmo dia que hoje
+    const result = calcularHistorico([
+      { mesReferencia: "2026-06", dataPagamento: null, dataVencimento: "2026-06-18T00:00:00.000Z" },
+    ], hoje)
+    expect(result[0].status).toBe("pendente")
+  })
+
   it("label usa abreviação em português (jan, fev, ..., jun)", () => {
     const result = calcularHistorico([], hoje)
     expect(result[0].label).toBe("jun")

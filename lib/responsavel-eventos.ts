@@ -6,7 +6,6 @@ export type ItemAgendaDashboard = {
   titulo: string
   data: string // ISO string
   alunoNome?: string
-  escalacaoId?: number
   confirmacao?: string | null
 }
 
@@ -21,7 +20,7 @@ export async function buscarProximosEventos(
     db.escalacaoJogador.findMany({
       where: {
         convocadoEm: { not: null },
-        partida: { data: { gte: hoje } },
+        partida: { data: { gte: hoje, lte: limite } },
         aluno: { responsavelId },
       },
       select: {
@@ -37,6 +36,7 @@ export async function buscarProximosEventos(
       where: {
         data: { gte: hoje, lte: limite },
         status: { not: "cancelado" },
+        tipo: { not: "Jogo" },
       },
       orderBy: { data: "asc" },
       take: 5,
@@ -48,7 +48,6 @@ export async function buscarProximosEventos(
     titulo: `Jogo vs ${c.partida.adversario}`,
     data: c.partida.data.toISOString(),
     alunoNome: c.aluno.nome,
-    escalacaoId: c.id,
     confirmacao: c.confirmacao,
   }))
 

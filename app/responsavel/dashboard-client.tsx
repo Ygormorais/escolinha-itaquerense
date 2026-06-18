@@ -158,8 +158,8 @@ export function ResponsavelDashboardClient({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {proximosEventos.map((item, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-lg border border-border p-3">
+            {proximosEventos.map((item) => (
+              <div key={`${item.tipo}-${item.data}-${item.titulo}`} className="flex items-start gap-3 rounded-lg border border-border p-3">
                 <span className="text-xl leading-none">{item.tipo === "jogo" ? "🏆" : "📣"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">{item.titulo}</p>

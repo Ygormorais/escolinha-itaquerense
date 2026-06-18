@@ -26,10 +26,10 @@ export function calcularHistorico(pagamentos: PagamentoMin[], hoje: Date = new D
       status = "sem-registro"
     } else if (pag.dataPagamento) {
       status = "pago"
-    } else if (new Date(pag.dataVencimento) >= hoje) {
-      status = "pendente"
     } else {
-      status = "atrasado"
+      const diaVenc = pag.dataVencimento.slice(0, 10)
+      const diaHoje = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`
+      status = diaVenc >= diaHoje ? "pendente" : "atrasado"
     }
     meses.push({ mes, label, status })
   }
