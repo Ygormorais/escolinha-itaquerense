@@ -78,17 +78,21 @@ export async function reconciliarTransacao(
   await requireAuth()
   const transacao = await db.transacaoMaquina.findUnique({ where: { id } })
   if (!transacao) return { error: "Transação não encontrada" }
+  // Idempotência: não reconciliar de novo (criaria pagamento duplicado).
+  if (transacao.status === "reconciliado") return { error: "Transação já reconciliada" }
 
-  const pagamento = await db.pagamento.create({
-    data: {
-      alunoId,
-      mesReferencia,
-      dataVencimento: new Date(dataVencimento),
-      dataPagamento: transacao.dataTransacao,
-      formaPagamento: `Cartão ${transacao.tipo} (${transacao.bandeira})`,
-      valorRecebido: transacao.valor,
-      observacoes: observacoes || `Reconciliado via maquininha - ${transacao.nomeNoCartao}`,
-    },
+  const dados = {
+    dataPagamento: transacao.dataTransacao,
+    formaPagamento: `Cartão ${transacao.tipo} (${transacao.bandeira})`,
+    valorRecebido: transacao.valor,
+    observacoes: observacoes || `Reconciliado via maquininha - ${transacao.nomeNoCartao}`,
+  }
+  // upsert na unique (alunoId, mesReferencia): se a mensalidade do mês já existe,
+  // marca como paga via cartão (não duplica); senão cria.
+  const pagamento = await db.pagamento.upsert({
+    where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
+    update: dados,
+    create: { alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados },
   })
 
   await db.transacaoMaquina.update({
@@ -143,21 +147,21 @@ export async function reconciliarAuto() {
     const mes = `${t.dataTransacao.getFullYear()}-${String(t.dataTransacao.getMonth() + 1).padStart(2, "0")}`
     const dataVenc = new Date(t.dataTransacao.getFullYear(), t.dataTransacao.getMonth(), 10)
 
-    await db.pagamento.create({
-      data: {
-        alunoId: alunos[0].id,
-        mesReferencia: mes,
-        dataVencimento: dataVenc,
-        dataPagamento: t.dataTransacao,
-        formaPagamento: `Cartão ${t.tipo} (${t.bandeira})`,
-        valorRecebido: t.valor,
-        observacoes: `Reconciliado automático - ${t.nomeNoCartao}`,
-      },
+    const dadosAuto = {
+      dataPagamento: t.dataTransacao,
+      formaPagamento: `Cartão ${t.tipo} (${t.bandeira})`,
+      valorRecebido: t.valor,
+      observacoes: `Reconciliado automático - ${t.nomeNoCartao}`,
+    }
+    const pag = await db.pagamento.upsert({
+      where: { alunoId_mesReferencia: { alunoId: alunos[0].id, mesReferencia: mes } },
+      update: dadosAuto,
+      create: { alunoId: alunos[0].id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto },
     })
 
     await db.transacaoMaquina.update({
       where: { id: t.id },
-      data: { status: "reconciliado", alunoId: alunos[0].id },
+      data: { status: "reconciliado", alunoId: alunos[0].id, pagamentoId: pag.id },
     })
     reconciliados++
   }

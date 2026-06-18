@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 vi.mock("@/lib/db", () => {
   const db = {
     transacaoMaquina: { findFirst: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn() },
-    pagamento: { create: vi.fn() },
+    pagamento: { create: vi.fn(), upsert: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn() },
   }
   return { db }
@@ -35,7 +35,7 @@ const m = db as unknown as {
     aggregate: ReturnType<typeof vi.fn>
     count: ReturnType<typeof vi.fn>
   }
-  pagamento: { create: ReturnType<typeof vi.fn> }
+  pagamento: { create: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn> }
 }
 const mParseCSV = parseCSV as unknown as ReturnType<typeof vi.fn>
 const mParseTransacoes = parseTransacoes as unknown as ReturnType<typeof vi.fn>
@@ -54,6 +54,7 @@ beforeEach(() => {
   m.transacaoMaquina.findMany.mockResolvedValue([])
   m.transacaoMaquina.update.mockResolvedValue({})
   m.pagamento.create.mockResolvedValue({ id: 99 })
+  m.pagamento.upsert.mockResolvedValue({ id: 99 })
 })
 
 describe("importarCSV", () => {
@@ -87,20 +88,25 @@ describe("reconciliarTransacao", () => {
     expect(m.pagamento.create).not.toHaveBeenCalled()
   })
 
-  it("cria pagamento e marca a transação como reconciliada", async () => {
+  it("faz upsert do pagamento (chave aluno+mês) e marca a transação como reconciliada", async () => {
     const res = await reconciliarTransacao(1, 5, "Junho/2026", "2026-06-10")
     expect(res).toEqual({ success: true })
-    expect(m.pagamento.create.mock.calls[0][0].data).toMatchObject({
-      alunoId: 5,
-      mesReferencia: "Junho/2026",
-      valorRecebido: 200,
-      formaPagamento: "Cartão Crédito (Visa)",
-    })
+    const call = m.pagamento.upsert.mock.calls[0][0]
+    expect(call.where).toEqual({ alunoId_mesReferencia: { alunoId: 5, mesReferencia: "Junho/2026" } })
+    expect(call.update).toMatchObject({ valorRecebido: 200, formaPagamento: "Cartão Crédito (Visa)" })
+    expect(call.create).toMatchObject({ alunoId: 5, mesReferencia: "Junho/2026", valorRecebido: 200 })
+    expect(m.pagamento.create).not.toHaveBeenCalled()
     expect(m.transacaoMaquina.update.mock.calls[0][0].data).toMatchObject({
-      status: "reconciliado",
-      alunoId: 5,
-      pagamentoId: 99,
+      status: "reconciliado", alunoId: 5, pagamentoId: 99,
     })
+  })
+
+  it("não reconcilia de novo uma transação já reconciliada (idempotência)", async () => {
+    m.transacaoMaquina.findUnique.mockResolvedValue(tx({ status: "reconciliado" }))
+    const res = await reconciliarTransacao(1, 5, "Junho/2026", "2026-06-10")
+    expect(res).toEqual({ error: "Transação já reconciliada" })
+    expect(m.pagamento.upsert).not.toHaveBeenCalled()
+    expect(m.transacaoMaquina.update).not.toHaveBeenCalled()
   })
 })
 
