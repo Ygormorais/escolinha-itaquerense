@@ -4,14 +4,16 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   User, CreditCard,
-  CalendarCheck, Shirt, MessageSquare, Phone, ArrowRight, CircleCheck, Clock3,
+  CalendarCheck, Shirt, MessageSquare, Phone, ArrowRight, CircleCheck, Clock3, CalendarDays,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import { formatMoney, plural } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
+import type { ItemAgendaDashboard } from "@/lib/responsavel-eventos"
 import { HistoricoPagamentos } from "@/components/responsavel/historico-pagamentos"
 
 type Aluno = {
@@ -36,9 +38,11 @@ type Comunicado = { mensagem: string; createdAt: RscDate }
 export function ResponsavelDashboardClient({
   responsavel,
   comunicados,
+  proximosEventos,
 }: {
   responsavel: { nome: string; alunos: Aluno[] }
   comunicados: Comunicado[]
+  proximosEventos: ItemAgendaDashboard[]
 }) {
   const [whatsappNumber, setWhatsappNumber] = useState("5511999999999")
   useEffect(() => {
@@ -143,6 +147,49 @@ export function ResponsavelDashboardClient({
             </CardContent>
           </Card>
         </section>
+      )}
+
+      {proximosEventos.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CalendarDays className="size-5 text-brand-600" />
+              Próximos eventos
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {proximosEventos.map((item, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-lg border border-border p-3">
+                <span className="text-xl leading-none">{item.tipo === "jogo" ? "🏆" : "📣"}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm">{item.titulo}</p>
+                  {item.alunoNome && (
+                    <p className="text-xs text-muted-foreground">{item.alunoNome}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(item.data), "dd/MM/yyyy", { locale: ptBR })}
+                  </p>
+                </div>
+                {item.tipo === "jogo" && item.confirmacao === null && (
+                  <Link href="/responsavel/jogos" className="text-xs font-semibold text-brand-600 hover:underline shrink-0">
+                    Confirmar
+                  </Link>
+                )}
+              </div>
+            ))}
+            <Link href="/responsavel/calendario" className="flex items-center gap-1 text-xs font-semibold text-brand-600 hover:underline pt-1">
+              Ver calendário completo
+              <ArrowRight className="size-3" />
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+      {proximosEventos.length === 0 && (
+        <Card>
+          <CardContent className="py-6 text-center text-sm text-muted-foreground">
+            Nenhum evento nos próximos 30 dias.
+          </CardContent>
+        </Card>
       )}
 
       <div className="space-y-2">

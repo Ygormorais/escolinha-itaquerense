@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { ResponsavelDashboardClient } from "./dashboard-client"
+import { buscarProximosEventos } from "@/lib/responsavel-eventos"
 
 export const metadata = { title: "Portal do Responsável — Escolinha Itaquerense" }
 
@@ -35,5 +36,8 @@ export default async function ResponsavelPage() {
     take: 10,
   })
 
-  return <ResponsavelDashboardClient responsavel={responsavel} comunicados={comunicados} />
+  const turmasAlunos = responsavel.alunos.map((a) => a.turma)
+  const proximosEventos = await buscarProximosEventos(session.responsavelId!, turmasAlunos)
+
+  return <ResponsavelDashboardClient responsavel={responsavel} comunicados={comunicados} proximosEventos={proximosEventos} />
 }
