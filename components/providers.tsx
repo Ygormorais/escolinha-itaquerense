@@ -1,6 +1,6 @@
 "use client"
 
-import { ThemeProvider } from "next-themes"
+import { ThemeProvider } from "@/components/theme"
 import { usePathname } from "next/navigation"
 import { OnboardingProvider } from "@/components/onboarding/onboarding-context"
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour"
@@ -13,7 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isPublic = pathname === "/" || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+    <ThemeProvider>
       <OnboardingProvider totalSteps={8}>
         {children}
         {!isPublic && <OnboardingTour />}
