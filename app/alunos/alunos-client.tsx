@@ -336,7 +336,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Input
           placeholder="Buscar por nome..."
           value={search}
@@ -344,7 +344,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           className="max-w-xs"
         />
         <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="h-12 w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -355,7 +355,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           </SelectContent>
         </Select>
         <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="h-12 w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -366,12 +366,12 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         </Select>
         <div className="ml-auto flex gap-2">
           <Link href="/alunos/importar">
-            <Button variant="outline">
+            <Button variant="outline" className="h-12">
               <Upload className="size-4" />
               Importar CSV
             </Button>
           </Link>
-          <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0}>
+          <Button variant="outline" className="h-12" onClick={exportarCSV} disabled={alunos.length === 0}>
             <Download className="size-4" />
             Exportar CSV
           </Button>
