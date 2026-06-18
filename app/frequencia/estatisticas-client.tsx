@@ -10,6 +10,7 @@ import { getEstatisticasFrequencia } from "@/app/actions/frequencia"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { TrendingDown, Loader2 } from "lucide-react"
+import { filtrarEmQueda } from "@/lib/frequencia-alertas"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts"
@@ -48,7 +49,7 @@ export function EstatisticasFrequencia() {
     })
   }
 
-  const baixaFrequencia = ranking.filter((a) => a.pct < 75 && a.total >= 3)
+  const baixaFrequencia = filtrarEmQueda(ranking)
 
   return (
     <div className="space-y-4 p-6 lg:p-8">
@@ -74,7 +75,7 @@ export function EstatisticasFrequencia() {
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-warning-700 text-sm">
                   <TrendingDown className="size-4" />
-                  {plural(baixaFrequencia.length, "aluno", "alunos", "nenhum")} com frequência abaixo de 75%
+                  {plural(baixaFrequencia.length, "aluno", "alunos", "nenhum")} com frequência abaixo de 70%
                 </CardTitle>
               </CardHeader>
               <CardContent>
