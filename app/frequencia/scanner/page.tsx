@@ -65,7 +65,17 @@ export default function ScannerPage() {
 
   function pararScanner() {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    ;(scannerRef.current as { stop?: () => Promise<void> })?.stop?.().catch(() => {})
+    const s = scannerRef.current as { stop?: () => Promise<void>; getState?: () => number } | null
+    try {
+      // só para se estiver escaneando/pausado (2=SCANNING, 3=PAUSED); senão o
+      // html5-qrcode lança "Cannot stop, scanner is not running or paused" (síncrono).
+      const estado = s?.getState?.()
+      if (s?.stop && (estado === 2 || estado === 3)) {
+        s.stop().catch(() => {})
+      }
+    } catch {
+      /* ignora — scanner não estava ativo */
+    }
     setAtivo(false)
   }
 
