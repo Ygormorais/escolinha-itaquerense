@@ -84,9 +84,11 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="Escolinha Itaquerense" />
         <link rel="apple-touch-icon" href="/logo.png" sizes="500x500" />
+      </head>
+      <body className="flex h-full bg-background font-sans">
+        {/* JSON-LD (dados estruturados) — no body, conforme guia do Next; `<` escapado p/ evitar XSS */}
         <script
           type="application/ld+json"
-          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
@@ -102,11 +104,9 @@ export default async function RootLayout({
                 addressRegion: "SP",
                 addressCountry: "BR",
               },
-            }),
+            }).replace(/</g, "\\u003c"),
           }}
         />
-      </head>
-      <body className="flex h-full bg-background font-sans">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-brand-800 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none"

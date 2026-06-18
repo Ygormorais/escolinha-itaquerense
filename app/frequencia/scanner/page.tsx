@@ -19,29 +19,46 @@ export default function ScannerPage() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   async function iniciarScanner() {
-    const { Html5Qrcode } = await import("html5-qrcode")
-    const scanner = new Html5Qrcode("qr-reader")
-    scannerRef.current = scanner
-    await scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      async (decodedText: string) => {
-        await scanner.pause(true)
-        try {
-          const url = new URL(decodedText)
-          const id = url.pathname.split("/")[2]
-          const h = url.searchParams.get("h") ?? ""
-          const res = await registrarPresencaQr(id, h, dataParam)
-          setResultado(res)
-          timeoutRef.current = setTimeout(() => { setResultado(null); scanner.resume() }, 2000)
-        } catch {
-          setResultado({ ok: false, erro: "QR inválido" })
-          setTimeout(() => { setResultado(null); scanner.resume() }, 2000)
-        }
-      },
-      undefined
-    )
-    setAtivo(true)
+    setResultado(null)
+    try {
+      const { Html5Qrcode } = await import("html5-qrcode")
+      const scanner = new Html5Qrcode("qr-reader")
+      scannerRef.current = scanner
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        async (decodedText: string) => {
+          await scanner.pause(true)
+          try {
+            const url = new URL(decodedText)
+            const id = url.pathname.split("/")[2]
+            const h = url.searchParams.get("h") ?? ""
+            const res = await registrarPresencaQr(id, h, dataParam)
+            setResultado(res)
+            timeoutRef.current = setTimeout(() => { setResultado(null); scanner.resume() }, 2000)
+          } catch {
+            setResultado({ ok: false, erro: "QR inválido" })
+            setTimeout(() => { setResultado(null); scanner.resume() }, 2000)
+          }
+        },
+        undefined
+      )
+      setAtivo(true)
+    } catch (e) {
+      setAtivo(false)
+      const nome = e instanceof Error ? e.name : ""
+      const erro =
+        typeof window !== "undefined" && !window.isSecureContext
+          ? "A câmera exige conexão segura (HTTPS). Acesse o site por https://."
+          : nome === "NotFoundError" || nome === "OverconstrainedError" || nome === "DevicesNotFoundError"
+            ? "Nenhuma câmera encontrada neste dispositivo."
+            : nome === "NotAllowedError" || nome === "PermissionDeniedError"
+              ? "Permissão de câmera negada. Libere o acesso nas configurações do navegador e tente de novo."
+              : nome === "NotReadableError" || nome === "TrackStartError"
+                ? "A câmera está em uso por outro aplicativo."
+                : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente."
+      setResultado({ ok: false, erro })
+    }
   }
 
   function pararScanner() {
