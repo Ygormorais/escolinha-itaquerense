@@ -215,7 +215,7 @@ export function InadimplenciaClient({
             />
           </div>
           <Select value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="h-12 w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -224,7 +224,7 @@ export function InadimplenciaClient({
             </SelectContent>
           </Select>
           <Select value={nivelFilter} onValueChange={(v) => { if (v) setNivelFilter(v) }}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="h-12 w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

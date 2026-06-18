@@ -106,7 +106,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
           />
         </div>
         <Select value={filtroStatus} onValueChange={(v) => { if (v) setFiltroStatus(v) }}>
-          <SelectTrigger className="w-44" aria-label="Filtrar por status">
+          <SelectTrigger className="h-12 w-44" aria-label="Filtrar por status">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

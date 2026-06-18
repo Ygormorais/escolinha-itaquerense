@@ -146,7 +146,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
           />
         </div>
         <Select value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
-          <SelectTrigger className="w-44" aria-label="Filtrar por turma">
+          <SelectTrigger className="h-12 w-44" aria-label="Filtrar por turma">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

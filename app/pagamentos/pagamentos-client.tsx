@@ -418,7 +418,7 @@ export function PagamentosClient({
           className="max-w-xs"
         />
         <Select value={statusFilter} onValueChange={(v) => { if (v) setStatusFilter(v) }}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="h-12 w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -429,7 +429,7 @@ export function PagamentosClient({
           </SelectContent>
         </Select>
         <Select value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="h-12 w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -437,11 +437,11 @@ export function PagamentosClient({
             {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={exportarCSV} disabled={filtered.length === 0}>
+        <Button variant="outline" className="h-12" onClick={exportarCSV} disabled={filtered.length === 0}>
           <Download className="size-4" />
           Exportar CSV
         </Button>
-        <Button variant="outline" onClick={() => router.push("/pagamentos/importar")}>
+        <Button variant="outline" className="h-12" onClick={() => router.push("/pagamentos/importar")}>
           <FileUp className="size-4" />
           Importar OFX
         </Button>
