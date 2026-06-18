@@ -48,9 +48,13 @@ function AniversarianteRow({ aniversariante: a }: { aniversariante: Aniversarian
     if (!tel) { toast.error("Aluno sem telefone cadastrado"); return }
     start(async () => {
       const msg = `🎉 Parabéns, ${a.nome.split(" ")[0]}! Hoje você completa ${anos} anos! Desejamos muita saúde, alegria e gols pela frente. Abraços da equipe! ⚽`
-      const res = await enviarWhatsApp(a.id, tel, msg)
-      if ("success" in res) toast.success("Parabéns enviado!")
-      else toast.error("Falha ao enviar")
+      try {
+        const res = await enviarWhatsApp(a.id, tel, msg)
+        if ("success" in res) toast.success("Parabéns enviado!")
+        else toast.error(res.error || "Falha ao enviar")
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Falha ao enviar")
+      }
     })
   }
 

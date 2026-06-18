@@ -1,8 +1,10 @@
-// v2 — estratégia NETWORK-FIRST.
+// v3 — estratégia NETWORK-FIRST.
 // O v1 usava cache-first (`cached || fetch`), o que servia JS/HTML antigos
 // indefinidamente e fazia mudanças no app não aparecerem (botões "sem efeito").
 // Agora sempre buscamos da rede quando online; o cache é só fallback offline.
-const CACHE_NAME = "escolinha-v2"
+// v3: o catch nunca devolve undefined ao respondWith (causava
+// "Failed to convert value to 'Response'" e falhas silenciosas em server actions).
+const CACHE_NAME = "escolinha-v3"
 
 const STATIC_ASSETS = [
   "/login",
@@ -30,8 +32,19 @@ self.addEventListener("fetch", (event) => {
         }
         return response
       })
-      // offline: cai para o que estiver em cache
-      .catch(() => caches.match(event.request))
+      // offline (ou fetch rejeitado): cai para o cache; sem cache, devolve uma
+      // Response válida — respondWith(undefined) lança "Failed to convert value to 'Response'".
+      .catch(async () => {
+        const cached = await caches.match(event.request)
+        return (
+          cached ??
+          new Response("Sem conexão", {
+            status: 503,
+            statusText: "Service Unavailable",
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+          })
+        )
+      })
   )
 })
 
