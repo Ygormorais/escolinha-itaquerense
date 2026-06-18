@@ -226,7 +226,7 @@ export default async function DashboardPage({
         action={
             <div className="flex items-center gap-2">
               <GerarMesButton mes={mesAtual} />
-              <MonthPicker mes={mesSelecionado} basePath="/" />
+              <MonthPicker mes={mesSelecionado} basePath="/dashboard" />
             </div>
           }
       />
