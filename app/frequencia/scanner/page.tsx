@@ -22,10 +22,20 @@ export default function ScannerPage() {
     setResultado(null)
     try {
       const { Html5Qrcode } = await import("html5-qrcode")
+      // Lista as câmeras e escolhe a traseira se houver, senão a frontal.
+      // (Pedir { facingMode: "environment" } direto falha em notebooks que só
+      // têm webcam frontal, como se não houvesse câmera.)
+      const cameras = await Html5Qrcode.getCameras()
+      if (!cameras || cameras.length === 0) {
+        setResultado({ ok: false, erro: "Nenhuma câmera encontrada neste dispositivo." })
+        return
+      }
+      const traseira = cameras.find((c) => /back|rear|environment|traseira/i.test(c.label))
+      const cameraId = (traseira ?? cameras[cameras.length - 1]).id
       const scanner = new Html5Qrcode("qr-reader")
       scannerRef.current = scanner
       await scanner.start(
-        { facingMode: "environment" },
+        cameraId,
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText: string) => {
           await scanner.pause(true)
