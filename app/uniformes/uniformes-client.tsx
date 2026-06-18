@@ -216,6 +216,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
                       <DialogTrigger
                         className="inline-flex items-center justify-center size-7 rounded-md hover:bg-muted transition-colors"
                         onClick={() => setSelectedAluno(aluno)}
+                        aria-label={`Adicionar item de uniforme para ${aluno.nome}`}
                       >
                         <Plus className="size-4" />
                       </DialogTrigger>

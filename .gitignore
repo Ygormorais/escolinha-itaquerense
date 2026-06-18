@@ -48,6 +48,8 @@ next-env.d.ts
 
 # database
 prisma/dev.db
+prisma/dev.db.backup-*
+prisma/*.db-journal
 .prisma/
 
 # IDE backup files

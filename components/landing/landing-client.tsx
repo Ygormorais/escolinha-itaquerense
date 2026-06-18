@@ -5,6 +5,9 @@ import { Inter, Playfair_Display } from "next/font/google"
 import Link from "next/link"
 import { JogosCarrossel } from "./jogos-carrossel"
 import type { CategoriaJogos, HeroView } from "@/lib/landing/jogos"
+import type { EstatisticasClube } from "@/lib/landing/stats"
+import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
+import { temSobre, temGaleria, temDepoimentos } from "@/lib/landing/conteudo"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,7 +58,9 @@ const css = `
   @keyframes wa-pulse{0%,100%{box-shadow:0 4px 16px rgba(37,211,102,.4)}50%{box-shadow:0 4px 24px rgba(37,211,102,.7),0 0 0 8px rgba(37,211,102,.12)}}
   .lp header.site{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);box-shadow:0 1px 0 var(--border), var(--shadow-sm)}
   .lp .header-row{display:flex;align-items:center;height:76px;gap:14px;overflow:hidden}
-  .lp .header-row nav.main{flex:1;min-width:0;overflow:hidden}
+  .lp .header-row nav.main{flex:1;min-width:0;overflow:hidden;order:1}
+  .lp .header-row .access{order:2}
+  .lp .header-row .burger{order:3}
   .lp .brand{display:flex;align-items:center;gap:14px;flex-shrink:0}
   .lp .brand .shield{width:52px;height:52px}
   .lp .brand .name{font-family:var(--font-body),sans-serif;line-height:1.1}
@@ -68,6 +73,7 @@ const css = `
   .lp nav.main>ul>li>a::after{content:'';position:absolute;left:14px;right:14px;bottom:20px;height:2px;background:var(--red);transform:scaleX(0);transition:var(--transition);border-radius:2px}
   .lp nav.main>ul>li:hover>a::after{transform:scaleX(1)}
   .lp .burger{display:none;font-size:26px;color:var(--red);background:none;border:none;cursor:pointer}
+  .lp nav.main>ul>li.nav-access{display:none}
   .lp .hero{background:radial-gradient(ellipse at 80% 10%, rgba(255,255,255,.07) 0%, transparent 60%),linear-gradient(135deg, var(--red-deep) 0%, var(--red) 50%, var(--red-dark) 100%);color:#fff;position:relative;overflow:hidden}
   .lp .hero::before{content:'';position:absolute;right:-80px;top:-80px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%)}
   .lp .hero::after{content:'';position:absolute;left:-60px;bottom:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%)}
@@ -103,8 +109,9 @@ const css = `
     .lp nav.main>ul{flex-direction:column;align-items:stretch}
     .lp nav.main>ul>li>a{padding:16px 20px;border-bottom:1px solid var(--border)}
     .lp nav.main>ul>li>a::after{display:none}
+    .lp nav.main>ul>li.nav-access{display:block}
     .lp .burger{display:block}
-    .lp .cat-grid{grid-template-columns:repeat(3,1fr)}
+    .lp .cat-grid{grid-template-columns:repeat(2,1fr)}
     .lp .foot-grid{grid-template-columns:1fr 1fr}
     .lp .hero h1{font-size:38px}
     .lp section{padding:56px 0}
@@ -128,6 +135,7 @@ const css = `
   .lp .btn-access:hover{background:var(--red);color:#fff}
   .lp .btn-access.primary{background:var(--red);color:#fff}
   .lp .btn-access.primary:hover{background:var(--red-warm);border-color:var(--red-warm);transform:translateY(-1px);box-shadow:0 6px 20px rgba(198,40,40,.35)}
+  /* No mobile: só Matrícula (primary) fica no header; Portal/Entrar migram para o menu via .nav-access */
   @media(max-width:900px){.lp .access .btn-access{display:none}.lp .access .btn-access.primary{display:flex}}
   .lp .jc{background:var(--red-deep);color:#fff;padding:40px 0}
   .lp .jc .section-title{color:#fff;border-left-color:#fff;margin-bottom:20px}
@@ -148,16 +156,51 @@ const css = `
   .lp .jc-empty{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:18px 0 6px}
   .lp .jc-empty .jc-badge{width:48px;height:48px;opacity:.95}
   .lp .jc-empty p{max-width:460px;font-size:15px;opacity:.92;line-height:1.5}
+  .lp .stats{background:var(--bg-muted);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .lp .stats .container{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding-top:48px;padding-bottom:48px}
+  .lp .stat{text-align:center}
+  .lp .stat b{display:block;font-family:var(--font-heading),Georgia,serif;font-size:42px;font-weight:800;color:var(--red);line-height:1;letter-spacing:-1px}
+  .lp .stat span{display:block;margin-top:8px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted)}
+  @media(max-width:600px){.lp .stats .container{grid-template-columns:repeat(2,1fr);gap:20px}.lp .stat b{font-size:34px}}
+  .lp .sobre .container{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+  .lp .sobre .txt p{color:var(--text-muted);margin-bottom:14px;line-height:1.7}
+  .lp .sobre .txt p:last-child{margin-bottom:0}
+  .lp .sobre .foto{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md)}
+  .lp .sobre .foto img{width:100%;height:100%;object-fit:cover}
+  @media(max-width:900px){.lp .sobre .container{grid-template-columns:1fr;gap:28px}}
+  .lp .galeria{background:var(--bg-muted)}
+  .lp .galeria .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .lp .galeria .item{aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);transition:var(--transition)}
+  .lp .galeria .item:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+  .lp .galeria .item img{width:100%;height:100%;object-fit:cover}
+  @media(max-width:900px){.lp .galeria .grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.lp .galeria .grid{grid-template-columns:1fr}}
+  .lp .depo .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .lp .depo .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+  .lp .depo .quote{font-family:var(--font-heading),Georgia,serif;color:var(--red);font-size:40px;line-height:1;margin-bottom:8px}
+  .lp .depo .texto{color:var(--text);line-height:1.7;margin-bottom:18px}
+  .lp .depo .autor b{display:block;font-size:14px;font-weight:700}
+  .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
+  @media(max-width:900px){.lp .depo .grid{grid-template-columns:1fr}}
+  .lp .modalidades{border-top:1px solid var(--border)}
 `
 
 export function LandingClient({
   categorias,
   whatsapp,
   hero,
+  stats,
+  sobre,
+  galeria,
+  depoimentos,
 }: {
   categorias: CategoriaJogos[]
   whatsapp?: string
   hero: HeroView
+  stats: EstatisticasClube
+  sobre: SobreConteudo | null
+  galeria: FotoGaleria[]
+  depoimentos: Depoimento[]
 }) {
   const [navOpen, setNavOpen] = useState(false)
   const waNumber = whatsapp?.replace(/\D/g, "") || "5511999999999"
@@ -176,6 +219,12 @@ export function LandingClient({
             <span className="name"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
           </Link>
 
+          <div className="access">
+            <a href="/matricula" className="btn-access primary">Matrícula</a>
+            <a href="/responsavel" className="btn-access">Portal do Responsável</a>
+            <a href="/login" className="btn-access" aria-label="Área administrativa"><i className="ti ti-lock"></i> Entrar</a>
+          </div>
+
           <button className="burger" aria-label="Menu" aria-expanded={navOpen} aria-controls="nav" onClick={() => setNavOpen(o => !o)}><i className="ti ti-menu-2"></i></button>
 
           <nav className={"main" + (navOpen ? " open" : "")} id="nav">
@@ -183,14 +232,10 @@ export function LandingClient({
               <li><a href="/turmas">Turmas &amp; Horários</a></li>
               <li><a href="#jogos">Jogos</a></li>
               <li><a href="/resultados">Resultados</a></li>
+              <li className="nav-access"><a href="/responsavel">Portal do Responsável</a></li>
+              <li className="nav-access"><a href="/login">Entrar</a></li>
             </ul>
           </nav>
-
-          <div className="access">
-            <a href="/matricula" className="btn-access primary">Matrícula</a>
-            <a href="/responsavel" className="btn-access">Portal do Responsável</a>
-            <a href="/login" className="btn-access" aria-label="Área administrativa"><i className="ti ti-lock"></i> Entrar</a>
-          </div>
 
         </div>
       </header>
@@ -205,10 +250,80 @@ export function LandingClient({
         </div>
       </div>
 
+      {/* ===== Números reais (só métricas públicas de competição; guardado) ===== */}
+      {stats.temAlgo && (
+        <div className="stats">
+          <div className="container">
+            {stats.jogosTemporada > 0 && (
+              <div className="stat"><b>{stats.jogosTemporada}</b><span>Jogos na temporada</span></div>
+            )}
+            {stats.vitorias > 0 && (
+              <div className="stat"><b>{stats.vitorias}</b><span>Vitórias</span></div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ===== 3. JOGOS ===== */}
       <div id="jogos">
         <JogosCarrossel categorias={categorias} />
       </div>
+
+      {/* ===== Sobre / História (guardado) ===== */}
+      {temSobre() && sobre && (
+        <section className="sobre">
+          <div className="container">
+            <div className="txt">
+              <h2 className="section-title">{sobre.titulo}</h2>
+              {sobre.paragrafos.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+            {sobre.foto && (
+              <div className="foto">
+                <Image src={sobre.foto} alt={sobre.titulo} width={560} height={420} />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ===== Galeria (guardado) ===== */}
+      {temGaleria() && (
+        <section className="galeria">
+          <div className="container">
+            <h2 className="section-title">Galeria</h2>
+            <div className="grid">
+              {galeria.map((f, i) => (
+                <div className="item" key={i}>
+                  <Image src={f.src} alt={f.alt} width={400} height={300} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ===== Depoimentos (guardado) ===== */}
+      {temDepoimentos() && (
+        <section className="depo">
+          <div className="container">
+            <h2 className="section-title">O que dizem os pais</h2>
+            <div className="grid">
+              {depoimentos.map((d, i) => (
+                <div className="card" key={i}>
+                  <div className="quote" aria-hidden="true">&ldquo;</div>
+                  <p className="texto">{d.texto}</p>
+                  <div className="autor">
+                    <b>{d.autor}</b>
+                    {d.categoria && <span>{d.categoria}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ===== 4. MEMBERSHIP BANNER ===== */}
       <section className="membership">
@@ -220,7 +335,7 @@ export function LandingClient({
       </section>
 
       {/* ===== 5. MODALIDADES ===== */}
-      <section>
+      <section className="modalidades">
         <div className="container">
           <h2 className="section-title">Modalidades</h2>
           <div className="cat-grid">

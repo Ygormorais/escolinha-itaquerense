@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
@@ -237,6 +237,13 @@ export function PagamentosClient({
   const [bulkForma, setBulkForma] = useState("PIX")
   const [bulkData, setBulkData] = useState(format(new Date(), "yyyy-MM-dd"))
   const [bulkPending, startBulk] = useTransition()
+
+  // A navegação por mês (router.push ?mes=) não remonta este componente, então
+  // a seleção sobreviveria à troca de mês e o lote agiria sobre IDs fora da tela.
+  // Limpar ao trocar de mês mantém a seleção sempre dentro do mês visível.
+  useEffect(() => {
+    setSelected(new Set())
+  }, [mes])
 
   function handleGerar() {
     startGerando(async () => {

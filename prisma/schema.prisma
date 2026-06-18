@@ -57,6 +57,7 @@ model Pagamento {
   externalUrl    String?
   createdAt      DateTime           @default(now())
 
+  @@unique([alunoId, mesReferencia])
   @@index([alunoId])
   @@index([mesReferencia])
   @@index([dataPagamento])

@@ -110,6 +110,10 @@ export async function gerarMensalidadesMes(
     revalidatePath("/")
     return result
   } catch (e) {
+    // P2002: o unique(alunoId, mesReferencia) rejeitou uma corrida cron×manual (sem cobrança dupla).
+    if (typeof e === "object" && e !== null && "code" in e && (e as { code?: string }).code === "P2002") {
+      return { error: "As mensalidades deste mês já foram geradas (por outro processo). Recarregue a página." }
+    }
     return { error: e instanceof Error ? e.message : "Erro ao gerar mensalidades" }
   }
 }

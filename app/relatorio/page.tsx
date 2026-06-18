@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +10,6 @@ import { TrendingUp, TrendingDown, Wallet, AlertCircle } from "lucide-react"
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { RelatorioHeader, RelatorioChart, RelatorioPrintStyle } from "./relatorio-client"
-import { formatMoney } from "@/lib/utils"
 
 export const metadata = { title: "Relatório Financeiro — Escolinha Itaquerense" }
 

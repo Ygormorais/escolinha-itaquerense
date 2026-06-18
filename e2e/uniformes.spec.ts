@@ -77,7 +77,7 @@ test.describe("Uniformes — gerenciar itens de um aluno", () => {
     const hasPrimeiraLinha = await primeiraLinha.isVisible({ timeout: 3000 }).catch(() => false)
     if (hasPrimeiraLinha) {
       // Botão com DialogTrigger (Plus icon)
-      const btnPlus = primeiraLinha.locator('button, [role="button"]').last()
+      const btnPlus = primeiraLinha.getByRole("button", { name: /Adicionar item de uniforme/i })
       await btnPlus.click()
       const dialog = page.getByRole("dialog")
       await expect(dialog).toBeVisible()
@@ -93,7 +93,7 @@ test.describe("Uniformes — gerenciar itens de um aluno", () => {
     const primeiraLinha = page.locator("table tbody tr").first()
     const hasPrimeiraLinha = await primeiraLinha.isVisible({ timeout: 3000 }).catch(() => false)
     if (hasPrimeiraLinha) {
-      const btnPlus = primeiraLinha.locator('button, [role="button"]').last()
+      const btnPlus = primeiraLinha.getByRole("button", { name: /Adicionar item de uniforme/i })
       await btnPlus.click()
       const dialog = page.getByRole("dialog")
       await expect(dialog).toBeVisible()
@@ -117,7 +117,7 @@ test.describe("Uniformes — gerenciar itens de um aluno", () => {
     const primeiraLinha = page.locator("table tbody tr").first()
     const hasPrimeiraLinha = await primeiraLinha.isVisible({ timeout: 3000 }).catch(() => false)
     if (hasPrimeiraLinha) {
-      const btnPlus = primeiraLinha.locator('button, [role="button"]').last()
+      const btnPlus = primeiraLinha.getByRole("button", { name: /Adicionar item de uniforme/i })
       await btnPlus.click()
       const dialog = page.getByRole("dialog")
       await expect(dialog).toBeVisible()
