@@ -59,7 +59,7 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
           <Input placeholder="Buscar..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
         </div>
         <Select value={filtro} onValueChange={(v) => setFiltro(v ?? "todas")}>
-          <SelectTrigger className="h-10 w-44" aria-label="Filtrar por status">
+          <SelectTrigger className="h-12 w-44" aria-label="Filtrar por status">
             <SelectValue placeholder="Todas" />
           </SelectTrigger>
           <SelectContent>

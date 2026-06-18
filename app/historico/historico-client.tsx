@@ -123,7 +123,7 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
           <Input className="pl-8" placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={filtroTipo} onValueChange={(v) => setFiltroTipo(v ?? "todos")}>
-          <SelectTrigger className="h-10 w-40" aria-label="Filtrar por tipo">
+          <SelectTrigger className="h-12 w-40" aria-label="Filtrar por tipo">
             <SelectValue placeholder="Todos tipos" />
           </SelectTrigger>
           <SelectContent>
@@ -135,7 +135,7 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
         </Select>
         {usuarios.length > 0 && (
           <Select value={filtroUsuario} onValueChange={(v) => setFiltroUsuario(v ?? "todos")}>
-            <SelectTrigger className="h-10 w-44" aria-label="Filtrar por usuário">
+            <SelectTrigger className="h-12 w-44" aria-label="Filtrar por usuário">
               <SelectValue placeholder="Todos usuários" />
             </SelectTrigger>
             <SelectContent>

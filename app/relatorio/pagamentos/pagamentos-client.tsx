@@ -195,7 +195,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
 
         {/* Turma */}
         <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
-          <SelectTrigger className="h-9 w-36 text-sm">
+          <SelectTrigger className="h-12 w-36 text-sm">
             <SelectValue placeholder="Turma" />
           </SelectTrigger>
           <SelectContent>
@@ -206,7 +206,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
 
         {/* Canal */}
         <Select value={filtroCanal} onValueChange={(v) => setFiltroCanal((v ?? "todos") as PaymentChannel | "todos")}>
-          <SelectTrigger className="h-9 w-40 text-sm">
+          <SelectTrigger className="h-12 w-40 text-sm">
             <SelectValue placeholder="Canal" />
           </SelectTrigger>
           <SelectContent>

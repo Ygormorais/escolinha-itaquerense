@@ -95,7 +95,7 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
 
       <div className="flex flex-wrap gap-3">
         <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
-          <SelectTrigger className="h-10 w-36 text-sm" aria-label="Filtrar por turma">
+          <SelectTrigger className="h-12 w-36 text-sm" aria-label="Filtrar por turma">
             <SelectValue placeholder="Todas turmas" />
           </SelectTrigger>
           <SelectContent>
