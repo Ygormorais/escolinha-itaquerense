@@ -19,8 +19,25 @@ export default function ScannerPage() {
   const scannerRef = useRef<unknown>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Distingue "nenhuma webcam no aparelho" de "tem webcam mas o acesso está
+  // bloqueado" (no Windows: Configurações › Privacidade › Câmera desligado).
+  async function mensagemSemCamera(): Promise<string> {
+    let videoCount = 0
+    try {
+      const devs = await navigator.mediaDevices?.enumerateDevices?.()
+      videoCount = (devs ?? []).filter((d) => d.kind === "videoinput").length
+    } catch { /* ignora */ }
+    return videoCount > 0
+      ? "Câmera detectada, mas o navegador não conseguiu acessá-la. Libere o acesso (cadeado na barra de endereço) e, no Windows, ative Configurações › Privacidade › Câmera."
+      : "Nenhuma câmera encontrada. Conecte/ative uma webcam ou use “Lançar presença manualmente”."
+  }
+
   async function iniciarScanner() {
     setResultado(null)
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      setResultado({ ok: false, erro: "A câmera exige conexão segura (HTTPS). Acesse por https:// ou localhost." })
+      return
+    }
     try {
       const { Html5Qrcode } = await import("html5-qrcode")
       // Lista as câmeras e escolhe a traseira se houver, senão a frontal.
@@ -28,7 +45,7 @@ export default function ScannerPage() {
       // têm webcam frontal, como se não houvesse câmera.)
       const cameras = await Html5Qrcode.getCameras()
       if (!cameras || cameras.length === 0) {
-        setResultado({ ok: false, erro: "Nenhuma câmera encontrada neste dispositivo." })
+        setResultado({ ok: false, erro: await mensagemSemCamera() })
         return
       }
       const traseira = cameras.find((c) => /back|rear|environment|traseira/i.test(c.label))
@@ -60,17 +77,15 @@ export default function ScannerPage() {
       // O html5-qrcode às vezes embrulha o DOMException, então olhamos name E mensagem.
       const nome = e instanceof Error ? e.name : ""
       const msg = (e instanceof Error ? e.message : String(e)).toLowerCase()
-      const inseguro = typeof window !== "undefined" && !window.isSecureContext
-      const erro = inseguro
-        ? "A câmera exige conexão segura (HTTPS). Acesse o site por https:// (ou localhost)."
-        : nome === "NotFoundError" || nome === "OverconstrainedError" || nome === "DevicesNotFoundError" || /not\s?found|no camera|sem câmera|overconstrained|requested device/.test(msg)
-          ? "Nenhuma câmera encontrada neste dispositivo."
-          : nome === "NotAllowedError" || nome === "PermissionDeniedError" || /not\s?allowed|permission|denied|negad/.test(msg)
-            ? "Permissão de câmera negada. Libere o acesso nas configurações do navegador e tente de novo."
-            : nome === "NotReadableError" || nome === "TrackStartError" || /not\s?readable|in use|track\s?start/.test(msg)
-              ? "A câmera está em uso por outro aplicativo. Feche os outros apps e tente de novo."
-              : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente."
-      setResultado({ ok: false, erro })
+      if (nome === "NotAllowedError" || nome === "PermissionDeniedError" || /not\s?allowed|permission|denied|negad/.test(msg)) {
+        setResultado({ ok: false, erro: "Permissão de câmera negada. Libere o acesso (cadeado na barra de endereço) e, no Windows, ative Configurações › Privacidade › Câmera." })
+      } else if (nome === "NotReadableError" || nome === "TrackStartError" || /not\s?readable|in use|track\s?start/.test(msg)) {
+        setResultado({ ok: false, erro: "A câmera está em uso por outro aplicativo. Feche os outros apps e tente de novo." })
+      } else if (nome === "NotFoundError" || nome === "OverconstrainedError" || nome === "DevicesNotFoundError" || /not\s?found|no camera|overconstrained|requested device/.test(msg)) {
+        setResultado({ ok: false, erro: await mensagemSemCamera() })
+      } else {
+        setResultado({ ok: false, erro: "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente." })
+      }
     }
   }
 
