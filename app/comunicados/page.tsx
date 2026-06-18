@@ -44,7 +44,7 @@ export default async function ComunicadosPage() {
     <div className="space-y-6 p-6 lg:p-8">
       <PageHeader
         title="Comunicados"
-        description="Envie avisos em massa para turmas via WhatsApp"
+        description="Abra o WhatsApp com o aviso pronto para enviar a um grupo ou lista de transmissão"
       />
       <ComunicadoMassa />
 

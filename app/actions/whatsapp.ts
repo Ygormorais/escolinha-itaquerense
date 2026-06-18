@@ -135,6 +135,28 @@ export async function enviarComunicadoMassa(
   }
 }
 
+/** Registra no histórico um comunicado aberto via WhatsApp (wa.me).
+ *  O envio em si acontece no app do WhatsApp (o usuário escolhe o grupo/lista). */
+export async function registrarComunicadoWhatsApp(
+  mensagem: string
+): Promise<{ ok: true } | { error: string }> {
+  await requireAuth()
+  const texto = mensagem.trim()
+  if (!texto) return { error: "Mensagem vazia" }
+  await db.whatsAppMensagem.create({
+    data: {
+      telefone: "grupo",
+      mensagem: texto,
+      tipo: "text",
+      direcao: "outgoing",
+      status: "sent",
+      origem: "comunicado",
+    },
+  })
+  revalidatePath("/comunicados")
+  return { ok: true }
+}
+
 export async function getHistoricoWhatsApp(alunoId: number) {
   return db.whatsAppMensagem.findMany({
     where: { alunoId },
