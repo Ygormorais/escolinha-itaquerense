@@ -15,7 +15,7 @@ export default async function ResponsavelPage() {
       alunos: {
         where: { status: "Ativo" },
         include: {
-          pagamentos: { orderBy: { dataVencimento: "desc" }, take: 5 },
+          pagamentos: { orderBy: { dataVencimento: "desc" }, take: 6, select: { mesReferencia: true, dataVencimento: true, dataPagamento: true, valorRecebido: true, formaPagamento: true } },
           frequencias: { orderBy: { data: "desc" }, take: 10 },
           uniformes: true,
         },

@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
 import { formatMoney, plural } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
+import { HistoricoPagamentos } from "@/components/responsavel/historico-pagamentos"
 
 type Aluno = {
   id: number
@@ -21,6 +22,7 @@ type Aluno = {
   desconto: number
   pagamentos: {
     mesReferencia: string
+    dataVencimento: RscDate
     dataPagamento: RscDate | null
     valorRecebido: number | null
     formaPagamento: string | null
@@ -227,8 +229,16 @@ export function ResponsavelDashboardClient({
                 </div>
               </div>
 
+              <div className="mt-6">
+                <HistoricoPagamentos pagamentos={aluno.pagamentos.map(p => ({
+                  mesReferencia: p.mesReferencia,
+                  dataPagamento: p.dataPagamento ? String(p.dataPagamento) : null,
+                  dataVencimento: String(p.dataVencimento),
+                }))} />
+              </div>
+
               {aluno.pagamentos.length > 0 && (
-                <div className="mt-6 border-t border-black/5 pt-5">
+                <div className="mt-4 border-t border-black/5 pt-5">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-500)]">
                     Últimos Pagamentos
                   </p>
