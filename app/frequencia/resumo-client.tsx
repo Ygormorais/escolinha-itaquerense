@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { MonthInput } from "@/components/ui/month-input"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
@@ -103,12 +104,11 @@ export function ResumoFrequenciaClient() {
         </div>
         <div>
           <Label htmlFor="resumo-mes" className="text-muted-foreground">Mês</Label>
-          <Input
+          <MonthInput
             id="resumo-mes"
-            type="month"
             value={mes}
-            onChange={(e) => { setMes(e.target.value); setLoaded(false) }}
-            className="mt-1 w-40"
+            onChange={(v) => { setMes(v); setLoaded(false) }}
+            className="mt-1"
           />
         </div>
         <Button onClick={handleCarregar} disabled={loading} variant="outline">

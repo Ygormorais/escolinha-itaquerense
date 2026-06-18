@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { plural } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
+import { MonthInput } from "@/components/ui/month-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getEstatisticasFrequencia } from "@/app/actions/frequencia"
@@ -54,12 +55,11 @@ export function EstatisticasFrequencia() {
       <div className="flex items-end gap-3">
         <div>
           <Label htmlFor="estat-mes" className="text-muted-foreground">Mês</Label>
-          <Input
+          <MonthInput
             id="estat-mes"
-            type="month"
             value={mes}
-            onChange={(e) => { setMes(e.target.value); setLoaded(false) }}
-            className="mt-1 w-40"
+            onChange={(v) => { setMes(v); setLoaded(false) }}
+            className="mt-1"
           />
         </div>
         <Button onClick={handleCarregar} disabled={loading} variant="outline">

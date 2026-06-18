@@ -8,6 +8,7 @@ import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptT
 import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { MonthInput } from "@/components/ui/month-input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -309,7 +310,7 @@ export function CustosClient({
       <div className="flex flex-wrap items-center gap-4">
         <div>
           <Label htmlFor="custos-mes" className="text-muted-foreground">Mês</Label>
-          <Input id="custos-mes" type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
+          <MonthInput id="custos-mes" value={mes} onChange={(v) => router.push(`/custos?mes=${v}`)} className="mt-1" />
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Total do mês</p>

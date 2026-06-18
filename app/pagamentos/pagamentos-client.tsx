@@ -8,6 +8,7 @@ import { formatMoney, plural, sanitizeCSVCell } from "@/lib/utils"
 import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download, FileUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { MonthInput } from "@/components/ui/month-input"
 import { Label } from "@/components/ui/label"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -449,7 +450,7 @@ export function PagamentosClient({
       <div className="flex items-center gap-4">
         <div>
           <Label htmlFor="pag-mes" className="text-muted-foreground">Mês de referência</Label>
-          <Input id="pag-mes" type="month" value={mes} onChange={handleMesChange} className="mt-1 w-40" />
+          <MonthInput id="pag-mes" value={mes} onChange={(v) => router.push(`/pagamentos?mes=${v}`)} className="mt-1" />
         </div>
         <Button
           variant="outline"

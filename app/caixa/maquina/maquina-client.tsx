@@ -6,6 +6,7 @@ import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-r
 import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { MonthInput } from "@/components/ui/month-input"
 import { Card, CardContent } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
@@ -231,11 +232,10 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
             </div>
             <div className="space-y-2">
               <Label htmlFor="mes-ref">Mês de Referência</Label>
-              <Input
+              <MonthInput
                 id="mes-ref"
-                type="month"
                 value={mesRef}
-                onChange={(e) => setMesRef(e.target.value)}
+                onChange={setMesRef}
               />
             </div>
             <div className="space-y-2">
