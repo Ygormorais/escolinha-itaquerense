@@ -33,10 +33,17 @@ export function getEvolutionApiKey(): string | null {
   return null
 }
 
+/** Comparação de tokens em tempo constante (evita timing side-channel). */
+function safeEqual(a: string | null | undefined, b: string): boolean {
+  if (!a) return false
+  const ba = Buffer.from(a)
+  const bb = Buffer.from(b)
+  return ba.length === bb.length && timingSafeEqual(ba, bb)
+}
+
 export function verifyBearerSecret(request: Request, secret: string | null): boolean {
   if (!secret) return false
-  const auth = request.headers.get("authorization")
-  return auth === `Bearer ${secret}`
+  return safeEqual(request.headers.get("authorization"), `Bearer ${secret}`)
 }
 
 export function verifyEvolutionAuth(request: Request, apiKey: string | null): boolean {
@@ -44,7 +51,7 @@ export function verifyEvolutionAuth(request: Request, apiKey: string | null): bo
   const auth =
     request.headers.get("apikey") ||
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
-  return auth === apiKey
+  return safeEqual(auth, apiKey)
 }
 
 export const env = {
