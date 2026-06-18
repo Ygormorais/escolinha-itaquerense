@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Shirt, ShoppingBag } from "lucide-react"
+import { ArrowLeft, ShoppingBag } from "lucide-react"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Badge } from "@/components/ui/badge"
