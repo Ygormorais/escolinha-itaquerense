@@ -15,6 +15,7 @@ const links = [
   { href: "/responsavel/classificacao", label: "Classificação" },
   { href: "/responsavel/frequencia", label: "Frequência" },
   { href: "/responsavel/desempenho", label: "Desempenho" },
+  { href: "/responsavel/uniformes", label: "Uniforme" },
   { href: "/responsavel/boletim", label: "Boletim" },
   { href: "/responsavel/carteirinha", label: "Carteirinha" },
   { href: "/responsavel/historia", label: "História" },
