@@ -33,13 +33,11 @@ export function MonthPicker({ mes, basePath = "/caixa" }: { mes: string; basePat
         name="mes"
         defaultValue={mes}
         key={mes}
+        onChange={(e) => { if (e.target.value) navigate(e.target.value) }}
         className="rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
       />
       <Button type="button" size="icon" variant="outline" onClick={() => shift(1)} aria-label="Próximo mês">
         <ChevronRight className="size-4" />
-      </Button>
-      <Button type="submit" size="sm" variant="outline">
-        Ir
       </Button>
     </form>
   )
