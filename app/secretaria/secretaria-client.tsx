@@ -9,8 +9,6 @@ import { ptBR } from "date-fns/locale"
 import Link from "next/link"
 import { cn, plural } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
-import { useTransition } from "react"
-import { enviarWhatsApp } from "@/app/actions/whatsapp"
 import { toast } from "sonner"
 
 type Evento = {
@@ -40,22 +38,15 @@ const tipoStyles: Record<string, string> = {
 }
 
 function AniversarianteRow({ aniversariante: a }: { aniversariante: Aniversariante }) {
-  const [pending, start] = useTransition()
   const anos = new Date().getFullYear() - new Date(a.dataNascimento).getFullYear()
   const tel = a.telefone?.replace(/\D/g, "") ?? ""
 
   function enviarParabens() {
     if (!tel) { toast.error("Aluno sem telefone cadastrado"); return }
-    start(async () => {
-      const msg = `🎉 Parabéns, ${a.nome.split(" ")[0]}! Hoje você completa ${anos} anos! Desejamos muita saúde, alegria e gols pela frente. Abraços da equipe! ⚽`
-      try {
-        const res = await enviarWhatsApp(a.id, tel, msg)
-        if ("success" in res) toast.success("Parabéns enviado!")
-        else toast.error(res.error || "Falha ao enviar")
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Falha ao enviar")
-      }
-    })
+    const msg = `🎉 Parabéns, ${a.nome.split(" ")[0]}! Hoje você completa ${anos} anos! Desejamos muita saúde, alegria e gols pela frente. Abraços da equipe! ⚽`
+    // wa.me com o número do aluno (55 = Brasil, se ainda não tiver) e a mensagem pronta
+    const numero = tel.startsWith("55") ? tel : `55${tel}`
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer")
   }
 
   return (
@@ -72,8 +63,8 @@ function AniversarianteRow({ aniversariante: a }: { aniversariante: Aniversarian
       <div className="flex items-center gap-2">
         <Badge variant="outline" className="text-[10px]">{anos} anos</Badge>
         {tel && (
-          <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs text-success-600 hover:text-success-600" onClick={enviarParabens} disabled={pending}>
-            🎂 {pending ? "…" : "Parabéns"}
+          <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs text-success-600 hover:text-success-600" onClick={enviarParabens}>
+            🎂 Parabéns
           </Button>
         )}
       </div>
