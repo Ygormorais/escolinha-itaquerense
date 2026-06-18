@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { CheckCircle, AlertCircle, QrCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -120,7 +121,13 @@ export default function ScannerPage() {
         </div>
       )}
       {!ativo ? (
-        <Button onClick={iniciarScanner} className="w-full gap-2"><QrCode className="size-4" /> Iniciar Scanner</Button>
+        <div className="flex w-full flex-col gap-2">
+          <Button onClick={iniciarScanner} className="w-full gap-2"><QrCode className="size-4" /> Iniciar Scanner</Button>
+          {/* Sem câmera (ex.: desktop) dá pra marcar presença pela aba Registro */}
+          <Link href="/frequencia" className="w-full">
+            <Button variant="outline" className="w-full">Lançar presença manualmente</Button>
+          </Link>
+        </div>
       ) : (
         <Button variant="outline" onClick={pararScanner} className="w-full">Parar Scanner</Button>
       )}
