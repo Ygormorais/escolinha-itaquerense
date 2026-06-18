@@ -4,13 +4,14 @@ import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck, Inbox, CheckCircle2 } from "lucide-react"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, Inbox, CheckCircle2, TrendingDown } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import dynamic from "next/dynamic"
 import { MonthPicker } from "@/app/caixa/month-picker"
 import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
+import { getQtdeAlunosEmQueda } from "@/app/actions/frequencia"
 import { TURMAS } from "@/lib/constants"
 import { AlertBanner, type AlertIcon } from "@/components/dashboard/alert-banner"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -67,6 +68,7 @@ export default async function DashboardPage({
     mesAnteriorCustos,
     mensalidadesVencidas,
     alunosInadimplentes,
+    alunosEmQueda,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -156,6 +158,7 @@ export default async function DashboardPage({
       select: { alunoId: true },
       distinct: ["alunoId"],
     }).then((rows) => rows.length),
+    getQtdeAlunosEmQueda(mesSelecionado),
   ])
 
   const chartData = last6Months.map((mes) => {
@@ -274,6 +277,14 @@ export default async function DashboardPage({
           icon={AlertCircle}
           variant={alunosInadimplentes > 0 ? "danger" : "success"}
           href="/inadimplencia"
+        />
+        <StatCard
+          title="Frequência em queda"
+          value={alunosEmQueda}
+          description="Alunos abaixo de 70% no mês"
+          icon={TrendingDown}
+          variant={alunosEmQueda > 0 ? "danger" : "success"}
+          href="/frequencia"
         />
         <StatCard
           title="Presença Média"

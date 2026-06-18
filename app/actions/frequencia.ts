@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { filtrarEmQueda } from "@/lib/frequencia-alertas"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -154,4 +155,9 @@ export async function getEstatisticasFrequencia(mes: string) {
   const heatmap = porDia.map((d) => ({ ...d, pct: d.total > 0 ? Math.round((d.presentes / d.total) * 100) : null }))
 
   return { ranking, heatmap }
+}
+
+export async function getQtdeAlunosEmQueda(mes: string): Promise<number> {
+  const { ranking } = await getEstatisticasFrequencia(mes)
+  return filtrarEmQueda(ranking).length
 }
