@@ -49,7 +49,7 @@ export default async function CalendarioPage({
   })
   const alunos = responsavel?.alunos ?? []
   const { ano, mesNum } = resolverMes(mesParam)
-  const tituloMes = format(new Date(ano, mesNum - 1, 1), "MMMM 'de' yyyy", { locale: ptBR })
+  const tituloMes = format(new Date(ano, mesNum - 1, 1), "MMMM 'de' yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())
 
   const Hero = (
     <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
@@ -122,7 +122,7 @@ export default async function CalendarioPage({
         <Link href={q(prev, alunoSel.id)} className="inline-flex size-9 items-center justify-center rounded-full border border-black/10 hover:bg-brand-50" aria-label="Mês anterior">
           <ChevronLeft className="size-4" />
         </Link>
-        <span className="text-base font-semibold capitalize">{tituloMes}</span>
+        <span className="text-base font-semibold">{tituloMes}</span>
         <Link href={q(next, alunoSel.id)} className="inline-flex size-9 items-center justify-center rounded-full border border-black/10 hover:bg-brand-50" aria-label="Próximo mês">
           <ChevronRight className="size-4" />
         </Link>
