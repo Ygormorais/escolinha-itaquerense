@@ -40,6 +40,12 @@ export default function ScannerPage() {
     }
     try {
       const { Html5Qrcode } = await import("html5-qrcode")
+      // Pede a câmera mais permissiva PRIMEIRO: força o prompt de permissão e
+      // "acorda" o dispositivo. Sem isso, alguns navegadores retornam 0 câmeras
+      // porque a permissão nunca foi solicitada. Liberamos o stream em seguida —
+      // o html5-qrcode reabre a câmera ao iniciar.
+      const probe = await navigator.mediaDevices.getUserMedia({ video: true })
+      probe.getTracks().forEach((t) => t.stop())
       // Lista as câmeras e escolhe a traseira se houver, senão a frontal.
       // (Pedir { facingMode: "environment" } direto falha em notebooks que só
       // têm webcam frontal, como se não houvesse câmera.)
