@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Nunito } from "next/font/google"
-import { headers } from "next/headers"
 import "./globals.css"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
-import { AdminShell } from "@/components/layout/admin-shell"
+import { ShellGate } from "@/components/layout/shell-gate"
 import { db } from "@/lib/db"
 
 const inter = Inter({
@@ -67,10 +66,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const pathname = (await headers()).get("x-pathname") ?? "/"
   const session = await getSession()
-  const showAdminShell = session.authenticated && !pathname.startsWith("/responsavel") && !pathname.startsWith("/matricula") && pathname !== "/login" && pathname !== "/"
-  const pendingEscalacoes = showAdminShell
+  // A decisão de mostrar o shell do admin é feita no cliente (ShellGate), porque
+  // o root layout não re-renderiza em navegação client-side.
+  const pendingEscalacoes = session.authenticated
     ? await db.chatSession.count({ where: { bloqueado: true } })
     : 0
 
@@ -123,15 +122,13 @@ export default async function RootLayout({
         </a>
         <PWARegister />
         <Providers>
-          {showAdminShell ? (
-            <AdminShell role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"} pendingEscalacoes={pendingEscalacoes}>
-              {children}
-            </AdminShell>
-          ) : (
-            <div id="main-content" className="flex flex-1 flex-col">
-              {children}
-            </div>
-          )}
+          <ShellGate
+            authenticated={session.authenticated}
+            role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}
+            pendingEscalacoes={pendingEscalacoes}
+          >
+            {children}
+          </ShellGate>
           <Toaster richColors position="top-right" />
         </Providers>
       </body>
