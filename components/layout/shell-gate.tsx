@@ -29,7 +29,8 @@ export function ShellGate({
     !pathname.startsWith("/responsavel") &&
     !pathname.startsWith("/matricula") &&
     pathname !== "/login" &&
-    pathname !== "/"
+    pathname !== "/" &&
+    pathname !== "/frequencia/scanner" // tela cheia (uso tipo quiosque)
 
   if (showAdmin) {
     return (
