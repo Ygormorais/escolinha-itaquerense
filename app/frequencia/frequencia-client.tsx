@@ -122,7 +122,7 @@ export function FrequenciaClient() {
         <div>
           <Label className="text-muted-foreground">Turma</Label>
           <Select value={turma} onValueChange={(v) => { setTurma(v ?? turma); setLoaded(false) }}>
-            <SelectTrigger className="mt-1 w-36">
+            <SelectTrigger className="mt-1 h-12 w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -140,11 +140,11 @@ export function FrequenciaClient() {
             className="mt-1 w-40"
           />
         </div>
-        <Button onClick={handleLoad} disabled={loading} variant="outline">
+        <Button onClick={handleLoad} disabled={loading} variant="outline" className="h-12">
           {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Carregar"}
         </Button>
         <Link href={`/frequencia/scanner?data=${data}`}>
-          <Button variant="outline" size="sm" className="gap-2"><QrCode className="size-4" /> Scanner QR</Button>
+          <Button variant="outline" className="h-12 gap-2"><QrCode className="size-4" /> Scanner QR</Button>
         </Link>
       </div>
 
