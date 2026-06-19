@@ -30,6 +30,7 @@ export function ShellGate({
     !pathname.startsWith("/matricula") &&
     pathname !== "/login" &&
     pathname !== "/" &&
+    pathname !== "/horarios" &&
     pathname !== "/frequencia/scanner" // tela cheia (uso tipo quiosque)
 
   if (showAdmin) {

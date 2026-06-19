@@ -7,7 +7,6 @@ import { JogosCarrossel } from "./jogos-carrossel"
 import type { CategoriaJogos, HeroView } from "@/lib/landing/jogos"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { temSobre, temGaleria, temDepoimentos } from "@/lib/landing/conteudo"
-import type { TurmaInfo } from "@/lib/landing/turmas"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -177,18 +176,6 @@ const css = `
   .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
   @media(max-width:900px){.lp .depo .grid{grid-template-columns:1fr}}
   .lp .modalidades{border-top:1px solid var(--border)}
-  .lp .turmas-sec{background:var(--bg-muted);border-top:1px solid var(--border)}
-  .lp .turmas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-  .lp .turma-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 22px;box-shadow:var(--shadow-sm)}
-  .lp .turma-card .turma-nome{font-family:var(--font-body),sans-serif;font-size:15px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px;margin-bottom:14px}
-  .lp .turma-card .turma-nome i{font-size:18px;opacity:.85}
-  .lp .turma-card .horario-list{display:flex;flex-direction:column;gap:7px}
-  .lp .turma-card .horario-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted)}
-  .lp .turma-card .horario-item i{font-size:14px;color:var(--red);opacity:.7;flex-shrink:0}
-  .lp .turmas-vazio{text-align:center;color:var(--text-muted);font-size:14px;padding:20px 0}
-  .lp .turmas-cta{text-align:center;margin-top:36px}
-  @media(max-width:900px){.lp .turmas-grid{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:600px){.lp .turmas-grid{grid-template-columns:1fr}}
 `
 
 export function LandingClient({
@@ -198,7 +185,6 @@ export function LandingClient({
   sobre,
   galeria,
   depoimentos,
-  turmas = [],
 }: {
   categorias: CategoriaJogos[]
   whatsapp?: string
@@ -206,7 +192,6 @@ export function LandingClient({
   sobre: SobreConteudo | null
   galeria: FotoGaleria[]
   depoimentos: Depoimento[]
-  turmas?: TurmaInfo[]
 }) {
   const [navOpen, setNavOpen] = useState(false)
   const waNumber = whatsapp?.replace(/\D/g, "") || "5511999999999"
@@ -235,7 +220,7 @@ export function LandingClient({
 
           <nav className={"main" + (navOpen ? " open" : "")} id="nav">
             <ul>
-              <li><a href="#turmas">Turmas &amp; Horários</a></li>
+              <li><a href="/horarios">Turmas &amp; Horários</a></li>
               <li><a href="#jogos">Jogos</a></li>
               <li><a href="/resultados">Resultados</a></li>
               <li className="nav-access"><a href="/responsavel">Portal do Responsável</a></li>
@@ -326,50 +311,14 @@ export function LandingClient({
         </div>
       </section>
 
-      {/* ===== 5. TURMAS & HORÁRIOS ===== */}
-      <section id="turmas" className="turmas-sec">
-        <div className="container">
-          <h2 className="section-title">Turmas &amp; Horários</h2>
-          {turmas.length === 0 ? (
-            <p className="turmas-vazio">
-              Entre em contato pelo WhatsApp para saber sobre turmas e horários disponíveis.
-            </p>
-          ) : (
-            <div className="turmas-grid">
-              {turmas.map((t) => (
-                <div className="turma-card" key={t.turma}>
-                  <div className="turma-nome">
-                    <i className="ti ti-ball-football"></i>
-                    {t.turma}
-                  </div>
-                  <div className="horario-list">
-                    {t.horarios.map((h) => (
-                      <div className="horario-item" key={h}>
-                        <i className="ti ti-clock"></i>
-                        {h}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="turmas-cta">
-            <a href="/matricula" className="btn btn-white" style={{ background: "var(--red)", color: "#fff", borderColor: "var(--red)" }}>
-              Fazer Matrícula
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== 6. MODALIDADES ===== */}
+      {/* ===== 5. MODALIDADES ===== */}
       <section className="modalidades">
         <div className="container">
           <h2 className="section-title">Modalidades</h2>
           <div className="cat-grid">
-            <a className="cat" href="#turmas"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futebol</b><span>Masculino &amp; Feminino</span></a>
-            <a className="cat" href="#turmas"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal Federado</b><span>Liga Local</span></a>
-            <a className="cat" href="#turmas"><div className="circle"><i className="ti ti-school"></i></div><b>Escolinha</b><span>Formação de Base</span></a>
+            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futebol</b><span>Masculino &amp; Feminino</span></a>
+            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal Federado</b><span>Liga Local</span></a>
+            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-school"></i></div><b>Escolinha</b><span>Formação de Base</span></a>
           </div>
         </div>
       </section>
@@ -381,7 +330,7 @@ export function LandingClient({
             <Image className="shield" src="/logo.png" alt="E.C. Itaquerense" width={68} height={68} />
             <p>E.C. Itaquerense — site oficial. Tradição, paixão e formação esportiva em cada modalidade. Vamos juntos por mais conquistas.</p>
           </div>
-          <div className="fcol"><h4>Futebol</h4><a href="#turmas">Turmas &amp; Horários</a><a href="/resultados">Resultados &amp; Classificação</a></div>
+          <div className="fcol"><h4>Futebol</h4><a href="/horarios">Turmas &amp; Horários</a><a href="/resultados">Resultados &amp; Classificação</a></div>
           <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a></div>
         </div>
         <div className="foot-bottom">
