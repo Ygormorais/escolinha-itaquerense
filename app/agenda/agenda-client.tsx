@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useState, useTransition } from "react"
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addDays, format, isSameMonth, isSameDay, getDay,
@@ -65,8 +65,14 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
   const [saving, startSaving] = useTransition()
   const [navegando, startNav] = useTransition()
 
-  // ao trocar de mês (via URL), limpa o dia selecionado do mês anterior
-  useEffect(() => { setSelectedDate(null) }, [mes, ano])
+  // ao trocar de mês (via URL), limpa o dia selecionado do mês anterior — ajuste
+  // de estado durante o render (padrão React p/ "estado derivado de prop"), sem effect
+  const monthKey = `${ano}-${mes}`
+  const [prevMonthKey, setPrevMonthKey] = useState(monthKey)
+  if (monthKey !== prevMonthKey) {
+    setPrevMonthKey(monthKey)
+    setSelectedDate(null)
+  }
 
   const [form, setForm] = useState({
     titulo: "", tipo: "Treino", data: format(new Date(), "yyyy-MM-dd"),

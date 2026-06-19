@@ -37,10 +37,13 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
   const thisYear = now.getFullYear()
   const thisMonth = now.getMonth()
 
-  useEffect(() => {
-    const { year } = parseYM(value)
-    setViewYear(year)
-  }, [value])
+  // segue o ano da prop quando ela muda externamente — ajuste de estado durante
+  // o render (padrão React p/ "estado derivado de prop"), sem effect
+  const [prevValue, setPrevValue] = useState(value)
+  if (value !== prevValue) {
+    setPrevValue(value)
+    setViewYear(curYear)
+  }
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

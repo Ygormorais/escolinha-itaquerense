@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
@@ -241,10 +241,13 @@ export function PagamentosClient({
 
   // A navegação por mês (router.push ?mes=) não remonta este componente, então
   // a seleção sobreviveria à troca de mês e o lote agiria sobre IDs fora da tela.
-  // Limpar ao trocar de mês mantém a seleção sempre dentro do mês visível.
-  useEffect(() => {
+  // Limpar ao trocar de mês mantém a seleção sempre dentro do mês visível — ajuste
+  // de estado durante o render (padrão React p/ "estado derivado de prop"), sem effect.
+  const [prevMes, setPrevMes] = useState(mes)
+  if (mes !== prevMes) {
+    setPrevMes(mes)
     setSelected(new Set())
-  }, [mes])
+  }
 
   function handleGerar() {
     startGerando(async () => {

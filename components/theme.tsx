@@ -34,6 +34,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         : document.documentElement.classList.contains("dark")
           ? "dark"
           : "light"
+    // Sincronização pós-hidratação obrigatória: SSR e a 1ª render no cliente
+    // precisam ser "light" (senão dá mismatch de hidratação); só depois do mount
+    // podemos ler localStorage/DOM e ajustar. É o uso legítimo de setState em effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(inicial)
   }, [])
 
