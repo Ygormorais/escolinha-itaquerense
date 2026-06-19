@@ -60,6 +60,7 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/matricula") ||
     pathname.startsWith("/qr/") ||
     pathname.startsWith("/resultados") ||
+    pathname.startsWith("/horarios") ||
     pathname.startsWith("/responsavel") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||

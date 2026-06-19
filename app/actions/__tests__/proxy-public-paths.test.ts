@@ -17,6 +17,10 @@ describe("isPublicPath — rotas externas com auth própria", () => {
     "/api/push/subscribe",
     "/api/config/public",
     "/api/upload/matricula",
+    "/horarios",
+    "/matricula",
+    "/resultados",
+    "/responsavel",
   ])("%s é pública (proxy não bloqueia)", (path) => {
     expect(isPublicPath(path)).toBe(true)
   })
