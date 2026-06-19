@@ -28,34 +28,22 @@ test.describe("Custos — smoke e carregamento", () => {
 })
 
 test.describe("Custos — filtro de mês", () => {
-  test("input de mês está visível e com valor atual", async ({ page }) => {
+  test("seletor de mês está visível com o mês atual", async ({ page }) => {
     await page.goto("/custos")
-    const inputMes = page.locator('input[type="month"]')
-    await expect(inputMes).toBeVisible()
-    const valor = await inputMes.inputValue()
-    // deve ter formato YYYY-MM
-    expect(valor).toMatch(/^\d{4}-\d{2}$/)
+    const seletorMes = page.locator("#custos-mes")
+    await expect(seletorMes).toBeVisible()
+    // o MonthInput customizado é um <button> cujo rótulo é "<Mês> de <ano>"
+    await expect(seletorMes).toHaveText(/de \d{4}/)
   })
 
   test("alterar o mês navega para URL com query ?mes=", async ({ page }) => {
     await page.goto("/custos")
-    const inputMes = page.locator('input[type="month"]')
-    // Corrida de hidratação: um set pré-hidratação vira o lastValue do
-    // value-tracker do React e o evento com o mesmo valor é deduplicado para
-    // sempre. Garante value ≠ lastValue em toda iteração: decoy pelo setter
-    // rastreado + alvo pelo setter do prototype; repete até o onChange
-    // disparar o router.push e a URL refletir o mês.
-    await expect
-      .poll(async () => {
-        await inputMes.evaluate((el: HTMLInputElement, valor) => {
-          el.value = "2024-12" // decoy via setter rastreado (atualiza o tracker)
-          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!
-          setter.call(el, valor) // alvo bypassando o tracker
-          el.dispatchEvent(new Event("input", { bubbles: true }))
-        }, "2025-01")
-        return page.url()
-      }, { timeout: 10000 })
-      .toMatch(/mes=2025-01/)
+    // Dirige o MonthInput customizado (substituiu o <input type="month"> nativo):
+    // abre o popover, volta um ano e escolhe janeiro.
+    await page.locator("#custos-mes").click()
+    await page.getByRole("button", { name: "Ano anterior" }).click()
+    await page.getByRole("button", { name: "jan", exact: true }).click()
+    await expect(page).toHaveURL(/[?&]mes=\d{4}-01/)
     await expect(page.locator("table")).toBeVisible()
   })
 })

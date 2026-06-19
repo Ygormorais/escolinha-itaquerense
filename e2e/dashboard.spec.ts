@@ -10,7 +10,8 @@ test.describe("Dashboard", () => {
     await expect(page.locator("text=Alunos Ativos")).toBeVisible()
     await expect(page.locator("text=Receita do Mês")).toBeVisible()
     await expect(page.locator("text=Inadimplentes")).toBeVisible()
-    await expect(page.locator("text=Presença Média")).toBeVisible()
+    // exact: o card de alerta de frequência também contém "Presença média ..."
+    await expect(page.getByText("Presença Média", { exact: true })).toBeVisible()
   })
 
   test("mostra gráficos (lazy-loaded)", async ({ page }) => {
@@ -27,7 +28,9 @@ test.describe("Dashboard", () => {
   })
 
   test("MonthPicker está visível", async ({ page }) => {
-    const monthPicker = page.locator("main").locator('input[type="month"]')
-    await expect(monthPicker.first()).toBeVisible()
+    // O MonthPicker usa o MonthInput customizado (<button>) entre os controles
+    // de mês anterior/próximo — não há mais <input type="month"> nativo.
+    const main = page.locator("main")
+    await expect(main.getByRole("button", { name: "Mês anterior" }).first()).toBeVisible()
   })
 })

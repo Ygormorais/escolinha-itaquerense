@@ -42,9 +42,16 @@ test("trocar o mês de referência limpa a seleção em lote", async ({ page }) 
   await checkboxes.first().check()
   await expect(page.getByText(/selecionado/i)).toBeVisible({ timeout: 3000 })
 
-  // Troca para um mês futuro distante (sem dados) via o input type="month"
-  const mesInput = page.locator('input[type="month"]')
-  await mesInput.fill("2030-01")
+  // Troca para um mês futuro distante (sem dados) via o seletor MonthInput
+  // customizado (substituiu o <input type="month"> nativo): abre o popover,
+  // avança o ano até 2030 e escolhe janeiro.
+  await page.locator("#pag-mes").click()
+  const proximoAno = page.getByRole("button", { name: "Próximo ano" })
+  for (let i = 0; i < 15; i++) {
+    if ((await page.getByText("2030", { exact: true }).count()) > 0) break
+    await proximoAno.click()
+  }
+  await page.getByRole("button", { name: "jan", exact: true }).click()
   await page.waitForLoadState("networkidle")
 
   // A barra de seleção deve ter sumido — a seleção foi limpa ao trocar de mês
