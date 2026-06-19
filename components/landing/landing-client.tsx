@@ -256,6 +256,24 @@ export function LandingClient({
         <NoticiasClubCarrossel items={noticiasClube} />
       )}
 
+      <section>
+        <div className="container">
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
+            <div>
+              <h2 className="section-title" style={{ marginBottom: "10px" }}>Acompanhe o clube</h2>
+              <p style={{ color: "var(--text-muted)", maxWidth: "640px", lineHeight: 1.7 }}>
+                Veja noticias, horarios, resultados e os principais movimentos da escolinha em um fluxo unico e sempre atualizado.
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <Link href="/noticias" className="btn-access primary">Notícias</Link>
+              <Link href="/resultados" className="btn-access">Resultados</Link>
+              <Link href="/horarios" className="btn-access">Horários</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ===== Sobre / História (guardado) ===== */}
       {temSobre() && sobre && (
         <section className="sobre">

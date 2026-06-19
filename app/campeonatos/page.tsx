@@ -14,10 +14,15 @@ export default async function CampeonatosPage() {
     },
     orderBy: { dataInicio: "desc" },
   })
+  const abertos = campeonatos.filter((c) => c.status === "aberto").length
+  const comFpfs = campeonatos.filter((c) => c.fpfsEventoId != null).length
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <PageHeader title="Campeonatos" description="Gerenciamento de campeonatos, taxas e inscrições" />
+      <PageHeader
+        title="Campeonatos"
+        description={`${campeonatos.length} competicao(oes) · ${abertos} abertas · ${comFpfs} com integracao FPFS`}
+      />
       <CampeonatoClient campeonatos={campeonatos} />
     </div>
   )

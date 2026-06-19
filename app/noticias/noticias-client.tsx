@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Newspaper, Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2 } from "lucide-react"
+import { Newspaper, Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2, Search } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { toast } from "sonner"
@@ -46,12 +46,29 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
   const router = useRouter()
   const [creating, startCreating] = useTransition()
   const [saving, startSaving] = useTransition()
+  const [search, setSearch] = useState("")
+  const [categoriaFilter, setCategoriaFilter] = useState("todas")
+  const [statusFilter, setStatusFilter] = useState("todas")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Noticia | null>(null)
   const [form, setForm] = useState(BLANK)
 
   const publicadas = noticias.filter((n) => n.publicado).length
   const destaques = noticias.filter((n) => n.destaque).length
+  const filtradas = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return noticias.filter((n) => {
+      if (q) {
+        const hay = [n.titulo, n.subtitulo ?? ""].join(" ").toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      if (categoriaFilter !== "todas" && n.categoria !== categoriaFilter) return false
+      if (statusFilter === "publicadas" && !n.publicado) return false
+      if (statusFilter === "rascunhos" && n.publicado) return false
+      if (statusFilter === "destaques" && !n.destaque) return false
+      return true
+    })
+  }, [categoriaFilter, noticias, search, statusFilter])
 
   function openCreate() { setForm(BLANK); setEditTarget(null); setDialogOpen(true) }
   function openEdit(n: Noticia) {
@@ -99,16 +116,53 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
           <CardContent><p className="text-2xl font-bold font-heading text-warning-600">{destaques}</p></CardContent></Card>
       </div>
 
-      <div className="flex justify-end">
-        <Button onClick={openCreate}><Plus className="size-4" /> Nova Notícia</Button>
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative min-w-[220px] flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por titulo ou subtitulo..."
+              className="pl-9"
+            />
+          </div>
+          <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas categorias</SelectItem>
+              {CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todos status</SelectItem>
+              <SelectItem value="publicadas">Publicadas</SelectItem>
+              <SelectItem value="rascunhos">Rascunhos</SelectItem>
+              <SelectItem value="destaques">Destaques</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={openCreate}><Plus className="size-4" /> Nova Notícia</Button>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {filtradas.length} de {noticias.length} noticia(s) visiveis
+        </p>
       </div>
 
       {noticias.length === 0 && (
         <EmptyState icon={Newspaper} title="Nenhuma notícia cadastrada" description="Crie a primeira publicação do clube." />
       )}
+      {noticias.length > 0 && filtradas.length === 0 && (
+        <EmptyState icon={Newspaper} title="Nenhuma notícia encontrada" description="Ajuste a busca ou os filtros para encontrar outra publicacao." />
+      )}
 
       <div className="grid gap-3">
-        {noticias.map((n) => (
+        {filtradas.map((n) => (
           <Card key={n.id} className="flex flex-row items-center gap-4 px-5 py-4">
             {/* Categoria color bar */}
             <div className="w-1 self-stretch rounded-full bg-brand-600 flex-shrink-0" />

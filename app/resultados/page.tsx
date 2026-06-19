@@ -78,6 +78,11 @@ const css = `
     font-weight:800;color:var(--text);line-height:1.2
   }
   .res-camp-meta{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .res-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 28px}
+  .res-kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 1px 4px rgba(26,26,46,.05)}
+  .res-kpi .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);margin-bottom:6px}
+  .res-kpi .val{font-family:var(--font-heading),Georgia,serif;font-size:28px;font-weight:800;line-height:1;color:var(--text)}
+  .res-kpi .sub{font-size:12px;color:var(--text-muted);margin-top:6px}
 
   /* badges */
   .bdg{display:inline-flex;align-items:center;font-size:10px;font-weight:700;
@@ -225,6 +230,7 @@ const css = `
     .res-camp-name{font-size:20px}
     .res-card-score .score-num{font-size:20px}
     .res-proximo{padding:18px}
+    .res-kpis{grid-template-columns:repeat(2,1fr)}
   }
 `
 
@@ -292,6 +298,8 @@ export default async function ResultadosPage() {
 
           const proximoJogo = futuras[0] ?? null
           const realizadasDisplay = realizadas.slice(0, 5)
+          const vitorias = realizadas.filter((p) => p.golsPro! > p.golsContra!).length
+          const saldo = realizadas.reduce((sum, p) => sum + ((p.golsPro ?? 0) - (p.golsContra ?? 0)), 0)
           const shareMsg = `Resultados da Escolinha Itaquerense — ${camp.nome}: ${appUrl}/resultados`
           const waHref = `https://wa.me/?text=${encodeURIComponent(shareMsg)}`
 
@@ -315,6 +323,29 @@ export default async function ResultadosPage() {
                       </span>
                     )}
                   </div>
+                </div>
+              </div>
+
+              <div className="res-kpis">
+                <div className="res-kpi">
+                  <div className="lbl">Jogos</div>
+                  <div className="val">{realizadas.length}</div>
+                  <div className="sub">partidas realizadas</div>
+                </div>
+                <div className="res-kpi">
+                  <div className="lbl">Vitórias</div>
+                  <div className="val">{vitorias}</div>
+                  <div className="sub">{realizadas.length ? `${Math.round((vitorias / realizadas.length) * 100)}% de aproveitamento em vitorias` : "sem jogos encerrados"}</div>
+                </div>
+                <div className="res-kpi">
+                  <div className="lbl">Agenda</div>
+                  <div className="val">{futuras.length}</div>
+                  <div className="sub">proximo(s) compromisso(s)</div>
+                </div>
+                <div className="res-kpi">
+                  <div className="lbl">Saldo</div>
+                  <div className="val">{saldo > 0 ? `+${saldo}` : saldo}</div>
+                  <div className="sub">gols no acumulado</div>
                 </div>
               </div>
 

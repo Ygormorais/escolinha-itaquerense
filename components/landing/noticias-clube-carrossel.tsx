@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
+import Link from "next/link"
 
 export interface NoticiaClube {
   id: number
@@ -28,6 +29,8 @@ const css = `
   .ncc-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:24px}
   .ncc-header h2{font-family:var(--font-heading),Georgia,serif;font-size:28px;font-weight:800;
     color:var(--text);letter-spacing:-.5px}
+  .ncc-header a{font-size:13px;font-weight:600;color:var(--red);display:flex;align-items:center;gap:5px;transition:opacity .2s}
+  .ncc-header a:hover{opacity:.75}
 
   /* Track: mostra 3 cards lado a lado, scroll controlado */
   .ncc-track-wrap{position:relative}
@@ -91,6 +94,7 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
       <div className="container">
         <div className="ncc-header">
           <h2>Notícias do Clube</h2>
+          <Link href="/noticias">Ver publicações</Link>
         </div>
 
         <div
@@ -102,7 +106,7 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
             {visible.map((n) => {
               const grad = CORES[n.categoria] ?? CORES["Notícia"]
               return (
-                <div className="ncc-card" key={n.id}>
+                <Link href="/noticias" className="ncc-card" key={n.id}>
                   <div className="ncc-bg">
                     {n.imagemUrl ? (
                       <Image src={n.imagemUrl} alt={n.titulo} fill style={{ objectFit: "cover" }} />
@@ -120,7 +124,7 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
                     <div className="ncc-titulo">{n.titulo}</div>
                     {n.subtitulo && <div className="ncc-sub">{n.subtitulo}</div>}
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>

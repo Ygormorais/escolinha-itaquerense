@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign, Loader2, RefreshCw, Wifi, WifiOff } from "lucide-react"
+import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign, Loader2, RefreshCw, Wifi, WifiOff, Search } from "lucide-react"
 import { formatMoney, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +17,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 import { toast } from "sonner"
 import { criarCampeonato, sincronizarTodosFpfs } from "@/app/actions/campeonatos"
@@ -52,6 +53,9 @@ export function CampeonatoClient({
   const router = useRouter()
   const [creating, startCreating] = useTransition()
   const [syncing, startSyncing] = useTransition()
+  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState("todos")
+  const [fpfsFilter, setFpfsFilter] = useState("todos")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [form, setForm] = useState({
     nome: "",
@@ -70,6 +74,20 @@ export function CampeonatoClient({
   })
 
   const comFpfs = campeonatos.filter((c) => c.fpfsEventoId != null).length
+  const receitaPotencial = campeonatos.reduce((sum, c) => sum + c.taxaInscricao * c._count.inscricoes, 0)
+  const filtrados = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return campeonatos.filter((c) => {
+      if (q) {
+        const hay = [c.nome, c.descricao ?? "", c.local ?? ""].join(" ").toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      if (statusFilter !== "todos" && c.status !== statusFilter) return false
+      if (fpfsFilter === "com" && c.fpfsEventoId == null) return false
+      if (fpfsFilter === "sem" && c.fpfsEventoId != null) return false
+      return true
+    })
+  }, [campeonatos, fpfsFilter, search, statusFilter])
 
   function handleSyncTodos() {
     startSyncing(async () => {
@@ -152,33 +170,72 @@ export function CampeonatoClient({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <Wifi className="size-3.5" /> FPFS
-            </CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Receita Potencial</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{comFpfs}</p>
-            <p className="text-xs text-muted-foreground mt-1">de {campeonatos.length} conectados</p>
+            <p className="text-2xl font-bold font-heading">{formatMoney(receitaPotencial)}</p>
+            <p className="text-xs text-muted-foreground mt-1">{totalInscricoes} inscricoes no total</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex items-center justify-between gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleSyncTodos}
-          disabled={syncing || comFpfs === 0}
-          title={comFpfs === 0 ? "Nenhum campeonato com FPFS configurado" : undefined}
-        >
-          {syncing
-            ? <><Loader2 className="size-4 animate-spin" /> Sincronizando...</>
-            : <><RefreshCw className="size-4" /> Sync Tudo FPFS ({comFpfs})</>}
-        </Button>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="size-4" /> Novo Campeonato
-          </Button>
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative min-w-[220px] flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar campeonato, local ou descricao..."
+              className="pl-9"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos status</SelectItem>
+              <SelectItem value="aberto">Abertos</SelectItem>
+              <SelectItem value="andamento">Em andamento</SelectItem>
+              <SelectItem value="encerrado">Encerrados</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={fpfsFilter} onValueChange={setFpfsFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="FPFS" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos FPFS</SelectItem>
+              <SelectItem value="com">Com FPFS</SelectItem>
+              <SelectItem value="sem">Sem FPFS</SelectItem>
+            </SelectContent>
+          </Select>
+          <Badge variant="outline" className="text-xs">
+            <Wifi className="mr-1 size-3" /> {comFpfs} conectados
+          </Badge>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {filtrados.length} de {campeonatos.length} campeonato(s) visiveis
+          </p>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncTodos}
+              disabled={syncing || comFpfs === 0}
+              title={comFpfs === 0 ? "Nenhum campeonato com FPFS configurado" : undefined}
+            >
+              {syncing
+                ? <><Loader2 className="size-4 animate-spin" /> Sincronizando...</>
+                : <><RefreshCw className="size-4" /> Sync Tudo FPFS ({comFpfs})</>}
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <Button onClick={() => setDialogOpen(true)}>
+                <Plus className="size-4" /> Novo Campeonato
+              </Button>
           <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -251,14 +308,19 @@ export function CampeonatoClient({
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+            </Dialog>
+          </div>
+        </div>
       </div>
 
       {campeonatos.length === 0 && (
         <EmptyState icon={Trophy} title="Nenhum campeonato cadastrado" description="Crie o primeiro campeonato para começar." />
       )}
+      {campeonatos.length > 0 && filtrados.length === 0 && (
+        <EmptyState icon={Trophy} title="Nenhum campeonato encontrado" description="Ajuste a busca ou os filtros para encontrar outra competicao." />
+      )}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {campeonatos.map((c) => {
+        {filtrados.map((c) => {
           const st = STATUS_MAP[c.status] || STATUS_MAP.aberto
           return (
             <Link key={c.id} href={`/campeonatos/${c.id}`}>
