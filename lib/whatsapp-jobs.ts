@@ -223,3 +223,22 @@ export async function runEnviarParabensAniversariantes() {
 
   return { aniversariantes: aniversariantes.length, enviados, erros }
 }
+
+export function montarMensagemFalta(
+  nome: string,
+  dataLabel: string,
+  presenca: "Ausente" | "Justificado"
+): string {
+  if (presenca === "Justificado") {
+    return [
+      `📋 Olá! Registramos a *ausência justificada* de *${nome}* no treino de hoje (${dataLabel}).`,
+      ``,
+      `— Escolinha Itaquerense`,
+    ].join("\n")
+  }
+  return [
+    `⚠️ Olá! Registramos a *falta* de *${nome}* no treino de hoje (${dataLabel}).`,
+    ``,
+    `Qualquer dúvida, estamos à disposição. — Escolinha Itaquerense`,
+  ].join("\n")
+}
