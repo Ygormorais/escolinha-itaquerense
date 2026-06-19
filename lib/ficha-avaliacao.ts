@@ -61,7 +61,7 @@ export async function buscarDadosFicha(
       notaComportamento: av.notaComportamento,
       media: calcularMedia(av.notaTecnica, av.notaFisica, av.notaComportamento),
       frequencia: av.frequencia,
-      observacoes: av.observacoes ?? null,
+      observacoes: av.observacoes,
     },
     clube: { nome: config.nome, cidade: config.cidade },
   }
