@@ -25,7 +25,8 @@ test.describe("Alerta de frequência — estatísticas", () => {
     await expect(botao).toBeVisible({ timeout: 8000 })
     await botao.click()
     // Após gerar, ou há card de alerta (< 70%) ou o heatmap aparece — qualquer um confirma que renderizou
+    const alerta = page.getByText(/frequência abaixo de 70%/i)
     const heatmap = page.getByText("Presença por Dia da Semana").first()
-    await expect(heatmap).toBeVisible({ timeout: 8000 })
+    await expect(alerta.or(heatmap).first()).toBeVisible({ timeout: 8000 })
   })
 })
