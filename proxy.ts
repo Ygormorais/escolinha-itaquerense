@@ -5,7 +5,7 @@ import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
 
 const COOKIE_NAME = SESSION_COOKIE
 
-async function verify(signed: string): Promise<boolean> {
+async function verifyHmac(signed: string, prefix: string): Promise<boolean> {
   const secret = getSessionSecret()
   const lastDot = signed.lastIndexOf(".")
   if (lastDot === -1) return false
@@ -35,8 +35,11 @@ async function verify(signed: string): Promise<boolean> {
   }
   if (diff !== 0) return false
 
-  return value.startsWith(SESSION_PREFIX)
+  return value.startsWith(prefix)
 }
+
+const verify = (signed: string) => verifyHmac(signed, SESSION_PREFIX)
+const verifyResponsavel = (signed: string) => verifyHmac(signed, "resp:")
 
 /** Rotas que NÃO exigem sessão de admin: ou são públicas, ou são autenticadas
  * pelo PRÓPRIO handler (webhooks por assinatura, cron/sync por Bearer/token).
@@ -61,7 +64,9 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/qr/") ||
     pathname.startsWith("/resultados") ||
     pathname.startsWith("/horarios") ||
-    pathname.startsWith("/responsavel") ||
+    pathname.startsWith("/responsavel/login") ||
+    pathname.startsWith("/responsavel/recuperar-senha") ||
+    pathname.startsWith("/responsavel/redefinir-senha") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname === "/logo.png" ||
@@ -81,6 +86,27 @@ export async function proxy(request: NextRequest) {
         headers: requestHeaders,
       },
     })
+
+  // Portal do responsável: auth própria (cookie "responsavel_session"), sem relação
+  // com a sessão de admin. Verificamos aqui para evitar flash do layout protegido.
+  if (pathname.startsWith("/responsavel")) {
+    const isAuthPage =
+      pathname.startsWith("/responsavel/login") ||
+      pathname.startsWith("/responsavel/recuperar-senha") ||
+      pathname.startsWith("/responsavel/redefinir-senha")
+
+    if (!isAuthPage) {
+      const token = request.cookies.get("responsavel_session")?.value
+      if (!token || !(await verifyResponsavel(token))) {
+        const url = request.nextUrl.clone()
+        url.pathname = "/responsavel/login"
+        url.search = ""
+        return NextResponse.redirect(url)
+      }
+    }
+
+    return nextResponse()
+  }
 
   // Usuário já autenticado não deve ver a página de login — redireciona para o
   // painel. Feito aqui (middleware = 307 confiável) porque o redirect() de

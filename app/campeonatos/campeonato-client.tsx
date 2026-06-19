@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign, Loader2 } from "lucide-react"
+import { Trophy, Plus, Users, Calendar, MapPin, CircleDollarSign, Loader2, RefreshCw, Wifi, WifiOff } from "lucide-react"
 import { formatMoney, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
 import { toast } from "sonner"
-import { criarCampeonato } from "@/app/actions/campeonatos"
+import { criarCampeonato, sincronizarTodosFpfs } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
 
@@ -33,6 +33,8 @@ type Campeonato = {
   taxaInscricao: number
   status: string
   createdAt: RscDate
+  fpfsEventoId: number | null
+  fpfsSyncEm: RscDate | null
   _count: { inscricoes: number }
 }
 
@@ -49,6 +51,7 @@ export function CampeonatoClient({
 }) {
   const router = useRouter()
   const [creating, startCreating] = useTransition()
+  const [syncing, startSyncing] = useTransition()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [form, setForm] = useState({
     nome: "",
@@ -62,7 +65,20 @@ export function CampeonatoClient({
     custoTransporte: "0",
     custoUniforme: "0",
     observacoes: "",
+    fpfsEventoId: "",
+    fpfsTimeNome: "",
   })
+
+  const comFpfs = campeonatos.filter((c) => c.fpfsEventoId != null).length
+
+  function handleSyncTodos() {
+    startSyncing(async () => {
+      const r = await sincronizarTodosFpfs()
+      if (!r.ok) { toast.error("error" in r ? r.error : "Erro ao sincronizar"); return }
+      if ("novos" in r) toast.success(`FPFS: ${r.novos} novos, ${r.atualizados} atualizados em ${r.campeonatos} campeonato(s)`)
+      router.refresh()
+    })
+  }
 
   const abertos = campeonatos.filter((c) => c.status === "aberto").length
   const andamento = campeonatos.filter((c) => c.status === "andamento").length
@@ -88,6 +104,8 @@ export function CampeonatoClient({
           custoTransporte: Number(form.custoTransporte),
           custoUniforme: Number(form.custoUniforme),
           observacoes: form.observacoes || undefined,
+          fpfsEventoId: form.fpfsEventoId ? Number(form.fpfsEventoId) : undefined,
+          fpfsTimeNome: form.fpfsTimeNome || undefined,
         })
         toast.success("Campeonato criado!")
         setDialogOpen(false)
@@ -95,6 +113,7 @@ export function CampeonatoClient({
           nome: "", descricao: "", dataInicio: "", dataFim: "", local: "",
           taxaInscricao: "0", taxaJogo: "0", taxaArbitragem: "0",
           custoTransporte: "0", custoUniforme: "0", observacoes: "",
+          fpfsEventoId: "", fpfsTimeNome: "",
         })
         router.refresh()
       } catch {
@@ -133,15 +152,29 @@ export function CampeonatoClient({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Total Inscrições</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Wifi className="size-3.5" /> FPFS
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{totalInscricoes}</p>
+            <p className="text-2xl font-bold font-heading">{comFpfs}</p>
+            <p className="text-xs text-muted-foreground mt-1">de {campeonatos.length} conectados</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSyncTodos}
+          disabled={syncing || comFpfs === 0}
+          title={comFpfs === 0 ? "Nenhum campeonato com FPFS configurado" : undefined}
+        >
+          {syncing
+            ? <><Loader2 className="size-4 animate-spin" /> Sincronizando...</>
+            : <><RefreshCw className="size-4" /> Sync Tudo FPFS ({comFpfs})</>}
+        </Button>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="size-4" /> Novo Campeonato
@@ -197,6 +230,19 @@ export function CampeonatoClient({
                 <Label htmlFor="camp-obs">Observações</Label>
                 <Textarea id="camp-obs" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
               </div>
+              <div className="col-span-2 border-t pt-3">
+                <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Integração FPFS (opcional)</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="camp-fpfs-id">ID Evento FPFS</Label>
+                    <Input id="camp-fpfs-id" type="number" min="0" placeholder="ex.: 920" value={form.fpfsEventoId} onChange={(e) => setForm({ ...form, fpfsEventoId: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="camp-fpfs-nome">Nome do time na FPFS</Label>
+                    <Input id="camp-fpfs-nome" placeholder="igual ao site da FPFS" value={form.fpfsTimeNome} onChange={(e) => setForm({ ...form, fpfsTimeNome: e.target.value })} />
+                  </div>
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
@@ -223,7 +269,18 @@ export function CampeonatoClient({
                       <Trophy className="size-5 text-brand-600" />
                       <CardTitle className="text-base">{c.nome}</CardTitle>
                     </div>
-                    <Badge variant={st.variant}>{st.label}</Badge>
+                    <div className="flex items-center gap-1.5">
+                      {c.fpfsEventoId != null ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wide px-1.5 py-0.5 rounded bg-success-50 text-success-700 border border-success-200">
+                          <Wifi className="size-2.5" /> FPFS
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                          <WifiOff className="size-2.5" /> Sem FPFS
+                        </span>
+                      )}
+                      <Badge variant={st.variant}>{st.label}</Badge>
+                    </div>
                   </div>
                   {c.descricao && (
                     <CardDescription className="line-clamp-2">{c.descricao}</CardDescription>

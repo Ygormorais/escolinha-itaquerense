@@ -6,7 +6,12 @@ export const metadata = { title: "Campeonatos — Escolinha Itaquerense" }
 
 export default async function CampeonatosPage() {
   const campeonatos = await db.campeonato.findMany({
-    include: { _count: { select: { inscricoes: true } } },
+    select: {
+      id: true, nome: true, descricao: true, dataInicio: true, dataFim: true,
+      local: true, taxaInscricao: true, status: true, createdAt: true,
+      fpfsEventoId: true, fpfsSyncEm: true,
+      _count: { select: { inscricoes: true } },
+    },
     orderBy: { dataInicio: "desc" },
   })
 

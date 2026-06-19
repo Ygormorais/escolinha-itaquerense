@@ -3,8 +3,11 @@ import { useState } from "react"
 import Image from "next/image"
 import { Inter, Playfair_Display } from "next/font/google"
 import Link from "next/link"
-import { JogosCarrossel } from "./jogos-carrossel"
-import type { CategoriaJogos, HeroView } from "@/lib/landing/jogos"
+import { NoticiasCarrossel } from "./noticias-carrossel"
+import { NoticiasClubCarrossel } from "./noticias-clube-carrossel"
+import type { HeroView } from "@/lib/landing/jogos"
+import type { NoticiaCard } from "@/lib/landing/noticias"
+import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { temSobre, temGaleria, temDepoimentos } from "@/lib/landing/conteudo"
 
@@ -179,14 +182,16 @@ const css = `
 `
 
 export function LandingClient({
-  categorias,
+  noticias,
+  noticiasClube,
   whatsapp,
   hero,
   sobre,
   galeria,
   depoimentos,
 }: {
-  categorias: CategoriaJogos[]
+  noticias: NoticiaCard[]
+  noticiasClube: NoticiaClube[]
   whatsapp?: string
   hero: HeroView
   sobre: SobreConteudo | null
@@ -221,7 +226,7 @@ export function LandingClient({
           <nav className={"main" + (navOpen ? " open" : "")} id="nav">
             <ul>
               <li><a href="/horarios">Turmas &amp; Horários</a></li>
-              <li><a href="#jogos">Jogos</a></li>
+              <li><a href="#noticias">Destaques</a></li>
               <li><a href="/resultados">Resultados</a></li>
               <li className="nav-access"><a href="/responsavel">Portal do Responsável</a></li>
               <li className="nav-access"><a href="/login">Entrar</a></li>
@@ -241,10 +246,15 @@ export function LandingClient({
         </div>
       </div>
 
-      {/* ===== 3. JOGOS ===== */}
-      <div id="jogos">
-        <JogosCarrossel categorias={categorias} />
+      {/* ===== 3. DESTAQUES (jogos/resultados) ===== */}
+      <div id="noticias">
+        <NoticiasCarrossel items={noticias} />
       </div>
+
+      {/* ===== 4. NOTÍCIAS DO CLUBE ===== */}
+      {noticiasClube.length > 0 && (
+        <NoticiasClubCarrossel items={noticiasClube} />
+      )}
 
       {/* ===== Sobre / História (guardado) ===== */}
       {temSobre() && sobre && (

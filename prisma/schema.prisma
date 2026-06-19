@@ -467,3 +467,15 @@ model NotificacaoPreferencia {
   convocacao          Boolean     @default(true)
   comunicado          Boolean     @default(true)
 }
+
+model Noticia {
+  id         Int      @id @default(autoincrement())
+  titulo     String
+  subtitulo  String?
+  categoria  String   @default("Notícia")
+  imagemUrl  String?
+  publicado  Boolean  @default(false)
+  destaque   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

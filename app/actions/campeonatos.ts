@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
-import { syncCampeonato } from "@/lib/fpfs/sync"
+import { syncCampeonato, syncTodos } from "@/lib/fpfs/sync"
 import { dataValida } from "@/lib/utils"
 
 export async function listarCampeonatos() {
@@ -37,6 +37,8 @@ export async function criarCampeonato(data: {
   custoTransporte?: number
   custoUniforme?: number
   observacoes?: string
+  fpfsEventoId?: number
+  fpfsTimeNome?: string
 }) {
   await requireAuth()
   if (!dataValida(data.dataInicio) || (data.dataFim && !dataValida(data.dataFim))) throw new Error("Data inválida")
@@ -53,6 +55,8 @@ export async function criarCampeonato(data: {
       custoTransporte: data.custoTransporte ?? 0,
       custoUniforme: data.custoUniforme ?? 0,
       observacoes: data.observacoes || null,
+      fpfsEventoId: data.fpfsEventoId ?? null,
+      fpfsTimeNome: data.fpfsTimeNome || null,
     },
   })
   revalidatePath("/campeonatos")
@@ -105,12 +109,33 @@ export async function sincronizarFpfs(campeonatoId: number) {
   try {
     const resumo = await syncCampeonato(campeonatoId)
     revalidatePath(`/campeonatos/${campeonatoId}`)
+    revalidatePath("/campeonatos")
+    revalidatePath("/")
     revalidatePath("/responsavel/jogos")
     revalidatePath("/responsavel/classificacao")
     revalidatePath("/agenda")
     return resumo
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Falha ao sincronizar com a FPFS" }
+  }
+}
+
+export async function sincronizarTodosFpfs() {
+  await requireAuth()
+  try {
+    const resumos = await syncTodos()
+    revalidatePath("/campeonatos")
+    revalidatePath("/")
+    revalidatePath("/responsavel/jogos")
+    revalidatePath("/responsavel/classificacao")
+    revalidatePath("/agenda")
+    const totais = resumos.reduce(
+      (acc, r) => ({ novos: acc.novos + r.jogosNovos, atualizados: acc.atualizados + r.jogosAtualizados }),
+      { novos: 0, atualizados: 0 },
+    )
+    return { ok: true, campeonatos: resumos.length, ...totais }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Falha ao sincronizar FPFS" }
   }
 }
 

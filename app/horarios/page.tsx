@@ -3,154 +3,149 @@ import Link from "next/link"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 import { getConfig } from "@/lib/config"
 import { Inter, Playfair_Display } from "next/font/google"
+import HorariosClient from "./horarios-client"
 
 export const metadata = { title: "Turmas & Horários — E.C. Itaquerense" }
 
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" })
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-heading" })
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" })
+const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800", "900"], variable: "--font-heading" })
 
 const css = `
   .hp{
-    --red:#C62828;--red-dark:#9F1D1D;--red-deep:#4A0B0B;
-    --bg:#FAF8F5;--bg-card:#FFFFFF;--bg-muted:#F3EFE9;
+    --red:#C62828;--red-dark:#9F1D1D;--red-darker:#7F0000;--red-deep:#4A0B0B;--red-warm:#D84040;
+    --white:#fff;--bg:#FAF8F5;--bg-card:#fff;--bg-muted:#F3EFE9;
     --text:#1A1A2E;--text-muted:#6B6B7B;--text-light:#9696A0;
     --border:#E8E2DA;
-    --shadow-sm:0 2px 8px rgba(26,26,46,.08);
-    --shadow-md:0 4px 20px rgba(26,26,46,.10);
-    --radius-md:12px;--radius-lg:18px;
-    --transition:all 0.25s ease;
+    --shadow-sm:0 2px 8px rgba(26,26,46,.07);
+    --shadow-md:0 8px 28px rgba(26,26,46,.12);
+    --shadow-red:0 8px 28px rgba(198,40,40,.22);
+    --radius-md:12px;--radius-lg:18px;--radius-xl:24px;
+    --ease:cubic-bezier(.25,.46,.45,.94);
     font-family:var(--font-body),Arial,sans-serif;
     color:var(--text);background:var(--bg);
-    -webkit-font-smoothing:antialiased;min-height:100vh;
+    -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:clip;
   }
   .hp *{margin:0;padding:0;box-sizing:border-box}
   .hp a{text-decoration:none;color:inherit}
-  .hp .container{max-width:960px;margin:0 auto;padding:0 24px}
-  .hp header{background:rgba(255,255,255,.97);backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
-  .hp .hrow{display:flex;align-items:center;height:72px;gap:14px}
+  .hp ul{list-style:none}
+  .hp .container{max-width:1060px;margin:0 auto;padding:0 24px}
+
+  /* HEADER */
+  .hp header{position:sticky;top:0;z-index:200;
+    background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);box-shadow:0 1px 0 var(--border),var(--shadow-sm)}
+  .hp .hrow{display:flex;align-items:center;height:74px;gap:16px}
   .hp .brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
-  .hp .brand img{width:44px;height:44px;object-fit:contain}
-  .hp .brand .name b{display:block;font-size:17px;font-weight:700;color:var(--red);letter-spacing:.3px}
-  .hp .brand .name span{font-size:10px;color:var(--text-light);letter-spacing:2px;text-transform:uppercase}
-  .hp .back{margin-left:auto;font-size:13px;font-weight:600;color:var(--text-muted);
-    display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;
-    border:1px solid var(--border);transition:var(--transition)}
-  .hp .back:hover{background:var(--bg-muted);color:var(--text)}
-  .hp .hero-bar{background:linear-gradient(135deg,var(--red-deep) 0%,var(--red) 100%);
-    color:#fff;padding:56px 0 48px}
-  .hp .hero-bar h1{font-family:var(--font-heading),Georgia,serif;font-size:40px;
-    font-weight:800;letter-spacing:-.5px;margin-bottom:10px}
-  .hp .hero-bar p{font-size:16px;opacity:.88;max-width:560px;line-height:1.6}
-  .hp .content{padding:56px 0 72px}
-  .hp .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px}
-  .hp .card{background:var(--bg-card);border:1px solid var(--border);
-    border-radius:var(--radius-lg);padding:28px 24px;box-shadow:var(--shadow-sm);
-    transition:var(--transition)}
-  .hp .card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
-  .hp .card-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;
-    padding-bottom:14px;border-bottom:1px solid var(--border)}
-  .hp .card-icon{width:40px;height:40px;border-radius:10px;
-    background:linear-gradient(135deg,var(--red),var(--red-dark));
-    display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
-  .hp .card-head b{font-size:15px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.4px}
-  .hp .horario-list{display:flex;flex-direction:column;gap:9px}
-  .hp .horario-item{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-muted);line-height:1.4}
-  .hp .horario-item i{font-size:14px;color:var(--red);opacity:.8;flex-shrink:0}
-  .hp .vazio{text-align:center;padding:48px 0;color:var(--text-muted)}
-  .hp .vazio p{font-size:15px;line-height:1.6;margin-top:8px}
-  .hp .cta-box{background:var(--bg-muted);border:1px solid var(--border);
-    border-radius:var(--radius-lg);padding:40px;text-align:center}
-  .hp .cta-box h2{font-family:var(--font-heading),Georgia,serif;font-size:26px;
-    font-weight:700;margin-bottom:10px}
-  .hp .cta-box p{font-size:15px;color:var(--text-muted);margin-bottom:24px;max-width:480px;
-    margin-left:auto;margin-right:auto;line-height:1.65}
-  .hp .btn-red{display:inline-block;background:var(--red);color:#fff;font-weight:700;
-    font-size:13px;text-transform:uppercase;letter-spacing:.8px;padding:14px 32px;
-    border-radius:8px;transition:var(--transition)}
-  .hp .btn-red:hover{background:var(--red-dark);transform:translateY(-1px);
-    box-shadow:0 6px 20px rgba(198,40,40,.35)}
-  @media(max-width:768px){
-    .hp .grid{grid-template-columns:repeat(2,1fr)}
-    .hp .hero-bar h1{font-size:30px}
+  .hp .brand .bname b{display:block;font-size:18px;font-weight:700;color:var(--red);letter-spacing:.2px}
+  .hp .brand .bname span{font-size:10px;color:var(--text-light);letter-spacing:2.5px;text-transform:uppercase;font-weight:500}
+  .hp .hactions{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .hp .btn-ghost{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
+    color:var(--text-muted);padding:8px 16px;border-radius:100px;
+    border:1px solid var(--border);transition:all .2s var(--ease)}
+  .hp .btn-ghost:hover{background:var(--bg-muted);color:var(--text)}
+  .hp .btn-mat{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.6px;color:#fff;background:var(--red);
+    padding:9px 20px;border-radius:100px;transition:all .2s var(--ease)}
+  .hp .btn-mat:hover{background:var(--red-warm);transform:translateY(-1px);box-shadow:var(--shadow-red)}
+  @media(max-width:520px){.hp .btn-mat span{display:none}}
+
+  /* HERO */
+  .hp .hero{background:linear-gradient(135deg,var(--red-deep) 0%,var(--red) 55%,var(--red-dark) 100%);
+    color:#fff;position:relative;overflow:hidden;padding:80px 0 88px}
+  .hp .hero::before{content:'';position:absolute;inset:0;
+    background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,.06)' stroke-width='1'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3Cline x1='0' y1='30' x2='60' y2='30'/%3E%3Cline x1='30' y1='0' x2='30' y2='60'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:60px 60px}
+  .hp .hero-inner{position:relative;z-index:1}
+  .hp .hero-badge{display:inline-flex;align-items:center;gap:7px;
+    background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:700;
+    letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;
+    border:1px solid rgba(255,255,255,.3);margin-bottom:22px}
+  .hp .hero h1{font-family:var(--font-heading),Georgia,serif;font-size:54px;font-weight:900;
+    line-height:1.05;letter-spacing:-1px;margin-bottom:16px;max-width:700px}
+  .hp .hero h1 em{font-style:normal;opacity:.75}
+  .hp .hero p{font-size:17px;opacity:.88;max-width:500px;line-height:1.65;font-weight:400}
+  .hp .hero-deco{position:absolute;right:-60px;top:-60px;width:440px;height:440px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%)}
+  .hp .hero-deco2{position:absolute;left:-80px;bottom:-80px;width:300px;height:300px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 70%)}
+  @media(max-width:640px){
+    .hp .hero{padding:56px 0 64px}
+    .hp .hero h1{font-size:36px;letter-spacing:-.5px}
+    .hp .hero p{font-size:15px}
   }
-  @media(max-width:500px){
-    .hp .grid{grid-template-columns:1fr}
-    .hp .hero-bar{padding:40px 0 36px}
-    .hp .cta-box{padding:28px 20px}
-  }
+
+  /* SECTION */
+  .hp .section{padding:48px 0 80px}
+
+  /* FOOTER */
+  .hp .foot{border-top:1px solid var(--border);padding:28px 0}
+  .hp .foot .container{display:flex;align-items:center;justify-content:space-between;
+    font-size:12px;color:var(--text-light);flex-wrap:wrap;gap:10px}
+  .hp .foot a{color:var(--text-muted);font-weight:600;transition:color .2s}
+  .hp .foot a:hover{color:var(--red)}
 `
 
 export default async function HorariosPage() {
   const [turmas, config] = await Promise.all([getTurmasHorarios(), getConfig()])
   const waNumber = config.whatsapp?.replace(/\D/g, "") || "5511999999999"
-  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de saber sobre turmas e horários disponíveis na Escolinha Itaquerense.")}`
+  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de saber sobre as turmas e horários da Escolinha Itaquerense.")}`
 
   return (
     <div className={`${inter.variable} ${playfair.variable} hp`}>
       <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/dist/tabler-icons.min.css" rel="stylesheet" />
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
+      {/* HEADER */}
       <header>
         <div className="container hrow">
           <Link className="brand" href="/">
-            <Image src="/logo.png" alt="E.C. Itaquerense" width={44} height={44} />
-            <span className="name"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
+            <Image src="/logo.png" alt="E.C. Itaquerense" width={46} height={46} />
+            <span className="bname"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
           </Link>
-          <Link className="back" href="/">
-            <i className="ti ti-arrow-left"></i> Voltar
-          </Link>
+          <div className="hactions">
+            <Link className="btn-ghost" href="/">
+              <i className="ti ti-arrow-left"></i> Início
+            </Link>
+            <Link className="btn-mat" href="/matricula">
+              <i className="ti ti-user-plus"></i>
+              <span>Matricular</span>
+            </Link>
+          </div>
         </div>
       </header>
 
-      <div className="hero-bar">
-        <div className="container">
-          <h1>Turmas &amp; Horários</h1>
-          <p>Encontre a turma certa para o seu filho e inicie a formação esportiva com a gente.</p>
+      {/* HERO */}
+      <div className="hero">
+        <div className="hero-deco" />
+        <div className="hero-deco2" />
+        <div className="container hero-inner">
+          <div className="hero-badge">
+            <i className="ti ti-calendar-time"></i>
+            Temporada 2026
+          </div>
+          <h1>Turmas <em>&amp;</em><br />Horários</h1>
+          <p>Escolha a modalidade e a faixa etária certa para o seu filho e dê o primeiro passo na formação esportiva do E.C. Itaquerense.</p>
         </div>
       </div>
 
-      <div className="content">
+      {/* CONTEÚDO INTERATIVO */}
+      <section className="section">
         <div className="container">
-          {turmas.length === 0 ? (
-            <div className="vazio">
-              <i className="ti ti-calendar-off" style={{ fontSize: 48, opacity: .3 }}></i>
-              <p>Nenhuma turma com horários cadastrados no momento.<br />Entre em contato pelo WhatsApp para mais informações.</p>
-            </div>
-          ) : (
-            <div className="grid">
-              {turmas.map((t) => (
-                <div className="card" key={t.turma}>
-                  <div className="card-head">
-                    <div className="card-icon"><i className="ti ti-ball-football"></i></div>
-                    <b>{t.turma}</b>
-                  </div>
-                  <div className="horario-list">
-                    {t.horarios.map((h) => (
-                      <div className="horario-item" key={h}>
-                        <i className="ti ti-clock"></i>
-                        {h}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <HorariosClient turmas={turmas} waUrl={waUrl} />
+        </div>
+      </section>
 
-          <div className="cta-box">
-            <h2>Garanta a vaga do seu filho</h2>
-            <p>Faça a pré-matrícula agora ou tire suas dúvidas pelo WhatsApp — respondemos rapidinho.</p>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              <Link className="btn-red" href="/matricula">Fazer Matrícula</Link>
-              <a className="btn-red" href={waUrl} target="_blank" rel="noopener noreferrer"
-                style={{ background: "#25D366" }}>
-                <i className="ti ti-brand-whatsapp" style={{ marginRight: 6 }}></i>Falar no WhatsApp
-              </a>
-            </div>
+      {/* FOOTER */}
+      <footer className="foot">
+        <div className="container">
+          <span>© 2026 E.C. Itaquerense. Todos os direitos reservados.</span>
+          <div style={{ display: "flex", gap: 20 }}>
+            <Link href="/matricula">Pré-Matrícula</Link>
+            <Link href="/resultados">Resultados</Link>
+            <Link href="/responsavel">Portal do Responsável</Link>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }
