@@ -61,12 +61,7 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
     setOpen(false)
   }
 
-  function clear() {
-    onChange(formatYM(thisYear, thisMonth))
-    setOpen(false)
-  }
-
-  const label = `${MESES_EXTENSO[curMonth]} de ${curYear}`
+const label = `${MESES_EXTENSO[curMonth]} de ${curYear}`
 
   return (
     <div ref={ref} className={cn("relative", className)}>
@@ -133,14 +128,7 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
           </div>
 
           {/* footer */}
-          <div className="flex items-center justify-between border-t border-border px-3 py-2">
-            <button
-              type="button"
-              onClick={clear}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              Limpar
-            </button>
+          <div className="flex items-center justify-end border-t border-border px-3 py-2">
             <button
               type="button"
               onClick={goToToday}

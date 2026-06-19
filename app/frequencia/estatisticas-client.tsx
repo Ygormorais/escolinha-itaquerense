@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react"
 import { plural } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
 import { MonthInput } from "@/components/ui/month-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

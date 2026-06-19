@@ -283,13 +283,13 @@ export function montarMensagemFalta(
 ): string {
   if (presenca === "Justificado") {
     return [
-      `📋 Olá! Registramos a *ausência justificada* de *${nome}* no treino de hoje (${dataLabel}).`,
+      `📋 Olá! Registramos a *ausência justificada* de *${nome}* no treino do dia ${dataLabel}.`,
       ``,
       `— Escolinha Itaquerense`,
     ].join("\n")
   }
   return [
-    `⚠️ Olá! Registramos a *falta* de *${nome}* no treino de hoje (${dataLabel}).`,
+    `⚠️ Olá! Registramos a *falta* de *${nome}* no treino do dia ${dataLabel}.`,
     ``,
     `Qualquer dúvida, estamos à disposição. — Escolinha Itaquerense`,
   ].join("\n")

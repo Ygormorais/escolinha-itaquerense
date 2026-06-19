@@ -275,10 +275,6 @@ export function CustosClient({
     )
   }, [custos, busca])
 
-  function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
-    router.push(`/custos?mes=${e.target.value}`)
-  }
-
   async function handleDelete(id: number) {
     const result = await deleteCusto(id)
     if ("error" in result) { toast.error(result.error); return }

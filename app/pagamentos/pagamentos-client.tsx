@@ -274,10 +274,6 @@ export function PagamentosClient({
     return matchSearch && matchStatus && matchTurma
   })
 
-  function handleMesChange(e: React.ChangeEvent<HTMLInputElement>) {
-    router.push(`/pagamentos?mes=${e.target.value}`)
-  }
-
   const now = new Date()
   const em7dias = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
   const vencendoSemana = pagamentos.filter((p) => {
