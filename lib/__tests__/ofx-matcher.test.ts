@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { matchTransactions, type MatchResult } from "../ofx-matcher"
+import { matchTransactions } from "../ofx-matcher"
 import type { OFXTransaction } from "../ofx-parser"
 
 function makeTransaction(memo: string, amount = 150, fitid = "1"): OFXTransaction {

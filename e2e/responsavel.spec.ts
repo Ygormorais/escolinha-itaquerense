@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
-import { RESP_TESTE } from "./test-credentials"
 
 const RESP_STORAGE = "e2e/.auth/responsavel.json"
 
@@ -49,9 +48,6 @@ test.describe("Portal do Responsável — página de recuperação de senha", ()
 // ── Testes com responsável criado via admin ────────────────────────────────
 
 test.describe("Portal do Responsável — login com usuário real", () => {
-  const emailTeste = `resp.e2e.${Date.now()}@escolinha.test`
-  const senhaTeste = "SenhaE2E@123"
-
   test.beforeAll(async ({ request }) => {
     // Login como admin
     const loginRes = await request.post("/api/auth/login", {

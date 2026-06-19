@@ -27,7 +27,7 @@ interface MonthInputProps {
 }
 
 export function MonthInput({ value, onChange, id, className }: MonthInputProps) {
-  const { year: initYear, month: initMonth } = parseYM(value)
+  const { year: initYear } = parseYM(value)
   const [open, setOpen] = useState(false)
   const [viewYear, setViewYear] = useState(initYear)
   const ref = useRef<HTMLDivElement>(null)

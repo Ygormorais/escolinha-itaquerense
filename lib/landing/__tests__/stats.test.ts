@@ -18,7 +18,7 @@ beforeEach(() => { vi.clearAllMocks() })
 
 describe("getEstatisticasClube", () => {
   it("deriva só métricas públicas de competição e marca temAlgo=true", async () => {
-    m.partida.count.mockImplementation(({ where }: any) =>
+    m.partida.count.mockImplementation(({ where }: { where: { resultado?: string } }) =>
       Promise.resolve(where.resultado === "Vitoria" ? 4 : 9)
     )
     const r = await getEstatisticasClube(new Date("2026-06-17T12:00:00"))
