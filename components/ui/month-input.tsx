@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 const MESES_EXTENSO = [
@@ -61,7 +60,7 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
     setOpen(false)
   }
 
-const label = `${MESES_EXTENSO[curMonth]} de ${curYear}`
+  const label = `${MESES_EXTENSO[curMonth]} de ${curYear}`
 
   return (
     <div ref={ref} className={cn("relative", className)}>
