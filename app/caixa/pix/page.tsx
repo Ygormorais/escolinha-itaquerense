@@ -1,9 +1,11 @@
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { format } from "date-fns"
+import { differenceInDays, format } from "date-fns"
 
 export const metadata = { title: "PIX — Escolinha Itaquerense" }
 
@@ -24,16 +26,52 @@ export default async function PixPage() {
   ])
 
   const totalRecebido = recebidos.reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+  const proximoVencimento = emitidos[0]?.dataVencimento ?? null
+  const diasParaVencer = proximoVencimento ? differenceInDays(new Date(proximoVencimento), new Date()) : null
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <PageHeader title="PIX" description={`${recebidos.length} recebidos · ${formatMoney(totalRecebido)}`} />
+      <PageHeader
+        title="PIX"
+        description={`${recebidos.length} recebidos · ${formatMoney(totalRecebido)}`}
+      />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Aguardando pagamento</p>
+            <p className="mt-1 font-heading text-2xl font-bold text-warning-600">{emitidos.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Cobrancas PIX pendentes</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido via PIX</p>
+            <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(totalRecebido)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{recebidos.length} baixa(s) confirmadas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Proximo vencimento</p>
+            <p className="mt-1 font-heading text-2xl font-bold">{proximoVencimento ? format(new Date(proximoVencimento), "dd/MM") : "—"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {diasParaVencer === null ? "Nenhuma cobranca emitida" : diasParaVencer < 0 ? "Ja vencido" : `${diasParaVencer} dia(s) para vencer`}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="emitidos">
         <TabsList>
           <TabsTrigger value="emitidos">Emitidos ({emitidos.length})</TabsTrigger>
           <TabsTrigger value="recebidos">Recebidos ({recebidos.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="emitidos">
+          <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="outline">PIX</Badge>
+            Cobrancas aguardando pagamento no app ou via copia e cola.
+          </div>
           <div className="rounded-xl border bg-card overflow-x-auto">
             {emitidos.length === 0 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">Nenhuma cobrança PIX aguardando pagamento.</div>
@@ -62,6 +100,10 @@ export default async function PixPage() {
           </div>
         </TabsContent>
         <TabsContent value="recebidos">
+          <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="outline">Recebidos</Badge>
+            Historico recente de pagamentos efetivamente baixados como PIX.
+          </div>
           <div className="rounded-xl border bg-card overflow-x-auto">
             {recebidos.length === 0 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">Nenhum recebimento via PIX ainda.</div>

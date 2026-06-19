@@ -1,6 +1,9 @@
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
+import { getPaymentChannel } from "@/lib/payment-channel"
 import { PageHeader } from "@/components/layout/page-header"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format, startOfMonth, endOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -29,6 +32,15 @@ export default async function RecebimentosPage({
 
   const total = pagamentos.reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
   const labelMes = format(ref, "MMMM 'de' yyyy", { locale: ptBR })
+  const porCanal = pagamentos.reduce<Record<string, { total: number; quantidade: number }>>((acc, pagamento) => {
+    const canal = getPaymentChannel(pagamento.formaPagamento)
+    const atual = acc[canal] ?? { total: 0, quantidade: 0 }
+    atual.total += pagamento.valorRecebido ?? 0
+    atual.quantidade += 1
+    acc[canal] = atual
+    return acc
+  }, {})
+  const canaisOrdenados = Object.entries(porCanal).sort((a, b) => b[1].total - a[1].total)
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
@@ -38,6 +50,40 @@ export default async function RecebimentosPage({
         action={<MonthPicker mes={mesParam} basePath="/caixa/recebimentos" />}
       />
 
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total recebido</p>
+            <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(total)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{pagamentos.length} recebimento(s) no mes</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Canal lider</p>
+            <p className="mt-1 font-heading text-2xl font-bold">
+              {canaisOrdenados[0]?.[0] ?? "Sem dados"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {canaisOrdenados[0] ? `${formatMoney(canaisOrdenados[0][1].total)} no periodo` : "Nenhum recebimento ainda"}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Distribuicao</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {canaisOrdenados.length === 0 && <span className="text-xs text-muted-foreground">Sem canais registrados.</span>}
+              {canaisOrdenados.map(([canal, dados]) => (
+                <Badge key={canal} variant="outline" className="text-xs">
+                  {canal}: {dados.quantidade}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="rounded-xl border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
@@ -46,7 +92,7 @@ export default async function RecebimentosPage({
               <TableHead>Turma</TableHead>
               <TableHead>Mês Ref.</TableHead>
               <TableHead>Valor</TableHead>
-              <TableHead>Forma</TableHead>
+              <TableHead>Canal</TableHead>
               <TableHead>Data</TableHead>
             </TableRow>
           </TableHeader>
@@ -64,7 +110,7 @@ export default async function RecebimentosPage({
                 <TableCell>{p.aluno.turma}</TableCell>
                 <TableCell>{p.mesReferencia}</TableCell>
                 <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>
-                <TableCell>{p.formaPagamento || "—"}</TableCell>
+                <TableCell>{getPaymentChannel(p.formaPagamento)}</TableCell>
                 <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</TableCell>
               </TableRow>
             ))}

@@ -67,7 +67,13 @@ describe("registrarPagamento", () => {
     })
     expect(res).toEqual({ success: true })
     const data = m.pagamento.update.mock.calls[0][0].data
-    expect(data).toMatchObject({ formaPagamento: "PIX", valorRecebido: 200, observacoes: null })
+    expect(data).toMatchObject({
+      formaPagamento: "PIX",
+      valorRecebido: 200,
+      observacoes: null,
+      canalPrevisto: "PIX",
+      statusCobranca: "pago",
+    })
     expect(data.dataPagamento).toBeInstanceOf(Date)
   })
 
@@ -107,6 +113,8 @@ describe("marcarComoPago", () => {
     })
     expect(res).toEqual({ success: true })
     expect(m.pagamento.update.mock.calls[0][0].data.valorRecebido).toBe(150)
+    expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
+    expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
   })
 })
 
@@ -121,6 +129,8 @@ describe("registrarPagamentosLote", () => {
     expect(m.pagamento.update).toHaveBeenCalledTimes(2)
     expect(m.pagamento.update.mock.calls[0][0].data.valorRecebido).toBe(150)
     expect(m.pagamento.update.mock.calls[1][0].data.valorRecebido).toBe(220)
+    expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("Dinheiro")
+    expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
   })
 })
 
@@ -182,6 +192,8 @@ describe("marcarComoPago", () => {
     const res = await marcarComoPago(1, base)
     expect(res).toEqual({ success: true })
     expect(m.pagamento.update).toHaveBeenCalled()
+    expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
+    expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
   })
 
   it("rejeita data inválida sem gravar", async () => {

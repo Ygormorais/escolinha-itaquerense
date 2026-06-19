@@ -31,6 +31,8 @@ export async function registrarPagamento(
         dataPagamento: new Date(data.dataPagamento),
         formaPagamento: data.formaPagamento,
         valorRecebido: data.valorRecebido,
+        canalPrevisto: data.formaPagamento,
+        statusCobranca: "pago",
         observacoes: data.observacoes ?? null,
       },
     })
@@ -83,6 +85,8 @@ export async function registrarPagamentosLote(
             dataPagamento: new Date(data.dataPagamento),
             formaPagamento: data.formaPagamento,
             valorRecebido: p.aluno.mensalidade,
+            canalPrevisto: data.formaPagamento,
+            statusCobranca: "pago",
           },
         })
       )
@@ -144,6 +148,8 @@ export async function gerarMensalidadesAno(
             alunoId: a.id,
             mesReferencia: mes,
             dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
+            canalPrevisto: null,
+            statusCobranca: null,
           })),
         })
         criados += novos.length
@@ -201,6 +207,8 @@ export async function marcarComoPago(
         dataPagamento: new Date(data.dataPagamento),
         formaPagamento: data.formaPagamento,
         valorRecebido: data.valorRecebido,
+        canalPrevisto: data.formaPagamento,
+        statusCobranca: "pago",
       },
     })
 

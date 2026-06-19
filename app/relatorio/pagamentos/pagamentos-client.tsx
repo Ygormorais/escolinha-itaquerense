@@ -5,7 +5,7 @@ import { Download, Printer, Search, X } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -64,9 +64,13 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
     })
   }, [pagamentos, filtroCanal, filtroStatus, filtroTurma, busca])
 
-  const totalRecebido = pagamentos.filter((p) => p.dataPagamento).reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
+  const pagamentosConfirmados = pagamentos.filter((p) => p.dataPagamento)
+  const totalRecebido = pagamentosConfirmados.reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
   const totalPendente = pagamentos.filter((p) => !p.dataPagamento).reduce((s, p) => s + (p.aluno.mensalidade ?? 0), 0)
   const totalAtrasado = pagamentos.filter((p) => calcStatus(p) === "Atrasado").reduce((s, p) => s + (p.aluno.mensalidade ?? 0), 0)
+  const ticketMedio = pagamentosConfirmados.length > 0
+    ? totalRecebido / pagamentosConfirmados.length
+    : 0
 
   const canais = useMemo(() => {
     const base: Array<PaymentChannel | "Sem registro"> = ["PIX", "Boleto", "Maquininha", "Transferência", "Dinheiro", "Outro", "Sem registro"]
@@ -84,6 +88,8 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
     pendentes: pagamentos.filter((p) => calcStatus(p) === "Pendente").length,
     atrasados: pagamentos.filter((p) => calcStatus(p) === "Atrasado").length,
   }), [pagamentos])
+  const canalLider = canais[0] ?? null
+  const taxaRecebimento = pagamentos.length > 0 ? (countPorStatus.pagos / pagamentos.length) * 100 : 0
 
   const filtrosAtivos = filtroStatus !== "todos" || filtroTurma !== "todas" || filtroCanal !== "todos" || busca.trim()
 
@@ -102,7 +108,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
     }).join("")
     printHTML(`
       <h1>Relatório de Pagamentos — ${ano}</h1>
-      <p>${filtrados.length} registros · Recebido: ${formatMoney(totalRecebido)}</p>
+      <p>${filtrados.length} registros filtrados · Recebido: ${formatMoney(totalRecebido)} · Pendente: ${formatMoney(totalPendente)} · Em atraso: ${formatMoney(totalAtrasado)}</p>
       <table>
         <thead><tr><th>Aluno</th><th>Turma</th><th>Mês Ref</th><th>Canal</th><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th></tr></thead>
         <tbody>${linhas}</tbody>
@@ -149,33 +155,59 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
         }
       />
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="border-success-600/20">
-          <CardContent className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-success-600">
-              {formatMoney(totalRecebido)}
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{countPorStatus.pagos} pagamentos</p>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr]">
+        <Card className="border-brand-200/70">
+          <CardHeader className="border-b">
+            <CardTitle className="text-base">Leitura executiva</CardTitle>
+            <CardDescription>
+              Panorama anual do caixa escolar com foco em recebimento, atraso e distribuicao por canal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 pt-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(totalRecebido)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{countPorStatus.pagos} pagamento(s) confirmados</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pendente</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-warning-600">{formatMoney(totalPendente)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{countPorStatus.pendentes} aguardando baixa</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Em atraso</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-danger-600">{formatMoney(totalAtrasado)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{countPorStatus.atrasados} vencido(s)</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taxa de recebimento</p>
+              <p className="mt-1 font-heading text-2xl font-bold">{taxaRecebimento.toFixed(1)}%</p>
+              <p className="mt-1 text-xs text-muted-foreground">Ticket medio: {formatMoney(ticketMedio)}</p>
+            </div>
           </CardContent>
         </Card>
-        <Card className="border-warning-600/20">
-          <CardContent className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pendente</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-warning-600">
-              {formatMoney(totalPendente)}
+
+        <Card>
+          <CardHeader className="border-b">
+            <CardTitle className="text-base">Canal lider</CardTitle>
+            <CardDescription>
+              Canal com maior volume acumulado no periodo analisado.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-5">
+            <p className="font-heading text-2xl font-bold">{canalLider?.canal ?? "Sem dados"}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {canalLider ? `${formatMoney(canalLider.total)} em ${canalLider.quantidade} registro(s)` : "Nenhum pagamento com canal identificado"}
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{countPorStatus.pendentes} pagamentos</p>
-          </CardContent>
-        </Card>
-        <Card className="border-danger-600/20">
-          <CardContent className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Em atraso</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-danger-600">
-              {formatMoney(totalAtrasado)}
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{countPorStatus.atrasados} pagamentos</p>
+            {canais.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {canais.slice(0, 4).map((item) => (
+                  <Badge key={item.canal} variant="outline" className="text-xs">
+                    {item.canal}: {item.quantidade}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -246,6 +278,12 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
 
       {/* Tabela */}
       <Card>
+        <CardHeader className="border-b">
+          <CardTitle className="text-base">Detalhamento dos pagamentos</CardTitle>
+          <CardDescription>
+            Tabela filtravel para conferencia operacional, exportacao e impressao.
+          </CardDescription>
+        </CardHeader>
         <CardContent className="p-0 pt-1">
           <div className="overflow-x-auto">
             <Table>
@@ -306,8 +344,13 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
       {/* Resumo por canal */}
       {canais.length > 0 && (
         <Card>
-          <CardContent className="p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Canais de recebimento</p>
+          <CardHeader className="border-b">
+            <CardTitle className="text-base">Canais de recebimento</CardTitle>
+            <CardDescription>
+              Use os cards para filtrar rapidamente a origem dos recebimentos.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 pt-5">
             <div className="flex flex-wrap gap-3">
               {canais.map((item) => (
                 <button

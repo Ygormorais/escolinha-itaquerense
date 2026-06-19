@@ -22,6 +22,8 @@ export async function runGerarMensalidadesMes(
         alunoId: a.id,
         mesReferencia: mes,
         dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
+        canalPrevisto: null,
+        statusCobranca: null,
       })),
     })
   }
