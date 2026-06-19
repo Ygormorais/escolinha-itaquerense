@@ -40,7 +40,9 @@ export function ShellGate({
     )
   }
   return (
-    <div id="main-content" className="flex flex-1 flex-col">
+    // min-w-0: sem isso o item flex não encolhe abaixo do conteúdo e qualquer
+    // elemento largo (decoração da landing, etc.) estoura a página no mobile
+    <div id="main-content" className="flex min-w-0 flex-1 flex-col">
       {children}
     </div>
   )

@@ -163,8 +163,8 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
 
       {loaded && (
         <>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm text-muted-foreground">
                 {presentes} de {alunos.length} presentes
               </p>
@@ -189,7 +189,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                 </Button>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" onClick={exportarCSV} disabled={alunos.length === 0}>
                 <Download className="size-4" />
                 Exportar CSV
