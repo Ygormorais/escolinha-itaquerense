@@ -3,7 +3,7 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Award, BarChart3, Brain, Heart, TrendingUp, ArrowLeft } from "lucide-react"
+import { Award, BarChart3, Brain, Heart, TrendingUp, ArrowLeft, Printer } from "lucide-react"
 import Link from "next/link"
 
 function notaColor(nota: number | null): string {
@@ -119,6 +119,14 @@ export default async function BoletimPage() {
                         <CardTitle className="flex items-center gap-2 text-sm">
                           <BarChart3 className="size-4 text-brand-600" />
                           Período {av.periodo}
+                          <Link
+                            href={`/responsavel/boletim/pdf?alunoId=${aluno.id}&periodo=${encodeURIComponent(av.periodo)}`}
+                            target="_blank"
+                            className="ml-auto flex items-center gap-1 text-xs font-normal text-muted-foreground hover:text-foreground"
+                          >
+                            <Printer className="size-3.5" />
+                            Imprimir ficha
+                          </Link>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4 pt-4">
