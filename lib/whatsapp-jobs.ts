@@ -258,10 +258,15 @@ export async function notificarFaltas(
       const dataLabel = new Date(r.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })
       const msg = montarMensagemFalta(aluno.nome, dataLabel, r.presenca as "Ausente" | "Justificado")
 
-      await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
-      await db.whatsAppMensagem.create({
+      const registro = await db.whatsAppMensagem.create({
         data: { alunoId: r.alunoId, telefone: tel, mensagem: msg, origem: "falta" },
       })
+      try {
+        await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+      } catch (e) {
+        await db.whatsAppMensagem.delete({ where: { id: registro.id } }).catch(() => {})
+        throw e
+      }
       enviados++
     } catch {
       erros++

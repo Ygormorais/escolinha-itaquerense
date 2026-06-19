@@ -27,7 +27,7 @@ export async function salvarFrequencia(
       )
     )
     // Notifica responsáveis de ausentes/justificados — best-effort, não bloqueia o salvamento
-    await notificarFaltas(registros).catch(() => {})
+    await notificarFaltas(registros).catch((e) => console.error("[notificarFaltas]", e))
     revalidatePath("/frequencia")
     revalidatePath("/")
     return { success: true }
