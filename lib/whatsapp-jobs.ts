@@ -224,6 +224,53 @@ export async function runEnviarParabensAniversariantes() {
   return { aniversariantes: aniversariantes.length, enviados, erros }
 }
 
+export async function notificarFaltas(
+  registros: { alunoId: number; data: string; presenca: string }[]
+): Promise<{ enviados: number; erros: number }> {
+  let enviados = 0
+  let erros = 0
+
+  const ausentes = registros.filter(
+    (r) => r.presenca === "Ausente" || r.presenca === "Justificado"
+  )
+  if (ausentes.length === 0) return { enviados, erros }
+
+  const hoje = new Date()
+  const inicioDoDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())
+
+  for (const r of ausentes) {
+    try {
+      const aluno = await db.aluno.findUnique({
+        where: { id: r.alunoId },
+        select: { nome: true, telefone: true },
+      })
+      if (!aluno) continue
+      const tel = aluno.telefone?.replace(/\D/g, "")
+      if (!tel || tel.length < 8) continue
+
+      // dedup: já notificamos este aluno hoje?
+      const jaNotificado = await db.whatsAppMensagem.findFirst({
+        where: { alunoId: r.alunoId, origem: "falta", createdAt: { gte: inicioDoDia } },
+        select: { id: true },
+      })
+      if (jaNotificado) continue
+
+      const dataLabel = new Date(r.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })
+      const msg = montarMensagemFalta(aluno.nome, dataLabel, r.presenca as "Ausente" | "Justificado")
+
+      await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
+      await db.whatsAppMensagem.create({
+        data: { alunoId: r.alunoId, telefone: tel, mensagem: msg, origem: "falta" },
+      })
+      enviados++
+    } catch {
+      erros++
+    }
+  }
+
+  return { enviados, erros }
+}
+
 export function montarMensagemFalta(
   nome: string,
   dataLabel: string,

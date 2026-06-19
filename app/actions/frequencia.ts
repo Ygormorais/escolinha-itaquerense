@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { filtrarEmQueda } from "@/lib/frequencia-alertas"
+import { notificarFaltas } from "@/lib/whatsapp-jobs"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -25,6 +26,8 @@ export async function salvarFrequencia(
         })
       )
     )
+    // Notifica responsáveis de ausentes/justificados — best-effort, não bloqueia o salvamento
+    await notificarFaltas(registros).catch(() => {})
     revalidatePath("/frequencia")
     revalidatePath("/")
     return { success: true }
