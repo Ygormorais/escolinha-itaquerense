@@ -9,6 +9,8 @@ import { db } from "@/lib/db"
 import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
 import { revalidatePath } from "next/cache"
 import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
+import { runPushVencimento, runPushInadimplentes } from "@/lib/push-jobs"
+import { sendPushToResponsavel } from "@/lib/push"
 import { format } from "date-fns"
 
 async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
@@ -18,7 +20,13 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
       dataVencimento: { lt: new Date() },
       externalId: { not: null },
     },
-    select: { id: true, externalId: true, canalPrevisto: true },
+    select: {
+      id: true,
+      externalId: true,
+      canalPrevisto: true,
+      mesReferencia: true,
+      aluno: { select: { nome: true, responsavelId: true } },
+    },
   })
 
   let atualizados = 0
@@ -42,6 +50,13 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
               : {}),
           },
         })
+        if (statusLocal === "pago" && p.aluno.responsavelId) {
+          await sendPushToResponsavel(p.aluno.responsavelId, "pagamentoConfirmado", {
+            title: "Pagamento confirmado!",
+            body: `Mensalidade de ${p.aluno.nome} (${p.mesReferencia}) recebida com sucesso.`,
+            url: "/responsavel/mensalidades",
+          }).catch(() => null)
+        }
         atualizados++
       }
     } catch {
@@ -75,13 +90,15 @@ export async function GET(request: Request) {
         }))
       : null
 
-  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas] = await Promise.all([
+  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas, pushVencimento, pushInadimplentes] = await Promise.all([
     runEnviarLembretesInadimplentes(),
     runEnviarLembreteVencendo(),
     runEnviarLembretesWhatsAppInadimplencia(),
     runEnviarLembretesWhatsAppVencendo(),
     runEnviarParabensAniversariantes(),
     sincronizarStatusCobrancas(),
+    runPushVencimento(),
+    runPushInadimplentes(),
   ])
 
   const housekeeping = isDomingo ? await runHousekeeping() : null
@@ -89,6 +106,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
     whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo, aniversarios: waAniversarios },
+    push: { vencimento: pushVencimento, inadimplentes: pushInadimplentes },
     cobrancas,
     housekeeping,
     geracaoMensal,

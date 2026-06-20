@@ -26,7 +26,7 @@ const css = `
 
   /* ── HEADER ── */
   .res-hdr{
-    background:linear-gradient(135deg,var(--red-deep) 0%,var(--red) 60%,var(--red-dark) 100%);
+    background:linear-gradient(135deg,#4A0B0B 0%,#C62828 60%,#9F1D1D 100%);
     color:#fff;position:sticky;top:0;z-index:100;
     box-shadow:0 2px 16px rgba(0,0,0,.28)
   }
@@ -41,9 +41,9 @@ const css = `
   }
   .res-hdr .brand-sub{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1.5px;font-weight:500}
   .res-hdr .back{
-    font-size:12px;font-weight:600;opacity:.85;letter-spacing:.5px;
+    font-size:12px;font-weight:600;opacity:.85;letter-spacing:.5px;color:#fff;
     border:1px solid rgba(255,255,255,.3);border-radius:6px;
-    padding:6px 14px;white-space:nowrap;transition:all .2s;flex-shrink:0
+    padding:6px 14px;white-space:nowrap;flex-shrink:0;transition:background .2s
   }
   .res-hdr .back:hover{background:rgba(255,255,255,.15);opacity:1}
 
@@ -205,13 +205,21 @@ const css = `
   .res-share:hover{background:#1ebe5a;transform:translateY(-1px)}
 
   /* ── EMPTY ── */
-  .res-empty{text-align:center;padding:88px 24px;color:var(--text-muted)}
-  .res-empty .icon{font-size:52px;margin-bottom:20px}
+  .res-empty{text-align:center;padding:88px 24px}
+  .res-empty .icon{width:72px;height:72px;background:rgba(198,40,40,.08);border-radius:20px;
+    display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 24px}
   .res-empty h2{
     font-family:var(--font-heading),Georgia,serif;
     font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px
   }
-  .res-empty p{font-size:14px}
+  .res-empty p{font-size:14px;color:var(--text-muted);max-width:380px;margin:0 auto 28px;line-height:1.6}
+  .res-empty-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .res-empty-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:100px;
+    font-size:13px;font-weight:700;letter-spacing:.3px;transition:all .2s}
+  .res-empty-btn.primary{background:var(--red);color:#fff;box-shadow:0 4px 14px rgba(198,40,40,.3)}
+  .res-empty-btn.primary:hover{background:var(--red-dark);transform:translateY(-1px)}
+  .res-empty-btn.secondary{border:1.5px solid var(--border);color:var(--text-muted)}
+  .res-empty-btn.secondary:hover{border-color:var(--red);color:var(--red)}
 
   /* ── FOOTER ── */
   .res-ftr{border-top:1px solid var(--border);padding:28px 24px}
@@ -225,7 +233,6 @@ const css = `
   /* ── MOBILE ── */
   @media(max-width:640px){
     .res-hero h1{font-size:28px}
-    .res-hdr .back .txt{display:none}
     .prox-match{font-size:19px}
     .res-camp-name{font-size:20px}
     .res-card-score .score-num{font-size:20px}
@@ -260,14 +267,14 @@ export default async function ResultadosPage() {
       {/* HEADER */}
       <header className="res-hdr">
         <div className="inner">
-          <div className="brand">
+          <Link href="/" className="brand">
             <Image src="/logo.png" alt="E.C. Itaquerense" width={40} height={40} style={{ borderRadius: 8, flexShrink: 0 }} />
             <div>
               <div className="brand-name">E.C. Itaquerense</div>
               <div className="brand-sub">Resultados &amp; Classificação</div>
             </div>
-          </div>
-          <Link href="/" className="back">← <span className="txt">Voltar ao site</span></Link>
+          </Link>
+          <Link href="/" className="back">← Voltar ao site</Link>
         </div>
       </header>
 
@@ -284,7 +291,11 @@ export default async function ResultadosPage() {
           <div className="res-empty">
             <div className="icon">⚽</div>
             <h2>Nenhum campeonato em andamento</h2>
-            <p>Quando houver competições, os resultados aparecerão aqui.</p>
+            <p>Quando houver competições, os resultados e a classificação aparecerão aqui automaticamente.</p>
+            <div className="res-empty-links">
+              <Link href="/horarios" className="res-empty-btn primary">Ver turmas &amp; horários</Link>
+              <Link href="/matricula" className="res-empty-btn secondary">Fazer matrícula</Link>
+            </div>
           </div>
         )}
 

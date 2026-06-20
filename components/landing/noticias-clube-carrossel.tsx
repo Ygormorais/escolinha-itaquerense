@@ -94,7 +94,7 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
       <div className="container">
         <div className="ncc-header">
           <h2>Notícias do Clube</h2>
-          <Link href="/noticias">Ver publicações</Link>
+          <Link href="/noticias/publico">Ver publicações</Link>
         </div>
 
         <div
@@ -106,7 +106,7 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
             {visible.map((n) => {
               const grad = CORES[n.categoria] ?? CORES["Notícia"]
               return (
-                <Link href="/noticias" className="ncc-card" key={n.id}>
+                <Link href="/noticias/publico" className="ncc-card" key={n.id}>
                   <div className="ncc-bg">
                     {n.imagemUrl ? (
                       <Image src={n.imagemUrl} alt={n.titulo} fill style={{ objectFit: "cover" }} />

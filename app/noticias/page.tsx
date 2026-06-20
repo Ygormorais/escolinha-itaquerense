@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { NoticiasClient } from "./noticias-client"
+import { plural } from "@/lib/utils"
 
 export const metadata = { title: "Notícias — Escolinha Itaquerense" }
 
@@ -12,7 +13,7 @@ export default async function NoticiasPage() {
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Notícias"
-        description={`${noticias.length} publicacao(oes) cadastradas · ${publicadas} publicadas · ${destaques} em destaque`}
+        description={`${plural(noticias.length, "publicação cadastrada", "publicações cadastradas")} · ${publicadas} publicadas · ${destaques} em destaque`}
       />
       <NoticiasClient noticias={noticias} />
     </div>

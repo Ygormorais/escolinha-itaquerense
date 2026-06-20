@@ -127,7 +127,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
               className="pl-9"
             />
           </div>
-          <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+          <Select value={categoriaFilter} onValueChange={(v) => v && setCategoriaFilter(v)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
@@ -136,7 +136,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
               {CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>

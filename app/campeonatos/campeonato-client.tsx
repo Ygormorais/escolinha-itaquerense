@@ -190,7 +190,7 @@ export function CampeonatoClient({
               className="pl-9"
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(v) => v && setStatusFilter(v)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -201,7 +201,7 @@ export function CampeonatoClient({
               <SelectItem value="encerrado">Encerrados</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={fpfsFilter} onValueChange={setFpfsFilter}>
+          <Select value={fpfsFilter} onValueChange={(v) => v && setFpfsFilter(v)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="FPFS" />
             </SelectTrigger>

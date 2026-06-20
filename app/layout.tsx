@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Nunito } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
@@ -78,7 +79,9 @@ export default async function RootLayout({
       <head>
         {/* Anti-flash de tema: aplica `.dark` antes do paint. Server-rendered
             (componente de servidor) — não dispara o aviso de <script> no cliente. */}
-        <script
+        <Script
+          id="theme-preload"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html:
               "try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark'}}catch(e){}",
@@ -94,8 +97,10 @@ export default async function RootLayout({
       </head>
       <body className="flex h-full bg-background font-sans">
         {/* JSON-LD (dados estruturados) — no body, conforme guia do Next; `<` escapado p/ evitar XSS */}
-        <script
+        <Script
+          id="sports-activity-jsonld"
           type="application/ld+json"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",

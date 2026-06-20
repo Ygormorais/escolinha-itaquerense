@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import { AdminShell } from "@/components/layout/admin-shell"
+import { isPublicRoute } from "@/lib/public-routes"
 
 /**
  * Decide no cliente se a página atual usa o shell do admin (sidebar/header) ou
@@ -24,14 +25,7 @@ export function ShellGate({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const showAdmin =
-    authenticated &&
-    !pathname.startsWith("/responsavel") &&
-    !pathname.startsWith("/matricula") &&
-    pathname !== "/login" &&
-    pathname !== "/" &&
-    pathname !== "/horarios" &&
-    pathname !== "/frequencia/scanner" // tela cheia (uso tipo quiosque)
+  const showAdmin = authenticated && !isPublicRoute(pathname)
 
   if (showAdmin) {
     return (

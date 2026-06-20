@@ -1,5 +1,5 @@
-import Image from "next/image"
 import Link from "next/link"
+import Image from "next/image"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 import { getConfig } from "@/lib/config"
 import { Inter, Playfair_Display } from "next/font/google"
@@ -31,23 +31,27 @@ const css = `
   .hp .container{max-width:1060px;margin:0 auto;padding:0 24px}
 
   /* HEADER */
-  .hp header{position:sticky;top:0;z-index:200;
-    background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--border);box-shadow:0 1px 0 var(--border),var(--shadow-sm)}
-  .hp .hrow{display:flex;align-items:center;height:74px;gap:16px}
-  .hp .brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
-  .hp .brand .bname b{display:block;font-size:18px;font-weight:700;color:var(--red);letter-spacing:.2px}
-  .hp .brand .bname span{font-size:10px;color:var(--text-light);letter-spacing:2.5px;text-transform:uppercase;font-weight:500}
-  .hp .hactions{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .hp .btn-ghost{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
-    color:var(--text-muted);padding:8px 16px;border-radius:100px;
-    border:1px solid var(--border);transition:all .2s var(--ease)}
-  .hp .btn-ghost:hover{background:var(--bg-muted);color:var(--text)}
-  .hp .btn-mat{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
-    text-transform:uppercase;letter-spacing:.6px;color:#fff;background:var(--red);
-    padding:9px 20px;border-radius:100px;transition:all .2s var(--ease)}
-  .hp .btn-mat:hover{background:var(--red-warm);transform:translateY(-1px);box-shadow:var(--shadow-red)}
-  @media(max-width:520px){.hp .btn-mat span{display:none}}
+  .hp-hdr{
+    background:linear-gradient(135deg,#4A0B0B 0%,#C62828 60%,#9F1D1D 100%);
+    color:#fff;position:sticky;top:0;z-index:100;
+    box-shadow:0 2px 16px rgba(0,0,0,.28)
+  }
+  .hp-hdr .inner{
+    max-width:1060px;margin:0 auto;padding:0 24px;
+    display:flex;align-items:center;height:68px;gap:14px
+  }
+  .hp-hdr .brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+  .hp-hdr .brand-name{
+    font-family:var(--font-heading),Georgia,serif;font-size:17px;
+    font-weight:800;letter-spacing:-.3px;white-space:nowrap
+  }
+  .hp-hdr .brand-sub{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1.5px;font-weight:500}
+  .hp-hdr .back{
+    font-size:12px;font-weight:600;opacity:.85;color:#fff;
+    border:1px solid rgba(255,255,255,.3);border-radius:6px;
+    padding:6px 14px;white-space:nowrap;flex-shrink:0;transition:background .2s
+  }
+  .hp-hdr .back:hover{background:rgba(255,255,255,.15);opacity:1}
 
   /* HERO */
   .hp .hero{background:linear-gradient(135deg,var(--red-deep) 0%,var(--red) 55%,var(--red-dark) 100%);
@@ -96,21 +100,16 @@ export default async function HorariosPage() {
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
       {/* HEADER */}
-      <header>
-        <div className="container hrow">
-          <Link className="brand" href="/">
-            <Image src="/logo.png" alt="E.C. Itaquerense" width={46} height={46} />
-            <span className="bname"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
+      <header className="hp-hdr">
+        <div className="inner">
+          <Link href="/" className="brand">
+            <Image src="/logo.png" alt="E.C. Itaquerense" width={40} height={40} style={{ borderRadius: 8, flexShrink: 0 }} />
+            <div>
+              <div className="brand-name">E.C. Itaquerense</div>
+              <div className="brand-sub">Turmas &amp; Horários</div>
+            </div>
           </Link>
-          <div className="hactions">
-            <Link className="btn-ghost" href="/">
-              <i className="ti ti-arrow-left"></i> Início
-            </Link>
-            <Link className="btn-mat" href="/matricula">
-              <i className="ti ti-user-plus"></i>
-              <span>Matricular</span>
-            </Link>
-          </div>
+          <Link href="/" className="back">← Voltar ao site</Link>
         </div>
       </header>
 

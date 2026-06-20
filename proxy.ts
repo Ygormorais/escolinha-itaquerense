@@ -64,6 +64,7 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/qr/") ||
     pathname.startsWith("/resultados") ||
     pathname.startsWith("/horarios") ||
+    pathname.startsWith("/noticias/publico") ||
     pathname.startsWith("/responsavel/login") ||
     pathname.startsWith("/responsavel/recuperar-senha") ||
     pathname.startsWith("/responsavel/redefinir-senha") ||

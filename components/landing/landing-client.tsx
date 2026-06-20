@@ -10,6 +10,7 @@ import type { NoticiaCard } from "@/lib/landing/noticias"
 import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { temSobre, temGaleria, temDepoimentos } from "@/lib/landing/conteudo"
+import type { StatsLanding } from "@/lib/landing/stats"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -179,6 +180,36 @@ const css = `
   .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
   @media(max-width:900px){.lp .depo .grid{grid-template-columns:1fr}}
   .lp .modalidades{border-top:1px solid var(--border)}
+
+  /* STATS STRIP */
+  .lp .stats{background:var(--red-deep);color:#fff;padding:32px 0}
+  .lp .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
+  .lp .stat+.stat{border-left:1px solid rgba(255,255,255,.12)}
+  .lp .stat-num{font-family:var(--font-heading),Georgia,serif;font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1}
+  .lp .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;opacity:.7;margin-top:6px}
+  @media(max-width:600px){
+    .lp .stats-grid{grid-template-columns:repeat(2,1fr);gap:0}
+    .lp .stat{padding:20px 0}
+    .lp .stat:nth-child(3){border-left:none}
+    .lp .stat:nth-child(n+3){border-top:1px solid rgba(255,255,255,.12)}
+  }
+
+  /* ACESSO RÁPIDO */
+  .lp .acesso{background:var(--bg-muted);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .lp .acesso-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .lp .acesso-item{display:flex;align-items:center;gap:16px;padding:28px 32px;transition:var(--transition);cursor:pointer;border-right:1px solid var(--border)}
+  .lp .acesso-item:last-child{border-right:none}
+  .lp .acesso-item:hover{background:var(--bg-card)}
+  .lp .acesso-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+  .lp .acesso-txt b{display:block;font-size:14px;font-weight:700;color:var(--text)}
+  .lp .acesso-txt span{font-size:12px;color:var(--text-muted)}
+  .lp .acesso-arrow{margin-left:auto;font-size:16px;color:var(--text-light);flex-shrink:0}
+  @media(max-width:760px){
+    .lp .acesso-grid{grid-template-columns:1fr}
+    .lp .acesso-item{border-right:none;border-bottom:1px solid var(--border)}
+    .lp .acesso-item:last-child{border-bottom:none}
+    .lp .acesso-item{padding:20px 24px}
+  }
 `
 
 export function LandingClient({
@@ -189,6 +220,7 @@ export function LandingClient({
   sobre,
   galeria,
   depoimentos,
+  stats,
 }: {
   noticias: NoticiaCard[]
   noticiasClube: NoticiaClube[]
@@ -197,8 +229,11 @@ export function LandingClient({
   sobre: SobreConteudo | null
   galeria: FotoGaleria[]
   depoimentos: Depoimento[]
+  stats?: StatsLanding
 }) {
   const [navOpen, setNavOpen] = useState(false)
+  const alunosAtivos = stats?.alunosAtivos ?? 200
+  const categoriasAtivas = stats?.categoriasAtivas ?? 8
   const waNumber = whatsapp?.replace(/\D/g, "") || "5511999999999"
   const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de mais informações sobre a Escolinha Itaquerense.")}`
 
@@ -246,6 +281,18 @@ export function LandingClient({
         </div>
       </div>
 
+      {/* ===== STATS STRIP ===== */}
+      <div className="stats">
+        <div className="container">
+          <div className="stats-grid">
+            <div className="stat"><div className="stat-num">{alunosAtivos}{alunosAtivos >= 100 && <span style={{fontSize:24}}>+</span>}</div><div className="stat-label">Alunos ativos</div></div>
+            <div className="stat"><div className="stat-num">15<span style={{fontSize:24}}>+</span></div><div className="stat-label">Anos de história</div></div>
+            <div className="stat"><div className="stat-num">{categoriasAtivas}</div><div className="stat-label">Categorias Sub</div></div>
+            <div className="stat"><div className="stat-num">FPFS</div><div className="stat-label">Federados oficiais</div></div>
+          </div>
+        </div>
+      </div>
+
       {/* ===== 3. DESTAQUES (jogos/resultados) ===== */}
       <div id="noticias">
         <NoticiasCarrossel items={noticias} />
@@ -256,23 +303,28 @@ export function LandingClient({
         <NoticiasClubCarrossel items={noticiasClube} />
       )}
 
-      <section>
-        <div className="container">
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-            <div>
-              <h2 className="section-title" style={{ marginBottom: "10px" }}>Acompanhe o clube</h2>
-              <p style={{ color: "var(--text-muted)", maxWidth: "640px", lineHeight: 1.7 }}>
-                Veja noticias, horarios, resultados e os principais movimentos da escolinha em um fluxo unico e sempre atualizado.
-              </p>
-            </div>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <Link href="/noticias" className="btn-access primary">Notícias</Link>
-              <Link href="/resultados" className="btn-access">Resultados</Link>
-              <Link href="/horarios" className="btn-access">Horários</Link>
-            </div>
+      {/* ===== ACESSO RÁPIDO ===== */}
+      <div className="acesso">
+        <div className="container" style={{padding:0,maxWidth:"100%"}}>
+          <div className="acesso-grid">
+            <Link href="/horarios" className="acesso-item">
+              <div className="acesso-icon"><i className="ti ti-clock"></i></div>
+              <div className="acesso-txt"><b>Turmas &amp; Horários</b><span>Categorias Sub-7 ao Sub-18</span></div>
+              <i className="ti ti-chevron-right acesso-arrow"></i>
+            </Link>
+            <Link href="/resultados" className="acesso-item">
+              <div className="acesso-icon"><i className="ti ti-trophy"></i></div>
+              <div className="acesso-txt"><b>Resultados</b><span>Jogos, placares e classificação</span></div>
+              <i className="ti ti-chevron-right acesso-arrow"></i>
+            </Link>
+            <Link href="/matricula" className="acesso-item">
+              <div className="acesso-icon"><i className="ti ti-clipboard-text"></i></div>
+              <div className="acesso-txt"><b>Pré-Matrícula</b><span>Garanta a vaga do seu filho</span></div>
+              <i className="ti ti-chevron-right acesso-arrow"></i>
+            </Link>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* ===== Sobre / História (guardado) ===== */}
       {temSobre() && sobre && (
@@ -344,9 +396,9 @@ export function LandingClient({
         <div className="container">
           <h2 className="section-title">Modalidades</h2>
           <div className="cat-grid">
-            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futebol</b><span>Masculino &amp; Feminino</span></a>
-            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-ball-football"></i></div><b>Futsal Federado</b><span>Liga Local</span></a>
-            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-school"></i></div><b>Escolinha</b><span>Formação de Base</span></a>
+            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-school"></i></div><b>Escolinha</b><span>Sub-7 ao Sub-13 — formação de base</span></a>
+            <a className="cat" href="/horarios"><div className="circle"><i className="ti ti-trophy"></i></div><b>Futsal Federado</b><span>Sub-11 ao Sub-18 — competições FPFS</span></a>
+            <a className="cat" href="/responsavel"><div className="circle"><i className="ti ti-users"></i></div><b>Portal do Responsável</b><span>Frequência, pagamentos e mais</span></a>
           </div>
         </div>
       </section>

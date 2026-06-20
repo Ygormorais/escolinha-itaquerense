@@ -176,6 +176,7 @@ export default function HorariosClient({ turmas, waUrl }: Props) {
   const [subFiltro, setSubFiltro] = useState<string | null>(null)
 
   const mod = MODALIDADES[modalidade]
+  const modalidades = Object.values(MODALIDADES) as (typeof MODALIDADES)[ModalidadeKey][]
   const subsAtivos = mod.subs
 
   const subsSet = new Set<string>(subsAtivos)
@@ -184,6 +185,16 @@ export default function HorariosClient({ turmas, waUrl }: Props) {
     : turmas.filter((t) => subsSet.has(t.turma))
 
   const subsComDados = new Set(turmas.map((t) => t.turma))
+  const tabItems = modalidades.flatMap((m, idx) => (
+    idx > 0
+      ? [
+          { type: "divider" as const, key: `divider-${m.key}` },
+          { type: "button" as const, key: `button-${m.key}`, modalidade: m },
+        ]
+      : [
+          { type: "button" as const, key: `button-${m.key}`, modalidade: m },
+        ]
+  ))
 
   return (
     <div className="hc">
@@ -192,24 +203,27 @@ export default function HorariosClient({ turmas, waUrl }: Props) {
       <div className="tabs-wrap">
         {/* TABS MODALIDADE */}
         <div className="tabs-head">
-          {(Object.values(MODALIDADES) as (typeof MODALIDADES)[ModalidadeKey][]).map((m, idx) => {
-            const isActive = modalidade === m.key
-            const activeClass = isActive ? `active-${m.key}` : ""
+          {tabItems.map((item) => {
+            if (item.type === "divider") {
+              return <div className="tab-divider" key={item.key} />
+            }
+
+            const { modalidade: modalidadeItem } = item
+            const isActive = modalidade === modalidadeItem.key
+            const activeClass = isActive ? `active-${modalidadeItem.key}` : ""
+
             return (
-              <>
-                {idx > 0 && <div className="tab-divider" key={`div-${m.key}`} />}
-                <button
-                  key={m.key}
-                  className={`tab-btn ${activeClass}`}
-                  onClick={() => { setModalidade(m.key as ModalidadeKey); setSubFiltro(null) }}
-                >
-                  <i className={`ti ${m.icon}`}></i>
-                  <div className="tab-label">
-                    <strong>{m.label}</strong>
-                    <span>{m.desc}</span>
-                  </div>
-                </button>
-              </>
+              <button
+                key={item.key}
+                className={`tab-btn ${activeClass}`}
+                onClick={() => { setModalidade(modalidadeItem.key as ModalidadeKey); setSubFiltro(null) }}
+              >
+                <i className={`ti ${modalidadeItem.icon}`}></i>
+                <div className="tab-label">
+                  <strong>{modalidadeItem.label}</strong>
+                  <span>{modalidadeItem.desc}</span>
+                </div>
+              </button>
             )
           })}
         </div>

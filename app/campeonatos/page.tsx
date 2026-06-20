@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { CampeonatoClient } from "./campeonato-client"
+import { plural } from "@/lib/utils"
 
 export const metadata = { title: "Campeonatos — Escolinha Itaquerense" }
 
@@ -21,7 +22,7 @@ export default async function CampeonatosPage() {
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <PageHeader
         title="Campeonatos"
-        description={`${campeonatos.length} competicao(oes) · ${abertos} abertas · ${comFpfs} com integracao FPFS`}
+        description={`${plural(campeonatos.length, "competição", "competições")} · ${abertos} abertas · ${comFpfs} com integração FPFS`}
       />
       <CampeonatoClient campeonatos={campeonatos} />
     </div>
