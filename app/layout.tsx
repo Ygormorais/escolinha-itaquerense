@@ -7,6 +7,7 @@ import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
 import { ShellGate } from "@/components/layout/shell-gate"
+import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
 
 const inter = Inter({
@@ -32,6 +33,22 @@ export const viewport: Viewport = {
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SportsActivityLocation",
+  name: "E.C. Itaquerense — Escolinha de Futebol",
+  description: "Escolinha de futebol formando atletas e cidadãos.",
+  image: "/logo.png",
+  url: baseUrl,
+  sport: "Futebol",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "São Paulo",
+    addressRegion: "SP",
+    addressCountry: "BR",
+  },
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -77,14 +94,7 @@ export default async function RootLayout({
   return (
       <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
       <head>
-        {/* Anti-flash de tema: aplica `.dark` antes do paint. Server-rendered
-            (componente de servidor) — não dispara o aviso de <script> no cliente. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark'}}catch(e){}",
-          }}
-        />
+        <ThemeScript jsonLd={jsonLd} />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -94,27 +104,6 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" sizes="500x500" />
       </head>
       <body className="flex h-full bg-background font-sans">
-        {/* JSON-LD (dados estruturados) — no body, conforme guia do Next; `<` escapado p/ evitar XSS */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SportsActivityLocation",
-              name: "E.C. Itaquerense — Escolinha de Futebol",
-              description: "Escolinha de futebol formando atletas e cidadãos.",
-              image: "/logo.png",
-              url: baseUrl,
-              sport: "Futebol",
-              address: {
-                "@type": "PostalAddress",
-                addressLocality: "São Paulo",
-                addressRegion: "SP",
-                addressCountry: "BR",
-              },
-            }).replace(/</g, "\\u003c"),
-          }}
-        />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-brand-800 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none"
