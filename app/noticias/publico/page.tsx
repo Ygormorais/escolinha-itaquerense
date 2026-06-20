@@ -1,12 +1,11 @@
 import Image from "next/image"
 import Link from "next/link"
-import { Inter, Playfair_Display } from "next/font/google"
 import { db } from "@/lib/db"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" })
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-heading" })
+import { inter, playfair } from "@/lib/public-fonts"
+import { pubBase, PUB_HDR_CSS, PUB_FOOT_CSS } from "@/lib/public-css"
+import { PublicHeader } from "@/components/public/public-header"
 
 export const metadata = { title: "Notícias — E.C. Itaquerense" }
 
@@ -20,37 +19,11 @@ const CORES: Record<string, string> = {
 }
 
 const css = `
-  .np{
-    --red:#C62828;--red-dark:#9F1D1D;--red-deep:#4A0B0B;
-    --bg:#FAF8F5;--bg-card:#fff;--bg-muted:#F3EFE9;
-    --text:#1A1A2E;--text-muted:#6B6B7B;--text-light:#9696A0;
-    --border:#E8E2DA;
-    --shadow-sm:0 2px 8px rgba(26,26,46,.07);
-    --shadow-md:0 8px 28px rgba(26,26,46,.12);
-    --radius-md:12px;--radius-lg:18px;
-    font-family:var(--font-body),Arial,sans-serif;
-    color:var(--text);background:var(--bg);
-    -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:clip
-  }
-  .np *{margin:0;padding:0;box-sizing:border-box}
-  .np a{text-decoration:none;color:inherit}
-  .np .container{max-width:1060px;margin:0 auto;padding:0 24px}
+  ${pubBase("np")}
+  ${PUB_HDR_CSS}
+  ${PUB_FOOT_CSS}
 
-  .np-hdr{
-    background:linear-gradient(135deg,#4A0B0B 0%,#C62828 60%,#9F1D1D 100%);
-    color:#fff;position:sticky;top:0;z-index:100;
-    box-shadow:0 2px 16px rgba(0,0,0,.28)
-  }
-  .np-hdr .inner{
-    max-width:1060px;margin:0 auto;padding:0 24px;
-    display:flex;align-items:center;height:68px;gap:14px
-  }
-  .np-hdr .brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
-  .np-hdr .brand-name{font-family:var(--font-heading),Georgia,serif;font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
-  .np-hdr .brand-sub{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1.5px;font-weight:500}
-  .np-hdr .back{font-size:12px;font-weight:600;opacity:.85;color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:6px 14px;white-space:nowrap;flex-shrink:0;transition:background .2s}
-  .np-hdr .back:hover{background:rgba(255,255,255,.15);opacity:1}
-
+  /* HERO */
   .np .hero{background:linear-gradient(135deg,var(--red-deep) 0%,var(--red) 55%,var(--red-dark) 100%);
     color:#fff;padding:72px 0 80px;position:relative;overflow:hidden}
   .np .hero::before{content:'';position:absolute;inset:0;
@@ -69,17 +42,18 @@ const css = `
     .np .hero h1{font-size:34px;letter-spacing:-.5px}
   }
 
+  /* GRID */
+  .np .container{max-width:1060px;margin:0 auto;padding:0 24px}
   .np .section{padding:56px 0 80px}
-
   .np .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
   @media(max-width:900px){.np .grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.np .grid{grid-template-columns:1fr}}
 
+  /* CARD */
   .np .card{border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);
     border:1px solid var(--border);box-shadow:var(--shadow-sm);
     transition:transform .25s,box-shadow .25s;display:flex;flex-direction:column}
   .np .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-
   .np .card-img{position:relative;height:180px;flex-shrink:0}
   .np .card-img img{width:100%;height:100%;object-fit:cover}
   .np .card-img-grad{position:absolute;inset:0}
@@ -92,7 +66,6 @@ const css = `
     background:rgba(255,255,255,.15);color:#fff;font-size:10px;font-weight:700;
     letter-spacing:1px;text-transform:uppercase;padding:4px 10px;
     border-radius:100px;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px)}
-
   .np .card-body{padding:20px 22px 22px;flex:1;display:flex;flex-direction:column;gap:10px}
   .np .card-titulo{font-family:var(--font-heading),Georgia,serif;font-size:17px;font-weight:800;
     color:var(--text);line-height:1.25;letter-spacing:-.2px;
@@ -101,6 +74,7 @@ const css = `
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
   .np .card-date{font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:.3px}
 
+  /* EMPTY */
   .np .empty{text-align:center;padding:80px 24px}
   .np .empty-icon{width:80px;height:80px;border-radius:20px;
     background:rgba(198,40,40,.08);display:flex;align-items:center;justify-content:center;
@@ -112,12 +86,6 @@ const css = `
     font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.7px;
     padding:13px 28px;border-radius:100px;transition:background .2s,transform .2s}
   .np .empty-btn:hover{background:var(--red-dark);transform:translateY(-1px)}
-
-  .np .foot{border-top:1px solid var(--border);padding:24px 0;margin-top:0}
-  .np .foot .inner{display:flex;align-items:center;justify-content:space-between;
-    font-size:12px;color:var(--text-light);flex-wrap:wrap;gap:10px}
-  .np .foot a{color:var(--text-muted);font-weight:600;transition:color .2s}
-  .np .foot a:hover{color:var(--red)}
 `
 
 export default async function NoticiasPublicoPage() {
@@ -131,21 +99,8 @@ export default async function NoticiasPublicoPage() {
     <div className={`${inter.variable} ${playfair.variable} np`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      {/* HEADER */}
-      <header className="np-hdr">
-        <div className="inner">
-          <Link href="/" className="brand">
-            <Image src="/logo.png" alt="E.C. Itaquerense" width={40} height={40} style={{ borderRadius: 8, flexShrink: 0 }} />
-            <div>
-              <div className="brand-name">E.C. Itaquerense</div>
-              <div className="brand-sub">Notícias</div>
-            </div>
-          </Link>
-          <Link href="/" className="back">← Voltar ao site</Link>
-        </div>
-      </header>
+      <PublicHeader subtitle="Notícias" />
 
-      {/* HERO */}
       <div className="hero">
         <div className="container hero-inner">
           <div className="hero-badge">📰 Clube</div>
@@ -154,7 +109,6 @@ export default async function NoticiasPublicoPage() {
         </div>
       </div>
 
-      {/* GRID */}
       <section className="section">
         <div className="container">
           {noticias.length === 0 ? (
@@ -197,16 +151,13 @@ export default async function NoticiasPublicoPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="foot">
-        <div className="container">
-          <div className="inner">
-            <span>© 2026 E.C. Itaquerense. Todos os direitos reservados.</span>
-            <div style={{ display: "flex", gap: 20 }}>
-              <Link href="/resultados">Resultados</Link>
-              <Link href="/horarios">Turmas &amp; Horários</Link>
-              <Link href="/matricula">Pré-Matrícula</Link>
-            </div>
+      <footer className="pub-foot">
+        <div className="inner">
+          <span>© 2026 E.C. Itaquerense. Todos os direitos reservados.</span>
+          <div style={{ display: "flex", gap: 20 }}>
+            <Link href="/resultados">Resultados</Link>
+            <Link href="/horarios">Turmas &amp; Horários</Link>
+            <Link href="/matricula">Pré-Matrícula</Link>
           </div>
         </div>
       </footer>

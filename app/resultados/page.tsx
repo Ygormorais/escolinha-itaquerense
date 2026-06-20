@@ -3,10 +3,9 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Image from "next/image"
 import Link from "next/link"
-import { Inter, Playfair_Display } from "next/font/google"
-
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" })
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-heading" })
+import { inter, playfair } from "@/lib/public-fonts"
+import { pubBase, PUB_HDR_CSS } from "@/lib/public-css"
+import { PublicHeader } from "@/components/public/public-header"
 
 export const metadata = {
   title: "Resultados — E.C. Itaquerense",
@@ -14,38 +13,9 @@ export const metadata = {
 }
 
 const css = `
-  .res *{margin:0;padding:0;box-sizing:border-box}
-  .res{
-    --red:#C62828;--red-dark:#9F1D1D;--red-deep:#4A0B0B;--red-warm:#D84040;
-    --bg:#FAF8F5;--text:#1A1A2E;--text-muted:#6B6B7B;--border:#E8E2DA;
-    font-family:var(--font-body),Arial,sans-serif;
-    background:var(--bg);color:var(--text);min-height:100vh;
-    -webkit-font-smoothing:antialiased;overflow-x:clip
-  }
-  .res a{text-decoration:none;color:inherit}
-
-  /* ── HEADER ── */
-  .res-hdr{
-    background:linear-gradient(135deg,#4A0B0B 0%,#C62828 60%,#9F1D1D 100%);
-    color:#fff;position:sticky;top:0;z-index:100;
-    box-shadow:0 2px 16px rgba(0,0,0,.28)
-  }
-  .res-hdr .inner{
-    max-width:900px;margin:0 auto;padding:0 24px;
-    display:flex;align-items:center;height:68px;gap:14px
-  }
-  .res-hdr .brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
-  .res-hdr .brand-name{
-    font-family:var(--font-heading),Georgia,serif;font-size:17px;
-    font-weight:800;letter-spacing:-.3px;white-space:nowrap
-  }
-  .res-hdr .brand-sub{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1.5px;font-weight:500}
-  .res-hdr .back{
-    font-size:12px;font-weight:600;opacity:.85;letter-spacing:.5px;color:#fff;
-    border:1px solid rgba(255,255,255,.3);border-radius:6px;
-    padding:6px 14px;white-space:nowrap;flex-shrink:0;transition:background .2s
-  }
-  .res-hdr .back:hover{background:rgba(255,255,255,.15);opacity:1}
+  ${pubBase("res")}
+  ${PUB_HDR_CSS}
+  .res .pub-hdr .inner{max-width:900px}
 
   /* ── HERO ── */
   .res-hero{
@@ -264,21 +234,8 @@ export default async function ResultadosPage() {
     <div className={`res ${inter.variable} ${playfair.variable}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      {/* HEADER */}
-      <header className="res-hdr">
-        <div className="inner">
-          <Link href="/" className="brand">
-            <Image src="/logo.png" alt="E.C. Itaquerense" width={40} height={40} style={{ borderRadius: 8, flexShrink: 0 }} />
-            <div>
-              <div className="brand-name">E.C. Itaquerense</div>
-              <div className="brand-sub">Resultados &amp; Classificação</div>
-            </div>
-          </Link>
-          <Link href="/" className="back">← Voltar ao site</Link>
-        </div>
-      </header>
+      <PublicHeader subtitle="Resultados & Classificação" />
 
-      {/* HERO */}
       <div className="res-hero">
         <div className="inner">
           <h1>Jogos & Classificação</h1>
@@ -316,7 +273,6 @@ export default async function ResultadosPage() {
 
           return (
             <div key={camp.id} className="res-camp">
-              {/* Camp header */}
               <div className="res-camp-hdr">
                 <div className="res-camp-icon">
                   <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -360,7 +316,6 @@ export default async function ResultadosPage() {
                 </div>
               </div>
 
-              {/* Próximo jogo destaque */}
               {proximoJogo && (
                 <>
                   <div className="sec-lbl">Próximo jogo</div>
@@ -386,7 +341,6 @@ export default async function ResultadosPage() {
                 </>
               )}
 
-              {/* Últimos resultados */}
               {realizadasDisplay.length > 0 && (
                 <>
                   <div className="sec-lbl">Últimos resultados</div>
@@ -418,7 +372,6 @@ export default async function ResultadosPage() {
                 </>
               )}
 
-              {/* Agenda — jogos futuros além do destaque */}
               {futuras.length > 1 && (
                 <>
                   <div className="sec-lbl">Agenda</div>
@@ -444,7 +397,6 @@ export default async function ResultadosPage() {
                 </>
               )}
 
-              {/* Classificação */}
               {camp.classificacaoFpfs.length > 0 && (
                 <>
                   <div className="sec-lbl">Classificação</div>

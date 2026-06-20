@@ -1,10 +1,8 @@
-import Image from "next/image"
 import Link from "next/link"
-import { Inter, Playfair_Display } from "next/font/google"
+import { inter, playfair } from "@/lib/public-fonts"
+import { pubBase, PUB_HDR_CSS } from "@/lib/public-css"
+import { PublicHeader } from "@/components/public/public-header"
 import { MatriculaForm } from "./matricula-form"
-
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" })
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-heading" })
 
 export const metadata = {
   title: "Pré-Matrícula — E.C. Itaquerense",
@@ -12,31 +10,9 @@ export const metadata = {
 }
 
 const css = `
-  .mat *{margin:0;box-sizing:border-box}
-  .mat{
-    --red:#C62828;--red-dark:#9F1D1D;--red-deep:#4A0B0B;
-    --bg:#FAF8F5;--text:#1A1A2E;--text-muted:#6B6B7B;--border:#E8E2DA;
-    font-family:var(--font-body),Arial,sans-serif;
-    background:var(--bg);color:var(--text);min-height:100vh;
-    -webkit-font-smoothing:antialiased
-  }
-  .mat a{text-decoration:none;color:inherit}
-
-  /* HEADER */
-  .mat-hdr{
-    background:linear-gradient(135deg,#4A0B0B 0%,#C62828 60%,#9F1D1D 100%);
-    color:#fff;position:sticky;top:0;z-index:100;
-    box-shadow:0 2px 16px rgba(0,0,0,.28)
-  }
-  .mat-hdr .inner{
-    max-width:680px;margin:0 auto;padding:0 24px;
-    display:flex;align-items:center;height:68px;gap:14px
-  }
-  .mat-hdr .brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
-  .mat-hdr .brand-name{font-family:var(--font-heading),Georgia,serif;font-size:17px;font-weight:800;letter-spacing:-.3px}
-  .mat-hdr .brand-sub{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1.5px;font-weight:500}
-  .mat-hdr .back{font-size:12px;font-weight:600;opacity:.85;color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:6px 14px;white-space:nowrap;flex-shrink:0;transition:background .2s}
-  .mat-hdr .back:hover{background:rgba(255,255,255,.15);opacity:1}
+  ${pubBase("mat")}
+  ${PUB_HDR_CSS}
+  .mat .pub-hdr .inner{max-width:680px}
 
   /* HERO */
   .mat-hero{
@@ -68,7 +44,7 @@ const css = `
   .mat-card-sub{font-size:13px;color:var(--text-muted);margin-bottom:28px}
 
   /* FOOTER */
-  .mat-foot{border-top:1px solid var(--border);padding:24px;text-align:center}
+  .mat-foot{border-top:1px solid var(--border);padding:24px}
   .mat-foot .inner{max-width:680px;margin:0 auto;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
   .mat-foot a{font-size:13px;font-weight:600;color:var(--red);opacity:.8;transition:opacity .2s}
   .mat-foot a:hover{opacity:1}
@@ -92,21 +68,8 @@ export default function MatriculaPage() {
     <div className={`mat ${inter.variable} ${playfair.variable}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      {/* HEADER */}
-      <header className="mat-hdr">
-        <div className="inner">
-          <Link href="/" className="brand">
-            <Image src="/logo.png" alt="E.C. Itaquerense" width={40} height={40} style={{ borderRadius: 8, flexShrink: 0 }} />
-            <div>
-              <div className="brand-name">E.C. Itaquerense</div>
-              <div className="brand-sub">Pré-Matrícula</div>
-            </div>
-          </Link>
-          <Link href="/" className="back">← Voltar ao site</Link>
-        </div>
-      </header>
+      <PublicHeader subtitle="Pré-Matrícula" />
 
-      {/* HERO */}
       <div className="mat-hero">
         <div className="inner">
           <div className="season">Temporada 2026</div>
@@ -115,7 +78,6 @@ export default function MatriculaPage() {
         </div>
       </div>
 
-      {/* DIFERENCIAIS */}
       <div className="mat-difs">
         {DIFERENCIAIS.map((d) => (
           <div key={d.titulo} className="mat-dif">
@@ -128,7 +90,6 @@ export default function MatriculaPage() {
         ))}
       </div>
 
-      {/* FORM */}
       <div className="mat-body">
         <div className="mat-card">
           <div className="mat-card-title">Formulário de Inscrição</div>
@@ -137,7 +98,6 @@ export default function MatriculaPage() {
         </div>
       </div>
 
-      {/* FOOTER */}
       <footer className="mat-foot">
         <div className="inner">
           <Link href="/responsavel">Portal do Responsável</Link>

@@ -1,21 +1,12 @@
 import Image from "next/image"
 import Link from "next/link"
-import { Inter, Playfair_Display } from "next/font/google"
-
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" })
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-heading" })
+import { inter, playfair } from "@/lib/public-fonts"
+import { pubBase } from "@/lib/public-css"
 
 const css = `
-  .nf{
-    --red:#C62828;--red-dark:#9F1D1D;--red-deep:#4A0B0B;
-    --bg:#FAF8F5;--text:#1A1A2E;--text-muted:#6B6B7B;--border:#E8E2DA;
-    font-family:var(--font-body),Arial,sans-serif;
-    background:var(--bg);color:var(--text);min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:40px 24px;text-align:center;-webkit-font-smoothing:antialiased
-  }
-  .nf *{margin:0;padding:0;box-sizing:border-box}
-  .nf a{text-decoration:none;color:inherit}
+  ${pubBase("nf")}
+  .nf{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:40px 24px;text-align:center}
 
   .nf-logo{width:64px;height:64px;object-fit:contain;margin-bottom:28px;
     filter:drop-shadow(0 4px 12px rgba(198,40,40,.25))}

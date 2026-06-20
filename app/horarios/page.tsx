@@ -1,57 +1,19 @@
 import Link from "next/link"
-import Image from "next/image"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 import { getConfig } from "@/lib/config"
-import { Inter, Playfair_Display } from "next/font/google"
+import { inter, playfair } from "@/lib/public-fonts"
+import { pubBase, PUB_HDR_CSS, PUB_FOOT_CSS } from "@/lib/public-css"
+import { PublicHeader } from "@/components/public/public-header"
 import HorariosClient from "./horarios-client"
 
 export const metadata = { title: "Turmas & Horários — E.C. Itaquerense" }
 
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-body" })
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800", "900"], variable: "--font-heading" })
-
 const css = `
-  .hp{
-    --red:#C62828;--red-dark:#9F1D1D;--red-darker:#7F0000;--red-deep:#4A0B0B;--red-warm:#D84040;
-    --white:#fff;--bg:#FAF8F5;--bg-card:#fff;--bg-muted:#F3EFE9;
-    --text:#1A1A2E;--text-muted:#6B6B7B;--text-light:#9696A0;
-    --border:#E8E2DA;
-    --shadow-sm:0 2px 8px rgba(26,26,46,.07);
-    --shadow-md:0 8px 28px rgba(26,26,46,.12);
-    --shadow-red:0 8px 28px rgba(198,40,40,.22);
-    --radius-md:12px;--radius-lg:18px;--radius-xl:24px;
-    --ease:cubic-bezier(.25,.46,.45,.94);
-    font-family:var(--font-body),Arial,sans-serif;
-    color:var(--text);background:var(--bg);
-    -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:clip;
-  }
-  .hp *{margin:0;padding:0;box-sizing:border-box}
-  .hp a{text-decoration:none;color:inherit}
+  ${pubBase("hp")}
   .hp ul{list-style:none}
   .hp .container{max-width:1060px;margin:0 auto;padding:0 24px}
-
-  /* HEADER */
-  .hp-hdr{
-    background:linear-gradient(135deg,#4A0B0B 0%,#C62828 60%,#9F1D1D 100%);
-    color:#fff;position:sticky;top:0;z-index:100;
-    box-shadow:0 2px 16px rgba(0,0,0,.28)
-  }
-  .hp-hdr .inner{
-    max-width:1060px;margin:0 auto;padding:0 24px;
-    display:flex;align-items:center;height:68px;gap:14px
-  }
-  .hp-hdr .brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
-  .hp-hdr .brand-name{
-    font-family:var(--font-heading),Georgia,serif;font-size:17px;
-    font-weight:800;letter-spacing:-.3px;white-space:nowrap
-  }
-  .hp-hdr .brand-sub{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:1.5px;font-weight:500}
-  .hp-hdr .back{
-    font-size:12px;font-weight:600;opacity:.85;color:#fff;
-    border:1px solid rgba(255,255,255,.3);border-radius:6px;
-    padding:6px 14px;white-space:nowrap;flex-shrink:0;transition:background .2s
-  }
-  .hp-hdr .back:hover{background:rgba(255,255,255,.15);opacity:1}
+  ${PUB_HDR_CSS}
+  ${PUB_FOOT_CSS}
 
   /* HERO */
   .hp .hero{background:linear-gradient(135deg,var(--red-deep) 0%,var(--red) 55%,var(--red-dark) 100%);
@@ -80,13 +42,6 @@ const css = `
 
   /* SECTION */
   .hp .section{padding:48px 0 80px}
-
-  /* FOOTER */
-  .hp .foot{border-top:1px solid var(--border);padding:28px 0}
-  .hp .foot .container{display:flex;align-items:center;justify-content:space-between;
-    font-size:12px;color:var(--text-light);flex-wrap:wrap;gap:10px}
-  .hp .foot a{color:var(--text-muted);font-weight:600;transition:color .2s}
-  .hp .foot a:hover{color:var(--red)}
 `
 
 export default async function HorariosPage() {
@@ -99,21 +54,8 @@ export default async function HorariosPage() {
       <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/dist/tabler-icons.min.css" rel="stylesheet" />
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      {/* HEADER */}
-      <header className="hp-hdr">
-        <div className="inner">
-          <Link href="/" className="brand">
-            <Image src="/logo.png" alt="E.C. Itaquerense" width={40} height={40} style={{ borderRadius: 8, flexShrink: 0 }} />
-            <div>
-              <div className="brand-name">E.C. Itaquerense</div>
-              <div className="brand-sub">Turmas &amp; Horários</div>
-            </div>
-          </Link>
-          <Link href="/" className="back">← Voltar ao site</Link>
-        </div>
-      </header>
+      <PublicHeader subtitle="Turmas & Horários" />
 
-      {/* HERO */}
       <div className="hero">
         <div className="hero-deco" />
         <div className="hero-deco2" />
@@ -127,16 +69,14 @@ export default async function HorariosPage() {
         </div>
       </div>
 
-      {/* CONTEÚDO INTERATIVO */}
       <section className="section">
         <div className="container">
           <HorariosClient turmas={turmas} waUrl={waUrl} />
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="foot">
-        <div className="container">
+      <footer className="pub-foot">
+        <div className="inner">
           <span>© 2026 E.C. Itaquerense. Todos os direitos reservados.</span>
           <div style={{ display: "flex", gap: 20 }}>
             <Link href="/matricula">Pré-Matrícula</Link>
