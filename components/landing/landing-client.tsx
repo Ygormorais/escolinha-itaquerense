@@ -10,7 +10,7 @@ import type { NoticiaCard } from "@/lib/landing/noticias"
 import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { temSobre, temGaleria, temDepoimentos } from "@/lib/landing/conteudo"
-import type { StatsLanding } from "@/lib/landing/stats"
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -207,7 +207,6 @@ export function LandingClient({
   sobre,
   galeria,
   depoimentos,
-  stats,
 }: {
   noticias: NoticiaCard[]
   noticiasClube: NoticiaClube[]
@@ -216,7 +215,6 @@ export function LandingClient({
   sobre: SobreConteudo | null
   galeria: FotoGaleria[]
   depoimentos: Depoimento[]
-  stats?: StatsLanding
 }) {
   const [navOpen, setNavOpen] = useState(false)
 

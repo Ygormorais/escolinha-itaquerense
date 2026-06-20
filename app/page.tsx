@@ -1,6 +1,6 @@
 import { getHeroDestaque, heroView } from "@/lib/landing/jogos"
 import { getNoticiasCarrossel } from "@/lib/landing/noticias"
-import { getStatsLanding } from "@/lib/landing/stats"
+
 import { db } from "@/lib/db"
 import { sobre, galeria, depoimentos } from "@/lib/landing/conteudo"
 import { getConfig } from "@/lib/config"
@@ -10,7 +10,7 @@ import type { NoticiaClube } from "@/components/landing/noticias-clube-carrossel
 export const metadata = { title: "Escolinha Itaquerense" }
 
 export default async function Page() {
-  const [noticias, noticiasClube, config, destaque, stats] = await Promise.all([
+  const [noticias, noticiasClube, config, destaque] = await Promise.all([
     getNoticiasCarrossel(),
     db.noticia.findMany({
       where: { publicado: true },
@@ -20,7 +20,6 @@ export default async function Page() {
     }) as Promise<NoticiaClube[]>,
     getConfig(),
     getHeroDestaque(),
-    getStatsLanding(),
   ])
   return (
     <LandingClient
@@ -31,7 +30,7 @@ export default async function Page() {
       sobre={sobre}
       galeria={galeria}
       depoimentos={depoimentos}
-      stats={stats}
+
     />
   )
 }
