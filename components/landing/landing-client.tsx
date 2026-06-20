@@ -181,19 +181,6 @@ const css = `
   @media(max-width:900px){.lp .depo .grid{grid-template-columns:1fr}}
   .lp .modalidades{border-top:1px solid var(--border)}
 
-  /* STATS STRIP */
-  .lp .stats{background:var(--red-deep);color:#fff;padding:32px 0}
-  .lp .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
-  .lp .stat+.stat{border-left:1px solid rgba(255,255,255,.12)}
-  .lp .stat-num{font-family:var(--font-heading),Georgia,serif;font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1}
-  .lp .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;opacity:.7;margin-top:6px}
-  @media(max-width:600px){
-    .lp .stats-grid{grid-template-columns:repeat(2,1fr);gap:0}
-    .lp .stat{padding:20px 0}
-    .lp .stat:nth-child(3){border-left:none}
-    .lp .stat:nth-child(n+3){border-top:1px solid rgba(255,255,255,.12)}
-  }
-
   /* ACESSO RÁPIDO */
   .lp .acesso{background:var(--bg-muted);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
   .lp .acesso-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
@@ -232,8 +219,7 @@ export function LandingClient({
   stats?: StatsLanding
 }) {
   const [navOpen, setNavOpen] = useState(false)
-  const alunosAtivos = stats?.alunosAtivos ?? 200
-  const categoriasAtivas = stats?.categoriasAtivas ?? 8
+
   const waNumber = whatsapp?.replace(/\D/g, "") || "5511999999999"
   const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de mais informações sobre a Escolinha Itaquerense.")}`
 
@@ -278,18 +264,6 @@ export function LandingClient({
           <h1>{hero.titulo}</h1>
           <p>{hero.descricao}</p>
           <a href={hero.ctaHref} className="btn btn-white">{hero.ctaLabel}</a>
-        </div>
-      </div>
-
-      {/* ===== STATS STRIP ===== */}
-      <div className="stats">
-        <div className="container">
-          <div className="stats-grid">
-            <div className="stat"><div className="stat-num">{alunosAtivos}{alunosAtivos >= 100 && <span style={{fontSize:24}}>+</span>}</div><div className="stat-label">Alunos ativos</div></div>
-            <div className="stat"><div className="stat-num">15<span style={{fontSize:24}}>+</span></div><div className="stat-label">Anos de história</div></div>
-            <div className="stat"><div className="stat-num">{categoriasAtivas}</div><div className="stat-label">Categorias Sub</div></div>
-            <div className="stat"><div className="stat-num">FPFS</div><div className="stat-label">Federados oficiais</div></div>
-          </div>
         </div>
       </div>
 
