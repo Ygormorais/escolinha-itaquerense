@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { format, startOfMonth, endOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { MonthPicker } from "@/app/caixa/month-picker"
+import Link from "next/link"
 
 export const metadata = { title: "Recebimentos — Escolinha Itaquerense" }
 
@@ -26,7 +27,7 @@ export default async function RecebimentosPage({
 
   const pagamentos = await db.pagamento.findMany({
     where: { dataPagamento: { gte: inicio, lte: fim } },
-    include: { aluno: { select: { nome: true, turma: true } } },
+    include: { aluno: { select: { id: true, nome: true, turma: true } } },
     orderBy: { dataPagamento: "desc" },
   })
 
@@ -106,7 +107,9 @@ export default async function RecebimentosPage({
             )}
             {pagamentos.map((p) => (
               <TableRow key={p.id}>
-                <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                <TableCell className="font-medium">
+                  <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                </TableCell>
                 <TableCell>{p.aluno.turma}</TableCell>
                 <TableCell>{p.mesReferencia}</TableCell>
                 <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>

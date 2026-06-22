@@ -3,10 +3,12 @@ import { formatMoney, plural } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck, Inbox, CheckCircle2, TrendingDown } from "lucide-react"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, Inbox, CheckCircle2, TrendingDown, UserX } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import Link from "next/link"
 import dynamic from "next/dynamic"
 import { MonthPicker } from "@/app/caixa/month-picker"
 import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
@@ -69,6 +71,7 @@ export default async function DashboardPage({
     mensalidadesVencidas,
     alunosInadimplentes,
     alunosEmQueda,
+    inadimplentesComFreqBaixa,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     db.pagamento.findMany({
@@ -76,7 +79,7 @@ export default async function DashboardPage({
     }),
     db.pagamento.findMany({
       where: { dataPagamento: { not: null } },
-      include: { aluno: { select: { nome: true, turma: true } } },
+      include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataPagamento: "desc" },
       take: 5,
     }),
@@ -92,7 +95,7 @@ export default async function DashboardPage({
         dataPagamento: null,
         dataVencimento: { lt: fimMes },
       },
-      include: { aluno: { select: { nome: true, turma: true } } },
+      include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
       take: 5,
     }),
@@ -114,7 +117,7 @@ export default async function DashboardPage({
         dataPagamento: null,
         dataVencimento: { gte: inicioMes, lte: addDays(fimMes, 7) },
       },
-      include: { aluno: { select: { nome: true, turma: true } } },
+      include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
     }),
     Promise.all(
@@ -159,6 +162,27 @@ export default async function DashboardPage({
       distinct: ["alunoId"],
     }).then((rows) => rows.length),
     getQtdeAlunosEmQueda(mesSelecionado),
+    // Alunos em risco: inadimplentes com frequência baixa no mês
+    db.aluno.findMany({
+      where: {
+        status: "Ativo",
+        pagamentos: { some: { dataPagamento: null, dataVencimento: { lt: now } } },
+      },
+      select: {
+        id: true,
+        nome: true,
+        turma: true,
+        frequencias: {
+          where: { data: { gte: inicioMes, lte: fimMes } },
+          select: { presenca: true },
+        },
+        pagamentos: {
+          where: { dataPagamento: null, dataVencimento: { lt: now } },
+          select: { mesReferencia: true },
+        },
+      },
+      orderBy: { nome: "asc" },
+    }),
   ])
 
   const chartData = last6Months.map((mes) => {
@@ -201,6 +225,18 @@ export default async function DashboardPage({
     ? Math.round((frequenciasMes / totalFrequencias) * 100)
     : 0
 
+  const riscoEvasao = inadimplentesComFreqBaixa
+    .map((a) => {
+      const total = a.frequencias.length
+      const presentes = a.frequencias.filter((f) => f.presenca === "Presente").length
+      const pctFreq = total > 0 ? Math.round((presentes / total) * 100) : null
+      return { ...a, pctFreq, mesesAtraso: a.pagamentos.length }
+    })
+    .filter((a) => a.pctFreq === null || a.pctFreq < 60)
+    .sort((a, b) => a.mesesAtraso - b.mesesAtraso)
+    .reverse()
+    .slice(0, 8)
+
   const alerts: { type: "danger" | "warning" | "info"; icon: AlertIcon; message: string; detail: string }[] = []
   if (mensalidadesVencidas > 5) {
     alerts.push({ type: "danger", icon: "alerta", message: `${mensalidadesVencidas} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
@@ -216,6 +252,9 @@ export default async function DashboardPage({
   }
   if (vencendoSemana.length > 0) {
     alerts.push({ type: "info", icon: "tendencia", message: `${plural(vencendoSemana.length, "mensalidade vence", "mensalidades vencem", "nenhuma")} nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
+  }
+  if (riscoEvasao.length >= 3) {
+    alerts.push({ type: "warning", icon: "alerta", message: `${riscoEvasao.length} alunos em risco de evasão`, detail: "Inadimplentes com presença abaixo de 60% este mês." })
   }
 
   const receitaAnterior = mesAnteriorData.receita
@@ -361,7 +400,9 @@ export default async function DashboardPage({
               <TableBody>
                 {vencendoSemana.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                    </TableCell>
                     <TableCell>{p.aluno.turma}</TableCell>
                     <TableCell className="text-warning-600 font-medium">
                       {format(p.dataVencimento, "dd/MM/yyyy")}
@@ -371,6 +412,42 @@ export default async function DashboardPage({
                 ))}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {riscoEvasao.length > 0 && (
+        <Card className="border-danger-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-danger-700">
+              <UserX className="size-4" />
+              Alunos em Risco de Evasão ({riscoEvasao.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {riscoEvasao.map((a) => (
+                <Link key={a.id} href={`/alunos/${a.id}`} className="flex items-center justify-between px-6 py-3 hover:bg-muted/30 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium">{a.nome}</p>
+                    <p className="text-xs text-muted-foreground">{a.turma}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {a.pctFreq !== null && (
+                      <Badge className={`text-[10px] ${a.pctFreq < 40 ? "bg-danger-50 text-danger-700" : "bg-warning-50 text-warning-700"}`}>
+                        {a.pctFreq}% presença
+                      </Badge>
+                    )}
+                    {a.pctFreq === null && (
+                      <Badge className="text-[10px] bg-muted text-muted-foreground">sem chamada</Badge>
+                    )}
+                    <Badge className="text-[10px] bg-danger-50 text-danger-700">
+                      {a.mesesAtraso} {a.mesesAtraso === 1 ? "mês" : "meses"} atraso
+                    </Badge>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -402,7 +479,9 @@ export default async function DashboardPage({
                 <TableBody>
                   {ultimosPagamentos.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                      </TableCell>
                       <TableCell>{p.aluno.turma}</TableCell>
                       <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
                       <TableCell className="text-right">
@@ -439,7 +518,9 @@ export default async function DashboardPage({
                 <TableBody>
                   {inadimplentes.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                      </TableCell>
                       <TableCell>{p.aluno.turma}</TableCell>
                       <TableCell className="text-danger-600">
                         {format(p.dataVencimento, "dd/MM/yyyy")}

@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react"
 import { plural } from "@/lib/utils"
-import { format } from "date-fns"
+import { format, differenceInDays, isPast } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Search, CheckCircle2, XCircle, MessageSquare } from "lucide-react"
+import { Search, CheckCircle2, XCircle, MessageSquare, Clock, AlertTriangle, Inbox } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,8 +20,22 @@ type Solicitacao = {
   descricao: string
   status: string
   resposta: string | null
+  prazo: Date | null
   createdAt: Date
   responsavel: { nome: string; email: string; telefone: string }
+}
+
+function PrazoBadge({ prazo, status }: { prazo: Date | null; status: string }) {
+  if (!prazo || status === "resolvida" || status === "recusada") return null
+  const date = new Date(prazo)
+  const days = differenceInDays(date, new Date())
+  const vencido = isPast(date)
+  return (
+    <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${vencido ? "bg-danger-50 text-danger-600" : days <= 1 ? "bg-warning-50 text-warning-600" : "bg-muted text-muted-foreground"}`}>
+      {vencido ? <AlertTriangle className="size-3" /> : <Clock className="size-3" />}
+      {vencido ? `Vencido ${Math.abs(days)}d atrás` : days === 0 ? "Vence hoje" : `${days}d restantes`}
+    </span>
+  )
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -43,9 +57,9 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
     return s.responsavel.nome.toLowerCase().includes(q) || s.descricao.toLowerCase().includes(q)
   })
 
-  function handleResponder(id: number, status: string, resposta: string) {
+  function handleResponder(id: number, status: string, resposta: string, prazo?: string) {
     startTransition(async () => {
-      const res = await responderSolicitacao(id, status, resposta)
+      const res = await responderSolicitacao(id, status, resposta, prazo || null)
       if ("error" in res) toast.error(res.error as string)
       else toast.success("Solicitação atualizada")
     })
@@ -74,22 +88,28 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
       </div>
 
       <div className="rounded-xl border bg-card divide-y">
-        {filtradas.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma solicitação encontrada.</p>}
+        {filtradas.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-10 text-center">
+            <Inbox className="size-8 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Nenhuma solicitação encontrada.</p>
+          </div>
+        )}
         {filtradas.map((s) => {
           const responderJSX = s.status === "pendente" || s.status === "em_andamento" ? (
-            <ResponderForm id={s.id} onResponder={handleResponder} />
+            <ResponderForm id={s.id} prazo={s.prazo} onResponder={handleResponder} />
           ) : null
 
           return (
             <div key={s.id} className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{s.responsavel.nome}</span>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[s.status] ?? ""}`}>
                       {s.status === "em_andamento" ? "Em andamento" : s.status.charAt(0).toUpperCase() + s.status.slice(1)}
                     </span>
                     <span className="text-xs text-muted-foreground">{s.tipo}</span>
+                    <PrazoBadge prazo={s.prazo} status={s.status} />
                   </div>
                   <p className="mt-1 text-sm text-ink-700">{s.descricao}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
@@ -112,8 +132,9 @@ export function AdminSolicitacoesClient({ solicitacoes }: { solicitacoes: Solici
   )
 }
 
-function ResponderForm({ id, onResponder }: { id: number; onResponder: (id: number, status: string, resposta: string) => void }) {
+function ResponderForm({ id, prazo: prazoAtual, onResponder }: { id: number; prazo: Date | null; onResponder: (id: number, status: string, resposta: string, prazo?: string) => void }) {
   const [resposta, setResposta] = useState("")
+  const [prazo, setPrazo] = useState(prazoAtual ? format(new Date(prazoAtual), "yyyy-MM-dd") : "")
   const [aberto, setAberto] = useState(false)
 
   if (!aberto) {
@@ -123,9 +144,14 @@ function ResponderForm({ id, onResponder }: { id: number; onResponder: (id: numb
   return (
     <div className="mt-3 space-y-2">
       <Textarea value={resposta} onChange={(e) => setResposta(e.target.value)} placeholder="Escreva sua resposta..." />
+      <div className="flex items-center gap-2">
+        <label className="text-xs text-muted-foreground whitespace-nowrap">Prazo SLA</label>
+        <input type="date" value={prazo} onChange={(e) => setPrazo(e.target.value)} className="rounded-md border border-input bg-background px-2 py-1 text-xs" />
+      </div>
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => { onResponder(id, "resolvida", resposta); setAberto(false) }} className="bg-success-600 text-white"><CheckCircle2 className="size-4" /> Resolver</Button>
-        <Button size="sm" variant="outline" onClick={() => { onResponder(id, "recusada", resposta); setAberto(false) }} className="text-destructive border-destructive"><XCircle className="size-4" /> Recusar</Button>
+        <Button size="sm" onClick={() => { onResponder(id, "resolvida", resposta, prazo || undefined); setAberto(false) }} className="bg-success-600 text-white"><CheckCircle2 className="size-4" /> Resolver</Button>
+        <Button size="sm" variant="outline" onClick={() => { onResponder(id, "recusada", resposta, prazo || undefined); setAberto(false) }} className="text-destructive border-destructive"><XCircle className="size-4" /> Recusar</Button>
+        <Button size="sm" onClick={() => { onResponder(id, "em_andamento", resposta, prazo || undefined); setAberto(false) }} variant="outline"><Clock className="size-4" /> Em andamento</Button>
         <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
       </div>
     </div>

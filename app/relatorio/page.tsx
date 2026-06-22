@@ -10,6 +10,7 @@ import { TrendingUp, TrendingDown, Wallet, AlertCircle } from "lucide-react"
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { RelatorioHeader, RelatorioChart, RelatorioPrintStyle } from "./relatorio-client"
+import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 
 export const metadata = { title: "Relatório Financeiro — Escolinha Itaquerense" }
 
@@ -74,6 +75,7 @@ export default async function RelatorioPage({
   return (
     <div className="relatorio-print flex flex-col gap-6 p-6">
       <RelatorioPrintStyle />
+      <RelatorioNav />
       <PageHeader
         title="Relatório Anual"
         description={`Resumo financeiro consolidado — ${ano}`}

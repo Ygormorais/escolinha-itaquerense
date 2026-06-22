@@ -41,3 +41,34 @@ export async function removerProduto(id: number) {
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
 }
+
+export async function ajustarEstoque(
+  produtoId: number,
+  tipo: "entrada" | "saida",
+  quantidade: number,
+  motivo?: string
+) {
+  await requireAuth()
+  if (quantidade <= 0) return { error: "Quantidade deve ser positiva" }
+
+  const produto = await db.produto.findUnique({ where: { id: produtoId } })
+  if (!produto) return { error: "Produto não encontrado" }
+  if (tipo === "saida" && produto.estoque < quantidade) return { error: "Estoque insuficiente" }
+
+  const delta = tipo === "entrada" ? quantidade : -quantidade
+  await db.$transaction([
+    db.movimentoEstoque.create({ data: { produtoId, tipo, quantidade, motivo } }),
+    db.produto.update({ where: { id: produtoId }, data: { estoque: { increment: delta } } }),
+  ])
+  revalidatePath("/produtos")
+  return { success: true as const }
+}
+
+export async function getMovimentosEstoque(produtoId: number) {
+  await requireAuth()
+  return db.movimentoEstoque.findMany({
+    where: { produtoId },
+    orderBy: { createdAt: "desc" },
+    take: 30,
+  })
+}

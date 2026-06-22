@@ -90,19 +90,19 @@ describe("getHeroDestaque", () => {
 describe("heroView", () => {
   const base = { adversario: "Vila Real", data: new Date("2026-06-14T16:00:00"), local: "Casa", campeonato: "Sub-9 A3" }
 
-  it("proximo jogo vira manchete com CTA para #jogos", () => {
+  it("proximo jogo vira manchete com CTA para /resultados", () => {
     const v = heroView({ tipo: "proximo", ...base })
     expect(v.badge).toBe("Sub-9 A3")
     expect(v.titulo).toContain("Vila Real")
     expect(v.descricao).toContain("14/06")
-    expect(v.ctaHref).toBe("#jogos")
+    expect(v.ctaHref).toBe("/resultados")
   })
 
   it("vitoria celebra com placar", () => {
     const v = heroView({ tipo: "resultado", ...base, placar: "2 × 1", resultado: "Vitoria" })
     expect(v.titulo).toContain("vence")
     expect(v.titulo).toContain("2 × 1")
-    expect(v.ctaHref).toBe("#jogos")
+    expect(v.ctaHref).toBe("/resultados")
   })
 
   it("empate e derrota usam tom neutro", () => {

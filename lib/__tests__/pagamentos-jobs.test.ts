@@ -39,8 +39,8 @@ describe("runGerarMensalidadesMes", () => {
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
       data: [
-        { alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10) },
-        { alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10) },
+        { alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null },
+        { alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null },
       ],
     })
     expect(result).toEqual({ criados: 2, ignorados: 0 })
@@ -56,7 +56,7 @@ describe("runGerarMensalidadesMes", () => {
     const result = await runGerarMensalidadesMes("2025-06")
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
-      data: [{ alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10) }],
+      data: [{ alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null }],
     })
     expect(result).toEqual({ criados: 1, ignorados: 1 })
   })
@@ -69,7 +69,7 @@ describe("runGerarMensalidadesMes", () => {
     await runGerarMensalidadesMes("2025-06")
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
-      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 15) }],
+      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 15), canalPrevisto: null, statusCobranca: null }],
     })
   })
 
@@ -81,7 +81,7 @@ describe("runGerarMensalidadesMes", () => {
     await runGerarMensalidadesMes("2025-06")
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
-      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10) }],
+      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null }],
     })
   })
 

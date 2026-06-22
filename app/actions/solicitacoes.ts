@@ -49,9 +49,28 @@ export async function adminListarSolicitacoes(status?: string) {
   })
 }
 
-export async function responderSolicitacao(id: number, status: string, resposta: string) {
+export async function responderSolicitacao(
+  id: number,
+  status: string,
+  resposta: string,
+  prazo?: string | null
+) {
   await requireAuth(["admin", "secretaria"])
-  await db.solicitacao.update({ where: { id }, data: { status, resposta: resposta?.trim() || null } })
+  await db.solicitacao.update({
+    where: { id },
+    data: {
+      status,
+      resposta: resposta?.trim() || null,
+      prazo: prazo ? new Date(prazo) : undefined,
+    },
+  })
+  revalidatePath("/configuracoes/solicitacoes")
+  return { success: true }
+}
+
+export async function definirPrazoSolicitacao(id: number, prazo: string) {
+  await requireAuth(["admin", "secretaria"])
+  await db.solicitacao.update({ where: { id }, data: { prazo: new Date(prazo) } })
   revalidatePath("/configuracoes/solicitacoes")
   return { success: true }
 }

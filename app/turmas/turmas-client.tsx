@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import { plural, formatMoney } from "@/lib/utils"
 import Link from "next/link"
-import { Phone, MessageCircle, TrendingUp, Search, Filter } from "lucide-react"
+import { Phone, MessageCircle, TrendingUp, Search, Filter, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -127,7 +127,10 @@ export function TurmasClient({
             </CardHeader>
             <CardContent className="flex-1 p-0">
               {membros.length === 0 ? (
-                <p className="px-6 py-4 text-sm text-muted-foreground">Nenhum aluno nesta turma</p>
+                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                  <Users className="size-7 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">Nenhum aluno nesta turma</p>
+                </div>
               ) : (
                 <div className="divide-y divide-muted">
                   {membros.map((a) => (

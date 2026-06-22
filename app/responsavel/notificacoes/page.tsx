@@ -11,12 +11,13 @@ const TIPOS = [
   { key: "falta", label: "Aluno faltou", desc: "Quando registrarem falta no treino" },
   { key: "convocacao", label: "Convocação para jogo", desc: "Quando criarem uma partida" },
   { key: "comunicado", label: "Comunicado novo", desc: "Quando a escola enviar avisos" },
+  { key: "avaliacao", label: "Boletim publicado", desc: "Quando uma avaliação for cadastrada ou atualizada" },
 ] as const
 
 type Prefs = Record<string, boolean>
 
 export default function NotificacoesPage() {
-  const [prefs, setPrefs] = useState<Prefs>({ vencimento: true, pagamentoConfirmado: true, falta: false, convocacao: true, comunicado: true })
+  const [prefs, setPrefs] = useState<Prefs>({ vencimento: true, pagamentoConfirmado: true, falta: false, convocacao: true, comunicado: true, avaliacao: true })
   const [ativo, setAtivo] = useState(() =>
     typeof Notification !== "undefined" && Notification.permission === "granted"
   )

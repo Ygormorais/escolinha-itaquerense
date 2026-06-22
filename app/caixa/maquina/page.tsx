@@ -42,8 +42,12 @@ export default async function MaquinaPage() {
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taxa Média</p>
-          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight text-muted-foreground">—</p>
-          <p className="text-xs text-muted-foreground">Após reconciliar</p>
+          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight">
+            {resumo.taxaMedia != null ? `${resumo.taxaMedia.toFixed(2)}%` : "—"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {resumo.taxaMedia != null ? "Custo sobre vendas" : "Sem dados de taxa"}
+          </p>
         </div>
       </div>
 

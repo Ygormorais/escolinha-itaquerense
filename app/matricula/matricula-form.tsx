@@ -1,12 +1,8 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Loader2, User, Phone, FileText, CalendarDays, StickyNote } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
@@ -59,10 +55,9 @@ export function MatriculaForm() {
     const tel = telefone.replace(/\D/g, "")
     if (tel.length < 10 || tel.length > 11) return "Telefone inválido — informe DDD + número."
     if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataNasc)) return "Data inválida — use DD/MM/AAAA."
-    const [d, m, a] = dataNasc.split("/").map(Number)
-    const ano = a
+    const [, , a] = dataNasc.split("/").map(Number)
     const anoAtual = new Date().getFullYear()
-    if (anoAtual - ano < 3 || anoAtual - ano > 20) return "Data de nascimento fora do intervalo esperado (3–20 anos)."
+    if (anoAtual - a < 3 || anoAtual - a > 20) return "Data de nascimento fora do intervalo esperado (3–20 anos)."
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return "E-mail inválido."
     return null
   }
@@ -96,41 +91,51 @@ export function MatriculaForm() {
 
   if (enviado) {
     return (
-      <div className="text-center py-12">
-        <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-success-50">
-          <span className="text-3xl">✓</span>
+      <div className="mat-success">
+        <div className="mat-success-icon">
+          <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
         </div>
-        <h2 className="font-heading text-xl font-bold text-ink-950">Pré-matrícula enviada!</h2>
-        <p className="mt-2 text-muted-foreground">
-          Recebemos seus dados. Entraremos em contato em até 48h para finalizar a matrícula.
-        </p>
+        <h2>Pré-matrícula enviada!</h2>
+        <p>Recebemos seus dados. Entraremos em contato em até 48h para finalizar a matrícula.</p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit}>
 
-      {/* ── Dados do Aluno ── */}
-      <div>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-brand-50">
-            <User className="size-4 text-brand-700" />
+      {/* ── 1. Dados do Aluno ── */}
+      <div className="mat-sec">
+        <div className="mat-sec-hdr">
+          <div className="mat-sec-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
           </div>
-          <h3 className="font-heading text-base font-bold text-ink-950">Dados do Aluno</h3>
-          <div className="h-px flex-1 bg-border" />
+          <span className="mat-sec-title">Dados do Aluno</span>
+          <div className="mat-sec-line" />
         </div>
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="aluno">Nome do Aluno *</Label>
-            <Input id="aluno" value={aluno} onChange={(e) => setAluno(e.target.value)} className="h-11" placeholder="Nome completo do aluno" required />
+
+        <div className="mat-fields">
+          <div className="mat-field">
+            <label htmlFor="aluno">Nome do Aluno *</label>
+            <input
+              id="aluno"
+              className="mat-input"
+              value={aluno}
+              onChange={(e) => setAluno(e.target.value)}
+              placeholder="Nome completo do aluno"
+              required
+            />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="dataNasc">Data de Nascimento *</Label>
-            <div className="relative">
-              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
+
+          <div className="mat-field">
+            <label htmlFor="dataNasc">Data de Nascimento *</label>
+            <div className="mat-input-wrap">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <input
                 id="dataNasc"
+                className="mat-input"
                 type="text"
                 inputMode="numeric"
                 value={dataNasc}
@@ -141,16 +146,16 @@ export function MatriculaForm() {
                   else if (digits.length > 2) masked = digits.slice(0,2) + "/" + digits.slice(2)
                   setDataNasc(masked)
                 }}
-                className="h-11 pl-10"
                 placeholder="DD/MM/AAAA"
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Turma</Label>
+
+          <div className="mat-row">
+            <div className="mat-field">
+              <label>Turma</label>
               <Select value={turma} onValueChange={(v) => { if (v) setTurma(v) }}>
-                <SelectTrigger className="h-11 w-full">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -158,10 +163,10 @@ export function MatriculaForm() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>Horário</Label>
+            <div className="mat-field">
+              <label>Horário</label>
               <Select value={horario} onValueChange={(v) => { if (v) setHorario(v) }}>
-                <SelectTrigger className="h-11 w-full">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -173,25 +178,35 @@ export function MatriculaForm() {
         </div>
       </div>
 
-      {/* ── Dados do Responsável ── */}
-      <div>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-brand-50">
-            <Phone className="size-4 text-brand-700" />
+      {/* ── 2. Dados do Responsável ── */}
+      <div className="mat-sec">
+        <div className="mat-sec-hdr">
+          <div className="mat-sec-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .92h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
           </div>
-          <h3 className="font-heading text-base font-bold text-ink-950">Dados do Responsável</h3>
-          <div className="h-px flex-1 bg-border" />
+          <span className="mat-sec-title">Dados do Responsável</span>
+          <div className="mat-sec-line" />
         </div>
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="responsavel">Nome do Responsável *</Label>
-            <Input id="responsavel" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} className="h-11" placeholder="Nome completo do responsável" required />
+
+        <div className="mat-fields">
+          <div className="mat-field">
+            <label htmlFor="responsavel">Nome do Responsável *</label>
+            <input
+              id="responsavel"
+              className="mat-input"
+              value={responsavel}
+              onChange={(e) => setResponsavel(e.target.value)}
+              placeholder="Nome completo do responsável"
+              required
+            />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="telefone">Telefone *</Label>
-              <Input
+
+          <div className="mat-row">
+            <div className="mat-field">
+              <label htmlFor="telefone">Telefone *</label>
+              <input
                 id="telefone"
+                className="mat-input"
                 type="tel"
                 inputMode="numeric"
                 value={telefone}
@@ -207,46 +222,48 @@ export function MatriculaForm() {
                   }
                   setTelefone(masked)
                 }}
-                className="h-11"
                 placeholder="(11) 99999-9999"
                 required
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" placeholder="seu@email.com" />
+            <div className="mat-field">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                className="mat-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Documentos ── */}
-      <div>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-brand-50">
-            <FileText className="size-4 text-brand-700" />
+      {/* ── 3. Documentos ── */}
+      <div className="mat-sec">
+        <div className="mat-sec-hdr">
+          <div className="mat-sec-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14,2 14,8 20,8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10,9 9,9 8,9" /></svg>
           </div>
-          <h3 className="font-heading text-base font-bold text-ink-950">Documentos</h3>
-          <div className="h-px flex-1 bg-border" />
+          <span className="mat-sec-title">Documentos</span>
+          <div className="mat-sec-line" />
         </div>
-        <div>
-          <Label>Anexar documentos (RG, comprovante, etc.)</Label>
+
+        <div className="mat-field">
+          <label>Anexar documentos (RG, comprovante, etc.)</label>
           <label
             htmlFor="documento"
-            className={[
-              "mt-1 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors",
-              uploading
-                ? "cursor-not-allowed border-border bg-muted opacity-60"
-                : "border-border bg-muted/40 hover:border-brand-400 hover:bg-brand-50",
-            ].join(" ")}
+            className={`mat-upload${uploading ? " uploading" : ""}`}
           >
-            <span className="text-2xl">📎</span>
+            <div className="mat-upload-icon">📎</div>
             {uploading ? (
-              <span className="text-sm font-medium text-muted-foreground">Enviando...</span>
+              <div className="mat-upload-main" style={{ color: "var(--text-muted)" }}>Enviando...</div>
             ) : (
               <>
-                <span className="text-sm font-semibold text-brand-700">Clique para selecionar</span>
-                <span className="text-xs text-muted-foreground">PDF, JPG ou PNG</span>
+                <div className="mat-upload-main">Clique para selecionar</div>
+                <div className="mat-upload-sub">PDF, JPG ou PNG</div>
               </>
             )}
             <input
@@ -255,35 +272,37 @@ export function MatriculaForm() {
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={handleUpload}
               disabled={uploading}
-              className="sr-only"
+              style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
             />
           </label>
           {documentos.length > 0 && (
-            <ul className="mt-3 space-y-1.5">
+            <div className="mat-docs">
               {documentos.map((doc, i) => (
-                <li key={i} className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                  <span className="text-base">📄</span>
+                <div key={i} className="mat-doc">
+                  <span>📄</span>
                   {doc.name}
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </div>
 
-      {/* ── Observações ── */}
-      <div>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-brand-50">
-            <StickyNote className="size-4 text-brand-700" />
+      {/* ── 4. Observações ── */}
+      <div className="mat-sec">
+        <div className="mat-sec-hdr">
+          <div className="mat-sec-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14,2 14,8 20,8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
           </div>
-          <h3 className="font-heading text-base font-bold text-ink-950">Observações</h3>
-          <div className="h-px flex-1 bg-border" />
+          <span className="mat-sec-title">Observações</span>
+          <div className="mat-sec-line" />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="observacoes">Informações adicionais (opcional)</Label>
-          <Textarea
+
+        <div className="mat-field">
+          <label htmlFor="observacoes">Informações adicionais (opcional)</label>
+          <textarea
             id="observacoes"
+            className="mat-textarea"
             value={observacoes}
             onChange={(e) => setObservacoes(e.target.value)}
             placeholder="Alguma informação relevante sobre o aluno, necessidades especiais, etc."
@@ -292,9 +311,12 @@ export function MatriculaForm() {
         </div>
       </div>
 
-      <Button type="submit" disabled={pending} size="lg" className="w-full bg-brand-700 text-white hover:bg-brand-800 h-12 text-base font-semibold">
-        {pending ? <><Loader2 className="size-5 animate-spin" /> Enviando...</> : "Enviar Pré-Matrícula →"}
-      </Button>
+      <button type="submit" disabled={pending} className="mat-submit">
+        {pending
+          ? <><Loader2 size={20} className="animate-spin" /> Enviando...</>
+          : "Enviar Pré-Matrícula →"
+        }
+      </button>
     </form>
   )
 }

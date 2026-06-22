@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-react"
 import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -46,6 +47,7 @@ type Aluno = { id: number; nome: string; responsavel: string }
 export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[]; alunos: Aluno[] }) {
   const router = useRouter()
   const [filter, setFilter] = useState("todas")
+  const [filtroPeriodo, setFiltroPeriodo] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedTransacao, setSelectedTransacao] = useState<Transacao | null>(null)
   const [alunoId, setAlunoId] = useState("")
@@ -54,7 +56,15 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
   const [pending, start] = useTransition()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const filtered = filter === "todas" ? transacoes : transacoes.filter((t) => t.status === filter)
+  const filtered = transacoes.filter((t) => {
+    if (filter !== "todas" && t.status !== filter) return false
+    if (filtroPeriodo) {
+      const d = toDate(t.dataTransacao)
+      const mes = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+      if (mes !== filtroPeriodo) return false
+    }
+    return true
+  })
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -113,8 +123,30 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
     })
   }
 
+  const totalValor = filtered.reduce((s, t) => s + t.valor, 0)
+  const reconciliadas = filtered.filter((t) => t.status === "reconciliado").length
+  const pendentes = filtered.filter((t) => t.status === "pendente").length
+
   return (
     <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Transações</p>
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">{filtered.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</p>
+          <p className="mt-1 text-xl font-extrabold text-success-700">{formatMoney(totalValor)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Reconciliadas</p>
+          <p className="mt-1 text-2xl font-extrabold text-success-700">{reconciliadas}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pendentes</p>
+          <p className={`mt-1 text-2xl font-extrabold ${pendentes > 0 ? "text-warning-600" : "text-muted-foreground"}`}>{pendentes}</p>
+        </div>
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={pending} className="gap-2">
@@ -129,7 +161,17 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
             </Button>
           </ConfirmDialog>
         </div>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="month"
+            value={filtroPeriodo}
+            onChange={(e) => setFiltroPeriodo(e.target.value)}
+            className="rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          {filtroPeriodo && (
+            <Button variant="ghost" size="sm" onClick={() => setFiltroPeriodo("")}>Limpar</Button>
+          )}
+          <span className="text-border">|</span>
           {["todas", "pendente", "reconciliado", "ignorado"].map((f) => (
             <Button key={f} variant={filter === f ? "default" : "ghost"} size="sm" onClick={() => setFilter(f)}>
               {f === "todas" ? "Todas" : f === "pendente" ? "Pendentes" : f === "reconciliado" ? "Reconciliadas" : "Ignoradas"}
@@ -185,7 +227,11 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
                       {t.status === "reconciliado" ? "Ok" : t.status === "ignorado" ? "Ignorado" : "Pendente"}
                     </Badge>
                   </TableCell>
-                  <TableCell>{t.aluno?.nome || "—"}</TableCell>
+                  <TableCell>
+                    {t.aluno ? (
+                      <Link href={`/alunos/${t.aluno.id}`} className="hover:underline text-brand-800">{t.aluno.nome}</Link>
+                    ) : "—"}
+                  </TableCell>
                   <TableCell>
                     {t.status === "pendente" && (
                       <div className="flex gap-1">

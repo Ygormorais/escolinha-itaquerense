@@ -5,7 +5,9 @@ import { heroView } from "@/lib/landing/jogos"
 
 describe("landing publica", () => {
   const hero = heroView({ tipo: "institucional" })
-  const html = renderToStaticMarkup(<LandingClient categorias={[]} hero={hero} sobre={null} galeria={[]} depoimentos={[]} />)
+  const html = renderToStaticMarkup(
+    <LandingClient noticias={[]} noticiasClube={[]} hero={hero} sobre={null} galeria={[]} depoimentos={[]} />
+  )
 
   it("expoe o acesso a Administracao", () => {
     expect(html).toContain('href="/login"')
@@ -18,19 +20,19 @@ describe("landing publica", () => {
   })
   it("renderiza o hero vindo do servidor", () => {
     expect(html).toContain("Formação de base com paixão itaquerense")
-    expect(html).toContain('href="/matricula"')
   })
-  it("hero de proximo jogo renderiza manchete e CTA para #jogos", () => {
+  it("hero de proximo jogo renderiza manchete e CTA para /resultados", () => {
     const proximo = heroView({
       tipo: "proximo", adversario: "Vila Real",
       data: new Date("2026-06-14T16:00:00"), local: "Casa", campeonato: "Sub-9 A3",
     })
-    const h = renderToStaticMarkup(<LandingClient categorias={[]} hero={proximo} sobre={null} galeria={[]} depoimentos={[]} />)
+    const h = renderToStaticMarkup(
+      <LandingClient noticias={[]} noticiasClube={[]} hero={proximo} sobre={null} galeria={[]} depoimentos={[]} />
+    )
     expect(h).toContain("Próximo desafio: Itaquerense × Vila Real")
-    expect(h).toContain('href="#jogos"')
+    expect(h).toContain('href="/resultados"')
   })
   it("nao tem mais placeholders de noticias nem patrocinadores", () => {
-    expect(html).not.toContain("Notícias")
     expect(html).not.toContain("Patrocinadores")
     expect(html).not.toContain("Sócio Torcedor")
     expect(html).not.toContain("Transmissão Ao Vivo")
@@ -40,7 +42,7 @@ describe("landing publica", () => {
     expect(header.match(/Matrícula/g)).toHaveLength(1)
   })
   it("hero institucional nao duplica o CTA do banner de matricula", () => {
-    const hero = html.slice(html.indexOf('class="hero"'), html.indexOf('id="jogos"'))
-    expect(hero).not.toContain("/matricula")
+    const heroSection = html.slice(html.indexOf('class="hero"'), html.indexOf('id="noticias"'))
+    expect(heroSection).not.toContain("/matricula")
   })
 })

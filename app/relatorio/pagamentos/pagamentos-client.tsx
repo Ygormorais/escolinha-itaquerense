@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import Link from "next/link"
 import { Download, Printer, Search, X } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
+import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
 import { printHTML } from "@/lib/print"
@@ -140,6 +142,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
+      <RelatorioNav />
       <PageHeader
         title="Relatório de Pagamentos"
         description={`${filtrados.length} de ${pagamentos.length} registros — ${ano}`}
@@ -312,7 +315,9 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
                   const canal = getPaymentChannel(p.formaPagamento)
                   return (
                     <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">{p.aluno.turma}</Badge>
                       </TableCell>

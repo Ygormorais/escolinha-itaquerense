@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import {
   LayoutDashboard,
   Users,
@@ -28,6 +29,8 @@ import {
   Film,
   ShoppingBag,
   Award,
+  ChevronRight,
+  QrCode,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -75,7 +78,7 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
     ]
     const restrictedSecretaria = [
       "/custos", "/caixa", "/produtos", "/campeonatos",
-      "/avaliacoes",
+      "/avaliacoes", "/tecnico",
     ]
     if (role === "admin") return true
     if (role === "tecnico") return !restrictedTecnico.some((r) => href.startsWith(r))
@@ -87,6 +90,7 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
 
 export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { onClose?: () => void; role?: SidebarRole; pendingEscalacoes?: number }) {
   const pathname = usePathname()
+  const [relOpen, setRelOpen] = useState(() => pathname.startsWith("/relatorio"))
 
   const navGroups: NavGroup[] = [
     {
@@ -94,6 +98,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
       items: filterByRole([
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
+        { href: "/tecnico", label: "Painel Técnico", icon: Trophy },
       ], role),
     },
     {
@@ -103,6 +108,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
         { href: "/turmas",        label: "Turmas",        icon: Users2 },
         { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
         { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
+        { href: "/frequencia/qrcode", label: "QR Presença", icon: QrCode },
         { href: "/agenda",        label: "Agenda",         icon: Calendar },
         { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
         { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },
@@ -119,15 +125,11 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
       label: "Documentos & Config",
       items: filterByRole([
         { href: "/recibos",       label: "Recibos",       icon: FileText },
-        { href: "/relatorio",     label: "Rel. Financeiro", icon: BarChart3 },
-        { href: "/relatorio/alunos", label: "Rel. Alunos", icon: Users },
-        { href: "/relatorio/pagamentos", label: "Rel. Pagamentos", icon: CreditCard },
-        { href: "/relatorio/frequencia", label: "Rel. Frequência", icon: CalendarCheck },
         { href: "/historico",     label: "Histórico",     icon: History },
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },
         { href: "/configuracoes", label: "Configurações", icon: Settings },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
-        { href: "/configuracoes/escalacoes", label: "Escalações", icon: MessageSquareWarning, badge: pendingEscalacoes },
+        { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning },
         { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList },
       ], role),
@@ -163,7 +165,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
             </p>
             <div className="flex flex-col gap-0.5">
               {group.items.map(({ href, label, icon: Icon, badge }) => {
-                const isActive = pathname.startsWith(href)
+                const isActive = pathname === href || (pathname.startsWith(href + "/") && !navGroups.flatMap(g => g.items).some(i => i.href !== href && i.href.startsWith(href + "/") && pathname.startsWith(i.href)))
                 return (
                   <Link
                     key={href}
@@ -178,15 +180,62 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
                     )}
                   >
                     <Icon className="size-4 shrink-0" />
-                    {label}
+                    <span className="flex-1 truncate">{label}</span>
                     {badge != null && badge > 0 && (
-                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+                      <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
                         {badge > 99 ? "99+" : badge}
                       </span>
                     )}
                   </Link>
                 )
               })}
+              {group.label === "Documentos & Config" && (
+                <div>
+                  <button
+                    onClick={() => setRelOpen((v) => !v)}
+                    className={cn(
+                      "relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      pathname.startsWith("/relatorio")
+                        ? "bg-brand-50 text-brand-800 font-semibold"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <BarChart3 className="size-4 shrink-0" />
+                    <span className="flex-1 truncate text-left">Relatórios</span>
+                    <ChevronRight className={cn("size-3.5 shrink-0 transition-transform", relOpen && "rotate-90")} />
+                  </button>
+                  {relOpen && (
+                    <div className="ml-4 flex flex-col gap-0.5 border-l border-border pl-3">
+                      {filterByRole([
+                        { href: "/relatorio", label: "Financeiro", icon: BarChart3 },
+                        { href: "/relatorio/turmas", label: "Por Turma", icon: Users2 },
+                        { href: "/relatorio/alunos", label: "Alunos", icon: Users },
+                        { href: "/relatorio/pagamentos", label: "Pagamentos", icon: CreditCard },
+                        { href: "/relatorio/frequencia", label: "Frequência", icon: CalendarCheck },
+                      ], role).map(({ href, label, icon: Icon }) => {
+                        const isActive = pathname === href || (href !== "/relatorio" && pathname.startsWith(href))
+                        return (
+                          <Link
+                            key={href}
+                            href={href}
+                            onClick={onClose}
+                            aria-current={isActive ? "page" : undefined}
+                            className={cn(
+                              "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors",
+                              isActive
+                                ? "text-brand-800 font-semibold"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                            )}
+                          >
+                            <Icon className="size-3.5 shrink-0" />
+                            <span className="truncate">{label}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}

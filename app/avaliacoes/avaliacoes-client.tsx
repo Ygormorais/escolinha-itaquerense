@@ -1,10 +1,13 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useMemo } from "react"
 import { plural } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
-import { Plus, Pencil, Trash2, ClipboardX, Loader2 } from "lucide-react"
+import { Plus, Pencil, Trash2, ClipboardX, Loader2, Download } from "lucide-react"
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from "recharts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -22,6 +25,7 @@ import {
 import {
   Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
+import Link from "next/link"
 import { toast } from "sonner"
 import {
   criarAvaliacao, atualizarAvaliacao, removerAvaliacao,
@@ -320,6 +324,51 @@ type AvaliacoesClientProps = {
 
 export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) {
   const router = useRouter()
+  const [filtroAlunoId, setFiltroAlunoId] = useState<string>("all")
+
+  const listaFiltrada = useMemo(
+    () => filtroAlunoId === "all" ? avaliacoes : avaliacoes.filter((a) => String(a.alunoId) === filtroAlunoId),
+    [avaliacoes, filtroAlunoId]
+  )
+
+  function mediaNota(campo: "notaTecnica" | "notaFisica" | "notaComportamento") {
+    const vals = listaFiltrada.map((a) => a[campo]).filter((v): v is number => v !== null)
+    return vals.length > 0 ? (vals.reduce((s, v) => s + v, 0) / vals.length).toFixed(1) : "—"
+  }
+
+  const dadosGrafico = useMemo(() => {
+    if (filtroAlunoId === "all") return []
+    return [...listaFiltrada]
+      .sort((a, b) => a.periodo.localeCompare(b.periodo))
+      .map((a) => ({
+        periodo: a.periodo,
+        Técnica: a.notaTecnica,
+        Física: a.notaFisica,
+        Comportamento: a.notaComportamento,
+      }))
+  }, [listaFiltrada, filtroAlunoId])
+
+  function exportarCSV() {
+    const linhas = [
+      ["Aluno", "Turma", "Período", "Técnica", "Física", "Comportamento", "Frequência", "Observações"],
+      ...listaFiltrada.map((a) => [
+        a.aluno.nome, a.aluno.turma, a.periodo,
+        a.notaTecnica !== null ? String(a.notaTecnica) : "",
+        a.notaFisica !== null ? String(a.notaFisica) : "",
+        a.notaComportamento !== null ? String(a.notaComportamento) : "",
+        a.frequencia !== null ? `${a.frequencia}%` : "",
+        a.observacoes ?? "",
+      ]),
+    ]
+    const csv = "﻿" + linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n")
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `avaliacoes-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   async function handleDelete(avaliacao: Avaliacao) {
     try {
@@ -336,10 +385,81 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-xl font-semibold">Avaliações</h1>
-          <p className="text-sm text-muted-foreground">{plural(avaliacoes.length, "avaliação registrada", "avaliações registradas", "nenhuma")}</p>
+          <p className="text-sm text-muted-foreground">{plural(listaFiltrada.length, "avaliação registrada", "avaliações registradas", "nenhuma")}</p>
         </div>
-        <NovaAvaliacaoDialog alunos={alunos} />
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportarCSV} disabled={listaFiltrada.length === 0}>
+            <Download className="size-4" /> Exportar CSV
+          </Button>
+          <NovaAvaliacaoDialog alunos={alunos} />
+        </div>
       </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avaliações</p>
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">{listaFiltrada.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Técnica</p>
+          <p className="mt-1 text-2xl font-extrabold">{mediaNota("notaTecnica")}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Física</p>
+          <p className="mt-1 text-2xl font-extrabold">{mediaNota("notaFisica")}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Comportamento</p>
+          <p className="mt-1 text-2xl font-extrabold">{mediaNota("notaComportamento")}</p>
+        </div>
+      </div>
+
+      {/* Filtro por aluno */}
+      <div className="flex items-center gap-3">
+        <Select value={filtroAlunoId} onValueChange={(v) => v && setFiltroAlunoId(v)}>
+          <SelectTrigger className="w-64">
+            <SelectValue placeholder="Filtrar por aluno" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os alunos</SelectItem>
+            {alunos.map((a) => (
+              <SelectItem key={a.id} value={String(a.id)}>
+                {a.nome} — {a.turma}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {filtroAlunoId !== "all" && (
+          <button
+            onClick={() => setFiltroAlunoId("all")}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+
+      {/* Gráfico de evolução (só aparece quando um aluno está selecionado e tem 2+ períodos) */}
+      {filtroAlunoId !== "all" && dadosGrafico.length >= 2 && (
+        <div className="rounded-xl border bg-card p-4">
+          <p className="mb-3 text-sm font-semibold">Evolução por período</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={dadosGrafico} margin={{ top: 4, right: 16, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
+              <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                formatter={(value: unknown) => typeof value === "number" ? value.toFixed(1) : String(value)}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="Técnica" stroke="#2563eb" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="Física" stroke="#16a34a" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="Comportamento" stroke="#d97706" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       <div className="rounded-xl border bg-card">
         <Table>
@@ -356,7 +476,7 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {avaliacoes.length === 0 && (
+            {listaFiltrada.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8}>
                   <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
@@ -367,9 +487,11 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
                 </TableCell>
               </TableRow>
             )}
-            {avaliacoes.map((a) => (
+            {listaFiltrada.map((a) => (
               <TableRow key={a.id}>
-                <TableCell className="font-medium">{a.aluno.nome}</TableCell>
+                <TableCell className="font-medium">
+                  <Link href={`/alunos/${a.alunoId}`} className="hover:underline text-brand-800">{a.aluno.nome}</Link>
+                </TableCell>
                 <TableCell>{a.aluno.turma}</TableCell>
                 <TableCell>{a.periodo}</TableCell>
                 <TableCell>

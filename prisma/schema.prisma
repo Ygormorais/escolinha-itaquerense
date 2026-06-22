@@ -19,8 +19,16 @@ model Aluno {
   mensalidade    Float
   desconto       Float                 @default(0)
   foto           String?
+  posicao        String?               // GOLEIRO | FIXO | ALA_ESQ | ALA_DIR | PIVO
   status         String                @default("Ativo")
   observacoes    String?
+  // Ficha médica
+  tipoSanguineo  String?
+  alergias       String?
+  condicaoSaude  String?
+  contatoEmergenciaNome     String?
+  contatoEmergenciaTel      String?
+  contatoEmergenciaParentesco String?
   pagamentos     Pagamento[]
   frequencias    Frequencia[]
   uniformes      Uniforme[]
@@ -31,6 +39,7 @@ model Aluno {
   responsavelRef Responsavel?          @relation(fields: [responsavelId], references: [id])
   avaliacoes     Avaliacao[]
   escalacoes     EscalacaoJogador[]
+  renovacoes     RenovacaoMatricula[]
   createdAt      DateTime              @default(now())
 
   @@index([status])
@@ -140,6 +149,7 @@ model Responsavel {
   chatSessions      ChatSession[]
   resetTokens       ResetToken[]
   solicitacoes      Solicitacao[]
+  renovacoes        RenovacaoMatricula[]
   pushSubscriptions PushSubscription[]
   notificacaoPrefs  NotificacaoPreferencia?
   createdAt         DateTime                @default(now())
@@ -366,6 +376,7 @@ model Solicitacao {
   descricao     String
   status        String      @default("pendente") // pendente, em_andamento, resolvida, recusada
   resposta      String?
+  prazo         DateTime?   // SLA deadline definido pelo admin
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -388,16 +399,29 @@ model PreMatricula {
 }
 
 model Produto {
-  id        Int      @id @default(autoincrement())
+  id        Int                @id @default(autoincrement())
   nome      String
   descricao String?
-  preco     Float    @default(0)
-  categoria String   @default("uniforme") // uniforme, acessorio, outro
-  tamanhos  String? // "P,M,G,GG" ou "Único"
-  estoque   Int      @default(0)
-  ativo     Boolean  @default(true)
-  imagem    String? // URL da imagem
+  preco     Float              @default(0)
+  categoria String             @default("uniforme") // uniforme, acessorio, outro
+  tamanhos  String?            // "P,M,G,GG" ou "Único"
+  estoque   Int                @default(0)
+  ativo     Boolean            @default(true)
+  imagem    String?            // URL da imagem
+  movimentos MovimentoEstoque[]
+  createdAt DateTime           @default(now())
+}
+
+model MovimentoEstoque {
+  id        Int      @id @default(autoincrement())
+  produtoId Int
+  produto   Produto  @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  tipo      String   // "entrada" | "saida"
+  quantidade Int
+  motivo    String?
   createdAt DateTime @default(now())
+
+  @@index([produtoId])
 }
 
 model Avaliacao {
@@ -426,6 +450,24 @@ model Recebimento {
   createdAt      DateTime @default(now())
 
   @@index([data])
+}
+
+model LancamentoBancario {
+  id        Int      @id @default(autoincrement())
+  data      DateTime
+  descricao String
+  valor     Float    // positivo = entrada, negativo = saída
+  tipo      String   // "entrada" | "saida"
+  saldo     Float?   // saldo após o lançamento (se disponível no extrato)
+  banco     String?  // nome/identificador do banco
+  arquivo   String   // nome do arquivo importado
+  status    String   @default("novo") // "novo" | "reconciliado" | "ignorado"
+  categoria String?  // "mensalidade" | "custo_operacional" | "transferencia" | "imposto" | "outro"
+  createdAt DateTime @default(now())
+
+  @@index([data])
+  @@index([tipo])
+  @@index([status])
 }
 
 model EscalacaoJogador {
@@ -466,6 +508,23 @@ model NotificacaoPreferencia {
   falta               Boolean     @default(false)
   convocacao          Boolean     @default(true)
   comunicado          Boolean     @default(true)
+  avaliacao           Boolean     @default(true)
+}
+
+model RenovacaoMatricula {
+  id            Int         @id @default(autoincrement())
+  alunoId       Int
+  aluno         Aluno       @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  periodo       String      // "2026-2S"
+  status        String      @default("pendente") // pendente, aprovada, recusada
+  observacoes   String?
+  resposta      String?
+  createdAt     DateTime    @default(now())
+
+  @@unique([alunoId, periodo])
+  @@index([responsavelId])
 }
 
 model Noticia {

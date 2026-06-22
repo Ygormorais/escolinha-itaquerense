@@ -26,7 +26,7 @@ export default async function EscalacaoPage({
   const [alunos, escalacao] = await Promise.all([
     db.aluno.findMany({
       where: { status: "Ativo" },
-      select: { id: true, nome: true, turma: true },
+      select: { id: true, nome: true, turma: true, posicao: true },
       orderBy: { nome: "asc" },
     }),
     getEscalacao(pid),

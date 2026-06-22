@@ -7,6 +7,7 @@ import { CalendarCheck, ArrowLeft, TrendingUp, User } from "lucide-react"
 import Link from "next/link"
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { FrequenciaGrafico } from "./frequencia-grafico"
 
 export const metadata = { title: "Frequência — Portal do Responsável" }
 
@@ -155,6 +156,18 @@ export default async function FrequenciaPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Gráfico por mês */}
+            {aluno.frequencias.length >= 3 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">Evolução mensal</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <FrequenciaGrafico frequencias={aluno.frequencias} />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Histórico recente */}
             <Card>

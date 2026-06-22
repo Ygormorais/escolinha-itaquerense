@@ -13,6 +13,10 @@ export type ClubConfig = {
   googleCalendarId: string
   diaVencimento: number
   intervaloDiasLembreteInadimplencia: number
+  // Templates de mensagem WhatsApp
+  templateCobranca: string
+  templateLembreteVencimento: string
+  templateFalta: string
 }
 
 const CONFIG_PATH = path.join(process.cwd(), "club.config.json")
@@ -29,6 +33,9 @@ const DEFAULT: ClubConfig = {
   googleCalendarId: "",
   diaVencimento: 10,
   intervaloDiasLembreteInadimplencia: 7,
+  templateCobranca: "Olá {responsavel}!\n\nLembrete: mensalidades de *{aluno}* em atraso:\n\n{meses}\n\nTotal: *{total}*\n{pix}\n\nQualquer dúvida, entre em contato.",
+  templateLembreteVencimento: "Olá {responsavel}! Lembrete: a mensalidade de *{aluno}* vence em *{data}*.\n\nValor: *{valor}*{pix}\n\nObrigado!",
+  templateFalta: "Olá {responsavel}! Registramos a *falta* de *{aluno}* no treino do dia {data}.\n\nQualquer dúvida, entre em contato.",
 }
 
 export function getConfig(): ClubConfig {

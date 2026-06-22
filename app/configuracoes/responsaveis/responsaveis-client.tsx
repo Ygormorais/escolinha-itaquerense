@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -159,15 +160,15 @@ export function ResponsaveisClient({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="resp-nome">Nome *</Label>
-                <Input id="resp-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+                <Input id="resp-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} disabled={submitting} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="resp-email">Email *</Label>
-                <Input id="resp-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                <Input id="resp-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} disabled={submitting} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="resp-tel">Telefone</Label>
-                <Input id="resp-tel" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
+                <Input id="resp-tel" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} disabled={submitting} />
               </div>
               {editId && (
                 <div className="space-y-2">
@@ -185,6 +186,7 @@ export function ResponsaveisClient({
                     }}
                     placeholder="000.000.000-00"
                     maxLength={14}
+                    disabled={submitting}
                   />
                   <p className="text-xs text-muted-foreground">Necessário para identificação no chatbot WhatsApp</p>
                 </div>
@@ -192,7 +194,7 @@ export function ResponsaveisClient({
               {!editId && (
                 <div className="space-y-2">
                   <Label htmlFor="resp-senha">Senha *</Label>
-                  <Input id="resp-senha" type="password" autoComplete="new-password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
+                  <Input id="resp-senha" type="password" autoComplete="new-password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} disabled={submitting} />
                 </div>
               )}
             </div>
@@ -259,7 +261,7 @@ export function ResponsaveisClient({
                       <Badge variant="secondary" className="text-[10px]">{r._count.alunos}</Badge>
                       {r.alunos.map((a) => (
                         <span key={a.id} className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px]">
-                          {a.nome} ({a.turma})
+                          <Link href={`/alunos/${a.id}`} className="hover:underline text-brand-800">{a.nome}</Link> ({a.turma})
                           <ConfirmDialog title="Desvincular aluno?" description={`Desvincular ${a.nome} do responsável?`} confirmLabel="Desvincular" onConfirm={() => handleDesvincular(a.id, a.nome)}>
                             <button className="text-danger-600 hover:text-danger-800" aria-label="Desvincular aluno">
                               <UserX className="size-3" />

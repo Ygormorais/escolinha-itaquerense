@@ -59,8 +59,8 @@ export const env = {
 }
 
 export function checkCredentialsFromEnv(username: string, password: string): boolean {
-  const expectedUser = process.env.ADMIN_USERNAME
-  const expectedPass = process.env.ADMIN_PASSWORD
+  const expectedUser = process.env.ADMIN_USERNAME?.trim()
+  const expectedPass = process.env.ADMIN_PASSWORD?.trim()
   if (!expectedUser || !expectedPass) {
     if (isProd()) return false
     return username === "admin" && password === "escolinha123"

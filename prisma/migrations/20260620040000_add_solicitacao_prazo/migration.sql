@@ -1,0 +1,1 @@
+ALTER TABLE "Solicitacao" ADD COLUMN "prazo" DATETIME;

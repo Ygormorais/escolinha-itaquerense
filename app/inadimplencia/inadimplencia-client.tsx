@@ -4,7 +4,8 @@ import { useState, useTransition } from "react"
 import { sanitizeCSVCell, plural, formatPhone, formatMoney } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { format, differenceInDays } from "date-fns"
-import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send, Loader2 } from "lucide-react"
+import { AlertTriangle, Phone, CheckCircle, Download, MessageCircle, Search, Send, Loader2, CheckSquare, Square, PartyPopper } from "lucide-react"
+import Link from "next/link"
 import { EmailNotifButton } from "@/components/ui/email-notif-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { marcarComoPago } from "@/app/actions/pagamentos"
+import { notificarInadimplentesEmLote } from "@/app/actions/whatsapp"
 import { PixButton } from "@/components/ui/pix-modal"
 import { Label } from "@/components/ui/label"
 
@@ -156,8 +158,21 @@ function exportarCSV(inadimplentes: Inadimplente[]) {
   URL.revokeObjectURL(url)
 }
 
-function gerarLinkWA(a: Inadimplente, nomeClube: string) {
-  const texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${plural(a.pagamentos.length, "mensalidade", "mensalidades", "nenhuma")} em aberto na ${nomeClube}.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
+function gerarLinkWA(a: Inadimplente, nomeClube: string, template?: string) {
+  let texto: string
+  if (template) {
+    const nome = a.nome.split(" ")[0]
+    const linhasMeses = a.pagamentos.map((p) => `• ${p.mesReferencia}`).join("\n")
+    const total = (a.mensalidade * a.pagamentos.length).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+    texto = template
+      .replace("{responsavel}", nome)
+      .replace("{aluno}", a.nome)
+      .replace("{meses}", linhasMeses)
+      .replace("{total}", total)
+      .replace("{pix}", "")
+  } else {
+    texto = `Olá ${a.nome.split(" ")[0]}, tudo bem? 😊\n\nPassando para avisar que identificamos ${plural(a.pagamentos.length, "mensalidade", "mensalidades", "nenhuma")} em aberto na ${nomeClube}.\n\nPoderia nos contatar para regularizar? Obrigado! 🙏`
+  }
   return `https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(texto)}`
 }
 
@@ -166,11 +181,13 @@ export function InadimplenciaClient({
   chavePix,
   nomeClube,
   cidade,
+  templateCobranca,
 }: {
   inadimplentes: Inadimplente[]
   chavePix?: string
   nomeClube?: string
   cidade?: string
+  templateCobranca?: string
 }) {
   const now = new Date()
   const [dialogAluno, setDialogAluno] = useState<Inadimplente | null>(null)
@@ -178,6 +195,8 @@ export function InadimplenciaClient({
   const [turmaFilter, setTurmaFilter] = useState("Todas")
   const [nivelFilter, setNivelFilter] = useState("Todos")
   const [enviando, startEnviando] = useTransition()
+  const [selecionados, setSelecionados] = useState<Set<number>>(new Set())
+  const [enviandoLote, startEnviandoLote] = useTransition()
 
   const TURMAS = [...new Set(inadimplentes.map((a) => a.turma))].sort()
 
@@ -191,18 +210,69 @@ export function InadimplenciaClient({
     return nivelFilter === "Crítico" ? isCritico : !isCritico
   })
 
+  function toggleSelecionado(id: number) {
+    setSelecionados((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleTodos() {
+    if (selecionados.size === filtered.length) {
+      setSelecionados(new Set())
+    } else {
+      setSelecionados(new Set(filtered.map((a) => a.alunoId)))
+    }
+  }
+
+  function handleEnviarLoteAPI() {
+    const ids = Array.from(selecionados)
+    if (ids.length === 0) return
+    startEnviandoLote(async () => {
+      const result = await notificarInadimplentesEmLote(ids)
+      toast.success(`Enviado: ${result.enviados} · Erros: ${result.erros} · Sem tel: ${result.semTelefone}`)
+      setSelecionados(new Set())
+    })
+  }
+
   function handleNotificarEmLote() {
     if (filtered.length === 0) return
     startEnviando(async () => {
       for (let i = 0; i < filtered.length; i++) {
-        window.open(gerarLinkWA(filtered[i], nomeClube ?? "Escolinha"), "_blank")
+        window.open(gerarLinkWA(filtered[i], nomeClube ?? "Escolinha", templateCobranca), "_blank")
         if (i < filtered.length - 1) await new Promise((r) => setTimeout(r, 800))
       }
     })
   }
 
+  const totalAberto = inadimplentes.reduce((s, a) => s + a.mensalidade * a.pagamentos.length, 0)
+  const criticos = inadimplentes.filter((a) => differenceInDays(now, a.pagamentos[0]?.dataVencimento ?? now) > 30).length
+  const mediaMeses = inadimplentes.length > 0
+    ? (inadimplentes.reduce((s, a) => s + a.pagamentos.length, 0) / inadimplentes.length).toFixed(1)
+    : "0"
+
   return (
     <>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Inadimplentes</p>
+          <p className="mt-1 text-2xl font-extrabold text-danger-600">{inadimplentes.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total em Aberto</p>
+          <p className="mt-1 text-xl font-extrabold text-danger-600">{formatMoney(totalAberto)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Críticos &gt;30d</p>
+          <p className={`mt-1 text-2xl font-extrabold ${criticos > 0 ? "text-danger-600" : "text-muted-foreground"}`}>{criticos}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Meses</p>
+          <p className="mt-1 text-2xl font-extrabold">{mediaMeses}</p>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
           <div className="relative">
@@ -235,10 +305,23 @@ export function InadimplenciaClient({
           </Select>
         </div>
         <div className="flex gap-2">
+          {selecionados.size > 0 && (
+            <ConfirmDialog
+              title={`Enviar cobrança para ${selecionados.size} aluno(s)?`}
+              description="Mensagens serão enviadas via WhatsApp pelo sistema, sem abrir abas do navegador."
+              confirmLabel="Enviar agora"
+              onConfirm={handleEnviarLoteAPI}
+            >
+              <Button disabled={enviandoLote} className="bg-success-600 text-white hover:bg-success-700">
+                {enviandoLote ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                {enviandoLote ? "Enviando..." : `Cobrar ${selecionados.size} selecionados`}
+              </Button>
+            </ConfirmDialog>
+          )}
           <ConfirmDialog title="Notificar inadimplentes?" description={`Abrir WhatsApp para ${plural(filtered.length, "inadimplente", "inadimplentes", "nenhum")}? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarEmLote}>
             <Button variant="outline" disabled={filtered.length === 0 || enviando} className="text-success-600 border-success-600/30 hover:bg-success-50">
-              {enviando ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-              {enviando ? "Enviando..." : `Notificar ${filtered.length} via WhatsApp`}
+              {enviando ? <Loader2 className="size-4 animate-spin" /> : <MessageCircle className="size-4" />}
+              {enviando ? "Abrindo..." : `WhatsApp (${filtered.length})`}
             </Button>
           </ConfirmDialog>
           <EmailNotifButton />
@@ -257,6 +340,13 @@ export function InadimplenciaClient({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <button onClick={toggleTodos} className="flex items-center justify-center">
+                  {selecionados.size === filtered.length && filtered.length > 0
+                    ? <CheckSquare className="size-4 text-brand-600" />
+                    : <Square className="size-4 text-muted-foreground" />}
+                </button>
+              </TableHead>
               <TableHead>Aluno</TableHead>
               <TableHead>Turma</TableHead>
               <TableHead>Telefone</TableHead>
@@ -271,8 +361,17 @@ export function InadimplenciaClient({
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground">
-                  {search ? "Nenhum resultado para a busca" : "Nenhum aluno inadimplente"}
+                <TableCell colSpan={10}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    {search ? (
+                      <Search className="size-8 text-muted-foreground/30" />
+                    ) : (
+                      <PartyPopper className="size-8 text-success-400/60" />
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      {search ? "Nenhum resultado para a busca" : "Nenhum aluno inadimplente 🎉"}
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -283,8 +382,17 @@ export function InadimplenciaClient({
               const valorAberto = a.mensalidade * a.pagamentos.length
 
               return (
-                <TableRow key={a.alunoId}>
-                  <TableCell className="font-medium">{a.nome}</TableCell>
+                <TableRow key={a.alunoId} className={selecionados.has(a.alunoId) ? "bg-brand-50" : ""}>
+                  <TableCell>
+                    <button onClick={() => toggleSelecionado(a.alunoId)} className="flex items-center justify-center">
+                      {selecionados.has(a.alunoId)
+                        ? <CheckSquare className="size-4 text-brand-600" />
+                        : <Square className="size-4 text-muted-foreground" />}
+                    </button>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/alunos/${a.alunoId}`} className="hover:underline text-brand-800">{a.nome}</Link>
+                  </TableCell>
                   <TableCell>{a.turma}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
@@ -296,7 +404,7 @@ export function InadimplenciaClient({
                         {formatPhone(a.telefone)}
                       </a>
                       <a
-                        href={gerarLinkWA(a, nomeClube ?? "Escolinha")}
+                        href={gerarLinkWA(a, nomeClube ?? "Escolinha", templateCobranca)}
                         target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs font-medium text-success-600 hover:underline"
                       >

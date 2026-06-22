@@ -17,6 +17,7 @@ type Aluno = {
   mensalidade: number
   desconto: number
   status: string
+  posicao: string | null
   observacoes: string | null
 }
 

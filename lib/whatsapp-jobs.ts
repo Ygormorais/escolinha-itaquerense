@@ -3,6 +3,7 @@ import { getConfig } from "@/lib/config"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { formatMoney } from "@/lib/utils"
 import { ehAniversarioNoDia } from "@/lib/aniversariantes"
+import { sendPushToResponsavel } from "@/lib/push"
 
 export async function runEnviarLembretesWhatsAppInadimplencia() {
   const config = getConfig()
@@ -46,21 +47,16 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
     }
 
     const nome = aluno.responsavel?.split(" ")[0] ?? "responsável"
-    const linhasMeses = pagamentos.map((p) => `• ${p.mesReferencia} — ${formatMoney(aluno.mensalidade)}`)
+    const linhasMeses = pagamentos.map((p) => `• ${p.mesReferencia} — ${formatMoney(aluno.mensalidade)}`).join("\n")
     const total = formatMoney(pagamentos.length * aluno.mensalidade)
+    const pixLine = config.chavePix ? `\nPIX: ${config.chavePix}` : ""
 
-    const msg = [
-      `Olá ${nome}!`,
-      ``,
-      `Lembrete: mensalidades de *${aluno.nome}* em atraso:`,
-      ``,
-      ...linhasMeses,
-      ``,
-      `Total: *${total}*`,
-      config.chavePix ? `PIX: ${config.chavePix}` : ``,
-      ``,
-      `Qualquer dúvida, entre em contato.`,
-    ].filter(Boolean).join("\n")
+    const msg = (config.templateCobranca || "Olá {responsavel}!\n\nLembrete: mensalidades de *{aluno}* em atraso:\n\n{meses}\n\nTotal: *{total}*\n{pix}\n\nQualquer dúvida, entre em contato.")
+      .replace("{responsavel}", nome)
+      .replace("{aluno}", aluno.nome)
+      .replace("{meses}", linhasMeses)
+      .replace("{total}", total)
+      .replace("{pix}", pixLine)
 
     try {
       await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
@@ -123,17 +119,16 @@ export async function runEnviarLembretesWhatsAppVencendo() {
       continue
     }
 
-    const dias = Math.ceil(
-      (new Date(p.dataVencimento).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    )
-    const msg = [
-      `Olá ${p.aluno.responsavel?.split(" ")[0] ?? "responsável"}!`,
-      ``,
-      `A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* vence em *${dias} ${dias === 1 ? "dia" : "dias"}* (${new Date(p.dataVencimento).toLocaleDateString("pt-BR")}).`,
-      ``,
-      `Valor: *${formatMoney(p.aluno.mensalidade)}*`,
-      config.chavePix ? `PIX: ${config.chavePix}` : ``,
-    ].filter(Boolean).join("\n")
+    const dataVenc = new Date(p.dataVencimento).toLocaleDateString("pt-BR")
+    const pixLine = config.chavePix ? `\nPIX: ${config.chavePix}` : ""
+    const nome = p.aluno.responsavel?.split(" ")[0] ?? "responsável"
+
+    const msg = (config.templateLembreteVencimento || "Olá {responsavel}! Lembrete: a mensalidade de *{aluno}* vence em *{data}*.\n\nValor: *{valor}*{pix}\n\nObrigado!")
+      .replace("{responsavel}", nome)
+      .replace("{aluno}", p.aluno.nome)
+      .replace("{data}", dataVenc)
+      .replace("{valor}", formatMoney(p.aluno.mensalidade))
+      .replace("{pix}", pixLine)
 
     try {
       await getWhatsAppProvider().sendText({ telefone: tel, mensagem: msg })
@@ -227,6 +222,7 @@ export async function runEnviarParabensAniversariantes() {
 export async function notificarFaltas(
   registros: { alunoId: number; data: string; presenca: string }[]
 ): Promise<{ enviados: number; erros: number }> {
+  const config = getConfig()
   let enviados = 0
   let erros = 0
 
@@ -242,7 +238,7 @@ export async function notificarFaltas(
     try {
       const aluno = await db.aluno.findUnique({
         where: { id: r.alunoId },
-        select: { nome: true, telefone: true },
+        select: { nome: true, telefone: true, responsavelId: true, responsavel: true },
       })
       if (!aluno) continue
       const tel = aluno.telefone?.replace(/\D/g, "")
@@ -256,7 +252,8 @@ export async function notificarFaltas(
       if (jaNotificado) continue
 
       const dataLabel = new Date(r.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })
-      const msg = montarMensagemFalta(aluno.nome, dataLabel, r.presenca as "Ausente" | "Justificado")
+      const nomeResp = aluno.responsavel?.split(" ")[0] ?? "responsável"
+      const msg = montarMensagemFalta(aluno.nome, dataLabel, r.presenca as "Ausente" | "Justificado", nomeResp, config.templateFalta || undefined)
 
       const registro = await db.whatsAppMensagem.create({
         data: { alunoId: r.alunoId, telefone: tel, mensagem: msg, origem: "falta" },
@@ -266,6 +263,15 @@ export async function notificarFaltas(
       } catch (e) {
         await db.whatsAppMensagem.delete({ where: { id: registro.id } }).catch(() => {})
         throw e
+      }
+      // Push best-effort para responsável com dispositivo registrado
+      if (aluno.responsavelId) {
+        const dataLabel = new Date(r.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })
+        sendPushToResponsavel(aluno.responsavelId, "falta", {
+          title: r.presenca === "Justificado" ? `Falta justificada — ${aluno.nome}` : `${aluno.nome} faltou hoje`,
+          body: `Ausência registrada no treino do dia ${dataLabel}.`,
+          url: "/responsavel/frequencia",
+        }).catch(() => null)
       }
       enviados++
     } catch {
@@ -279,8 +285,16 @@ export async function notificarFaltas(
 export function montarMensagemFalta(
   nome: string,
   dataLabel: string,
-  presenca: "Ausente" | "Justificado"
+  presenca: "Ausente" | "Justificado",
+  responsavel?: string,
+  templateFalta?: string
 ): string {
+  if (templateFalta) {
+    return templateFalta
+      .replace("{responsavel}", responsavel ?? "responsável")
+      .replace("{aluno}", nome)
+      .replace("{data}", dataLabel)
+  }
   if (presenca === "Justificado") {
     return [
       `📋 Olá! Registramos a *ausência justificada* de *${nome}* no treino do dia ${dataLabel}.`,

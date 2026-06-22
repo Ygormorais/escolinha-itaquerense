@@ -110,6 +110,7 @@ export default async function InadimplenciaPage() {
           chavePix={config.chavePix}
           nomeClube={config.nome}
           cidade={config.cidade}
+          templateCobranca={config.templateCobranca}
         />
       </div>
     </div>

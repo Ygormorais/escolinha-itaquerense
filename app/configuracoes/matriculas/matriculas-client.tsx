@@ -4,7 +4,7 @@ import { useState, useTransition } from "react"
 import { plural } from "@/lib/utils"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Check, X, Trash2, ExternalLink, Search, GraduationCap } from "lucide-react"
+import { Check, X, Trash2, ExternalLink, Search, GraduationCap, ClipboardList } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -122,7 +122,10 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
       <div className="rounded-xl border bg-card">
         <div className="divide-y">
           {filtradas.length === 0 && (
-            <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma pré-matrícula encontrada.</p>
+            <div className="flex flex-col items-center gap-2 py-10 text-center">
+              <ClipboardList className="size-8 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">Nenhuma pré-matrícula encontrada.</p>
+            </div>
           )}
           {filtradas.map((m) => {
             const st = STATUS_MAP[m.status] ?? STATUS_MAP.pendente

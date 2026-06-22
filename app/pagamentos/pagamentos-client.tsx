@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { formatMoney, plural, sanitizeCSVCell } from "@/lib/utils"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download, FileUp } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download, FileUp, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MonthInput } from "@/components/ui/month-input"
@@ -36,7 +37,7 @@ type Pagamento = {
   dataPagamento: Date | null
   formaPagamento: string | null
   valorRecebido: number | null
-  aluno: { nome: string; turma: string; mensalidade: number; telefone: string }
+  aluno: { id: number; nome: string; turma: string; mensalidade: number; telefone: string }
   canalPrevisto: string | null
   statusCobranca: string | null
   externalId: string | null
@@ -263,9 +264,11 @@ export function PagamentosClient({
     })
   }
 
-  const totalPago = pagamentos
-    .filter((p) => p.dataPagamento)
-    .reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
+  const pagoList = pagamentos.filter((p) => p.dataPagamento)
+  const totalPago = pagoList.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
+  const totalPendente = pagamentos.filter((p) => !p.dataPagamento && new Date(p.dataVencimento) >= new Date()).length
+  const totalVencido = pagamentos.filter((p) => !p.dataPagamento && new Date(p.dataVencimento) < new Date()).length
+  const taxaAdimplencia = pagamentos.length > 0 ? Math.round((pagoList.length / pagamentos.length) * 100) : 0
 
   const TURMAS = [...new Set(pagamentos.map((p) => p.aluno.turma))].sort()
 
@@ -365,6 +368,25 @@ export function PagamentosClient({
 
   return (
     <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total Pago</p>
+          <p className="mt-1 text-xl font-extrabold text-success-700">{formatMoney(totalPago)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pendentes</p>
+          <p className="mt-1 text-2xl font-extrabold text-muted-foreground">{totalPendente}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Vencidos</p>
+          <p className={`mt-1 text-2xl font-extrabold ${totalVencido > 0 ? "text-danger-600" : "text-muted-foreground"}`}>{totalVencido}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Adimplência</p>
+          <p className={`mt-1 text-2xl font-extrabold ${taxaAdimplencia >= 80 ? "text-success-700" : taxaAdimplencia >= 60 ? "text-warning-600" : "text-danger-600"}`}>{taxaAdimplencia}%</p>
+        </div>
+      </div>
+
       {selected.size > 0 && (
         <div className="flex items-center gap-3 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
           <span className="text-sm font-medium text-brand-800">{plural(selected.size, "selecionado", "selecionados", "nenhum")}</span>
@@ -446,7 +468,7 @@ export function PagamentosClient({
           Importar OFX
         </Button>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-end gap-4">
         <div>
           <Label htmlFor="pag-mes" className="text-muted-foreground">Mês de referência</Label>
           <MonthInput id="pag-mes" value={mes} onChange={(v) => router.push(`/pagamentos?mes=${v}`)} className="mt-1" />
@@ -533,8 +555,15 @@ export function PagamentosClient({
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-muted-foreground">
-                  Nenhum pagamento encontrado
+                <TableCell colSpan={9}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <CreditCard className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">
+                      {search || statusFilter !== "Todos" || turmaFilter !== "Todas"
+                        ? "Nenhum pagamento para os filtros aplicados"
+                        : "Nenhum pagamento cadastrado neste mês"}
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -552,7 +581,9 @@ export function PagamentosClient({
                       />
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                  </TableCell>
                   <TableCell>{p.aluno.turma}</TableCell>
                   <TableCell>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
                   <TableCell><StatusBadge status={status} /></TableCell>

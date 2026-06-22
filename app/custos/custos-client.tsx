@@ -4,7 +4,7 @@ import { useState, useTransition, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText, Loader2 } from "lucide-react"
+import { PlusIcon, CheckIcon, PencilIcon, Trash2Icon, Download, Search, ReceiptText, Loader2, SearchX } from "lucide-react"
 import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -137,7 +137,7 @@ function CustoFormDialog({
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione" />
+                        <SelectValue placeholder="Selecione a categoria" />
                       </SelectTrigger>
                       <SelectContent>
                         {CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -301,18 +301,42 @@ export function CustosClient({
     })
   }
 
+  const topCategoria = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const c of custos) map.set(c.categoria, (map.get(c.categoria) ?? 0) + c.valor)
+    let top = ""
+    let topVal = 0
+    for (const [k, v] of map) { if (v > topVal) { top = k; topVal = v } }
+    return top || "—"
+  }, [custos])
+
+  const ticketMedio = custos.length > 0 ? total / custos.length : 0
+
   return (
     <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total do Mês</p>
+          <p className="mt-1 text-xl font-extrabold text-danger-600">{formatMoney(total)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Registros</p>
+          <p className="mt-1 text-2xl font-extrabold">{custos.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Top Categoria</p>
+          <p className="mt-1 truncate text-sm font-extrabold">{topCategoria}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ticket Médio</p>
+          <p className="mt-1 text-xl font-extrabold">{formatMoney(ticketMedio)}</p>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center gap-4">
         <div>
           <Label htmlFor="custos-mes" className="text-muted-foreground">Mês</Label>
           <MonthInput id="custos-mes" value={mes} onChange={(v) => router.push(`/custos?mes=${v}`)} className="mt-1" />
-        </div>
-        <div className="text-right">
-          <p className="text-sm text-muted-foreground">Total do mês</p>
-          <p className="text-xl font-bold font-heading text-danger-600">
-            {formatMoney(total)}
-          </p>
         </div>
         <div className="ml-auto flex flex-col items-end gap-2">
           {geradoMsg && <p className="text-xs text-success-600 font-medium">{geradoMsg}</p>}
@@ -383,8 +407,11 @@ export function CustosClient({
             )}
             {custos.length > 0 && custosFiltrados.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
-                  Nenhum custo encontrado para &ldquo;{busca}&rdquo;.
+                <TableCell colSpan={8}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <SearchX className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Nenhum custo encontrado para &ldquo;{busca}&rdquo;.</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

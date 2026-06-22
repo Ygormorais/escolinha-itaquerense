@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { differenceInDays, format } from "date-fns"
+import Link from "next/link"
+import { QrCode, Inbox } from "lucide-react"
 
 export const metadata = { title: "PIX — Escolinha Itaquerense" }
 
@@ -13,13 +15,13 @@ export default async function PixPage() {
   const [emitidos, recebidos] = await Promise.all([
     db.pagamento.findMany({
       where: { canalPrevisto: "PIX", statusCobranca: "pendente" },
-      include: { aluno: { select: { nome: true, turma: true } } },
+      include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
       take: 200,
     }),
     db.pagamento.findMany({
       where: { dataPagamento: { not: null }, formaPagamento: "PIX" },
-      include: { aluno: { select: { nome: true, turma: true } } },
+      include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataPagamento: "desc" },
       take: 100,
     }),
@@ -74,7 +76,10 @@ export default async function PixPage() {
           </div>
           <div className="rounded-xl border bg-card overflow-x-auto">
             {emitidos.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">Nenhuma cobrança PIX aguardando pagamento.</div>
+              <div className="flex flex-col items-center gap-2 py-10 text-center">
+                <QrCode className="size-8 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">Nenhuma cobrança PIX aguardando pagamento.</p>
+              </div>
             ) : (
               <Table>
                 <TableHeader>
@@ -88,7 +93,9 @@ export default async function PixPage() {
                 <TableBody>
                   {emitidos.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                      </TableCell>
                       <TableCell>{p.aluno.turma}</TableCell>
                       <TableCell>{p.mesReferencia}</TableCell>
                       <TableCell>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
@@ -106,7 +113,10 @@ export default async function PixPage() {
           </div>
           <div className="rounded-xl border bg-card overflow-x-auto">
             {recebidos.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">Nenhum recebimento via PIX ainda.</div>
+              <div className="flex flex-col items-center gap-2 py-10 text-center">
+                <Inbox className="size-8 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">Nenhum recebimento via PIX ainda.</p>
+              </div>
             ) : (
               <Table>
                 <TableHeader>
@@ -121,7 +131,9 @@ export default async function PixPage() {
                 <TableBody>
                   {recebidos.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                      </TableCell>
                       <TableCell>{p.aluno.turma}</TableCell>
                       <TableCell>{p.mesReferencia}</TableCell>
                       <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>

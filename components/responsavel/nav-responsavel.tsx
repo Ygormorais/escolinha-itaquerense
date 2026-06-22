@@ -21,6 +21,7 @@ const links = [
   { href: "/responsavel/carteirinha", label: "Carteirinha" },
   { href: "/responsavel/lojinha", label: "Lojinha" },
   { href: "/responsavel/solicitacoes", label: "Solicitações" },
+  { href: "/responsavel/renovacao", label: "Renovação" },
   { href: "/responsavel/notificacoes", label: "Notificações" },
   { href: "/responsavel/historia", label: "História" },
 ]

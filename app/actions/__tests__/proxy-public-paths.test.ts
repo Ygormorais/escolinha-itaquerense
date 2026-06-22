@@ -20,7 +20,9 @@ describe("isPublicPath — rotas externas com auth própria", () => {
     "/horarios",
     "/matricula",
     "/resultados",
-    "/responsavel",
+    "/responsavel/login",
+    "/responsavel/recuperar-senha",
+    "/responsavel/redefinir-senha",
   ])("%s é pública (proxy não bloqueia)", (path) => {
     expect(isPublicPath(path)).toBe(true)
   })

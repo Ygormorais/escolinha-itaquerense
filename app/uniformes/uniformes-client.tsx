@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Search, CheckCircle, XCircle, Plus, Shirt, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -181,7 +182,9 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
 
               return (
                 <TableRow key={aluno.id}>
-                  <TableCell className="font-medium">{aluno.nome}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/alunos/${aluno.id}`} className="hover:underline text-brand-800">{aluno.nome}</Link>
+                  </TableCell>
                   <TableCell>{aluno.turma}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">

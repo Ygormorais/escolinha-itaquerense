@@ -7,7 +7,7 @@ import { ptBR } from "date-fns/locale"
 import {
   CreditCard, UserPlus, UserX, UserCheck, CalendarCheck,
   Receipt, Settings, AlertCircle, Clock, Download, Search,
-  Trophy, Trash2, Pencil, UserCircle,
+  Trophy, Trash2, Pencil, UserCircle, ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,6 +46,9 @@ const TIPO_CONFIG: Record<string, { icon: React.ElementType; cor: string; label:
   custo_novo: { icon: Receipt, cor: "text-warning-600 bg-warning-50", label: "Custo" },
   campeonato_criado: { icon: Trophy, cor: "text-brand-600 bg-brand-50", label: "Campeonato" },
   escalacao_chatbot: { icon: AlertCircle, cor: "text-warning-600 bg-warning-50", label: "Chatbot" },
+  avaliacao_criada: { icon: ClipboardList, cor: "text-violet-600 bg-violet-50", label: "Avaliação" },
+  avaliacao_editada: { icon: Pencil, cor: "text-violet-600 bg-violet-50", label: "Avaliação" },
+  avaliacao_excluida: { icon: Trash2, cor: "text-danger-600 bg-danger-50", label: "Avaliação" },
 }
 
 export function HistoricoClient({ logs }: { logs: Log[] }) {
@@ -116,6 +119,31 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
           </Button>
         }
       />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Registros</p>
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">{filtrados.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pagamentos</p>
+          <p className="mt-1 text-2xl font-extrabold text-success-700">
+            {filtrados.filter((l) => l.tipo.startsWith("pagamento")).length}
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Novos Alunos</p>
+          <p className="mt-1 text-2xl font-extrabold">
+            {filtrados.filter((l) => l.tipo === "aluno_novo").length}
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Usuários Ativos</p>
+          <p className="mt-1 text-2xl font-extrabold text-muted-foreground">
+            {new Set(filtrados.filter((l) => l.usuario).map((l) => l.usuario)).size}
+          </p>
+        </div>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative max-w-xs flex-1">

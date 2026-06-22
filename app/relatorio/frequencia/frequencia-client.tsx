@@ -10,8 +10,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
+import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 import { printHTML } from "@/lib/print"
 import { sanitizeCSVCell } from "@/lib/utils"
+import Link from "next/link"
 
 type Stat = {
   id: number
@@ -38,9 +40,13 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
   }, [stats, filtroTurma, filtroFreq])
 
   const emRisco = stats.filter((s) => s.percentual < 75 && s.totalAulas > 0).length
+  const criticos = stats.filter((s) => s.percentual < 25 && s.totalAulas > 0).length
 
   const mediaGeral = stats.length > 0
     ? Math.round(stats.reduce((s, a) => s + a.percentual, 0) / stats.length)
+    : 0
+  const mediaFiltrada = filtrados.length > 0
+    ? Math.round(filtrados.reduce((s, a) => s + a.percentual, 0) / filtrados.length)
     : 0
 
   function imprimirPDF() {
@@ -77,9 +83,10 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
+      <RelatorioNav />
       <PageHeader
         title="Relatório de Frequência"
-        description={`${filtrados.length} alunos · Média ${mediaGeral}% · ${mesAtual}`}
+        description={`${filtrados.length} alunos · Média ${mediaFiltrada}% · ${mesAtual}`}
         action={
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={imprimirPDF}>
@@ -92,6 +99,31 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
           </div>
         }
       />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</p>
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">{filtrados.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média</p>
+          <p className={`mt-1 text-2xl font-extrabold ${mediaFiltrada >= 75 ? "text-success-700" : mediaFiltrada >= 50 ? "text-warning-600" : "text-danger-600"}`}>
+            {mediaFiltrada}%
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Em Risco &lt;75%</p>
+          <p className={`mt-1 text-2xl font-extrabold ${emRisco > 0 ? "text-warning-600" : "text-muted-foreground"}`}>
+            {emRisco}
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Críticos &lt;25%</p>
+          <p className={`mt-1 text-2xl font-extrabold ${criticos > 0 ? "text-danger-600" : "text-muted-foreground"}`}>
+            {criticos}
+          </p>
+        </div>
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
@@ -146,7 +178,9 @@ export function RelatorioFrequenciaClient({ stats, turmas, mesAtual }: { stats: 
               <TableBody>
                 {filtrados.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.nome}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/alunos/${s.id}`} className="hover:underline text-brand-800">{s.nome}</Link>
+                    </TableCell>
                     <TableCell><Badge variant="secondary" className="text-xs">{s.turma}</Badge></TableCell>
                     <TableCell className="text-center text-sm">{s.totalAulas}</TableCell>
                     <TableCell className="text-center text-sm">{s.totalPresencas}</TableCell>

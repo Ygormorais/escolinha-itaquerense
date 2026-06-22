@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { registrarLog } from "@/app/actions/log"
+import { sendPushToResponsavel } from "@/lib/push"
 
 function validarNotas(d: {
   notaTecnica?: number
@@ -43,8 +44,19 @@ export async function criarAvaliacao(data: {
   const erro = validarNotas(data)
   if (erro) return { error: erro }
   const av = await db.avaliacao.create({ data })
-  const aluno = await db.aluno.findUnique({ where: { id: data.alunoId }, select: { nome: true } })
+  const aluno = await db.aluno.findUnique({
+    where: { id: data.alunoId },
+    select: { nome: true, responsavelId: true },
+  })
   await registrarLog("avaliacao_criada", `Avaliação criada — ${aluno?.nome ?? ""}`, { periodo: data.periodo, id: av.id })
+  if (aluno?.responsavelId) {
+    sendPushToResponsavel(aluno.responsavelId, "avaliacao", {
+      title: `Boletim publicado — ${aluno.nome}`,
+      body: `A avaliação do período ${data.periodo} está disponível no portal.`,
+      url: "/responsavel/boletim",
+    }).catch(() => null)
+  }
+  revalidatePath(`/alunos/${data.alunoId}`)
   revalidatePath("/configuracoes/avaliacoes")
   revalidatePath("/avaliacoes")
 }
@@ -59,8 +71,20 @@ export async function atualizarAvaliacao(id: number, data: {
   await requireAuth()
   const erro = validarNotas(data)
   if (erro) return { error: erro }
-  await db.avaliacao.update({ where: { id }, data })
+  const av = await db.avaliacao.update({
+    where: { id },
+    data,
+    include: { aluno: { select: { nome: true, responsavelId: true, id: true } } },
+  })
   await registrarLog("avaliacao_editada", `Avaliação ID ${id} atualizada`)
+  if (av.aluno.responsavelId) {
+    sendPushToResponsavel(av.aluno.responsavelId, "avaliacao", {
+      title: `Boletim atualizado — ${av.aluno.nome}`,
+      body: `A avaliação do período ${av.periodo} foi atualizada no portal.`,
+      url: "/responsavel/boletim",
+    }).catch(() => null)
+  }
+  revalidatePath(`/alunos/${av.aluno.id}`)
   revalidatePath("/configuracoes/avaliacoes")
   revalidatePath("/avaliacoes")
 }

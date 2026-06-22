@@ -17,7 +17,7 @@ export default async function PagamentosPage({
   const pagamentos = await db.pagamento.findMany({
     where: { mesReferencia: mes },
     include: {
-      aluno: { select: { nome: true, turma: true, mensalidade: true, telefone: true } },
+      aluno: { select: { id: true, nome: true, turma: true, mensalidade: true, telefone: true } },
     },
     orderBy: { aluno: { nome: "asc" } },
   })

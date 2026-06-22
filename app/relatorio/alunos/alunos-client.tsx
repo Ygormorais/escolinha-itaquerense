@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { Users, Download, Printer, Search } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
+import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
 import { printHTML } from "@/lib/print"
@@ -26,50 +28,76 @@ type Aluno = {
   telefone: string | null
   mensalidade: number
   dataMatricula: RscDate
+  dataNascimento: RscDate
 }
+
+function calcIdade(dataNasc: RscDate): number {
+  const hoje = new Date()
+  const nasc = new Date(dataNasc)
+  return hoje.getFullYear() - nasc.getFullYear() - (hoje < new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate()) ? 1 : 0)
+}
+
+type Faixa = { key: string; label: string; min?: number; max?: number }
+const FAIXAS: Faixa[] = [
+  { key: "todas", label: "Todas idades" },
+  { key: "sub9",  label: "Sub-9 (≤8)",    min: 0,  max: 8  },
+  { key: "sub11", label: "Sub-11 (9-10)",  min: 9,  max: 10 },
+  { key: "sub13", label: "Sub-13 (11-12)", min: 11, max: 12 },
+  { key: "sub15", label: "Sub-15 (13-14)", min: 13, max: 14 },
+  { key: "sub17", label: "Sub-17 (15-16)", min: 15, max: 16 },
+  { key: "adulto",label: "Adulto (17+)",   min: 17, max: 99 },
+]
 
 export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; turmas: string[] }) {
   const [filtroTurma, setFiltroTurma] = useState("todas")
   const [filtroStatus, setFiltroStatus] = useState("todos")
+  const [filtroFaixa, setFiltroFaixa] = useState("todas")
   const [busca, setBusca] = useState("")
 
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase()
+    const faixa = FAIXAS.find((f) => f.key === filtroFaixa)
     return alunos.filter((a) => {
       if (q && !a.nome.toLowerCase().includes(q) && !(a.responsavel ?? "").toLowerCase().includes(q)) return false
       if (filtroTurma !== "todas" && a.turma !== filtroTurma) return false
       if (filtroStatus === "ativos" && a.status !== "Ativo") return false
       if (filtroStatus === "inativos" && a.status === "Ativo") return false
+      if (faixa && faixa.key !== "todas" && faixa.min !== undefined && faixa.max !== undefined) {
+        const idade = calcIdade(a.dataNascimento)
+        if (idade < faixa.min || idade > faixa.max) return false
+      }
       return true
     })
-  }, [alunos, filtroTurma, filtroStatus, busca])
+  }, [alunos, filtroTurma, filtroStatus, filtroFaixa, busca])
 
-  const totalMensalidade = filtrados
-    .filter((a) => a.status === "Ativo")
-    .reduce((s, a) => s + a.mensalidade, 0)
+  const ativos = filtrados.filter((a) => a.status === "Ativo")
+  const inativos = filtrados.filter((a) => a.status !== "Ativo")
+  const totalMensalidade = ativos.reduce((s, a) => s + a.mensalidade, 0)
+  const mediaMensalidade = ativos.length > 0 ? totalMensalidade / ativos.length : 0
 
   function imprimirPDF() {
     const linhas = filtrados.map((a) =>
-      `<tr><td>${a.nome}</td><td>${a.turma}</td><td>${a.horario}</td><td>${a.status}</td><td>${a.responsavel ?? "—"}</td><td>${a.telefone ?? "—"}</td><td>R$ ${a.mensalidade.toFixed(2)}</td><td>${format(new Date(a.dataMatricula), "dd/MM/yyyy")}</td></tr>`
+      `<tr><td>${a.nome}</td><td>${a.turma}</td><td>${a.horario}</td><td>${a.status}</td><td>${calcIdade(a.dataNascimento)}</td><td>${a.responsavel ?? "—"}</td><td>${a.telefone ?? "—"}</td><td>R$ ${a.mensalidade.toFixed(2)}</td><td>${format(new Date(a.dataMatricula), "dd/MM/yyyy")}</td></tr>`
     ).join("")
     printHTML(`
       <h1>Relatório de Alunos</h1>
       <p>${filtrados.length} alunos · Receita mensal ${formatMoney(totalMensalidade)}</p>
       <table>
-        <thead><tr><th>Nome</th><th>Turma</th><th>Horário</th><th>Status</th><th>Responsável</th><th>Telefone</th><th>Mensalidade</th><th>Matrícula</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Turma</th><th>Horário</th><th>Status</th><th>Idade</th><th>Responsável</th><th>Telefone</th><th>Mensalidade</th><th>Matrícula</th></tr></thead>
         <tbody>${linhas}</tbody>
       </table>
     `, "Relatório de Alunos")
   }
 
   function exportarCSV() {
-    const header = "Nome;Turma;Horário;Status;Responsável;Telefone;Mensalidade;Data Matrícula"
+    const header = "Nome;Turma;Horário;Status;Idade;Responsável;Telefone;Mensalidade;Data Matrícula"
     const rows = filtrados.map((a) =>
       [
         a.nome,
         a.turma,
         a.horario,
         a.status,
+        String(calcIdade(a.dataNascimento)),
         a.responsavel ?? "",
         a.telefone ?? "",
         formatMoney(a.mensalidade),
@@ -88,6 +116,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
+      <RelatorioNav />
       <PageHeader
         title="Relatório de Alunos"
         description={`${filtrados.length} alunos · Receita mensal ${formatMoney(totalMensalidade)}`}
@@ -103,6 +132,25 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
           </div>
         }
       />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ativos</p>
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">{ativos.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Inativos</p>
+          <p className="mt-1 text-2xl font-extrabold text-muted-foreground">{inativos.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Receita Mensal</p>
+          <p className="mt-1 text-xl font-extrabold text-success-700">{formatMoney(totalMensalidade)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Mensalidade</p>
+          <p className="mt-1 text-xl font-extrabold">{formatMoney(mediaMensalidade)}</p>
+        </div>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[200px] flex-1">
@@ -121,6 +169,14 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
           <SelectContent>
             <SelectItem value="todas">Todas turmas</SelectItem>
             {turmas.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filtroFaixa} onValueChange={(v) => setFiltroFaixa(v ?? "todas")}>
+          <SelectTrigger className="h-9 w-44 text-sm" aria-label="Filtrar por faixa etária">
+            <SelectValue placeholder="Todas idades" />
+          </SelectTrigger>
+          <SelectContent>
+            {FAIXAS.map((f) => <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex gap-1">
@@ -151,6 +207,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
                   <TableHead>Turma</TableHead>
                   <TableHead>Horário</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Idade</TableHead>
                   <TableHead>Responsável</TableHead>
                   <TableHead>Telefone</TableHead>
                   <TableHead className="text-right">Mensalidade</TableHead>
@@ -160,13 +217,18 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
               <TableBody>
                 {filtrados.map((a) => (
                   <TableRow key={a.id}>
-                    <TableCell className="font-medium">{a.nome}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/alunos/${a.id}`} className="hover:underline text-brand-800">{a.nome}</Link>
+                    </TableCell>
                     <TableCell><Badge variant="secondary" className="text-xs">{a.turma}</Badge></TableCell>
                     <TableCell className="text-sm text-muted-foreground">{a.horario}</TableCell>
                     <TableCell>
                       <Badge variant={a.status === "Ativo" ? "default" : "outline"} className="text-xs">
                         {a.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-center text-sm text-muted-foreground">
+                      {calcIdade(a.dataNascimento)} anos
                     </TableCell>
                     <TableCell className="text-sm">{a.responsavel ?? "—"}</TableCell>
                     <TableCell className="text-sm">{a.telefone ?? "—"}</TableCell>

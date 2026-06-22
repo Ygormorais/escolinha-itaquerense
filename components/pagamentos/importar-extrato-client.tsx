@@ -94,33 +94,51 @@ export function ImportarExtratoClient() {
 
   if (fase === "upload") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6 max-w-lg">
         <p className="text-sm text-muted-foreground">
           Faça upload do arquivo OFX exportado do seu banco para marcar mensalidades como pagas em lote.
         </p>
-        <div className="flex flex-col gap-3 max-w-sm">
-          <label className="text-sm font-medium" htmlFor="ofx-file">
-            Arquivo OFX
-          </label>
+
+        {/* Zona de upload */}
+        <label
+          htmlFor="ofx-file"
+          className={`flex cursor-pointer flex-col items-center gap-3 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors
+            ${arquivo
+              ? "border-brand-400 bg-brand-50/60"
+              : "border-border hover:border-brand-300 hover:bg-muted/30"}`}
+        >
+          <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <Upload className="size-5" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground">
+              {arquivo ? arquivo.name : "Clique para escolher o arquivo OFX"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {arquivo ? "Arquivo selecionado — clique em Analisar" : "Formatos aceitos: .ofx, .ofc"}
+            </p>
+          </div>
           <input
             id="ofx-file"
             type="file"
             accept=".ofx,.ofc"
             onChange={handleFileChange}
-            className="text-sm file:mr-4 file:rounded-md file:border-0 file:bg-brand-800 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-brand-900"
+            className="hidden"
           />
-          <Button
-            onClick={handleAnalisar}
-            disabled={!arquivo || isPreviewing}
-            className="w-fit"
-          >
-            {isPreviewing ? (
-              <><Loader2 className="size-4 animate-spin" /> Analisando...</>
-            ) : (
-              <><Upload className="size-4" /> Analisar</>
-            )}
-          </Button>
-        </div>
+        </label>
+
+        <Button
+          onClick={handleAnalisar}
+          disabled={!arquivo || isPreviewing}
+          size="lg"
+          className="w-full"
+        >
+          {isPreviewing ? (
+            <><Loader2 className="size-4 animate-spin" /> Analisando...</>
+          ) : (
+            <><Upload className="size-4" /> Analisar extrato</>
+          )}
+        </Button>
       </div>
     )
   }

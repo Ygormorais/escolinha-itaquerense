@@ -17,6 +17,9 @@ vi.mock("@/lib/config", () => ({
       googleCalendarId: "",
       diaVencimento: 10,
       intervaloDiasLembreteInadimplencia: 7,
+      templateCobranca: "",
+      templateLembreteVencimento: "",
+      templateFalta: "",
     }),
   saveConfig: vi.fn(),
 }))
@@ -38,6 +41,9 @@ const mockConfig: ClubConfig = {
   googleCalendarId: "",
   diaVencimento: 10,
   intervaloDiasLembreteInadimplencia: 7,
+  templateCobranca: "",
+  templateLembreteVencimento: "",
+  templateFalta: "",
 }
 
 describe("config", () => {

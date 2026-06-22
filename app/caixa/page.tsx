@@ -14,7 +14,7 @@ export default async function CaixaPage() {
   const [pagamentosMes, custosMes, recebimentosMes, transacoesPendentes, alunos, descontosAgg] = await Promise.all([
     db.pagamento.findMany({
       where: { dataPagamento: { gte: inicio, lte: fim } },
-      include: { aluno: { select: { nome: true, turma: true } } },
+      include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataPagamento: "desc" },
     }),
     db.custo.findMany({
@@ -76,7 +76,7 @@ export default async function CaixaPage() {
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saldo</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-foreground">
+          <p className={`mt-1 font-heading text-3xl font-extrabold tracking-tight ${totalRecebido - totalCustos >= 0 ? "text-success-600" : "text-danger-600"}`}>
             {formatMoney(totalRecebido - totalCustos)}
           </p>
         </div>

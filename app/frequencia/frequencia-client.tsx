@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download } from "lucide-react"
+import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -46,11 +46,11 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
     })
   }
 
-  // Carrega a lista assim que a tela abre, para o lançamento manual já aparecer.
+  // Auto-recarrega ao trocar turma ou data.
   useEffect(() => {
     handleLoad()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [turma, data])
 
   function togglePresenca(id: number, value: PresencaValue) {
     setPresencas((prev) => ({ ...prev, [id]: value }))
@@ -127,7 +127,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <Label className="block text-muted-foreground">Turma</Label>
-          <Select value={turma} onValueChange={(v) => { setTurma(v ?? turma); setLoaded(false) }}>
+          <Select value={turma} onValueChange={(v) => { if (v) setTurma(v) }}>
             <SelectTrigger className="mt-1 h-12 w-36">
               <SelectValue />
             </SelectTrigger>
@@ -142,22 +142,29 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
             id="freq-data"
             type="date"
             value={data}
-            onChange={(e) => { setData(e.target.value); setLoaded(false) }}
+            onChange={(e) => setData(e.target.value)}
             className="mt-1 w-40"
           />
         </div>
-        <Button onClick={handleLoad} disabled={loading} variant="outline" className="h-12">
-          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Carregar"}
+        <Button onClick={handleLoad} disabled={loading} variant="outline" className="h-12" title="Recarregar">
+          {loading ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
         </Button>
         <Link href={`/frequencia/scanner?data=${data}`}>
           <Button variant="outline" className="h-12 gap-2"><QrCode className="size-4" /> Scanner QR</Button>
         </Link>
       </div>
 
+      {loading && (
+        <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+          <Loader2 className="size-8 animate-spin opacity-40" />
+          <p className="text-sm">Carregando...</p>
+        </div>
+      )}
+
       {!loaded && !loading && (
         <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
           <ClipboardList className="size-10 opacity-30" />
-          <p className="text-sm">Selecione a turma e a data, depois clique em <strong className="text-foreground">Carregar</strong>.</p>
+          <p className="text-sm">Selecione a turma e a data.</p>
         </div>
       )}
 
@@ -231,7 +238,9 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                 )}
                 {alunos.map((aluno) => (
                   <TableRow key={aluno.id}>
-                    <TableCell className="font-medium">{aluno.nome}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/alunos/${aluno.id}`} className="hover:underline text-brand-800">{aluno.nome}</Link>
+                    </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         {OPCOES.map((opcao) => (

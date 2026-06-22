@@ -132,13 +132,14 @@ describe("getResumoMaquina", () => {
       .mockResolvedValueOnce({ _sum: { valor: 350 } })
       .mockResolvedValueOnce({ _sum: { valor: 150 }, _count: 2 })
       .mockResolvedValueOnce({ _sum: { valor: 200 }, _count: 1 })
+      .mockResolvedValueOnce({ _sum: { custoTaxa: null, valor: null } }) // aggTaxa
     m.transacaoMaquina.count.mockResolvedValue(3)
     const res = await getResumoMaquina()
     // total exclui ignoradas → Importado = Pendente + Reconciliado
     expect(m.transacaoMaquina.aggregate.mock.calls[0][0]).toMatchObject({
       where: { status: { not: "ignorado" } },
     })
-    expect(res).toEqual({
+    expect(res).toMatchObject({
       total: 350,
       totalPendente: 150,
       totalReconciliado: 200,

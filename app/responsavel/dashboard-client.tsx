@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   User, CreditCard,
-  CalendarCheck, Shirt, MessageSquare, Phone, ArrowRight, CircleCheck, Clock3, CalendarDays,
+  CalendarCheck, Shirt, MessageSquare, Phone, ArrowRight, CircleCheck, Clock3, CalendarDays, Trophy,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -106,7 +106,7 @@ export function ResponsavelDashboardClient({
       </section>
 
       {responsavel.alunos.length > 0 && (
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardContent className="flex items-start gap-3 py-1">
               <div className="mt-1 rounded-lg bg-brand-50 p-2 text-brand-800">
@@ -146,6 +146,21 @@ export function ResponsavelDashboardClient({
               </div>
             </CardContent>
           </Card>
+          <Link href="/responsavel/jogos" className="group">
+            <Card className="h-full transition-colors hover:border-brand-300 hover:bg-brand-50/40">
+              <CardContent className="flex items-start gap-3 py-1">
+                <div className="mt-1 rounded-lg bg-brand-50 p-2 text-brand-700 transition-colors group-hover:bg-brand-100">
+                  <Trophy className="size-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-ink-950)]">Jogos</p>
+                  <p className="mt-1 flex items-center gap-1 text-sm text-brand-600 font-medium">
+                    Ver partidas <ArrowRight className="size-3" />
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </section>
       )}
 

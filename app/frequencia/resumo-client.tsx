@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { MonthInput } from "@/components/ui/month-input"
@@ -147,6 +148,32 @@ export function ResumoFrequenciaClient() {
         </Card>
       )}
 
+      {loaded && resumo.length > 0 && (() => {
+        const media = resumo.filter((r) => r.pct !== null).reduce((s, r) => s + (r.pct ?? 0), 0) / (resumo.filter((r) => r.pct !== null).length || 1)
+        const emRisco = resumo.filter((r) => r.pct !== null && r.pct < 75).length
+        const perfeitos = resumo.filter((r) => r.pct === 100).length
+        return (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-xl border bg-card p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Alunos</p>
+              <p className="mt-1 text-2xl font-extrabold text-brand-800">{resumo.length}</p>
+            </div>
+            <div className="rounded-xl border bg-card p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Presença</p>
+              <p className={`mt-1 text-2xl font-extrabold ${media >= 75 ? "text-success-700" : media >= 50 ? "text-warning-600" : "text-danger-600"}`}>{media.toFixed(0)}%</p>
+            </div>
+            <div className="rounded-xl border bg-card p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Em Risco &lt;75%</p>
+              <p className={`mt-1 text-2xl font-extrabold ${emRisco > 0 ? "text-warning-600" : "text-success-700"}`}>{emRisco}</p>
+            </div>
+            <div className="rounded-xl border bg-card p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Presença Perfeita</p>
+              <p className="mt-1 text-2xl font-extrabold text-success-700">{perfeitos}</p>
+            </div>
+          </div>
+        )
+      })()}
+
       {loaded && (
         <div className="rounded-xl border bg-card">
           <Table>
@@ -170,7 +197,9 @@ export function ResumoFrequenciaClient() {
               )}
               {resumo.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-medium">{r.nome}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/alunos/${r.id}`} className="hover:underline text-brand-800">{r.nome}</Link>
+                  </TableCell>
                   <TableCell className="text-center">{r.total || "—"}</TableCell>
                   <TableCell className="text-center text-success-600">{r.presentes || "—"}</TableCell>
                   <TableCell className="text-center text-danger-600">{r.ausentes || "—"}</TableCell>

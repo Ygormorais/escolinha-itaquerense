@@ -79,7 +79,7 @@ export function heroView(destaque: HeroDestaque): HeroView {
       badge: destaque.campeonato,
       titulo: `Próximo desafio: Itaquerense × ${destaque.adversario}`,
       descricao: `${format(destaque.data, "dd/MM 'às' HH:mm")} · ${destaque.local}. Venha apoiar a garotada do E.C. Itaquerense.`,
-      ctaHref: "#jogos",
+      ctaHref: "/resultados",
       ctaLabel: "Ver jogos",
     }
   }
@@ -94,8 +94,8 @@ export function heroView(destaque: HeroDestaque): HeroView {
       badge: destaque.campeonato,
       titulo,
       descricao: `Jogo disputado em ${format(destaque.data, "dd/MM/yyyy")} · ${destaque.local}. Confira todos os resultados das nossas categorias.`,
-      ctaHref: "#jogos",
-      ctaLabel: "Ver jogos",
+      ctaHref: "/resultados",
+      ctaLabel: "Ver resultados",
     }
   }
   // CTA aponta para turmas: a chamada de matrícula é do banner dedicado logo abaixo

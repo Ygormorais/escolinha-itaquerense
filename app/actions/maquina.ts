@@ -184,12 +184,21 @@ export async function ignorarTransacao(id: number) {
 }
 
 export async function getResumoMaquina() {
-  const [aggTotal, aggPendente, aggReconciliado, totalTransacoes] = await Promise.all([
+  const [aggTotal, aggPendente, aggReconciliado, totalTransacoes, aggTaxa] = await Promise.all([
     db.transacaoMaquina.aggregate({ where: { status: { not: "ignorado" } }, _sum: { valor: true } }),
     db.transacaoMaquina.aggregate({ where: { status: "pendente" }, _sum: { valor: true }, _count: true }),
     db.transacaoMaquina.aggregate({ where: { status: "reconciliado" }, _sum: { valor: true }, _count: true }),
     db.transacaoMaquina.count(),
+    db.transacaoMaquina.aggregate({
+      where: { custoTaxa: { not: null }, valor: { gt: 0 } },
+      _sum: { custoTaxa: true, valor: true },
+    }),
   ])
+
+  const totalCusto = aggTaxa._sum.custoTaxa ?? 0
+  const totalBase = aggTaxa._sum.valor ?? 0
+  const taxaMedia = totalBase > 0 ? (totalCusto / totalBase) * 100 : null
+
   return {
     total: aggTotal._sum.valor ?? 0,
     totalPendente: aggPendente._sum.valor ?? 0,
@@ -197,5 +206,6 @@ export async function getResumoMaquina() {
     pendentes: aggPendente._count,
     reconciliados: aggReconciliado._count,
     totalTransacoes,
+    taxaMedia,
   }
 }

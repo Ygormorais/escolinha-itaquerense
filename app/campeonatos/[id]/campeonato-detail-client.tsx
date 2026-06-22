@@ -563,7 +563,7 @@ export function CampeonatoDetailClient({
                 return (
                   <TableRow key={insc.id}>
                     <TableCell>
-                      <p className="font-medium">{insc.aluno.nome}</p>
+                      <Link href={`/alunos/${insc.aluno.id}`} className="font-medium hover:underline text-brand-800">{insc.aluno.nome}</Link>
                       <p className="text-xs text-muted-foreground">{insc.aluno.responsavel} · {insc.aluno.telefone}</p>
                     </TableCell>
                     <TableCell>{insc.aluno.turma}</TableCell>

@@ -7,6 +7,8 @@ import { requireAuth } from "@/lib/auth"
 import { getConfig } from "@/lib/config"
 import { dataValida, plural } from "@/lib/utils"
 import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
+import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
+import { sendPushToResponsavel } from "@/lib/push"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -212,11 +214,26 @@ export async function marcarComoPago(
       },
     })
 
-    const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
+    const pag = await db.pagamento.findUnique({
+      where: { id },
+      include: { aluno: { select: { id: true, nome: true, responsavelId: true } } },
+    })
     await registrarLog("pagamento_pago", `Pagamento marcado como pago — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: data.valorRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) })
+    // Notifica responsável — best-effort
+    if (pag) {
+      notificarPagamentoConfirmado(id).catch(() => null)
+      if (pag.aluno.responsavelId) {
+        sendPushToResponsavel(pag.aluno.responsavelId, "pagamentoConfirmado", {
+          title: `Pagamento confirmado — ${pag.aluno.nome}`,
+          body: `Mensalidade de ${pag.mesReferencia} registrada com sucesso.`,
+          url: "/responsavel/mensalidades",
+        }).catch(() => null)
+      }
+    }
     revalidatePath("/inadimplencia")
     revalidatePath("/pagamentos")
     revalidatePath("/")
+    if (pag) revalidatePath(`/alunos/${pag.aluno.id}`)
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao marcar como pago" }

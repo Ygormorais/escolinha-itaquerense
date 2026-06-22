@@ -12,13 +12,25 @@ export default async function SecretariaPage() {
   const mesInicio = startOfMonth(now)
   const mesFim = endOfMonth(now)
 
-  const [eventosHoje, alunosComNascimento, matriculasMes, inadimplentes, alunosAtivos] = await Promise.all([
+  const [
+    eventosHoje,
+    proximoEvento,
+    alunosComNascimento,
+    matriculasMes,
+    inadimplentes,
+    alunosAtivos,
+    pagamentosHoje,
+    preMatriculasPendentes,
+    pendenciasDoc,
+  ] = await Promise.all([
     db.evento.findMany({
       where: { data: { gte: hojeInicio, lte: hojeFim } },
       orderBy: { horaInicio: "asc" },
     }),
-    // Aniversariantes do mês: o nascimento é de anos passados, então filtramos pelo
-    // mês (ignorando o ano) em JS — comparar o range de datas deste ano nunca casaria.
+    db.evento.findFirst({
+      where: { data: { gt: hojeFim } },
+      orderBy: { data: "asc" },
+    }),
     db.aluno.findMany({
       where: { status: "Ativo" },
       select: { id: true, nome: true, dataNascimento: true, turma: true, telefone: true },
@@ -36,6 +48,27 @@ export default async function SecretariaPage() {
       distinct: ["alunoId"],
     }).then((rows) => rows.length),
     db.aluno.count({ where: { status: "Ativo" } }),
+    db.pagamento.findMany({
+      where: { dataPagamento: { gte: hojeInicio, lte: hojeFim } },
+      include: { aluno: { select: { nome: true, turma: true } } },
+      orderBy: { dataPagamento: "desc" },
+    }),
+    db.preMatricula.findMany({
+      where: { status: "pendente" },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.aluno.findMany({
+      where: {
+        status: "Ativo",
+        OR: [
+          { foto: null },
+          { telefone: "" },
+          { email: "" },
+        ],
+      },
+      select: { id: true, nome: true, turma: true, foto: true, telefone: true, email: true },
+      orderBy: { nome: "asc" },
+    }),
   ])
 
   const aniversariantes = alunosComNascimento
@@ -50,10 +83,14 @@ export default async function SecretariaPage() {
       />
       <SecretariaClient
         eventosHoje={eventosHoje}
+        proximoEvento={proximoEvento}
         aniversariantes={aniversariantes}
         matriculasMes={matriculasMes}
         inadimplentes={inadimplentes}
         alunosAtivos={alunosAtivos}
+        pagamentosHoje={pagamentosHoje}
+        preMatriculasPendentes={preMatriculasPendentes}
+        pendenciasDoc={pendenciasDoc}
       />
     </div>
   )

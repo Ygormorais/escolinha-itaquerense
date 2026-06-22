@@ -23,6 +23,7 @@ export async function createAluno(data: {
   mensalidade: number
   desconto?: number
   status: string
+  posicao?: string | null
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth()
@@ -45,6 +46,7 @@ export async function createAluno(data: {
         mensalidade: data.mensalidade,
         desconto: data.desconto ?? 0,
         status: data.status,
+        posicao: data.posicao ?? null,
         observacoes: data.observacoes ?? null,
       },
     })
@@ -105,6 +107,7 @@ export async function updateAluno(
     mensalidade: number
     desconto?: number
     status: string
+    posicao?: string | null
     observacoes?: string
   }
 ): Promise<ActionResult> {
@@ -129,6 +132,7 @@ export async function updateAluno(
         mensalidade: data.mensalidade,
         desconto: data.desconto ?? 0,
         status: data.status,
+        posicao: data.posicao ?? null,
         observacoes: data.observacoes ?? null,
       },
     })
@@ -157,6 +161,37 @@ export async function inativarAluno(id: number): Promise<ActionResult> {
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao inativar aluno" }
+  }
+}
+
+export async function salvarFichaMedica(
+  id: number,
+  data: {
+    tipoSanguineo?: string
+    alergias?: string
+    condicaoSaude?: string
+    contatoEmergenciaNome?: string
+    contatoEmergenciaTel?: string
+    contatoEmergenciaParentesco?: string
+  }
+): Promise<ActionResult> {
+  await requireAuth()
+  try {
+    await db.aluno.update({
+      where: { id },
+      data: {
+        tipoSanguineo: data.tipoSanguineo?.trim() || null,
+        alergias: data.alergias?.trim() || null,
+        condicaoSaude: data.condicaoSaude?.trim() || null,
+        contatoEmergenciaNome: data.contatoEmergenciaNome?.trim() || null,
+        contatoEmergenciaTel: data.contatoEmergenciaTel?.trim() || null,
+        contatoEmergenciaParentesco: data.contatoEmergenciaParentesco?.trim() || null,
+      },
+    })
+    revalidatePath(`/alunos/${id}`)
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao salvar ficha médica" }
   }
 }
 

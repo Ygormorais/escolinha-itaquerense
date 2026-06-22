@@ -3,6 +3,7 @@ import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
 
 export const metadata = { title: "Descontos — Escolinha Itaquerense" }
 
@@ -64,7 +65,9 @@ export default async function DescontosPage() {
                 const pct = (a.desconto / a.mensalidade) * 100
                 return (
                   <TableRow key={a.id}>
-                    <TableCell className="font-medium">{a.nome}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/alunos/${a.id}`} className="hover:underline text-brand-800">{a.nome}</Link>
+                    </TableCell>
                     <TableCell>{a.turma}</TableCell>
                     <TableCell>{formatMoney(a.mensalidade)}</TableCell>
                     <TableCell className="text-danger-600 font-medium">— {formatMoney(a.desconto)}</TableCell>

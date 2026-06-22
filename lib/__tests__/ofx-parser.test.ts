@@ -40,7 +40,7 @@ describe("parseOFX", () => {
 
   it("lança erro em arquivo sem blocos STMTTRN", () => {
     expect(() => parseOFX("<OFX><BANKMSGSRSV1></BANKMSGSRSV1></OFX>")).toThrow(
-      "Nenhuma transação encontrada no arquivo OFX"
+      "Nenhuma transação encontrada"
     )
   })
 
@@ -56,7 +56,7 @@ describe("parseOFX", () => {
 </STMTTRN>
 </OFX>`
     expect(() => parseOFX(onlyDebits)).toThrow(
-      "Nenhuma transação encontrada no arquivo OFX"
+      "Nenhuma transação encontrada"
     )
   })
 

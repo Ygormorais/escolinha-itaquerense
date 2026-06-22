@@ -1,6 +1,6 @@
 "use client"
 
-import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent, Banknote } from "lucide-react"
+import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent, Banknote, Building2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -16,7 +16,7 @@ type Pagamento = {
   dataPagamento: RscDate | null
   formaPagamento: string | null
   valorRecebido: number | null
-  aluno: { nome: string; turma: string }
+  aluno: { id: number; nome: string; turma: string }
 }
 
 type Custo = {
@@ -53,6 +53,7 @@ export function CaixaClient({
     { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", valor: formatMoney(porForma["Dinheiro"] ?? 0), sub: noMes },
     { href: "/caixa/maquina", label: "Maquininha", icon: CreditCard, color: "text-brand-800 bg-brand-100", valor: formatMoney(totalMaquininhaPendente), sub: "pendente de reconciliação" },
     { href: "/caixa/descontos", label: "Descontos", icon: Percent, color: "text-danger-600 bg-danger-50", valor: formatMoney(totalDescontos), sub: "concedidos por mês" },
+    { href: "/caixa/extrato", label: "Extrato", icon: Building2, color: "text-slate-600 bg-slate-100", valor: "Banco", sub: "entradas e saídas" },
   ]
 
   return (
@@ -104,7 +105,9 @@ export function CaixaClient({
               <TableBody>
                 {pagamentosMes.slice(0, 8).map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.aluno.nome}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
+                    </TableCell>
                     <TableCell>{formatMoney(p.valorRecebido ?? 0)}</TableCell>
                     <TableCell>{p.formaPagamento || "—"}</TableCell>
                     <TableCell>{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM") : "—"}</TableCell>

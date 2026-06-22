@@ -1,54 +1,61 @@
 "use client"
 
-import { Calendar, Cake, Users, AlertTriangle, GraduationCap, ArrowRight } from "lucide-react"
+import {
+  Calendar, Cake, Users, AlertTriangle, GraduationCap, ArrowRight,
+  CheckCircle2, ClipboardList, CreditCard, Clock, ImageOff, Phone, Mail, ChevronRight, FileText,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
+import { format, formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Link from "next/link"
-import { cn, plural } from "@/lib/utils"
+import { cn, plural, formatMoney } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
 import { toast } from "sonner"
 
 type Evento = {
-  id: number
-  titulo: string
-  tipo: string
-  data: RscDate
-  horaInicio: string | null
-  horaFim: string | null
-  local: string | null
-  turmas: string | null
-  descricao: string | null
+  id: number; titulo: string; tipo: string; data: RscDate
+  horaInicio: string | null; horaFim: string | null; local: string | null
+  turmas: string | null; descricao: string | null
 }
 
 type Aniversariante = {
-  id: number
-  nome: string
-  dataNascimento: RscDate
-  turma: string
-  telefone: string | null
+  id: number; nome: string; dataNascimento: RscDate; turma: string; telefone: string | null
+}
+
+type PagamentoHoje = {
+  id: number; mesReferencia: string; valorRecebido: number | null
+  formaPagamento: string | null; dataPagamento: RscDate | null
+  aluno: { nome: string; turma: string }
+}
+
+type PreMatricula = {
+  id: number; nomeAluno: string; turma: string; horario: string
+  nomeResponsavel: string; telefone: string; createdAt: RscDate; status: string
+}
+
+type PendenciaDoc = {
+  id: number; nome: string; turma: string
+  foto: string | null; telefone: string; email: string
 }
 
 const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800",
-  Jogo: "bg-success-50 text-success-600",
-  Evento: "bg-info-50 text-info-600",
+  Jogo: "bg-success-50 text-success-700",
+  Evento: "bg-info-50 text-info-700",
+  "Reunião": "bg-warning-50 text-warning-700",
 }
 
-function AniversarianteRow({ aniversariante: a }: { aniversariante: Aniversariante }) {
+function AniversarianteRow({ a }: { a: Aniversariante }) {
   const anos = new Date().getFullYear() - new Date(a.dataNascimento).getFullYear()
   const tel = a.telefone?.replace(/\D/g, "") ?? ""
-
   function enviarParabens() {
     if (!tel) { toast.error("Aluno sem telefone cadastrado"); return }
     const msg = `🎉 Parabéns, ${a.nome.split(" ")[0]}! Hoje você completa ${anos} anos! Desejamos muita saúde, alegria e gols pela frente. Abraços da equipe! ⚽`
-    // wa.me com o número do aluno (55 = Brasil, se ainda não tiver) e a mensagem pronta
     const numero = tel.startsWith("55") ? tel : `55${tel}`
     window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer")
   }
-
   return (
     <div className="flex items-center justify-between rounded-lg border p-2.5">
       <div className="flex items-center gap-2">
@@ -73,23 +80,27 @@ function AniversarianteRow({ aniversariante: a }: { aniversariante: Aniversarian
 }
 
 export function SecretariaClient({
-  eventosHoje,
-  aniversariantes,
-  matriculasMes,
-  inadimplentes,
-  alunosAtivos,
+  eventosHoje, proximoEvento, aniversariantes,
+  matriculasMes, inadimplentes, alunosAtivos,
+  pagamentosHoje, preMatriculasPendentes, pendenciasDoc,
 }: {
   eventosHoje: Evento[]
+  proximoEvento: Evento | null
   aniversariantes: Aniversariante[]
   matriculasMes: number
   inadimplentes: number
   alunosAtivos: number
+  pagamentosHoje: PagamentoHoje[]
+  preMatriculasPendentes: PreMatricula[]
+  pendenciasDoc: PendenciaDoc[]
 }) {
   const hoje = new Date()
 
   return (
-    <div className="space-y-6 p-6 lg:p-8">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-6">
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="border-l-4 border-l-brand-600">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -141,50 +152,41 @@ export function SecretariaClient({
           <CardContent>
             <p className="text-3xl font-extrabold font-heading tracking-tight text-warning-600">{aniversariantes.length}</p>
             {aniversariantes.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">{aniversariantes[0]?.nome} hoje</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {aniversariantes[0]?.nome.split(" ")[0]} hoje
+              </p>
             )}
           </CardContent>
         </Card>
       </div>
 
+
+      {/* Linha 1: Eventos hoje + Próximo evento */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="flex items-center gap-2 text-sm font-heading">
               <Calendar className="size-4" /> Eventos de Hoje
             </CardTitle>
             <Link href="/agenda">
-              <Button variant="ghost" size="sm">Ver agenda</Button>
+              <Button variant="ghost" size="sm" className="text-xs">Ver agenda</Button>
             </Link>
           </CardHeader>
           <CardContent>
             {eventosHoje.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhum evento programado para hoje
-              </p>
+              <div className="flex flex-col items-center gap-1 py-6 text-center text-muted-foreground">
+                <Calendar className="size-8 opacity-30" />
+                <p className="text-sm">Nenhum evento hoje</p>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {eventosHoje.map((ev) => (
-                  <div key={ev.id} className={cn(
-                    "rounded-lg border p-3",
-                    tipoStyles[ev.tipo] ?? "bg-muted"
-                  )}>
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-semibold">{ev.titulo}</p>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          <Badge variant="outline" className="text-[10px]">{ev.tipo}</Badge>
-                          {ev.turmas && ev.turmas !== "Todas" && (
-                            <span className="text-xs text-muted-foreground">{ev.turmas}</span>
-                          )}
-                          {ev.horaInicio && (
-                            <span className="text-xs text-muted-foreground">{ev.horaInicio}{ev.horaFim ? ` — ${ev.horaFim}` : ""}</span>
-                          )}
-                          {ev.local && (
-                            <span className="text-xs text-muted-foreground">{ev.local}</span>
-                          )}
-                        </div>
-                      </div>
+                  <div key={ev.id} className={cn("rounded-lg border p-3", tipoStyles[ev.tipo] ?? "bg-muted")}>
+                    <p className="text-sm font-semibold">{ev.titulo}</p>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <Badge variant="outline" className="text-[10px]">{ev.tipo}</Badge>
+                      {ev.horaInicio && <span className="text-xs opacity-80">{ev.horaInicio}{ev.horaFim ? ` — ${ev.horaFim}` : ""}</span>}
+                      {ev.local && <span className="text-xs opacity-80">{ev.local}</span>}
                     </div>
                   </div>
                 ))}
@@ -194,7 +196,189 @@ export function SecretariaClient({
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-heading">
+              <Clock className="size-4" /> Próximo Evento
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!proximoEvento ? (
+              <div className="flex flex-col items-center gap-1 py-6 text-center text-muted-foreground">
+                <Clock className="size-8 opacity-30" />
+                <p className="text-sm">Nenhum evento agendado</p>
+              </div>
+            ) : (
+              <div className={cn("rounded-xl border p-4 space-y-2", tipoStyles[proximoEvento.tipo] ?? "bg-muted")}>
+                <div className="flex items-start justify-between">
+                  <p className="font-semibold">{proximoEvento.titulo}</p>
+                  <Badge variant="outline" className="text-[10px] shrink-0">{proximoEvento.tipo}</Badge>
+                </div>
+                <p className="text-sm font-medium">
+                  {format(new Date(proximoEvento.data), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                  {proximoEvento.horaInicio && ` às ${proximoEvento.horaInicio}`}
+                </p>
+                <p className="text-xs opacity-75">
+                  {formatDistanceToNow(new Date(proximoEvento.data), { locale: ptBR, addSuffix: true })}
+                  {proximoEvento.local && ` · ${proximoEvento.local}`}
+                </p>
+                {proximoEvento.turmas && proximoEvento.turmas !== "Todas" && (
+                  <p className="text-xs opacity-75">Turmas: {proximoEvento.turmas}</p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Linha 2: Pagamentos hoje + Pré-matrículas pendentes */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-heading">
+              <CheckCircle2 className="size-4 text-success-600" /> Pagamentos de Hoje
+            </CardTitle>
+            <span className="text-xs font-semibold text-success-600">
+              {pagamentosHoje.length > 0 && formatMoney(pagamentosHoje.reduce((s, p) => s + (p.valorRecebido ?? 0), 0))}
+            </span>
+          </CardHeader>
+          <CardContent>
+            {pagamentosHoje.length === 0 ? (
+              <div className="flex flex-col items-center gap-1 py-6 text-center text-muted-foreground">
+                <CreditCard className="size-8 opacity-30" />
+                <p className="text-sm">Nenhum pagamento registrado hoje</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {pagamentosHoje.slice(0, 8).map((p) => (
+                  <div key={p.id} className="flex items-center justify-between rounded-lg border bg-success-50/40 px-3 py-2">
+                    <div>
+                      <p className="text-sm font-medium">{p.aluno.nome}</p>
+                      <p className="text-xs text-muted-foreground">{p.mesReferencia} · {p.formaPagamento}</p>
+                    </div>
+                    <span className="text-sm font-semibold text-success-700">
+                      {formatMoney(p.valorRecebido ?? 0)}
+                    </span>
+                  </div>
+                ))}
+                {pagamentosHoje.length > 8 && (
+                  <Link href="/pagamentos" className="block pt-1 text-center text-xs text-muted-foreground hover:text-foreground">
+                    +{pagamentosHoje.length - 8} pagamentos — ver todos
+                  </Link>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-heading">
+              <ClipboardList className="size-4 text-warning-600" /> Pré-matrículas Pendentes
+            </CardTitle>
+            {preMatriculasPendentes.length > 0 && (
+              <Badge className="bg-warning-100 text-warning-700 hover:bg-warning-100">
+                {preMatriculasPendentes.length}
+              </Badge>
+            )}
+          </CardHeader>
+          <CardContent>
+            {preMatriculasPendentes.length === 0 ? (
+              <div className="flex flex-col items-center gap-1 py-6 text-center text-muted-foreground">
+                <ClipboardList className="size-8 opacity-30" />
+                <p className="text-sm">Nenhuma pré-matrícula pendente</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {preMatriculasPendentes.slice(0, 6).map((pm) => (
+                  <Link key={pm.id} href="/pre-matriculas">
+                    <div className="flex items-center justify-between rounded-lg border bg-warning-50/40 px-3 py-2 hover:bg-warning-50 transition-colors">
+                      <div>
+                        <p className="text-sm font-medium">{pm.nomeAluno}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {pm.turma} · {pm.nomeResponsavel}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(pm.createdAt), { locale: ptBR, addSuffix: true })}
+                        </span>
+                        <ChevronRight className="size-3.5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+                {preMatriculasPendentes.length > 6 && (
+                  <Link href="/pre-matriculas" className="block pt-1 text-center text-xs text-muted-foreground hover:text-foreground">
+                    +{preMatriculasPendentes.length - 6} pendentes — ver todas
+                  </Link>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Linha 3: Pendências de documentação + Aniversariantes */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-heading">
+              <FileText className="size-4 text-danger-600" /> Pendências de Cadastro
+            </CardTitle>
+            {pendenciasDoc.length > 0 && (
+              <Badge className="bg-danger-100 text-danger-700 hover:bg-danger-100">
+                {pendenciasDoc.length} alunos
+              </Badge>
+            )}
+          </CardHeader>
+          <CardContent>
+            {pendenciasDoc.length === 0 ? (
+              <div className="flex flex-col items-center gap-1 py-6 text-center text-muted-foreground">
+                <CheckCircle2 className="size-8 text-success-500 opacity-70" />
+                <p className="text-sm">Todos os cadastros completos</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {pendenciasDoc.slice(0, 6).map((a) => (
+                  <Link key={a.id} href={`/alunos/${a.id}`}>
+                    <div className="flex items-center justify-between rounded-lg border px-3 py-2 hover:bg-muted/40 transition-colors">
+                      <div>
+                        <p className="text-sm font-medium">{a.nome}</p>
+                        <p className="text-xs text-muted-foreground">{a.turma}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {!a.foto && (
+                          <span title="Sem foto" className="flex items-center gap-0.5 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            <ImageOff className="size-3" /> foto
+                          </span>
+                        )}
+                        {!a.telefone && (
+                          <span title="Sem telefone" className="flex items-center gap-0.5 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            <Phone className="size-3" /> tel
+                          </span>
+                        )}
+                        {!a.email && (
+                          <span title="Sem e-mail" className="flex items-center gap-0.5 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            <Mail className="size-3" /> email
+                          </span>
+                        )}
+                        <ChevronRight className="size-3.5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+                {pendenciasDoc.length > 6 && (
+                  <Link href="/alunos" className="block pt-1 text-center text-xs text-muted-foreground hover:text-foreground">
+                    +{pendenciasDoc.length - 6} alunos com pendências
+                  </Link>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="flex items-center gap-2 text-sm font-heading">
               <Cake className="size-4" /> Aniversariantes
             </CardTitle>
@@ -204,17 +388,18 @@ export function SecretariaClient({
           </CardHeader>
           <CardContent>
             {aniversariantes.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhum aniversariante este mês
-              </p>
+              <div className="flex flex-col items-center gap-1 py-6 text-center text-muted-foreground">
+                <Cake className="size-8 opacity-30" />
+                <p className="text-sm">Nenhum aniversariante este mês</p>
+              </div>
             ) : (
               <div className="space-y-2">
-                {aniversariantes.slice(0, 10).map((a) => (
-                  <AniversarianteRow key={a.id} aniversariante={a} />
+                {aniversariantes.slice(0, 8).map((a) => (
+                  <AniversarianteRow key={a.id} a={a} />
                 ))}
-                {aniversariantes.length > 10 && (
+                {aniversariantes.length > 8 && (
                   <p className="text-xs text-center text-muted-foreground">
-                    +{plural(aniversariantes.length - 10, "aniversariante", "aniversariantes")}
+                    +{plural(aniversariantes.length - 8, "aniversariante", "aniversariantes")}
                   </p>
                 )}
               </div>
@@ -222,6 +407,7 @@ export function SecretariaClient({
           </CardContent>
         </Card>
       </div>
+
     </div>
   )
 }

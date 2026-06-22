@@ -6,6 +6,7 @@ import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { getConfig } from "@/lib/config"
 import { requireAuth } from "@/lib/auth"
 import { formatMoney } from "@/lib/utils"
+import { sendPushToResponsavel } from "@/lib/push"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -128,6 +129,23 @@ export async function enviarComunicadoMassa(
       }
     }
 
+    // Push para responsáveis com dispositivo registrado
+    const responsaveisIds = await db.aluno.findMany({
+      where: turma === "Todas" ? { status: "Ativo" } : { turma, status: "Ativo" },
+      select: { responsavelId: true },
+    }).then((rows) => [...new Set(rows.map((r) => r.responsavelId).filter((id): id is number => id != null))])
+
+    const preview = mensagem.slice(0, 80) + (mensagem.length > 80 ? "…" : "")
+    await Promise.allSettled(
+      responsaveisIds.map((id) =>
+        sendPushToResponsavel(id, "comunicado", {
+          title: "Novo comunicado da escolinha",
+          body: preview,
+          url: "/responsavel/notificacoes",
+        })
+      )
+    )
+
     revalidatePath("/comunicados")
     return { enviados, erros, semTelefone }
   } catch (e) {
@@ -210,6 +228,74 @@ export async function enviarWhatsAppResponsavel(
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao enviar WhatsApp" }
   }
+}
+
+export async function notificarInadimplentesEmLote(
+  alunoIds: number[]
+): Promise<{ enviados: number; erros: number; semTelefone: number }> {
+  await requireAuth()
+  const config = getConfig()
+  let enviados = 0
+  let erros = 0
+  let semTelefone = 0
+
+  const alunos = await db.aluno.findMany({
+    where: { id: { in: alunoIds }, status: "Ativo" },
+    select: {
+      id: true,
+      nome: true,
+      telefone: true,
+      mensalidade: true,
+      pagamentos: {
+        where: { dataPagamento: null, dataVencimento: { lt: new Date() } },
+        select: { mesReferencia: true },
+      },
+    },
+  })
+
+  const provider = getWhatsAppProvider()
+
+  for (const aluno of alunos) {
+    const tel = aluno.telefone?.replace(/\D/g, "")
+    if (!tel || tel.length < 10) { semTelefone++; continue }
+    if (aluno.pagamentos.length === 0) continue
+
+    const meses = aluno.pagamentos.map((p) => `• ${p.mesReferencia}`).join("\n")
+    const total = formatMoney(aluno.mensalidade * aluno.pagamentos.length)
+    const msg = [
+      `Olá ${aluno.nome.split(" ")[0]}! 👋`,
+      ``,
+      `Identificamos ${aluno.pagamentos.length} ${aluno.pagamentos.length === 1 ? "mensalidade em aberto" : "mensalidades em aberto"} na ${config.nome}:`,
+      ``,
+      meses,
+      ``,
+      `Total: *${total}*`,
+      config.chavePix ? `PIX: ${config.chavePix}` : ``,
+      ``,
+      `Entre em contato para regularizar. Obrigado!`,
+    ].filter(Boolean).join("\n")
+
+    try {
+      await provider.sendText({ telefone: tel, mensagem: msg })
+      await db.whatsAppMensagem.create({
+        data: {
+          alunoId: aluno.id,
+          telefone: tel,
+          mensagem: msg,
+          tipo: "text",
+          direcao: "outgoing",
+          status: "sent",
+          origem: "cobranca",
+        },
+      })
+      enviados++
+    } catch {
+      erros++
+    }
+  }
+
+  revalidatePath("/inadimplencia")
+  return { enviados, erros, semTelefone }
 }
 
 export async function enviarComunicadoResponsaveis(mensagem: string): Promise<{

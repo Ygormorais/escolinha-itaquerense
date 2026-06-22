@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { ArrowLeft, Shirt, X, Save, Eraser } from "lucide-react"
+import { ArrowLeft, Shirt, X, Save, Eraser, Wand2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -15,7 +15,7 @@ import { POSICOES_QUADRA, LABEL_POSICAO, type Posicao } from "@/lib/escalacao/po
 import { corDaTurma } from "@/lib/escalacao/cores"
 import { salvarEscalacao } from "@/app/actions/escalacao-partida"
 
-type Aluno = { id: number; nome: string; turma: string }
+type Aluno = { id: number; nome: string; turma: string; posicao: string | null }
 type Placed = { alunoId: number; nome: string; turma: string; posicao: Posicao; numero: number | null; ordem: number }
 
 type Props = {
@@ -42,6 +42,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
   const [filtroTurma, setFiltroTurma] = useState<string>("todas")
   const [busca, setBusca] = useState("")
   const [salvando, start] = useTransition()
+  const [draggingPosicao, setDraggingPosicao] = useState<string | null>(null)
 
   const turmas = useMemo(
     () => Array.from(new Set(inscritos.map((a) => a.turma))).sort(),
@@ -95,8 +96,36 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
 
   function onDrop(e: React.DragEvent, posicao: Posicao) {
     e.preventDefault()
+    setDraggingPosicao(null)
     const alunoId = Number(e.dataTransfer.getData("alunoId"))
     if (alunoId) colocar(alunoId, posicao)
+  }
+
+  function sugerirEscalacao() {
+    const posOrder: Posicao[] = ["GOLEIRO", "FIXO", "ALA_ESQ", "ALA_DIR", "PIVO"]
+    const disponivelSet = inscritos.filter((a) => !escaladosIds.has(a.id))
+    const usado = new Set<number>()
+    const sugestoes: { alunoId: number; nome: string; turma: string; posicao: Posicao }[] = []
+
+    for (const pos of posOrder) {
+      if (jogadorEm(pos)) continue // slot já preenchido
+      const match = disponivelSet.find((a) => a.posicao === pos && !usado.has(a.id))
+        ?? disponivelSet.find((a) => !a.posicao && !usado.has(a.id))
+      if (match) {
+        usado.add(match.id)
+        sugestoes.push({ alunoId: match.id, nome: match.nome, turma: match.turma, posicao: pos })
+      }
+    }
+
+    if (sugestoes.length === 0) return
+    setJogadores((prev) => {
+      let novo = [...prev]
+      for (const s of sugestoes) {
+        novo = novo.filter((j) => j.alunoId !== s.alunoId && j.posicao !== s.posicao)
+        novo.push({ ...s, numero: null, ordem: 0 })
+      }
+      return novo
+    })
   }
 
   function handleSalvar() {
@@ -129,6 +158,9 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={sugerirEscalacao} disabled={salvando}>
+            <Wand2 className="size-4" /> Sugerir
+          </Button>
           <Button variant="outline" onClick={() => setJogadores([])} disabled={salvando}>
             <Eraser className="size-4" /> Limpar
           </Button>
@@ -168,9 +200,9 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
                   {j ? (
                     <PlacedCard placed={j} onRemove={() => remover(j.alunoId)} onNumero={(n) => setNumero(j.alunoId, n)} />
                   ) : (
-                    <div className="flex h-24 w-20 flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/50 text-center text-[10px] font-semibold uppercase text-white/80">
+                    <div className={`flex h-24 w-20 flex-col items-center justify-center rounded-lg border-2 border-dashed text-center text-[10px] font-semibold uppercase transition-colors ${draggingPosicao === pos ? "border-yellow-300 bg-yellow-300/20 text-yellow-200" : "border-white/50 text-white/80"}`}>
                       {LABEL_POSICAO[pos]}
-                      <span className="mt-1 text-[9px] font-normal text-white/60">a definir</span>
+                      <span className="mt-1 text-[9px] font-normal opacity-70">a definir</span>
                     </div>
                   )}
                 </div>
@@ -215,12 +247,21 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
               <div
                 key={a.id}
                 draggable
-                onDragStart={(e) => e.dataTransfer.setData("alunoId", String(a.id))}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("alunoId", String(a.id))
+                  setDraggingPosicao(a.posicao ?? null)
+                }}
+                onDragEnd={() => setDraggingPosicao(null)}
                 className={`flex w-20 cursor-grab flex-col items-center gap-1 rounded-lg border p-2 text-center active:cursor-grabbing ${corDaTurma(a.turma)}`}
               >
                 <Shirt className="size-5" />
                 <span className="truncate text-[11px] font-semibold leading-tight">{a.nome.split(" ")[0]}</span>
                 <span className="text-[9px] opacity-80">{a.turma}</span>
+                {a.posicao && (
+                  <span className="rounded bg-black/10 px-1 py-0.5 text-[8px] font-bold uppercase leading-none tracking-wide">
+                    {a.posicao === "GOLEIRO" ? "GOL" : a.posicao === "ALA_ESQ" || a.posicao === "ALA_DIR" ? "ALA" : a.posicao === "PIVO" ? "PIV" : a.posicao}
+                  </span>
+                )}
               </div>
             ))}
           </div>

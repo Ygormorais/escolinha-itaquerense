@@ -6,7 +6,7 @@ import {
   addDays, format, isSameMonth, isSameDay, getDay,
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Loader2, MessageCircle } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Loader2, MessageCircle, Download, CalendarX } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -53,6 +53,46 @@ const tipoStyles: Record<string, string> = {
 
 function capMes(d: Date) {
   return format(d, "MMMM yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())
+}
+
+function gerarICS(eventos: Evento[], jogos: Jogo[], mes: number, ano: number) {
+  const lines: string[] = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Escolinha Itaquerense//PT",
+    "CALSCALE:GREGORIAN",
+  ]
+
+  function formatICSDate(d: Date, hora?: string | null): string {
+    const pad = (n: number) => String(n).padStart(2, "0")
+    const base = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
+    if (!hora) return base
+    const [h, m] = hora.split(":").map(Number)
+    return `${base}T${pad(h)}${pad(m)}00`
+  }
+
+  for (const e of eventos) {
+    const dt = new Date(e.data)
+    const dtStr = e.horaInicio ? `DTSTART:${formatICSDate(dt, e.horaInicio)}` : `DTSTART;VALUE=DATE:${formatICSDate(dt)}`
+    const dtEnd = e.horaFim ? `DTEND:${formatICSDate(dt, e.horaFim)}` : `DTEND;VALUE=DATE:${formatICSDate(dt)}`
+    lines.push("BEGIN:VEVENT", `UID:evento-${e.id}@escolinha`, dtStr, dtEnd, `SUMMARY:${e.titulo}`, e.local ? `LOCATION:${e.local}` : "", e.descricao ? `DESCRIPTION:${e.descricao.replace(/\n/g, "\\n")}` : "", "END:VEVENT")
+  }
+
+  for (const j of jogos) {
+    const dt = new Date(j.data)
+    lines.push("BEGIN:VEVENT", `UID:jogo-${j.id}@escolinha`, `DTSTART;VALUE=DATE:${formatICSDate(dt)}`, `DTEND;VALUE=DATE:${formatICSDate(dt)}`, `SUMMARY:Jogo vs ${j.adversario}`, j.local ? `LOCATION:${j.local}` : "", j.campeonato ? `DESCRIPTION:${j.campeonato}` : "", "END:VEVENT")
+  }
+
+  lines.push("END:VCALENDAR")
+
+  const ics = lines.filter(Boolean).join("\r\n")
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `agenda-${ano}-${String(mes).padStart(2, "0")}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; jogos: Jogo[]; mes: number; ano: number }) {
@@ -209,7 +249,12 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
               <ChevronRight className="size-4" />
             </Button>
           </div>
-          <Button variant="outline" size="sm" onClick={irHoje} disabled={navegando}>Hoje</Button>
+          <div className="flex gap-1">
+            <Button variant="outline" size="sm" onClick={irHoje} disabled={navegando}>Hoje</Button>
+            <Button variant="outline" size="sm" onClick={() => gerarICS(eventos, jogos, mes, ano)} title="Exportar calendário (.ics)">
+              <Download className="size-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-px">
@@ -288,7 +333,10 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
           </CardHeader>
           <CardContent>
             {selectedDate && totalDoDia(selectedDate) === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento neste dia</p>
+              <div className="flex flex-col items-center gap-2 py-8 text-center">
+                <CalendarX className="size-7 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">Nenhum evento neste dia</p>
+              </div>
             )}
 
             {/* Jogos (somente leitura — vêm das partidas) */}

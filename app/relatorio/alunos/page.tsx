@@ -4,20 +4,8 @@ import { RelatorioAlunosClient } from "./alunos-client"
 
 export const metadata = { title: "Relatório de Alunos — Escolinha Itaquerense" }
 
-type AlunoRow = {
-  id: number
-  nome: string
-  turma: string
-  horario: string
-  status: string
-  responsavel: string | null
-  telefone: string | null
-  mensalidade: number
-  dataMatricula: Date
-}
-
 export default async function RelatorioAlunosPage() {
-  const alunos: AlunoRow[] = await db.aluno.findMany({
+  const alunos = await db.aluno.findMany({
     orderBy: { nome: "asc" },
     select: {
       id: true,
@@ -29,6 +17,7 @@ export default async function RelatorioAlunosPage() {
       telefone: true,
       mensalidade: true,
       dataMatricula: true,
+      dataNascimento: true,
     },
   })
 

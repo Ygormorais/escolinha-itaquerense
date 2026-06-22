@@ -1,7 +1,7 @@
 import webpush from "web-push"
 import { db } from "@/lib/db"
 
-type TipoNotificacao = "vencimento" | "pagamentoConfirmado" | "falta" | "convocacao" | "comunicado"
+type TipoNotificacao = "vencimento" | "pagamentoConfirmado" | "falta" | "convocacao" | "comunicado" | "avaliacao"
 
 function setup() {
   const pub = process.env.VAPID_PUBLIC_KEY
@@ -21,7 +21,7 @@ export async function sendPushToResponsavel(
     db.pushSubscription.findMany({ where: { responsavelId } }),
   ])
   const defaults: Record<TipoNotificacao, boolean> = {
-    vencimento: true, pagamentoConfirmado: true, falta: false, convocacao: true, comunicado: true,
+    vencimento: true, pagamentoConfirmado: true, falta: false, convocacao: true, comunicado: true, avaliacao: true,
   }
   const habilitado = prefs ? !!(prefs as Record<string, unknown>)[tipo] : defaults[tipo]
   if (!habilitado || subs.length === 0) return

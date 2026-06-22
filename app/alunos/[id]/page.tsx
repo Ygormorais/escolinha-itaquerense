@@ -23,6 +23,8 @@ import { FotoUpload } from "./foto-upload"
 import { getConfig } from "@/lib/config"
 import { getUniformes } from "@/app/actions/uniformes"
 import { AlunoPrintButton } from "./print-button"
+import { FichaMedicaCard } from "./ficha-medica-card"
+import { AvaliacoesCard } from "./avaliacoes-card"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
@@ -60,7 +62,7 @@ export default async function AlunoDetailPage({
 
   const config = getConfig()
 
-  const [aluno, totalPagamentos, todosPagamentos, uniformes] = await Promise.all([
+  const [aluno, totalPagamentos, todosPagamentos, uniformes, avaliacoes] = await Promise.all([
     db.aluno.findUnique({
       where: { id: numId },
       include: {
@@ -79,6 +81,11 @@ export default async function AlunoDetailPage({
       orderBy: { mesReferencia: "asc" },
     }),
     getUniformes(numId),
+    db.avaliacao.findMany({
+      where: { alunoId: numId },
+      orderBy: { periodo: "desc" },
+      select: { id: true, periodo: true, notaTecnica: true, notaFisica: true, notaComportamento: true, frequencia: true, observacoes: true },
+    }),
   ])
 
   if (!aluno) notFound()
@@ -154,13 +161,18 @@ export default async function AlunoDetailPage({
             <div className="flex justify-center pb-2">
               <FotoUpload alunoId={aluno.id} fotoAtual={aluno.foto ?? null} />
             </div>
-            {[
-              ["Responsável", aluno.responsavel],
-              ["Telefone", aluno.telefone],
-              ["Email", aluno.email],
-              ["Nascimento", formatDate(aluno.dataNascimento)],
-              ["Matrícula", formatDate(aluno.dataMatricula)],
-            ].map(([label, value]) => (
+            {(() => {
+              const hoje = new Date()
+              const nasc = new Date(aluno.dataNascimento)
+              const idade = hoje.getFullYear() - nasc.getFullYear() - (hoje < new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate()) ? 1 : 0)
+              return [
+                ["Responsável", aluno.responsavel],
+                ["Telefone", aluno.telefone],
+                ["Email", aluno.email],
+                ["Nascimento", `${formatDate(aluno.dataNascimento)} (${idade} anos)`],
+                ["Matrícula", formatDate(aluno.dataMatricula)],
+              ]
+            })().map(([label, value]) => (
               <div key={label} className="flex justify-between border-b border-muted pb-2 last:border-0">
                 <span className="text-muted-foreground">{label}</span>
                 <span className="font-medium">{value}</span>
@@ -199,9 +211,21 @@ export default async function AlunoDetailPage({
 
       <AdimplenciaChart pagamentos={todosPagamentos} />
 
+      <FichaMedicaCard
+        alunoId={aluno.id}
+        tipoSanguineo={aluno.tipoSanguineo ?? null}
+        alergias={aluno.alergias ?? null}
+        condicaoSaude={aluno.condicaoSaude ?? null}
+        contatoEmergenciaNome={aluno.contatoEmergenciaNome ?? null}
+        contatoEmergenciaTel={aluno.contatoEmergenciaTel ?? null}
+        contatoEmergenciaParentesco={aluno.contatoEmergenciaParentesco ?? null}
+      />
+
       <UniformesCard alunoId={aluno.id} uniformes={uniformes} />
 
       <FrequenciaChart alunoId={aluno.id} />
+
+      <AvaliacoesCard alunoId={aluno.id} avaliacoes={avaliacoes} />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

@@ -42,6 +42,7 @@ type Aluno = {
   mensalidade: number
   desconto: number
   status: string
+  posicao: string | null
   observacoes: string | null
 }
 
@@ -57,19 +58,33 @@ type FormValues = {
   mensalidade: string
   desconto: string
   status: string
+  posicao: string
   observacoes: string
 }
 
 const HORARIOS = ["Seg/Qua 08h", "Seg/Qua 10h", "Seg/Qua 14h", "Ter/Qui 08h", "Ter/Qui 10h", "Ter/Qui 14h"]
+const POSICOES_FUTSAL = [
+  { value: "GOLEIRO",  label: "Goleiro" },
+  { value: "FIXO",     label: "Fixo" },
+  { value: "ALA_ESQ",  label: "Ala Esquerda" },
+  { value: "ALA_DIR",  label: "Ala Direita" },
+  { value: "PIVO",     label: "Pivô" },
+]
 
 export function AlunoFormDialog({
   aluno,
   trigger,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: {
   aluno?: Aluno
   trigger: React.ReactNode
+  open?: boolean
+  onOpenChange?: (v: boolean) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = externalOpen ?? internalOpen
+  const setOpen = externalOnOpenChange ?? setInternalOpen
   const [loading, startLoading] = useTransition()
   const router = useRouter()
 
@@ -86,6 +101,7 @@ export function AlunoFormDialog({
       mensalidade: aluno ? String(aluno.mensalidade) : "",
       desconto: aluno ? String(aluno.desconto ?? 0) : "0",
       status: aluno?.status ?? "Ativo",
+      posicao: aluno?.posicao ?? "",
       observacoes: aluno?.observacoes ?? "",
     },
   })
@@ -93,7 +109,7 @@ export function AlunoFormDialog({
   function onSubmit(values: FormValues) {
     startLoading(async () => {
       try {
-        const payload = { ...values, mensalidade: Number(values.mensalidade), desconto: Number(values.desconto ?? 0) }
+        const payload = { ...values, mensalidade: Number(values.mensalidade), desconto: Number(values.desconto ?? 0), posicao: values.posicao || null }
         const result = aluno ? await updateAluno(aluno.id, payload) : await createAluno(payload)
         if ("error" in result) {
           toast.error(result.error)
@@ -149,7 +165,7 @@ export function AlunoFormDialog({
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione" />
+                        <SelectValue placeholder="Selecione a turma" />
                       </SelectTrigger>
                       <SelectContent>
                         {TURMAS.map((t) => (
@@ -168,7 +184,7 @@ export function AlunoFormDialog({
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione" />
+                        <SelectValue placeholder="Selecione o horário" />
                       </SelectTrigger>
                       <SelectContent>
                         {HORARIOS.map((h) => (
@@ -235,6 +251,24 @@ export function AlunoFormDialog({
                       </SelectContent>
                     </Select>
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="posicao" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Posição (futsal)</FormLabel>
+                  <Select value={field.value} onValueChange={(v) => field.onChange(v === "none" ? "" : v)}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Não definida" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">Não definida</SelectItem>
+                      {POSICOES_FUTSAL.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )} />

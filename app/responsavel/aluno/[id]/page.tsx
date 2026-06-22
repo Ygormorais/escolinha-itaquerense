@@ -3,7 +3,7 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, CreditCard, CalendarCheck, Shirt } from "lucide-react"
+import { ArrowLeft, CreditCard, CalendarCheck, Shirt, Star, Heart, AlertTriangle, Phone } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
@@ -23,11 +23,13 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
       pagamentos: { orderBy: { dataVencimento: "desc" }, take: 12 },
       frequencias: { orderBy: { data: "desc" }, take: 20 },
       uniformes: true,
+      avaliacoes: { orderBy: { periodo: "desc" }, take: 1 },
     },
   })
 
   if (!aluno || aluno.responsavelId !== session.responsavelId) redirect("/responsavel")
 
+  const avaliacaoRecente = aluno.avaliacoes[0] ?? null
   const mesAtual = format(new Date(), "yyyy-MM")
   const pagMesAtual = aluno.pagamentos.find((p) => p.mesReferencia === mesAtual)
   const freqRecente = aluno.frequencias.slice(0, 10)
@@ -80,6 +82,11 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
               <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/80">
                 <Badge className="border-white/20 bg-white/15 text-white">{aluno.turma}</Badge>
                 {aluno.horario && <span>{aluno.horario}</span>}
+                {aluno.posicao && (
+                  <Badge className="border-yellow-300/40 bg-yellow-400/20 text-yellow-200">
+                    {aluno.posicao === "GOLEIRO" ? "Goleiro" : aluno.posicao === "FIXO" ? "Fixo" : aluno.posicao === "ALA_ESQ" ? "Ala Esq." : aluno.posicao === "ALA_DIR" ? "Ala Dir." : aluno.posicao === "PIVO" ? "Pivô" : aluno.posicao}
+                  </Badge>
+                )}
                 {aluno.dataNascimento && (
                   <span>Nasc. {format(new Date(aluno.dataNascimento), "dd/MM/yyyy")}</span>
                 )}
@@ -171,6 +178,92 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
           </div>
         </CardContent>
       </Card>
+
+      {/* Avaliação */}
+      {avaliacaoRecente && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Star className="size-4" /> Última Avaliação
+              <span className="ml-auto text-xs font-normal text-muted-foreground">{avaliacaoRecente.periodo}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Técnica", value: avaliacaoRecente.notaTecnica },
+                { label: "Física", value: avaliacaoRecente.notaFisica },
+                { label: "Comportamento", value: avaliacaoRecente.notaComportamento },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] p-3 text-center">
+                  <p className="text-2xl font-extrabold text-brand-700">{value != null ? value.toFixed(1) : "—"}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+                </div>
+              ))}
+            </div>
+            {avaliacaoRecente.observacoes && (
+              <p className="rounded-lg bg-muted/40 px-4 py-3 text-sm text-muted-foreground italic">
+                "{avaliacaoRecente.observacoes}"
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Ficha Médica */}
+      {(aluno.tipoSanguineo || aluno.alergias || aluno.condicaoSaude || aluno.contatoEmergenciaNome) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Heart className="size-4 text-danger-500" /> Ficha Médica
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {aluno.tipoSanguineo && (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-danger-50 px-2.5 py-1 text-xs font-bold text-danger-700">
+                  {aluno.tipoSanguineo}
+                </span>
+                <span className="text-muted-foreground text-xs">Tipo sanguíneo</span>
+              </div>
+            )}
+            {(aluno.contatoEmergenciaNome || aluno.contatoEmergenciaTel) && (
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  <Phone className="size-3" /> Contato de Emergência
+                </div>
+                <p className="font-medium">
+                  {aluno.contatoEmergenciaNome}
+                  {aluno.contatoEmergenciaParentesco && (
+                    <span className="ml-1.5 text-xs text-muted-foreground">({aluno.contatoEmergenciaParentesco})</span>
+                  )}
+                </p>
+                {aluno.contatoEmergenciaTel && (
+                  <a href={`tel:${aluno.contatoEmergenciaTel}`} className="text-xs text-brand-600 hover:underline">
+                    {aluno.contatoEmergenciaTel}
+                  </a>
+                )}
+              </div>
+            )}
+            {aluno.alergias && (
+              <div className="rounded-lg border border-warning-200 bg-warning-50 p-3">
+                <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-warning-700 uppercase tracking-wide">
+                  <AlertTriangle className="size-3" /> Alergias
+                </div>
+                <p className="text-xs text-warning-900">{aluno.alergias}</p>
+              </div>
+            )}
+            {aluno.condicaoSaude && (
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <div className="mb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Condições de Saúde
+                </div>
+                <p className="text-xs">{aluno.condicaoSaude}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Uniformes */}
       <Card>
