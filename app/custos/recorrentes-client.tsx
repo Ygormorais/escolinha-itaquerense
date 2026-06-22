@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { plural, formatMoney } from "@/lib/utils"
 import { useForm } from "react-hook-form"
-import { PlusIcon, PencilIcon, Trash2Icon, Loader2 } from "lucide-react"
+import { PlusIcon, PencilIcon, Trash2Icon, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -216,8 +216,11 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
           <TableBody>
             {recorrentes.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  Nenhum modelo cadastrado
+                <TableCell colSpan={7}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <RefreshCw className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Nenhum modelo cadastrado</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

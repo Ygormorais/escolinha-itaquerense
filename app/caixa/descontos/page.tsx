@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
+import { Tag } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -56,8 +57,11 @@ export default async function DescontosPage() {
           <TableBody>
             {alunosComDesconto.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  Nenhum aluno com desconto cadastrado.
+                <TableCell colSpan={6}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <Tag className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Nenhum aluno com desconto cadastrado.</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (

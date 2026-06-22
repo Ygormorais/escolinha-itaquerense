@@ -553,8 +553,11 @@ export function CampeonatoDetailClient({
             <TableBody>
               {campeonato.inscricoes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Nenhum aluno inscrito neste campeonato
+                  <TableCell colSpan={7}>
+                    <div className="flex flex-col items-center gap-2 py-10 text-center">
+                      <Users className="size-8 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">Nenhum aluno inscrito neste campeonato</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { Banknote } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -60,8 +61,11 @@ export default async function DinheiroPage() {
           <TableBody>
             {entradas.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  Nenhuma entrada em dinheiro neste mês
+                <TableCell colSpan={5}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <Banknote className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Nenhuma entrada em dinheiro neste mês</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

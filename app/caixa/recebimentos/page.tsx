@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
+import { Inbox } from "lucide-react"
 import { getPaymentChannel } from "@/lib/payment-channel"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
@@ -100,8 +101,11 @@ export default async function RecebimentosPage({
           <TableBody>
             {pagamentos.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  Nenhum recebimento em {labelMes}.
+                <TableCell colSpan={6}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <Inbox className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Nenhum recebimento em {labelMes}.</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload, Loader2 } from "lucide-react"
+import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload, Loader2, Users } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Pagination } from "@/components/ui/pagination"
@@ -433,8 +433,11 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
           <TableBody>
             {alunos.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  Nenhum aluno encontrado
+                <TableCell colSpan={7}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <Users className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Nenhum aluno encontrado</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

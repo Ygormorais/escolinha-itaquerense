@@ -11,7 +11,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { Download, Loader2 } from "lucide-react"
+import { Download, Loader2, CalendarX } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { getResumoFrequenciaMes, getPresencaPorTurma } from "@/app/actions/frequencia"
@@ -190,8 +190,11 @@ export function ResumoFrequenciaClient() {
             <TableBody>
               {resumo.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    Nenhum registro de frequência neste período
+                  <TableCell colSpan={6}>
+                    <div className="flex flex-col items-center gap-2 py-8 text-center">
+                      <CalendarX className="size-7 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">Nenhum registro de frequência neste período</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

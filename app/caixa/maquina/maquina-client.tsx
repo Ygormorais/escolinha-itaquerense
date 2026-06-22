@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle } from "lucide-react"
+import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle, Smartphone } from "lucide-react"
 import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -199,8 +199,11 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
-                    Nenhuma transação encontrada. Importe um CSV da sua maquininha.
+                  <TableCell colSpan={9}>
+                    <div className="flex flex-col items-center gap-2 py-10 text-center">
+                      <Smartphone className="size-8 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">Nenhuma transação encontrada. Importe um CSV da sua maquininha.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

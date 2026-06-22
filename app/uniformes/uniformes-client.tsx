@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Search, CheckCircle, XCircle, Plus, Shirt, Loader2 } from "lucide-react"
+import { Search, CheckCircle, XCircle, Plus, Shirt, Loader2, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -171,8 +171,11 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
           <TableBody>
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  Nenhum aluno encontrado
+                <TableCell colSpan={5}>
+                  <div className="flex flex-col items-center gap-2 py-10 text-center">
+                    <Users className="size-8 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Nenhum aluno encontrado</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { TrendingUp, TrendingDown, Wallet, AlertCircle } from "lucide-react"
+import { TrendingUp, TrendingDown, Wallet, AlertCircle, BarChart2 } from "lucide-react"
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { RelatorioHeader, RelatorioChart, RelatorioPrintStyle } from "./relatorio-client"
@@ -182,8 +182,11 @@ export default async function RelatorioPage({
               <TableBody>
                 {categorias.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
-                      Sem custos no ano
+                    <TableCell colSpan={2}>
+                      <div className="flex flex-col items-center gap-2 py-8 text-center">
+                        <BarChart2 className="size-7 text-muted-foreground/30" />
+                        <p className="text-sm text-muted-foreground">Sem custos no ano</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}

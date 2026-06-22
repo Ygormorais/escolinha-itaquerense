@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download, RefreshCw } from "lucide-react"
+import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download, RefreshCw, Users } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -231,8 +231,11 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
               <TableBody>
                 {alunos.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
-                      Nenhum aluno ativo nesta turma
+                    <TableCell colSpan={2}>
+                      <div className="flex flex-col items-center gap-2 py-8 text-center">
+                        <Users className="size-7 text-muted-foreground/30" />
+                        <p className="text-sm text-muted-foreground">Nenhum aluno ativo nesta turma</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}

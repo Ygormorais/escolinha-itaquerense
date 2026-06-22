@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { Download, Printer, Search, X } from "lucide-react"
+import { Download, Printer, Search, X, SearchX } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -305,8 +305,11 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
               <TableBody>
                 {filtrados.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
-                      Nenhum pagamento encontrado para os filtros selecionados.
+                    <TableCell colSpan={8}>
+                      <div className="flex flex-col items-center gap-2 py-10 text-center">
+                        <SearchX className="size-8 text-muted-foreground/30" />
+                        <p className="text-sm text-muted-foreground">Nenhum pagamento encontrado para os filtros selecionados.</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}

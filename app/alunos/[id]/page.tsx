@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
-import { ArrowLeft, IdCard, MessageCircle, Receipt, FileText } from "lucide-react"
+import { ArrowLeft, IdCard, MessageCircle, Receipt, FileText, CreditCard, CalendarCheck } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -248,8 +248,11 @@ export default async function AlunoDetailPage({
             <TableBody>
               {aluno.pagamentos.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    Nenhum registro de pagamento
+                  <TableCell colSpan={7}>
+                    <div className="flex flex-col items-center gap-2 py-8 text-center">
+                      <CreditCard className="size-7 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">Nenhum registro de pagamento</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -336,8 +339,11 @@ export default async function AlunoDetailPage({
             <TableBody>
               {aluno.frequencias.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center text-muted-foreground">
-                    Nenhum registro de frequência
+                  <TableCell colSpan={2}>
+                    <div className="flex flex-col items-center gap-2 py-8 text-center">
+                      <CalendarCheck className="size-7 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">Nenhum registro de frequência</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

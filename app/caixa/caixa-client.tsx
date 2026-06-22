@@ -1,6 +1,6 @@
 "use client"
 
-import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent, Banknote, Building2 } from "lucide-react"
+import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent, Banknote, Building2, Inbox } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -114,7 +114,7 @@ export function CaixaClient({
                   </TableRow>
                 ))}
                 {pagamentosMes.length === 0 && (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Nenhum recebimento no mês</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4}><div className="flex flex-col items-center gap-2 py-8 text-center"><Inbox className="size-7 text-muted-foreground/30" /><p className="text-sm text-muted-foreground">Nenhum recebimento no mês</p></div></TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
@@ -153,7 +153,7 @@ export function CaixaClient({
                   </TableRow>
                 ))}
                 {custosMes.length === 0 && (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Nenhum custo no mês</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4}><div className="flex flex-col items-center gap-2 py-8 text-center"><Inbox className="size-7 text-muted-foreground/30" /><p className="text-sm text-muted-foreground">Nenhum custo no mês</p></div></TableCell></TableRow>
                 )}
               </TableBody>
             </Table>

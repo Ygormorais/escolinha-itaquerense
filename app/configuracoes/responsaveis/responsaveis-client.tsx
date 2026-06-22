@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare, Loader2 } from "lucide-react"
+import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare, Loader2, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -229,8 +229,11 @@ export function ResponsaveisClient({
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    Nenhum responsável cadastrado
+                  <TableCell colSpan={6}>
+                    <div className="flex flex-col items-center gap-2 py-10 text-center">
+                      <Users className="size-8 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground">Nenhum responsável cadastrado</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
