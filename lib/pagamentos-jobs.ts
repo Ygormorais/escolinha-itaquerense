@@ -1,9 +1,11 @@
 import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
+import { logger } from "@/lib/logger"
 
 export async function runGerarMensalidadesMes(
   mes: string
 ): Promise<{ criados: number; ignorados: number }> {
+  const t0 = performance.now()
   const [ano, mesNum] = mes.split("-").map(Number)
   const rawDia = getConfig().diaVencimento
   const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
@@ -28,5 +30,7 @@ export async function runGerarMensalidadesMes(
     })
   }
 
-  return { criados: novos.length, ignorados: existentesSet.size }
+  const resultado = { criados: novos.length, ignorados: existentesSet.size }
+  logger.info("cron/gerar-mensalidades: concluído", { mes, ...resultado, durMs: Math.round(performance.now() - t0) })
+  return resultado
 }

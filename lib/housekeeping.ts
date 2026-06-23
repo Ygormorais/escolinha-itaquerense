@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { logger } from "@/lib/logger"
 
 const LIMITE_DIAS_LOG = 90
 const LIMITE_DIAS_MENSAGEM = 60
@@ -11,6 +12,7 @@ export async function runHousekeeping(): Promise<{
   tokensRemovidos: number
   solicitacoesArquivadas: number
 }> {
+  const t0 = performance.now()
   const limiteLog = new Date(Date.now() - LIMITE_DIAS_LOG * 86_400_000)
   const limiteMensagem = new Date(Date.now() - LIMITE_DIAS_MENSAGEM * 86_400_000)
   const limiteToken = new Date(Date.now() - LIMITE_DIAS_RESET_TOKEN * 86_400_000)
@@ -35,10 +37,12 @@ export async function runHousekeeping(): Promise<{
     solicitacoesArquivadas = orfaos.length
   }
 
-  return {
+  const resultado = {
     logsRemovidos: logs.count,
     mensagensRemovidas: mensagens.count,
     tokensRemovidos: tokens.count,
     solicitacoesArquivadas,
   }
+  logger.info("cron/housekeeping: concluído", { ...resultado, durMs: Math.round(performance.now() - t0) })
+  return resultado
 }

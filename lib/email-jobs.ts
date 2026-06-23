@@ -2,10 +2,12 @@ import { db } from "@/lib/db"
 import { enviarEmail } from "@/lib/mailer"
 import { getConfig } from "@/lib/config"
 import { differenceInDays } from "date-fns"
+import { logger } from "@/lib/logger"
 
 export type ResultadoEmail = { enviados: number; erros: number; semEmail: number }
 
 export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail | { error: string }> {
+  const t0 = performance.now()
   try {
     const config = getConfig()
 
@@ -75,13 +77,16 @@ export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail 
       }
     }
 
+    logger.info("cron/email-inadimplentes: concluído", { enviados, erros, semEmail, durMs: Math.round(performance.now() - t0) })
     return { enviados, erros, semEmail }
   } catch (e) {
+    logger.error("cron/email-inadimplentes: erro", { error: String(e), durMs: Math.round(performance.now() - t0) })
     return { error: e instanceof Error ? e.message : "Erro ao enviar e-mails" }
   }
 }
 
 export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { error: string }> {
+  const t0 = performance.now()
   try {
     const config = getConfig()
     const amanha = new Date()
@@ -134,8 +139,10 @@ export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { er
       }
     }
 
+    logger.info("cron/email-vencendo: concluído", { enviados, erros, semEmail, durMs: Math.round(performance.now() - t0) })
     return { enviados, erros, semEmail }
   } catch (e) {
+    logger.error("cron/email-vencendo: erro", { error: String(e), durMs: Math.round(performance.now() - t0) })
     return { error: e instanceof Error ? e.message : "Erro ao enviar lembretes" }
   }
 }
