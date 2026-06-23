@@ -13,5 +13,10 @@ const PUBLIC_PREFIX_ROUTES = [
 ]
 
 export function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_EXACT_ROUTES.has(pathname) || PUBLIC_PREFIX_ROUTES.some((prefix) => pathname.startsWith(prefix))
+  return (
+    PUBLIC_EXACT_ROUTES.has(pathname) ||
+    PUBLIC_PREFIX_ROUTES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+    )
+  )
 }
