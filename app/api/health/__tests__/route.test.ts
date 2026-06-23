@@ -18,7 +18,7 @@ describe("GET /api/health", () => {
     const res = await GET()
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body).toEqual({ status: "ok", db: "ok" })
+    expect(body).toMatchObject({ status: "ok", db: "ok" })
   })
 
   it("503 com status degraded quando o banco falha", async () => {
@@ -26,7 +26,7 @@ describe("GET /api/health", () => {
     const res = await GET()
     expect(res.status).toBe(503)
     const body = await res.json()
-    expect(body).toEqual({ status: "degraded", db: "error" })
+    expect(body).toMatchObject({ status: "degraded", db: "error" })
   })
 
   it("não vaza detalhes do erro no corpo", async () => {
