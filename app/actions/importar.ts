@@ -23,7 +23,7 @@ type AlunoCSV = {
 type ImportResult = { importados: number; erros: { linha: number; erro: string }[] }
 
 export async function importarAlunosCSV(alunos: AlunoCSV[]): Promise<ImportResult | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const erros: { linha: number; erro: string }[] = []
     let importados = 0

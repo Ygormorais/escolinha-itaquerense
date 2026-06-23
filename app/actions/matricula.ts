@@ -60,7 +60,7 @@ export async function criarPreMatricula(data: {
 }
 
 export async function listarPreMatriculas(status?: string) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const where = status && status !== "todas" ? { status } : {}
   return db.preMatricula.findMany({
     where,
@@ -72,7 +72,7 @@ export async function aprovarPreMatricula(
   id: number,
   opts: { mensalidade: number; desconto?: number; meses?: number }
 ): Promise<AprovarResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   const mensalidade = Number(opts?.mensalidade)
   if (!Number.isFinite(mensalidade) || mensalidade < 0) {
@@ -138,14 +138,14 @@ export async function aprovarPreMatricula(
 }
 
 export async function recusarPreMatricula(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.preMatricula.update({ where: { id }, data: { status: "recusada" } })
   revalidatePath("/configuracoes/matriculas")
   return { success: true }
 }
 
 export async function deletarPreMatricula(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.preMatricula.delete({ where: { id } })
   revalidatePath("/configuracoes/matriculas")
   return { success: true }
