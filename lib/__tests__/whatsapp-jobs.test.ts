@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 
 vi.mock("@/lib/db", () => ({
   db: {
+    aluno: { findMany: vi.fn() },
     pagamento: { findMany: vi.fn() },
     whatsAppMensagem: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn() },
   },
@@ -18,12 +19,14 @@ vi.mock("@/lib/whatsapp/provider", () => ({
 import {
   runEnviarLembretesWhatsAppInadimplencia,
   runEnviarLembretesWhatsAppVencendo,
+  runEnviarParabensAniversariantes,
 } from "../whatsapp-jobs"
 import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 
 const mockDb = db as unknown as {
+  aluno: { findMany: ReturnType<typeof vi.fn> }
   pagamento: { findMany: ReturnType<typeof vi.fn> }
   whatsAppMensagem: {
     findFirst: ReturnType<typeof vi.fn>
@@ -55,6 +58,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockGetConfig.mockReturnValue({ intervaloDiasLembreteInadimplencia: 7, chavePix: "" })
   mockGetProvider.mockReturnValue({ sendText: vi.fn().mockResolvedValue({}) })
+  mockDb.aluno.findMany.mockResolvedValue([])
   mockDb.whatsAppMensagem.findFirst.mockResolvedValue(null)
   mockDb.whatsAppMensagem.findMany.mockResolvedValue([])
   mockDb.whatsAppMensagem.create.mockResolvedValue({})
@@ -197,5 +201,71 @@ describe("runEnviarLembretesWhatsAppInadimplencia", () => {
         }),
       })
     )
+  })
+})
+
+describe("runEnviarParabensAniversariantes", () => {
+  function makeAniversariante(overrides: { id?: number; telefone?: string; nascimento?: Date } = {}) {
+    const hoje = new Date()
+    return {
+      id: overrides.id ?? 1,
+      nome: "Ana Souza",
+      responsavel: "Maria Souza",
+      telefone: overrides.telefone ?? "11988887777",
+      dataNascimento: overrides.nascimento ?? new Date(hoje.getFullYear() - 10, hoje.getMonth(), hoje.getDate()),
+    }
+  }
+
+  it("envia parabéns para aniversariante do dia", async () => {
+    const sendText = vi.fn().mockResolvedValue({})
+    mockGetProvider.mockReturnValue({ sendText })
+    mockDb.aluno.findMany.mockResolvedValue([makeAniversariante()])
+    mockDb.whatsAppMensagem.findMany.mockResolvedValue([])
+
+    const res = await runEnviarParabensAniversariantes()
+
+    expect(sendText).toHaveBeenCalledTimes(1)
+    expect(res.enviados).toBe(1)
+    expect(mockDb.whatsAppMensagem.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ origem: "aniversario", alunoId: 1 }) })
+    )
+  })
+
+  it("pula (batch dedup) quando já parabenizou hoje", async () => {
+    const sendText = vi.fn().mockResolvedValue({})
+    mockGetProvider.mockReturnValue({ sendText })
+    mockDb.aluno.findMany.mockResolvedValue([makeAniversariante({ id: 2 })])
+    mockDb.whatsAppMensagem.findMany.mockResolvedValue([{ alunoId: 2 }])
+
+    const res = await runEnviarParabensAniversariantes()
+
+    expect(sendText).not.toHaveBeenCalled()
+    expect(res.enviados).toBe(0)
+  })
+
+  it("não envia para aluno sem telefone", async () => {
+    const sendText = vi.fn().mockResolvedValue({})
+    mockGetProvider.mockReturnValue({ sendText })
+    mockDb.aluno.findMany.mockResolvedValue([makeAniversariante({ telefone: "" })])
+
+    const res = await runEnviarParabensAniversariantes()
+
+    expect(sendText).not.toHaveBeenCalled()
+    expect(res.enviados).toBe(0)
+  })
+
+  it("não envia para aluno que não faz aniversário hoje", async () => {
+    const sendText = vi.fn().mockResolvedValue({})
+    mockGetProvider.mockReturnValue({ sendText })
+    const ontem = new Date()
+    ontem.setDate(ontem.getDate() - 1)
+    mockDb.aluno.findMany.mockResolvedValue([
+      makeAniversariante({ nascimento: new Date(2010, ontem.getMonth(), ontem.getDate()) }),
+    ])
+
+    const res = await runEnviarParabensAniversariantes()
+
+    expect(sendText).not.toHaveBeenCalled()
+    expect(res.enviados).toBe(0)
   })
 })

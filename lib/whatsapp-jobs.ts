@@ -217,16 +217,20 @@ export async function runEnviarParabensAniversariantes() {
   })
   const aniversariantes = ativos.filter((a) => ehAniversarioNoDia(a.dataNascimento, hoje))
 
+  // Batch dedup: 1 query para todos os aniversariantes (elimina N findFirst)
+  const anivIds = aniversariantes.map((a) => a.id)
+  const jaEnviadosHoje = anivIds.length > 0
+    ? await db.whatsAppMensagem.findMany({
+        where: { alunoId: { in: anivIds }, origem: "aniversario", createdAt: { gte: inicioDoDia } },
+        select: { alunoId: true },
+      })
+    : []
+  const jaEnviadosSet = new Set(jaEnviadosHoje.map((m) => m.alunoId))
+
   for (const a of aniversariantes) {
     const tel = a.telefone?.replace(/\D/g, "")
     if (!tel || tel.length < 8) continue
-
-    // dedup: já parabenizamos este aluno hoje?
-    const jaEnviado = await db.whatsAppMensagem.findFirst({
-      where: { alunoId: a.id, origem: "aniversario", createdAt: { gte: inicioDoDia } },
-      select: { id: true },
-    })
-    if (jaEnviado) continue
+    if (jaEnviadosSet.has(a.id)) continue
 
     const idade = hoje.getFullYear() - a.dataNascimento.getFullYear()
     const msg = [
