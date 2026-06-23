@@ -76,6 +76,7 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
 }
 
 export async function GET(request: Request) {
+  const t0 = performance.now()
   const secret = getCronSecret()
   if (!verifyBearerSecret(request, secret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -104,6 +105,9 @@ export async function GET(request: Request) {
 
   const housekeeping = isDomingo ? await runHousekeeping() : null
 
+  const durMs = Math.round(performance.now() - t0)
+  logger.info("cron/lembretes: concluído", { durMs, executadoEm: new Date().toISOString() })
+
   return NextResponse.json({
     email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
     whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo, aniversarios: waAniversarios },
@@ -112,5 +116,6 @@ export async function GET(request: Request) {
     housekeeping,
     geracaoMensal,
     executadoEm: new Date().toISOString(),
+    durMs,
   })
 }

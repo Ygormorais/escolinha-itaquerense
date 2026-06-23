@@ -4,8 +4,10 @@ import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { formatMoney } from "@/lib/utils"
 import { ehAniversarioNoDia } from "@/lib/aniversariantes"
 import { sendPushToResponsavel } from "@/lib/push"
+import { logger } from "@/lib/logger"
 
 export async function runEnviarLembretesWhatsAppInadimplencia() {
+  const t0 = performance.now()
   const config = getConfig()
   const intervaloMs = (config.intervaloDiasLembreteInadimplencia ?? 7) * 24 * 60 * 60 * 1000
   let enviados = 0
@@ -31,17 +33,26 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
     porAluno.set(p.aluno.id, lista)
   }
 
+  // Batch dedup: 1 query para todos os alunos inadimplentes (elimina N findFirst)
+  const alunoIds = [...porAluno.keys()]
+  const ultimosEnvios = alunoIds.length > 0
+    ? await db.whatsAppMensagem.findMany({
+        where: { alunoId: { in: alunoIds }, origem: "lembrete-inadimplencia" },
+        orderBy: { createdAt: "desc" },
+        distinct: ["alunoId"],
+        select: { alunoId: true, createdAt: true },
+      })
+    : []
+  const ultimoEnvioMap = new Map(ultimosEnvios.map((e) => [e.alunoId, e.createdAt]))
+
   for (const [alunoId, pagamentos] of porAluno) {
     const aluno = pagamentos[0].aluno
     const tel = aluno.telefone?.replace(/\D/g, "")
     if (!tel || tel.length < 8) { semTelefone++; continue }
 
-    // Dedup: verifica último envio para este aluno
-    const ultimoEnvio = await db.whatsAppMensagem.findFirst({
-      where: { alunoId, origem: "lembrete-inadimplencia" },
-      orderBy: { createdAt: "desc" },
-    })
-    if (ultimoEnvio && Date.now() - new Date(ultimoEnvio.createdAt).getTime() < intervaloMs) {
+    // Dedup via mapa pré-carregado
+    const ultimoEnvio = ultimoEnvioMap.get(alunoId)
+    if (ultimoEnvio && Date.now() - new Date(ultimoEnvio).getTime() < intervaloMs) {
       pulados++
       continue
     }
@@ -77,10 +88,15 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
     }
   }
 
+  logger.info("cron/inadimplencia: concluído", {
+    enviados, pulados, erros, semTelefone,
+    durMs: Math.round(performance.now() - t0),
+  })
   return { enviados, pulados, erros, semTelefone }
 }
 
 export async function runEnviarLembretesWhatsAppVencendo() {
+  const t0 = performance.now()
   const config = getConfig()
   let enviados = 0
   let pulados = 0
@@ -105,16 +121,25 @@ export async function runEnviarLembretesWhatsAppVencendo() {
     },
   })
 
+  // Batch dedup: 1 query para todos os alunos com vencimento próximo
+  const vencendoIds = [...new Set(vencendo.map((p) => p.aluno.id))]
+  const ultimosEnvios = vencendoIds.length > 0
+    ? await db.whatsAppMensagem.findMany({
+        where: { alunoId: { in: vencendoIds }, origem: "lembrete-vencimento" },
+        orderBy: { createdAt: "desc" },
+        distinct: ["alunoId"],
+        select: { alunoId: true, createdAt: true },
+      })
+    : []
+  const ultimoEnvioMap = new Map(ultimosEnvios.map((e) => [e.alunoId, e.createdAt]))
+
   for (const p of vencendo) {
     const tel = p.aluno.telefone?.replace(/\D/g, "")
     if (!tel || tel.length < 8) { semTelefone++; continue }
 
-    // Dedup: já avisamos este aluno sobre vencimento recentemente?
-    const ultimoEnvio = await db.whatsAppMensagem.findFirst({
-      where: { alunoId: p.aluno.id, origem: "lembrete-vencimento" },
-      orderBy: { createdAt: "desc" },
-    })
-    if (ultimoEnvio && Date.now() - new Date(ultimoEnvio.createdAt).getTime() < DEDUP_MS) {
+    // Dedup via mapa pré-carregado
+    const ultimoEnvio = ultimoEnvioMap.get(p.aluno.id)
+    if (ultimoEnvio && Date.now() - new Date(ultimoEnvio).getTime() < DEDUP_MS) {
       pulados++
       continue
     }
@@ -149,6 +174,10 @@ export async function runEnviarLembretesWhatsAppVencendo() {
     }
   }
 
+  logger.info("cron/vencendo: concluído", {
+    enviados, pulados, erros, semTelefone,
+    durMs: Math.round(performance.now() - t0),
+  })
   return { enviados, pulados, erros, semTelefone }
 }
 
@@ -175,6 +204,7 @@ export async function notificarPagamentoConfirmado(pagamentoId: number): Promise
 }
 
 export async function runEnviarParabensAniversariantes() {
+  const t0 = performance.now()
   let enviados = 0
   let erros = 0
 
@@ -216,6 +246,10 @@ export async function runEnviarParabensAniversariantes() {
     }
   }
 
+  logger.info("cron/aniversariantes: concluído", {
+    aniversariantes: aniversariantes.length, enviados, erros,
+    durMs: Math.round(performance.now() - t0),
+  })
   return { aniversariantes: aniversariantes.length, enviados, erros }
 }
 

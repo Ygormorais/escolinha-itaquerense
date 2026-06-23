@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 vi.mock("@/lib/db", () => ({
   db: {
     pagamento: { findMany: vi.fn() },
-    whatsAppMensagem: { findFirst: vi.fn(), create: vi.fn() },
+    whatsAppMensagem: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn() },
   },
 }))
 
@@ -25,7 +25,11 @@ import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 
 const mockDb = db as unknown as {
   pagamento: { findMany: ReturnType<typeof vi.fn> }
-  whatsAppMensagem: { findFirst: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> }
+  whatsAppMensagem: {
+    findFirst: ReturnType<typeof vi.fn>
+    findMany: ReturnType<typeof vi.fn>
+    create: ReturnType<typeof vi.fn>
+  }
 }
 
 const mockGetConfig = getConfig as ReturnType<typeof vi.fn>
@@ -52,6 +56,7 @@ beforeEach(() => {
   mockGetConfig.mockReturnValue({ intervaloDiasLembreteInadimplencia: 7, chavePix: "" })
   mockGetProvider.mockReturnValue({ sendText: vi.fn().mockResolvedValue({}) })
   mockDb.whatsAppMensagem.findFirst.mockResolvedValue(null)
+  mockDb.whatsAppMensagem.findMany.mockResolvedValue([])
   mockDb.whatsAppMensagem.create.mockResolvedValue({})
 })
 
@@ -73,7 +78,8 @@ function venc(over: { alunoId?: number; telefone?: string } = {}) {
 describe("runEnviarLembretesWhatsAppVencendo", () => {
   it("envia e registra o lembrete (origem lembrete-vencimento) quando não houve envio recente", async () => {
     mockDb.pagamento.findMany.mockResolvedValue([venc()])
-    mockDb.whatsAppMensagem.findFirst.mockResolvedValue(null)
+    // findMany para dedup retorna [] = sem envio anterior
+    mockDb.whatsAppMensagem.findMany.mockResolvedValue([])
     const res = await runEnviarLembretesWhatsAppVencendo()
     expect(res.enviados).toBe(1)
     expect(mockDb.whatsAppMensagem.create).toHaveBeenCalledTimes(1)
@@ -83,8 +89,12 @@ describe("runEnviarLembretesWhatsAppVencendo", () => {
   it("pula (dedup) quando já avisou o aluno nos últimos dias, sem reenviar", async () => {
     const send = vi.fn().mockResolvedValue({})
     mockGetProvider.mockReturnValue({ sendText: send })
-    mockDb.pagamento.findMany.mockResolvedValue([venc()])
-    mockDb.whatsAppMensagem.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) })
+    const alunoId = 1
+    mockDb.pagamento.findMany.mockResolvedValue([venc({ alunoId })])
+    // findMany retorna envio recente (ontem)
+    mockDb.whatsAppMensagem.findMany.mockResolvedValue([
+      { alunoId, createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+    ])
     const res = await runEnviarLembretesWhatsAppVencendo()
     expect(res.enviados).toBe(0)
     expect(send).not.toHaveBeenCalled()
@@ -94,7 +104,7 @@ describe("runEnviarLembretesWhatsAppVencendo", () => {
   it("não conta erro de envio como enviado", async () => {
     mockGetProvider.mockReturnValue({ sendText: vi.fn().mockRejectedValue(new Error("falhou")) })
     mockDb.pagamento.findMany.mockResolvedValue([venc()])
-    mockDb.whatsAppMensagem.findFirst.mockResolvedValue(null)
+    mockDb.whatsAppMensagem.findMany.mockResolvedValue([])
     const res = await runEnviarLembretesWhatsAppVencendo()
     expect(res.enviados).toBe(0)
     expect(res.erros).toBe(1)
@@ -136,7 +146,7 @@ describe("runEnviarLembretesWhatsAppInadimplencia", () => {
   it("pula aluno notificado há 3 dias quando intervalo é 7", async () => {
     mockDb.pagamento.findMany.mockResolvedValue([makePagamento()])
     const tresAtraso = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-    mockDb.whatsAppMensagem.findFirst.mockResolvedValue({ createdAt: tresAtraso })
+    mockDb.whatsAppMensagem.findMany.mockResolvedValue([{ alunoId: 1, createdAt: tresAtraso }])
     const sendText = vi.fn().mockResolvedValue({})
     mockGetProvider.mockReturnValue({ sendText })
 
@@ -150,7 +160,7 @@ describe("runEnviarLembretesWhatsAppInadimplencia", () => {
   it("envia para aluno notificado há 8 dias quando intervalo é 7", async () => {
     mockDb.pagamento.findMany.mockResolvedValue([makePagamento()])
     const oitoAtraso = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
-    mockDb.whatsAppMensagem.findFirst.mockResolvedValue({ createdAt: oitoAtraso })
+    mockDb.whatsAppMensagem.findMany.mockResolvedValue([{ alunoId: 1, createdAt: oitoAtraso }])
     const sendText = vi.fn().mockResolvedValue({})
     mockGetProvider.mockReturnValue({ sendText })
 

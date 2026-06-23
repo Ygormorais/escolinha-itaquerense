@@ -39,8 +39,10 @@ vi.mock("@/lib/email-jobs", () => ({
 import { db } from "@/lib/db"
 import { mpPayment } from "@/lib/mercadopago"
 import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
+import { notificarPagamentoConfirmadoEmail } from "@/lib/email-jobs"
 
 const notificar = notificarPagamentoConfirmado as unknown as ReturnType<typeof vi.fn>
+const notificarEmail = notificarPagamentoConfirmadoEmail as unknown as ReturnType<typeof vi.fn>
 
 const m = db as unknown as {
   pagamento: {
@@ -166,5 +168,50 @@ describe("POST /api/webhooks/mercadopago", () => {
         data: expect.not.objectContaining({ dataPagamento: expect.anything() }),
       })
     )
+  })
+
+  it("retorna 401 quando assinatura é inválida", async () => {
+    const req = new Request("http://localhost/api/webhooks/mercadopago", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-request-id": TEST_REQUEST_ID,
+        "x-signature": `ts=${TEST_TS},v1=assinatura_invalida`,
+      },
+      body: JSON.stringify({ type: "payment", data: { id: "mp-123" } }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(401)
+    expect(mp.get).not.toHaveBeenCalled()
+  })
+
+  it("dispara WhatsApp E email na primeira confirmação", async () => {
+    mp.get.mockResolvedValue({ id: "mp-555", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 5, canalPrevisto: "PIX", dataPagamento: null,
+      aluno: { nome: "Carlos", telefone: "11988887777", email: "c@t.com", responsavel: "Pai" },
+    })
+    m.pagamento.update.mockResolvedValue({})
+
+    await POST(makeRequest({ type: "payment", data: { id: "mp-555" } }))
+
+    // aguarda microtasks das void promises
+    await new Promise((r) => setTimeout(r, 10))
+
+    expect(notificar).toHaveBeenCalledWith(5)
+    expect(notificarEmail).toHaveBeenCalledWith(5)
+  })
+
+  it("retorna 200 mesmo quando notificação WhatsApp falha (falha isolada)", async () => {
+    notificar.mockRejectedValueOnce(new Error("timeout"))
+    mp.get.mockResolvedValue({ id: "mp-666", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 6, canalPrevisto: "PIX", dataPagamento: null,
+      aluno: { nome: "Lara", telefone: "11977776666", email: "l@t.com", responsavel: "Mãe" },
+    })
+    m.pagamento.update.mockResolvedValue({})
+
+    const res = await POST(makeRequest({ type: "payment", data: { id: "mp-666" } }))
+    expect(res.status).toBe(200)
   })
 })

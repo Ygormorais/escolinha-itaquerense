@@ -36,6 +36,7 @@ function verifyMpSignature(req: Request, paymentId: string, rawTs: string): bool
 }
 
 export async function POST(req: Request) {
+  const t0 = performance.now()
   const signatureHeader = req.headers.get("x-signature")
   if (!signatureHeader) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -102,9 +103,15 @@ export async function POST(req: Request) {
       )
     }
 
+    logger.info("webhook/mercadopago: processado", {
+      pagamentoId: pagamento.id, statusLocal, jaPago,
+      durMs: Math.round(performance.now() - t0),
+    })
     return NextResponse.json({ ok: true })
   } catch (e) {
-    logger.error("webhook/mercadopago: unhandled error", { error: String(e) })
+    logger.error("webhook/mercadopago: unhandled error", {
+      error: String(e), durMs: Math.round(performance.now() - t0),
+    })
     return NextResponse.json({ error: "Internal error" }, { status: 500 })
   }
 }
