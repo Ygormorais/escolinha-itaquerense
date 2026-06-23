@@ -1,5 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import { createHmac } from "crypto"
 import { POST } from "@/app/api/webhooks/mercadopago/route"
+
+const TEST_SECRET = "webhook-test-secret"
+const TEST_TS = "1234567890"
+const TEST_REQUEST_ID = "req-123"
+
+function makeSignature(paymentId: string): string {
+  const manifest = `id:${paymentId};request-id:${TEST_REQUEST_ID};ts:${TEST_TS};`
+  const hash = createHmac("sha256", TEST_SECRET).update(manifest).digest("hex")
+  return `ts=${TEST_TS},v1=${hash}`
+}
 
 vi.mock("@/lib/db", () => ({
   db: {
@@ -40,13 +51,14 @@ const m = db as unknown as {
 
 const mp = mpPayment as unknown as { get: ReturnType<typeof vi.fn> }
 
-function makeRequest(body: object, includeSignature = true) {
+function makeRequest(body: { type?: string; data?: { id?: string } }, includeSignature = true) {
+  const paymentId = String(body?.data?.id ?? "0")
   const headers: Record<string, string> = {
     "content-type": "application/json",
-    "x-request-id": "req-123",
+    "x-request-id": TEST_REQUEST_ID,
   }
   if (includeSignature) {
-    headers["x-signature"] = "ts=1234567890,v1=abc123def456"
+    headers["x-signature"] = makeSignature(paymentId)
   }
   return new Request("http://localhost/api/webhooks/mercadopago", {
     method: "POST",
@@ -57,7 +69,7 @@ function makeRequest(body: object, includeSignature = true) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  delete process.env.MERCADOPAGO_WEBHOOK_SECRET
+  process.env.MERCADOPAGO_WEBHOOK_SECRET = TEST_SECRET
 })
 
 describe("POST /api/webhooks/mercadopago", () => {

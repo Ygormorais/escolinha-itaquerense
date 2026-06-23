@@ -25,7 +25,7 @@ describe("enviarLembretesInadimplentes", () => {
   it("delega para runEnviarLembretesInadimplentes e retorna resultado", async () => {
     const res = await enviarLembretesInadimplentes()
     expect(runEnviarLembretesInadimplentes).toHaveBeenCalled()
-    expect(res).toEqual({ enviados: 3, erros: 0 })
+    expect(res).toEqual({ enviados: 3, erros: 0, semEmail: 0 })
   })
 
   it("propaga erro do job de email", async () => {
@@ -44,6 +44,6 @@ describe("enviarLembreteVencendo", () => {
   it("delega para runEnviarLembreteVencendo e retorna resultado", async () => {
     const res = await enviarLembreteVencendo()
     expect(runEnviarLembreteVencendo).toHaveBeenCalled()
-    expect(res).toEqual({ enviados: 1, erros: 0 })
+    expect(res).toEqual({ enviados: 1, erros: 0, semEmail: 0 })
   })
 })

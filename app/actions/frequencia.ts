@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { logger } from "@/lib/logger"
 import { filtrarEmQueda } from "@/lib/frequencia-alertas"
 import { notificarFaltas } from "@/lib/whatsapp-jobs"
 
@@ -27,7 +28,7 @@ export async function salvarFrequencia(
       )
     )
     // Notifica responsáveis de ausentes/justificados — best-effort, não bloqueia o salvamento
-    await notificarFaltas(registros).catch((e) => console.error("[notificarFaltas]", e))
+    await notificarFaltas(registros).catch((e) => logger.error("notificarFaltas falhou", { error: String(e) }))
     revalidatePath("/frequencia")
     revalidatePath("/")
     return { success: true }

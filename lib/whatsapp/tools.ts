@@ -2,6 +2,7 @@
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
 import type Anthropic from "@anthropic-ai/sdk"
+import { logger } from "@/lib/logger"
 
 export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
@@ -291,7 +292,7 @@ export async function executeTool(
         return "Tool desconhecida."
     }
   } catch (error) {
-    console.error(`[Tools] executeTool error for ${name}:`, error)
+    logger.error("whatsapp/tools: executeTool falhou", { tool: name, error: String(error) })
     return "Desculpe, ocorreu um erro ao buscar as informações. Tente novamente."
   }
 }

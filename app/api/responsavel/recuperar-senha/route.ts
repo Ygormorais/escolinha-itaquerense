@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import crypto from "crypto"
 import { db } from "@/lib/db"
+import { logger } from "@/lib/logger"
 import { enviarEmail } from "@/lib/mailer"
 import { getConfig } from "@/lib/config"
 import { checkRateLimit } from "@/lib/rate-limit"
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
   } catch (e) {
     // Não vaza se o email existe: falha de SMTP é registrada no servidor, mas a
     // resposta ao cliente é sempre a mesma mensagem genérica (anti-enumeração).
-    console.error("[recuperar-senha] falha ao enviar email:", e)
+    logger.error("recuperar-senha: falha ao enviar email", { error: String(e) })
   }
 
   return NextResponse.json({

@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { db } from "@/lib/db"
 import { getSession, createSession, identifySession, appendHistory, blockSession } from "./session"
 import { TOOL_DEFINITIONS, executeTool } from "./tools"
+import { logger } from "@/lib/logger"
 import { getWhatsAppProvider as getProvider } from "./provider"
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -137,7 +138,7 @@ export async function routeMessage(telefone: string, texto: string) {
       messages,
     })
   } catch (err) {
-    console.error("[AI Router] Claude API error:", err)
+    logger.error("ai-router: Claude API error", { error: String(err) })
     // Retry once on transient error
     try {
       response = await anthropic.messages.create({
@@ -154,7 +155,7 @@ export async function routeMessage(telefone: string, texto: string) {
         messages,
       })
     } catch (retryErr) {
-      console.error("[AI Router] Retry also failed:", retryErr)
+      logger.error("ai-router: retry also failed", { telefone, error: String(retryErr) })
       const provider = getProvider()
       await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
       return
@@ -231,7 +232,7 @@ export async function routeMessage(telefone: string, texto: string) {
         messages,
       })
     } catch (err) {
-      console.error("[AI Router] Claude API error (loop):", err)
+      logger.error("ai-router: Claude API error (tool loop)", { error: String(err) })
       // Retry once
       try {
         response = await anthropic.messages.create({
@@ -248,7 +249,7 @@ export async function routeMessage(telefone: string, texto: string) {
           messages,
         })
       } catch (retryErr) {
-        console.error("[AI Router] Loop retry also failed:", retryErr)
+        logger.error("ai-router: loop retry also failed", { telefone, error: String(retryErr) })
         const provider = getProvider()
         await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
         break
