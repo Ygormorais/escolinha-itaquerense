@@ -84,6 +84,7 @@ export function LoginForm({ next }: { next?: string }) {
             <button
               type="button"
               onClick={() => setShow(!show)}
+              aria-label={show ? "Ocultar senha" : "Mostrar senha"}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-ink-500)] transition-colors hover:text-[var(--color-ink-900)]"
               tabIndex={-1}
             >
@@ -91,7 +92,7 @@ export function LoginForm({ next }: { next?: string }) {
             </button>
           </div>
           {error && (
-            <p className="text-sm font-medium text-danger-600">{error}</p>
+            <p role="alert" className="text-sm font-medium text-danger-600">{error}</p>
           )}
         </div>
 

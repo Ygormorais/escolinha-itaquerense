@@ -62,15 +62,17 @@ export async function getPresencaPorTurma(mes: string) {
 
   const turmas = ["Sub-7", "Sub-9", "Sub-11", "Sub-13", "Sub-15", "Sub-17"]
 
-  const resultados = await Promise.all(
-    turmas.map(async (turma) => {
-      const [total, presentes] = await Promise.all([
-        db.frequencia.count({ where: { data: { gte: inicio, lte: fim }, aluno: { turma } } }),
-        db.frequencia.count({ where: { data: { gte: inicio, lte: fim }, presenca: "Presente", aluno: { turma } } }),
-      ])
-      return { turma, total, presentes, pct: total > 0 ? Math.round((presentes / total) * 100) : 0 }
-    })
-  )
+  const registros = await db.frequencia.findMany({
+    where: { data: { gte: inicio, lte: fim }, aluno: { turma: { in: turmas } } },
+    select: { presenca: true, aluno: { select: { turma: true } } },
+  })
+
+  const resultados = turmas.map((turma) => {
+    const doMes = registros.filter((r) => r.aluno.turma === turma)
+    const total = doMes.length
+    const presentes = doMes.filter((r) => r.presenca === "Presente").length
+    return { turma, total, presentes, pct: total > 0 ? Math.round((presentes / total) * 100) : 0 }
+  })
 
   return resultados.filter((r) => r.total > 0)
 }
@@ -83,21 +85,26 @@ export async function getFrequenciaAluno(alunoId: number) {
       key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
       label: d.toLocaleString("pt-BR", { month: "short", year: "2-digit" }),
       inicio: new Date(d.getFullYear(), d.getMonth(), 1),
-      fim: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59),
     }
   })
 
-  const results = await Promise.all(
-    meses.map(async (m) => {
-      const [total, presentes] = await Promise.all([
-        db.frequencia.count({ where: { alunoId, data: { gte: m.inicio, lte: m.fim } } }),
-        db.frequencia.count({ where: { alunoId, data: { gte: m.inicio, lte: m.fim }, presenca: "Presente" } }),
-      ])
-      return { label: m.label, total, presentes, pct: total > 0 ? Math.round((presentes / total) * 100) : null }
-    })
-  )
+  const inicio6m = meses[0].inicio
+  const fim6m = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
 
-  return results
+  const registros = await db.frequencia.findMany({
+    where: { alunoId, data: { gte: inicio6m, lte: fim6m } },
+    select: { data: true, presenca: true },
+  })
+
+  return meses.map((m) => {
+    const doMes = registros.filter((r) => {
+      const key = `${r.data.getFullYear()}-${String(r.data.getMonth() + 1).padStart(2, "0")}`
+      return key === m.key
+    })
+    const total = doMes.length
+    const presentes = doMes.filter((r) => r.presenca === "Presente").length
+    return { label: m.label, total, presentes, pct: total > 0 ? Math.round((presentes / total) * 100) : null }
+  })
 }
 
 export async function getResumoFrequenciaMes(turma: string, mes: string) {
