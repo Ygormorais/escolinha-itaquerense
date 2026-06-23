@@ -85,7 +85,7 @@ export function SolicitacoesClient({ solicitacoes }: { solicitacoes: Solicitacao
             </div>
             <div>
               <Label htmlFor="descricao">Descrição</Label>
-              <Textarea id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} className="mt-1 min-h-[96px]" placeholder="Descreva sua solicitação em detalhes..." />
+              <Textarea id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} className="mt-1 min-h-[96px]" placeholder="Descreva sua solicitação em detalhes..." maxLength={2000} />
             </div>
             <Button type="submit" disabled={pending} className="bg-brand-800 text-white hover:bg-brand-900">
               {pending ? <><Loader2 className="size-4 animate-spin" /> Enviando...</> : "Enviar Solicitação"}

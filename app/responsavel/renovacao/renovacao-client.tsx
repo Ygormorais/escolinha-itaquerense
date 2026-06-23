@@ -104,6 +104,7 @@ export function RenovacaoClient({ alunos, renovacoes }: { alunos: Aluno[]; renov
                 onChange={(e) => setObservacoes(e.target.value)}
                 placeholder="Mudança de turma, horário preferido, etc."
                 rows={3}
+                maxLength={1000}
               />
             </div>
             <Button type="submit" disabled={pending} className="w-full">
