@@ -25,7 +25,7 @@ export async function criarEvento(data: {
   turmas?: string
   descricao?: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   if (!dataValida(data.data)) throw new Error("Data inválida")
   await db.evento.create({
     data: {
@@ -53,7 +53,7 @@ export async function editarEvento(id: number, data: {
   turmas?: string
   descricao?: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   if (!dataValida(data.data)) throw new Error("Data inválida")
   await db.evento.update({
     where: { id },
@@ -73,7 +73,7 @@ export async function editarEvento(id: number, data: {
 }
 
 export async function deletarEvento(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.evento.delete({ where: { id } })
   await registrarLog("evento_excluido", `Evento excluído — ID ${id}`)
   revalidatePath("/agenda")
