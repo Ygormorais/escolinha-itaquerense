@@ -16,7 +16,7 @@ export async function criarNoticia(data: {
   publicado: boolean
   destaque: boolean
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const noticia = await db.noticia.create({ data })
   revalidatePath("/noticias")
   revalidatePath("/")
@@ -31,7 +31,7 @@ export async function editarNoticia(id: number, data: {
   publicado: boolean
   destaque: boolean
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const noticia = await db.noticia.update({ where: { id }, data })
   revalidatePath("/noticias")
   revalidatePath("/")
@@ -39,14 +39,14 @@ export async function editarNoticia(id: number, data: {
 }
 
 export async function deletarNoticia(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.noticia.delete({ where: { id } })
   revalidatePath("/noticias")
   revalidatePath("/")
 }
 
 export async function togglePublicado(id: number, publicado: boolean) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.noticia.update({ where: { id }, data: { publicado } })
   revalidatePath("/noticias")
   revalidatePath("/")

@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
+import dynamic from "next/dynamic"
 import { ArrowLeft, IdCard, MessageCircle, Receipt, FileText, CreditCard, CalendarCheck } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,13 +14,21 @@ import {
 import { calcStatus, formatMoney, formatDate, plural } from "@/lib/utils"
 import { PagamentoButton } from "./pagamento-button"
 import { EditarAlunoButton } from "./editar-button"
-import { FrequenciaChart } from "./frequencia-chart"
 import { PaginacaoAluno } from "./paginacao-aluno"
 import { PixButton } from "@/components/ui/pix-modal"
 import { MatriculaButton } from "./matricula-button"
-import { AdimplenciaChart } from "./adimplencia-chart"
 import { UniformesCard } from "./uniformes-card"
 import { FotoUpload } from "./foto-upload"
+
+const FrequenciaChart = dynamic(
+  () => import("./frequencia-chart").then((m) => ({ default: m.FrequenciaChart })),
+  { loading: () => <div className="h-48 animate-pulse rounded-xl bg-muted" /> }
+)
+
+const AdimplenciaChart = dynamic(
+  () => import("./adimplencia-chart").then((m) => ({ default: m.AdimplenciaChart })),
+  { loading: () => <div className="h-48 animate-pulse rounded-xl bg-muted" /> }
+)
 import { getConfig } from "@/lib/config"
 import { getUniformes } from "@/app/actions/uniformes"
 import { AlunoPrintButton } from "./print-button"

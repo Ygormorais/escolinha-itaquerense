@@ -10,11 +10,11 @@ import {
 export type { ResultadoEmail }
 
 export async function enviarLembretesInadimplentes(): Promise<ResultadoEmail | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin"])
   return runEnviarLembretesInadimplentes()
 }
 
 export async function enviarLembreteVencendo(): Promise<ResultadoEmail | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin"])
   return runEnviarLembreteVencendo()
 }
