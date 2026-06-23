@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { routeMessage } from "@/lib/whatsapp/ai-router"
 import { getEvolutionApiKey, verifyEvolutionAuth } from "@/lib/env"
+import { logger } from "@/lib/logger"
 
 export async function POST(req: NextRequest) {
   const apiKey = getEvolutionApiKey()
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
       })
 
       routeMessage(telefone, texto).catch((err) => {
-        console.error("Failed to route message:", err)
+        logger.error("whatsapp/webhook: falha ao rotear mensagem", { telefone, error: String(err) })
       })
     }
 
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error("WhatsApp webhook error:", error)
+    logger.error("whatsapp/webhook: unhandled error", { error: String(error) })
     return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 })
   }
 }

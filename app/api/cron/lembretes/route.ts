@@ -12,6 +12,7 @@ import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
 import { runPushVencimento, runPushInadimplentes } from "@/lib/push-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
 import { format } from "date-fns"
+import { logger } from "@/lib/logger"
 
 async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
   const pendentes = await db.pagamento.findMany({
@@ -59,8 +60,8 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
         }
         atualizados++
       }
-    } catch {
-      console.warn(`[cron] Falha ao sincronizar pagamento ${p.id}`)
+    } catch (e) {
+      logger.warn("cron: falha ao sincronizar pagamento MP", { pagamentoId: p.id, error: String(e) })
     }
   }
 

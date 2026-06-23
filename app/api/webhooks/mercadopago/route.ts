@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
 import { revalidatePath } from "next/cache"
 import { requireEnv } from "@/lib/env"
+import { logger } from "@/lib/logger"
 
 function verifyMpSignature(req: Request, paymentId: string, rawTs: string): boolean {
   const secret = requireEnv("MERCADOPAGO_WEBHOOK_SECRET", "")
@@ -94,16 +95,16 @@ export async function POST(req: Request) {
       const { notificarPagamentoConfirmado } = await import("@/lib/whatsapp-jobs")
       const { notificarPagamentoConfirmadoEmail } = await import("@/lib/email-jobs")
       void notificarPagamentoConfirmado(pagamento.id).catch((e) =>
-        console.warn("[webhook/mercadopago] WhatsApp notification failed:", e)
+        logger.warn("webhook/mercadopago: WhatsApp notification failed", { pagamentoId: pagamento.id, error: String(e) })
       )
       void notificarPagamentoConfirmadoEmail(pagamento.id).catch((e) =>
-        console.warn("[webhook/mercadopago] Email notification failed:", e)
+        logger.warn("webhook/mercadopago: email notification failed", { pagamentoId: pagamento.id, error: String(e) })
       )
     }
 
     return NextResponse.json({ ok: true })
   } catch (e) {
-    console.error("[webhook/mercadopago]", e)
+    logger.error("webhook/mercadopago: unhandled error", { error: String(e) })
     return NextResponse.json({ error: "Internal error" }, { status: 500 })
   }
 }
