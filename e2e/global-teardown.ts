@@ -1,5 +1,5 @@
 import { db } from "@/lib/db"
-import { RESP_TESTE } from "./test-credentials"
+import { RESP_TESTE, ADMIN_TESTE } from "./test-credentials"
 
 export default async function globalTeardown() {
   // Remove alunos criados pelos testes E2E ("E2E Aluno ..." e "E2E Aprovacao ...")
@@ -25,6 +25,9 @@ export default async function globalTeardown() {
   // Remove responsável de teste criado pelo globalSetup e os criados pelos specs (resp.<ts>@e2e.test)
   await db.responsavel.deleteMany({ where: { email: RESP_TESTE.email } })
   await db.responsavel.deleteMany({ where: { email: { endsWith: "@e2e.test" } } })
+
+  // Remove admin de teste criado pelo globalSetup
+  await db.usuario.deleteMany({ where: { username: ADMIN_TESTE.username } })
 
   await db.$disconnect()
 }

@@ -1,12 +1,26 @@
 import { chromium } from "@playwright/test"
 import path from "path"
 import fs from "fs"
-import { RESP_TESTE } from "./test-credentials"
+import { RESP_TESTE, ADMIN_TESTE } from "./test-credentials"
 import { db } from "@/lib/db"
 import bcryptjs from "bcryptjs"
 
 export default async function globalSetup() {
-  // ── 1. Cria responsável de teste no banco ─────────────────────────────────
+  // ── 1. Cria admin de teste com senha conhecida ────────────────────────────
+  // Garante que os testes E2E não dependem da senha do admin real no dev.db
+  await db.usuario.upsert({
+    where: { username: ADMIN_TESTE.username },
+    update: { senha: bcryptjs.hashSync(ADMIN_TESTE.senha, 10), ativo: true },
+    create: {
+      username: ADMIN_TESTE.username,
+      nome: ADMIN_TESTE.nome,
+      senha: bcryptjs.hashSync(ADMIN_TESTE.senha, 10),
+      role: ADMIN_TESTE.role,
+      ativo: true,
+    },
+  })
+
+  // ── 2. Cria responsável de teste no banco ─────────────────────────────────
   // Remove responsável de execuções anteriores para evitar conflito de email único
   await db.responsavel.deleteMany({ where: { email: RESP_TESTE.email } })
 
