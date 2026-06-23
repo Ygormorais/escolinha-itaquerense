@@ -40,7 +40,7 @@ export async function criarCampeonato(data: {
   fpfsEventoId?: number
   fpfsTimeNome?: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   if (!dataValida(data.dataInicio) || (data.dataFim && !dataValida(data.dataFim))) throw new Error("Data inválida")
   const campeonato = await db.campeonato.create({
     data: {
@@ -79,7 +79,7 @@ export async function editarCampeonato(id: number, data: {
   fpfsEventoId?: number | null
   fpfsTimeNome?: string | null
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   if (!dataValida(data.dataInicio) || (data.dataFim && !dataValida(data.dataFim))) throw new Error("Data inválida")
   await db.campeonato.update({
     where: { id },
@@ -105,7 +105,7 @@ export async function editarCampeonato(id: number, data: {
 }
 
 export async function sincronizarFpfs(campeonatoId: number) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   try {
     const resumo = await syncCampeonato(campeonatoId)
     revalidatePath(`/campeonatos/${campeonatoId}`)
@@ -121,7 +121,7 @@ export async function sincronizarFpfs(campeonatoId: number) {
 }
 
 export async function sincronizarTodosFpfs() {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   try {
     const resumos = await syncTodos()
     revalidatePath("/campeonatos")
@@ -140,7 +140,7 @@ export async function sincronizarTodosFpfs() {
 }
 
 export async function deletarCampeonato(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   await db.campeonato.delete({ where: { id } })
   revalidatePath("/campeonatos")
 }
@@ -150,7 +150,7 @@ export async function inscreverAluno(campeonatoId: number, alunoId: number, data
   desconto?: number
   observacoes?: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   const inscricao = await db.inscricaoCampeonato.create({
     data: {
       campeonatoId,
@@ -165,7 +165,7 @@ export async function inscreverAluno(campeonatoId: number, alunoId: number, data
 }
 
 export async function removerInscricao(id: number, campeonatoId: number) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   await db.inscricaoCampeonato.delete({ where: { id } })
   revalidatePath(`/campeonatos/${campeonatoId}`)
 }
@@ -175,7 +175,7 @@ export async function registrarPagamentoInscricao(
   campeonatoId: number,
   data: { valorPago: number; formaPagamento: string; dataPagamento: string }
 ) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   const inscricao = await db.inscricaoCampeonato.findUnique({ where: { id } })
   if (!inscricao) return { error: "Inscrição não encontrada" }
@@ -222,7 +222,7 @@ export async function criarPartida(data: {
   golsContra?: number | null
   observacoes?: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   if (!dataValida(data.data)) throw new Error("Data inválida")
   let resultado: string | null = null
   if (data.golsPro != null && data.golsContra != null) {
@@ -254,7 +254,7 @@ export async function editarPartida(id: number, data: {
   golsContra?: number | null
   observacoes?: string
 }, campeonatoId?: number) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   if (!dataValida(data.data)) throw new Error("Data inválida")
   let resultado: string | null = null
   if (data.golsPro != null && data.golsContra != null) {
@@ -279,7 +279,7 @@ export async function editarPartida(id: number, data: {
 }
 
 export async function deletarPartida(id: number, campeonatoId: number) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   await db.partida.delete({ where: { id } })
   revalidatePath(`/campeonatos/${campeonatoId}`)
 }

@@ -24,7 +24,7 @@ function validarNotas(d: {
 }
 
 export async function listarAvaliacoes() {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   return db.avaliacao.findMany({
     include: { aluno: { select: { id: true, nome: true, turma: true } } },
     orderBy: { createdAt: "desc" },
@@ -40,7 +40,7 @@ export async function criarAvaliacao(data: {
   frequencia?: number
   observacoes?: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   const erro = validarNotas(data)
   if (erro) return { error: erro }
   const av = await db.avaliacao.create({ data })
@@ -68,7 +68,7 @@ export async function atualizarAvaliacao(id: number, data: {
   frequencia?: number
   observacoes?: string
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   const erro = validarNotas(data)
   if (erro) return { error: erro }
   const av = await db.avaliacao.update({
@@ -90,7 +90,7 @@ export async function atualizarAvaliacao(id: number, data: {
 }
 
 export async function removerAvaliacao(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
   await db.avaliacao.delete({ where: { id } })
   await registrarLog("avaliacao_excluida", `Avaliação ID ${id} excluída`)
   revalidatePath("/configuracoes/avaliacoes")

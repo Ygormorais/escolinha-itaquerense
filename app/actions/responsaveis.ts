@@ -6,7 +6,7 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 
 export async function listarResponsaveis() {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   return db.responsavel.findMany({
     include: { _count: { select: { alunos: true } } },
     orderBy: { nome: "asc" },
@@ -20,7 +20,7 @@ export async function criarResponsavel(data: {
   senha: string
   alunoIds?: number[]
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const email = data.email.trim().toLowerCase()
   const existing = await db.responsavel.findUnique({ where: { email } })
   if (existing) return { error: "Email já cadastrado" }
@@ -45,7 +45,7 @@ export async function editarResponsavel(
   id: number,
   data: { nome?: string; email?: string; telefone?: string; ativo?: boolean; cpf?: string | null }
 ) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   if (data.cpf === "") data = { ...data, cpf: null }
 
@@ -65,21 +65,21 @@ export async function editarResponsavel(
 }
 
 export async function deletarResponsavel(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.responsavel.delete({ where: { id } })
   revalidatePath("/configuracoes/responsaveis")
   return { success: true }
 }
 
 export async function vincularAluno(responsavelId: number, alunoId: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.aluno.update({ where: { id: alunoId }, data: { responsavelId } })
   revalidatePath("/configuracoes/responsaveis")
   return { success: true }
 }
 
 export async function desvincularAluno(alunoId: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.aluno.update({ where: { id: alunoId }, data: { responsavelId: null } })
   revalidatePath("/configuracoes/responsaveis")
   return { success: true }

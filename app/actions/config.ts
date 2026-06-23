@@ -9,7 +9,7 @@ export async function getClubConfig() {
 }
 
 export async function updateClubConfig(data: ClubConfig) {
-  await requireAuth()
+  await requireAuth(["admin"])
   saveConfig(data)
   revalidatePath("/recibos")
   revalidatePath("/configuracoes")

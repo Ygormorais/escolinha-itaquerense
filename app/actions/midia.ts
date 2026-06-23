@@ -11,7 +11,7 @@ export async function adicionarMidia(data: {
   partidaId?: number
   campeonatoId?: number
 }) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   if (!data.titulo.trim()) return { error: "Título obrigatório" }
   if (!data.url.trim()) return { error: "URL obrigatória" }
@@ -34,7 +34,7 @@ export async function adicionarMidia(data: {
 }
 
 export async function removerMidia(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     await db.media.delete({ where: { id } })
     revalidatePath("/configuracoes/midia")

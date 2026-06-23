@@ -11,6 +11,7 @@ function hashSenha(senha: string): string {
 }
 
 export async function getUsuarios() {
+  await requireAuth(["admin"])
   return db.usuario.findMany({ orderBy: { createdAt: "asc" } })
 }
 
