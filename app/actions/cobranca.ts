@@ -38,7 +38,7 @@ export async function emitirCobranca(
   pagamentoId: number,
   canal: Canal
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   const pagamento = await db.pagamento.findUnique({
     where: { id: pagamentoId },
@@ -139,7 +139,7 @@ export async function emitirCobrancasMes(
   mes: string,
   canal: Canal
 ): Promise<{ emitidos: number; erros: number } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   const pendentes = await db.pagamento.findMany({
     where: { mesReferencia: mes, dataPagamento: null, externalId: null },
@@ -161,7 +161,7 @@ export async function emitirCobrancasMes(
 export async function cancelarCobranca(
   pagamentoId: number
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   const pagamento = await db.pagamento.findUnique({
     where: { id: pagamentoId },

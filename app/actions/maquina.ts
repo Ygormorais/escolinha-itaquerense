@@ -9,7 +9,7 @@ export async function importarCSV(
   texto: string,
   nomeArquivo: string
 ): Promise<{ importadas: number; ignoradas: number; formato: string; transacoes: Array<{ dataTransacao: Date; valor: number; parcelas: number; bandeira: string; tipo: string; nomeNoCartao: string; parcela: string; autorizacao?: string; nsu?: string; custoTaxa?: number; valorLiquido?: number; previsao?: Date; linha: number }> } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const { linhas } = parseCSV(texto)
     if (linhas.length === 0) return { error: "Nenhuma transação encontrada no CSV" }
@@ -75,7 +75,7 @@ export async function reconciliarTransacao(
   dataVencimento: string,
   observacoes?: string
 ) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const transacao = await db.transacaoMaquina.findUnique({ where: { id } })
   if (!transacao) return { error: "Transação não encontrada" }
   // Idempotência: não reconciliar de novo (o upsert já evita duplicar, mas o guard é explícito).
@@ -107,7 +107,7 @@ export async function reconciliarTransacao(
 }
 
 export async function reconciliarAuto() {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const pendentes = await db.transacaoMaquina.findMany({
     where: { status: "pendente" },
   })
@@ -175,7 +175,7 @@ export async function reconciliarAuto() {
 }
 
 export async function ignorarTransacao(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.transacaoMaquina.update({
     where: { id },
     data: { status: "ignorado" },

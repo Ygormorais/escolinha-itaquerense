@@ -41,7 +41,7 @@ export async function listarRenovacoesResponsavel() {
 }
 
 export async function adminListarRenovacoes(status?: string) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const where = status && status !== "todas" ? { status } : {}
   return db.renovacaoMatricula.findMany({
     where,
@@ -54,7 +54,7 @@ export async function adminListarRenovacoes(status?: string) {
 }
 
 export async function responderRenovacao(id: number, status: "aprovada" | "recusada", resposta?: string) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.renovacaoMatricula.update({
     where: { id },
     data: { status, resposta: resposta?.trim() || null },

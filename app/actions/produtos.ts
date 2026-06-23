@@ -5,12 +5,12 @@ import { requireAuth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 export async function listarProdutos() {
-  await requireAuth()
+  await requireAuth(["admin"])
   return db.produto.findMany({ orderBy: { createdAt: "desc" } })
 }
 
 export async function criarProduto(data: { nome: string; descricao?: string; preco: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
-  await requireAuth()
+  await requireAuth(["admin"])
   if (!data.nome?.trim()) return { error: "Nome do produto é obrigatório" }
   const preco = Number(data.preco)
   if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
@@ -22,7 +22,7 @@ export async function criarProduto(data: { nome: string; descricao?: string; pre
 }
 
 export async function atualizarProduto(id: number, data: { nome?: string; descricao?: string; preco?: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
-  await requireAuth()
+  await requireAuth(["admin"])
   if (data.preco !== undefined) {
     const preco = Number(data.preco)
     if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
@@ -35,7 +35,7 @@ export async function atualizarProduto(id: number, data: { nome?: string; descri
 }
 
 export async function removerProduto(id: number) {
-  await requireAuth()
+  await requireAuth(["admin"])
   await db.produto.delete({ where: { id } })
   revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
@@ -48,7 +48,7 @@ export async function ajustarEstoque(
   quantidade: number,
   motivo?: string
 ) {
-  await requireAuth()
+  await requireAuth(["admin"])
   if (quantidade <= 0) return { error: "Quantidade deve ser positiva" }
 
   const produto = await db.produto.findUnique({ where: { id: produtoId } })
@@ -65,7 +65,7 @@ export async function ajustarEstoque(
 }
 
 export async function getMovimentosEstoque(produtoId: number) {
-  await requireAuth()
+  await requireAuth(["admin"])
   return db.movimentoEstoque.findMany({
     where: { produtoId },
     orderBy: { createdAt: "desc" },

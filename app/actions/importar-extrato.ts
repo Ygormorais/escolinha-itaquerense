@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache"
 export async function previewOFX(
   content: string
 ): Promise<MatchResult[] | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   try {
     const transactions = parseOFX(content)
@@ -34,7 +34,7 @@ export async function previewOFX(
 export async function confirmarImportacaoOFX(
   selecoes: { pagamentoId: number; valor: number; dataPagamento: string }[]
 ): Promise<{ atualizados: number } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   try {
     await Promise.all(

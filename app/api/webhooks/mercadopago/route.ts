@@ -9,7 +9,7 @@ import { requireEnv } from "@/lib/env"
 
 function verifyMpSignature(req: Request, paymentId: string, rawTs: string): boolean {
   const secret = requireEnv("MERCADOPAGO_WEBHOOK_SECRET", "")
-  if (!secret) return true
+  if (!secret) return false
 
   const requestId = req.headers.get("x-request-id") ?? ""
   const signatureHeader = req.headers.get("x-signature") ?? ""

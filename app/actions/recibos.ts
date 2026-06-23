@@ -14,7 +14,7 @@ export async function salvarRecibo(data: {
   formaPagamento: string
   dataPagamento: string
 }): Promise<{ numero: string } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   if (!data.alunoNome?.trim()) return { error: "Nome do aluno é obrigatório" }
   const valor = Number(data.valor)
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
@@ -41,12 +41,12 @@ export async function salvarRecibo(data: {
 }
 
 export async function getRecibos() {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   return db.recibo.findMany({ orderBy: { createdAt: "desc" }, take: 500 })
 }
 
 export async function deleteRecibo(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const recibo = await db.recibo.findUnique({ where: { id }, select: { numero: true, alunoNome: true } })
   await db.recibo.delete({ where: { id } })
   await registrarLog("recibo_excluido", `Recibo Nº${recibo?.numero ?? id} excluído — ${recibo?.alunoNome ?? ""}`)

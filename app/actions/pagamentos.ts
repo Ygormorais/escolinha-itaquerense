@@ -21,7 +21,7 @@ export async function registrarPagamento(
     observacoes?: string
   }
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const valor = Number(data.valorRecebido)
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
@@ -71,7 +71,7 @@ export async function registrarPagamentosLote(
   ids: number[],
   data: { dataPagamento: string; formaPagamento: string }
 ): Promise<{ atualizados: number } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
     const pagamentos = await db.pagamento.findMany({
@@ -109,7 +109,7 @@ export async function registrarPagamentosLote(
 export async function gerarMensalidadesMes(
   mes: string
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const result = await runGerarMensalidadesMes(mes)
     revalidatePath("/pagamentos")
@@ -127,7 +127,7 @@ export async function gerarMensalidadesMes(
 export async function gerarMensalidadesAno(
   ano: number
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const rawDia = getConfig().diaVencimento
     const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
@@ -168,7 +168,7 @@ export async function gerarMensalidadesAno(
 }
 
 export async function deletePagamento(id: number): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const pag = await db.pagamento.findUnique({
       where: { id },
@@ -198,7 +198,7 @@ export async function marcarComoPago(
   id: number,
   data: { dataPagamento: string; formaPagamento: string; valorRecebido: number }
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const valor = Number(data.valorRecebido)
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }

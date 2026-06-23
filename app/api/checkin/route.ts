@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { checkRateLimit } from "@/lib/rate-limit"
+import { rateLimitResponse } from "@/lib/rate-limit-response"
 
 // GET /api/checkin?token=<token>&alunoId=<id>
-// Token é TURMA:DATA (ex: "Sub-13:2026-06-20") — sem segurança criptográfica, apenas comodidade
+// Token é TURMA:DATA (ex: "Sub-13:2026-06-20") — sem segredo criptográfico, apenas comodidade
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") ?? "unknown"
+  const limit = checkRateLimit(`checkin:${ip}`, 30)
+  if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
+
   const { searchParams } = new URL(req.url)
   const token = searchParams.get("token")
   const alunoIdRaw = searchParams.get("alunoId")

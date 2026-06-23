@@ -19,7 +19,7 @@ export async function adicionarUniforme(alunoId: number, data: {
   tamanho?: string
   observacoes?: string
 }): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   if (!data.item?.trim()) return { error: "Item de uniforme é obrigatório" }
   try {
     await db.uniforme.create({
@@ -35,7 +35,7 @@ export async function adicionarUniforme(alunoId: number, data: {
 }
 
 export async function marcarEntregue(id: number, alunoId: number): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     await db.uniforme.update({
       where: { id },
@@ -51,7 +51,7 @@ export async function marcarEntregue(id: number, alunoId: number): Promise<Actio
 }
 
 export async function removerUniforme(id: number, alunoId: number): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     await db.uniforme.delete({ where: { id } })
     void registrarLog("uniforme_removido", `Uniforme ID ${id} removido — aluno ID ${alunoId}`)

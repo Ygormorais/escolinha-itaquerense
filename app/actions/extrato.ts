@@ -6,7 +6,7 @@ import { parseExtratoCSV } from "@/lib/extrato-csv"
 import { requireAuth } from "@/lib/auth"
 
 export async function importarExtrato(texto: string, nomeArquivo: string) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const result = parseExtratoCSV(texto, nomeArquivo)
   if (result.erro) return { error: result.erro }
   if (result.lancamentos.length === 0) return { error: "Nenhum lançamento encontrado." }
@@ -87,19 +87,19 @@ export async function getResumoExtrato(mes?: string) {
 }
 
 export async function ignorarLancamento(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.lancamentoBancario.update({ where: { id }, data: { status: "ignorado" } })
   revalidatePath("/caixa/extrato")
 }
 
 export async function deletarLancamento(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.lancamentoBancario.delete({ where: { id } })
   revalidatePath("/caixa/extrato")
 }
 
 export async function categorizarLancamento(id: number, categoria: string) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.lancamentoBancario.update({ where: { id }, data: { categoria: categoria || null } })
   revalidatePath("/caixa/extrato")
 }
