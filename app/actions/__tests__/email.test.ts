@@ -12,8 +12,8 @@ import { runEnviarLembreteVencendo, runEnviarLembretesInadimplentes } from "@/li
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(runEnviarLembretesInadimplentes).mockResolvedValue({ enviados: 3, erros: 0 })
-  vi.mocked(runEnviarLembreteVencendo).mockResolvedValue({ enviados: 1, erros: 0 })
+  vi.mocked(runEnviarLembretesInadimplentes).mockResolvedValue({ enviados: 3, erros: 0, semEmail: 0 })
+  vi.mocked(runEnviarLembreteVencendo).mockResolvedValue({ enviados: 1, erros: 0, semEmail: 0 })
 })
 
 describe("enviarLembretesInadimplentes", () => {

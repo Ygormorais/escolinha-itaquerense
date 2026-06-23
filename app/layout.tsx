@@ -87,9 +87,13 @@ export default async function RootLayout({
   const session = await getSession()
   // A decisão de mostrar o shell do admin é feita no cliente (ShellGate), porque
   // o root layout não re-renderiza em navegação client-side.
-  const pendingEscalacoes = session.authenticated
-    ? await db.chatSession.count({ where: { bloqueado: true } })
-    : 0
+  const [pendingEscalacoes, pendingMatriculas, pendingSolicitacoes] = session.authenticated
+    ? await Promise.all([
+        db.chatSession.count({ where: { bloqueado: true } }),
+        db.preMatricula.count({ where: { status: "pendente" } }),
+        db.solicitacao.count({ where: { status: "pendente" } }),
+      ])
+    : [0, 0, 0]
 
   return (
       <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
@@ -116,6 +120,8 @@ export default async function RootLayout({
             authenticated={session.authenticated}
             role={(session.role ?? "admin") as "admin" | "secretaria" | "tecnico"}
             pendingEscalacoes={pendingEscalacoes}
+            pendingMatriculas={pendingMatriculas}
+            pendingSolicitacoes={pendingSolicitacoes}
           >
             {children}
           </ShellGate>

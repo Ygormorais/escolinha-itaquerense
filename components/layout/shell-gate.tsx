@@ -17,11 +17,15 @@ export function ShellGate({
   authenticated,
   role,
   pendingEscalacoes,
+  pendingMatriculas,
+  pendingSolicitacoes,
   children,
 }: {
   authenticated: boolean
   role: "admin" | "secretaria" | "tecnico"
   pendingEscalacoes: number
+  pendingMatriculas: number
+  pendingSolicitacoes: number
   children: React.ReactNode
 }) {
   const pathname = usePathname()
@@ -29,7 +33,7 @@ export function ShellGate({
 
   if (showAdmin) {
     return (
-      <AdminShell role={role} pendingEscalacoes={pendingEscalacoes}>
+      <AdminShell role={role} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes}>
         {children}
       </AdminShell>
     )

@@ -10,9 +10,11 @@ interface AdminShellProps {
   children: React.ReactNode
   role?: "admin" | "secretaria" | "tecnico"
   pendingEscalacoes?: number
+  pendingMatriculas?: number
+  pendingSolicitacoes?: number
 }
 
-export function AdminShell({ children, role = "admin", pendingEscalacoes = 0 }: AdminShellProps) {
+export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0 }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -37,11 +39,11 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0 }: 
       </header>
 
       <div className="hidden md:flex">
-        <Sidebar role={role} pendingEscalacoes={pendingEscalacoes} />
+        <Sidebar role={role} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} />
       </div>
 
       <Sheet open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-        <Sidebar role={role} onClose={() => setSidebarOpen(false)} pendingEscalacoes={pendingEscalacoes} />
+        <Sidebar role={role} onClose={() => setSidebarOpen(false)} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} />
       </Sheet>
 
       <main id="main-content" className="flex min-w-0 flex-1 flex-col overflow-auto pb-16 md:pb-0">

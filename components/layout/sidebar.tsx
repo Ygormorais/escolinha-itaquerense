@@ -87,7 +87,7 @@ function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
   return items.filter((i) => canAccess(i.href))
 }
 
-export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { onClose?: () => void; role?: SidebarRole; pendingEscalacoes?: number }) {
+export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0 }: { onClose?: () => void; role?: SidebarRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number }) {
   const pathname = usePathname()
   const [relOpen, setRelOpen] = useState(() => pathname.startsWith("/relatorio"))
 
@@ -128,8 +128,8 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
         { href: "/configuracoes", label: "Configurações", icon: Settings },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
         { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
-        { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning },
-        { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList },
+        { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning, badge: pendingSolicitacoes },
+        { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList, badge: pendingMatriculas },
       ], role),
     },
   ]
