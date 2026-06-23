@@ -120,12 +120,14 @@ export default async function DashboardPage({
       include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
     }),
-    Promise.all(
-      TURMAS.map(async (turma) => {
-        const count = await db.aluno.count({ where: { turma, status: "Ativo" } })
-        return { turma, count }
-      })
-    ),
+    db.aluno.groupBy({
+      by: ["turma"],
+      where: { status: "Ativo" },
+      _count: { id: true },
+    }).then((rows) => TURMAS.map((turma) => ({
+      turma,
+      count: rows.find((r) => r.turma === turma)?._count.id ?? 0,
+    }))),
     db.pagamento.findMany({
       where: { mesReferencia: { in: last6Months } },
       select: { mesReferencia: true, dataPagamento: true, valorRecebido: true },
