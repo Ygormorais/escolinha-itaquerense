@@ -30,7 +30,6 @@ import {
   ShoppingBag,
   Award,
   ChevronRight,
-  QrCode,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
@@ -108,7 +107,6 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0 }: { on
         { href: "/turmas",        label: "Turmas",        icon: Users2 },
         { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
         { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
-        { href: "/frequencia/qrcode", label: "QR Presença", icon: QrCode },
         { href: "/agenda",        label: "Agenda",         icon: Calendar },
         { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
         { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },

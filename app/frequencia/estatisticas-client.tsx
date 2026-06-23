@@ -62,7 +62,7 @@ export function EstatisticasFrequencia() {
             className="mt-1"
           />
         </div>
-        <Button onClick={handleCarregar} disabled={loading} variant="outline">
+        <Button onClick={handleCarregar} disabled={loading} variant="outline" className="mt-[22px]">
           {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar Estatísticas"}
         </Button>
       </div>

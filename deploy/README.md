@@ -46,6 +46,8 @@ cp escolinha-itaquerense/.env.production.example escolinha-itaquerense/.env
 bash escolinha-itaquerense/deploy/gen-secrets.sh # cole a saída no .env
 nano escolinha-itaquerense/.env                  # preencher o restante (checklist abaixo)
 bash escolinha-itaquerense/deploy/setup-vps.sh   # roda de novo: builda, sobe PM2 + Caddy
+# Seed inicial — cria o usuário admin (rode só na primeira vez):
+SENHA_ADMIN=<senha_forte> npm run db:seed-prod
 ```
 
 ## 3. Checklist do `.env` de produção

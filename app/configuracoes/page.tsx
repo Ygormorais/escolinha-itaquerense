@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react"
 import { getClubConfig } from "@/app/actions/config"
 import { PageHeader } from "@/components/layout/page-header"
 import { ConfigForm } from "./config-form"
+import { CronTrigger } from "./cron-trigger"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata = { title: "Configurações — Escolinha Itaquerense" }
@@ -32,6 +33,11 @@ export default async function ConfiguracoesPage() {
             </Card>
           </Link>
         </div>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Automações</h2>
+        <CronTrigger />
       </div>
     </div>
   )

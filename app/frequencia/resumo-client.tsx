@@ -111,7 +111,7 @@ export function ResumoFrequenciaClient() {
             className="mt-1"
           />
         </div>
-        <Button onClick={handleCarregar} disabled={loading} variant="outline">
+        <Button onClick={handleCarregar} disabled={loading} variant="outline" className="mt-[22px]">
           {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar Resumo"}
         </Button>
         {loaded && resumo.length > 0 && (

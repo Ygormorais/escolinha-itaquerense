@@ -35,7 +35,7 @@ const m = db as unknown as {
 beforeEach(() => {
   vi.clearAllMocks()
   m.avaliacao.create.mockResolvedValue({})
-  m.avaliacao.update.mockResolvedValue({})
+  m.avaliacao.update.mockResolvedValue({ aluno: { nome: "Aluno Teste", responsavelId: null }, periodo: "2026-1S" })
   m.avaliacao.delete.mockResolvedValue({})
   ;(db as unknown as { aluno: { findUnique: ReturnType<typeof vi.fn> } }).aluno.findUnique.mockResolvedValue({ nome: "Aluno" })
 })
@@ -122,10 +122,9 @@ describe("atualizarAvaliacao", () => {
       notaFisica: 7.0,
     }
     await atualizarAvaliacao(1, input)
-    expect(m.avaliacao.update).toHaveBeenCalledWith({
-      where: { id: 1 },
-      data: input,
-    })
+    expect(m.avaliacao.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1 }, data: input })
+    )
   })
 
   it("revalida a página de configurações de avaliacoes", async () => {
@@ -141,10 +140,9 @@ describe("atualizarAvaliacao", () => {
 
   it("funciona com um único campo", async () => {
     await atualizarAvaliacao(3, { notaTecnica: 7.0 })
-    expect(m.avaliacao.update).toHaveBeenCalledWith({
-      where: { id: 3 },
-      data: { notaTecnica: 7.0 },
-    })
+    expect(m.avaliacao.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 3 }, data: { notaTecnica: 7.0 } })
+    )
   })
 
   it("funciona com múltiplos campos", async () => {
@@ -156,10 +154,9 @@ describe("atualizarAvaliacao", () => {
       observacoes: "Melhorou muito",
     }
     await atualizarAvaliacao(2, input)
-    expect(m.avaliacao.update).toHaveBeenCalledWith({
-      where: { id: 2 },
-      data: input,
-    })
+    expect(m.avaliacao.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 2 }, data: input })
+    )
   })
 })
 
