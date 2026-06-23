@@ -15,6 +15,7 @@ export async function solicitarRenovacao(alunoId: number, periodo: string, obser
     select: { id: true },
   })
   if (!aluno) return { error: "Aluno não encontrado." }
+  if (observacoes && observacoes.length > 1000) return { error: "Observações muito longas (máx. 1000 caracteres)" }
 
   // Dedup: só permite uma solicitação por aluno por período
   const existing = await db.renovacaoMatricula.findUnique({

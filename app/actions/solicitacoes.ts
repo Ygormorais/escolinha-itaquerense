@@ -14,6 +14,7 @@ export async function criarSolicitacao(data: {
   if (!session.authenticated || session.responsavelId == null) return { error: "Não autenticado." }
   if (!data.tipo?.trim()) return { error: "Selecione o tipo de solicitação" }
   if (!data.descricao?.trim()) return { error: "Descreva sua solicitação" }
+  if (data.descricao.length > 2000) return { error: "Descrição muito longa (máx. 2000 caracteres)" }
   const s = await db.solicitacao.create({
     data: {
       responsavelId: session.responsavelId,
