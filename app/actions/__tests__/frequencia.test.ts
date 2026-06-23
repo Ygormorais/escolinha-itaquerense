@@ -21,12 +21,15 @@ import {
   salvarFrequencia,
   getResumoFrequenciaMes,
   getEstatisticasFrequencia,
+  getFrequenciaAluno,
+  getPresencaPorTurma,
 } from "@/app/actions/frequencia"
 import { db } from "@/lib/db"
 
 const m = db as unknown as {
   aluno: { findMany: ReturnType<typeof vi.fn> }
-  frequencia: { upsert: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn> }
+  frequencia: { upsert: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn>; count: ReturnType<typeof vi.fn> }
+  whatsAppMensagem: { findMany: ReturnType<typeof vi.fn> }
 }
 
 beforeEach(() => {
@@ -122,5 +125,57 @@ describe("getEstatisticasFrequencia", () => {
     expect(seg).toMatchObject({ dia: "Seg", total: 2, presentes: 1, pct: 50 })
     // dias sem registro permanecem com pct nulo
     expect(heatmap[0]).toMatchObject({ dia: "Dom", total: 0, pct: null })
+  })
+})
+
+describe("getFrequenciaAluno", () => {
+  it("agrupa registros por mês e calcula pct", async () => {
+    const now = new Date()
+    const mesAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+    m.frequencia.findMany.mockResolvedValue([
+      { data: new Date(now.getFullYear(), now.getMonth(), 5), presenca: "Presente" },
+      { data: new Date(now.getFullYear(), now.getMonth(), 10), presenca: "Ausente" },
+    ])
+    const results = await getFrequenciaAluno(1)
+    expect(results).toHaveLength(6)
+    const atual = results[results.length - 1]
+    expect(atual.total).toBe(2)
+    expect(atual.presentes).toBe(1)
+    expect(atual.pct).toBe(50)
+    expect(mesAtual).toBeTruthy() // o label não é verificado pois depende do locale
+  })
+
+  it("retorna pct null para meses sem registros", async () => {
+    m.frequencia.findMany.mockResolvedValue([])
+    const results = await getFrequenciaAluno(1)
+    expect(results).toHaveLength(6)
+    results.forEach((r) => {
+      expect(r.total).toBe(0)
+      expect(r.pct).toBeNull()
+    })
+  })
+})
+
+describe("getPresencaPorTurma", () => {
+  it("agrupa por turma e filtra turmas sem registros", async () => {
+    m.frequencia.findMany.mockResolvedValue([
+      { presenca: "Presente", aluno: { turma: "Sub-9" } },
+      { presenca: "Ausente",  aluno: { turma: "Sub-9" } },
+      { presenca: "Presente", aluno: { turma: "Sub-11" } },
+    ])
+    const results = await getPresencaPorTurma("2026-06")
+    expect(results).toHaveLength(2)
+    const sub9 = results.find((r) => r.turma === "Sub-9")!
+    expect(sub9.total).toBe(2)
+    expect(sub9.presentes).toBe(1)
+    expect(sub9.pct).toBe(50)
+    const sub11 = results.find((r) => r.turma === "Sub-11")!
+    expect(sub11.pct).toBe(100)
+  })
+
+  it("exclui turmas sem registros no mês", async () => {
+    m.frequencia.findMany.mockResolvedValue([])
+    const results = await getPresencaPorTurma("2026-06")
+    expect(results).toHaveLength(0)
   })
 })
