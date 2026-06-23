@@ -26,7 +26,7 @@ export async function createAluno(data: {
   posicao?: string | null
   observacoes?: string
 }): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
   const mensalidade = Number(data.mensalidade)
   if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
@@ -111,7 +111,7 @@ export async function updateAluno(
     observacoes?: string
   }
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
   const mensalidade = Number(data.mensalidade)
   if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
@@ -149,7 +149,7 @@ export async function updateAluno(
 }
 
 export async function inativarAluno(id: number): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Inativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_inativo", `Aluno inativado — ${aluno.nome}`, { turma: aluno.turma })
@@ -175,7 +175,7 @@ export async function salvarFichaMedica(
     contatoEmergenciaParentesco?: string
   }
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     await db.aluno.update({
       where: { id },
@@ -196,7 +196,7 @@ export async function salvarFichaMedica(
 }
 
 export async function reativarAluno(id: number): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const aluno = await db.aluno.update({ where: { id }, data: { status: "Ativo" }, select: { nome: true, turma: true } })
     await registrarLog("aluno_reativo", `Aluno reativado — ${aluno.nome}`, { turma: aluno.turma })

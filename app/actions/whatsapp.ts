@@ -15,7 +15,7 @@ export async function enviarWhatsApp(
   telefone: string,
   mensagem: string
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const provider = getWhatsAppProvider()
     const result = await provider.sendText({ telefone, mensagem })
@@ -46,7 +46,7 @@ export async function enviarCobrancaWhatsApp(
   mesReferencia: string,
   valor: number
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const aluno = await db.aluno.findUnique({
       where: { id: alunoId },
@@ -86,7 +86,7 @@ export async function enviarComunicadoMassa(
   mensagem: string,
   turma: string
 ): Promise<{ enviados: number; erros: number; semTelefone: number } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin"])
   try {
     const where = turma === "Todas" ? {} : { turma }
     const alunos = await db.aluno.findMany({
@@ -158,7 +158,7 @@ export async function enviarComunicadoMassa(
 export async function registrarComunicadoWhatsApp(
   mensagem: string
 ): Promise<{ ok: true } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   const texto = mensagem.trim()
   if (!texto) return { error: "Mensagem vazia" }
   await db.whatsAppMensagem.create({
@@ -190,7 +190,7 @@ export async function getMensagensNaoLidas() {
 }
 
 export async function marcarMensagemLida(id: number) {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   await db.whatsAppMensagem.update({
     where: { id },
     data: { lida: true },
@@ -201,7 +201,7 @@ export async function enviarWhatsAppResponsavel(
   responsavelId: number,
   mensagem: string
 ): Promise<ActionResult> {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
   try {
     const responsavel = await db.responsavel.findUnique({ where: { id: responsavelId } })
     if (!responsavel) return { error: "Responsável não encontrado" }
@@ -233,7 +233,7 @@ export async function enviarWhatsAppResponsavel(
 export async function notificarInadimplentesEmLote(
   alunoIds: number[]
 ): Promise<{ enviados: number; erros: number; semTelefone: number }> {
-  await requireAuth()
+  await requireAuth(["admin"])
   const config = getConfig()
   let enviados = 0
   let erros = 0
@@ -303,7 +303,7 @@ export async function enviarComunicadoResponsaveis(mensagem: string): Promise<{
   erros: number
   semTelefone: number
 } | { error: string }> {
-  await requireAuth()
+  await requireAuth(["admin"])
   try {
     const responsaveis = await db.responsavel.findMany({
       where: { ativo: true },
