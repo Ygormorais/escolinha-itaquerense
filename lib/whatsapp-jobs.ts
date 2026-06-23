@@ -234,22 +234,32 @@ export async function notificarFaltas(
   const hoje = new Date()
   const inicioDoDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())
 
+  const alunoIds = ausentes.map((r) => r.alunoId)
+
+  // Batch: 1 query para alunos + 1 query para dedup (elimina 2N queries no loop)
+  const [alunosRows, jaNotificadosRows] = await Promise.all([
+    db.aluno.findMany({
+      where: { id: { in: alunoIds } },
+      select: { id: true, nome: true, telefone: true, responsavelId: true, responsavel: true },
+    }),
+    db.whatsAppMensagem.findMany({
+      where: { alunoId: { in: alunoIds }, origem: "falta", createdAt: { gte: inicioDoDia } },
+      select: { alunoId: true },
+    }),
+  ])
+
+  const alunoMap = new Map(alunosRows.map((a) => [a.id, a]))
+  const jaNotificadoSet = new Set(jaNotificadosRows.map((m) => m.alunoId))
+
   for (const r of ausentes) {
     try {
-      const aluno = await db.aluno.findUnique({
-        where: { id: r.alunoId },
-        select: { nome: true, telefone: true, responsavelId: true, responsavel: true },
-      })
+      const aluno = alunoMap.get(r.alunoId)
       if (!aluno) continue
       const tel = aluno.telefone?.replace(/\D/g, "")
       if (!tel || tel.length < 8) continue
 
       // dedup: já notificamos este aluno hoje?
-      const jaNotificado = await db.whatsAppMensagem.findFirst({
-        where: { alunoId: r.alunoId, origem: "falta", createdAt: { gte: inicioDoDia } },
-        select: { id: true },
-      })
-      if (jaNotificado) continue
+      if (jaNotificadoSet.has(r.alunoId)) continue
 
       const dataLabel = new Date(r.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })
       const nomeResp = aluno.responsavel?.split(" ")[0] ?? "responsável"

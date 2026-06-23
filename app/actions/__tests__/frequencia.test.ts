@@ -4,9 +4,12 @@ vi.mock("@/lib/db", () => {
   const db = {
     aluno: { findMany: vi.fn() },
     frequencia: { upsert: vi.fn(), findMany: vi.fn(), count: vi.fn() },
+    whatsAppMensagem: { findMany: vi.fn().mockResolvedValue([]) },
   }
   return { db }
 })
+
+vi.mock("@/lib/push", () => ({ sendPushToResponsavel: vi.fn().mockResolvedValue(undefined) }))
 
 vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ user: "secretaria", role: "secretaria" }),
