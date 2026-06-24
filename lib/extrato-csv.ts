@@ -14,7 +14,18 @@ export interface ParseResult {
 
 function parseBRL(v: string): number | null {
   if (!v) return null
-  const s = v.replace(/[R$\s]/g, "").replace(/\./g, "").replace(",", ".")
+  const clean = v.replace(/[R$\s]/g, "")
+  let s: string
+  if (clean.includes(",")) {
+    // Formato BR: 1.500,00 — ponto é milhar, vírgula é decimal
+    s = clean.replace(/\./g, "").replace(",", ".")
+  } else if (/\.\d{1,2}$/.test(clean)) {
+    // Ponto seguido de 1 ou 2 dígitos no final → decimal (formato US)
+    s = clean
+  } else {
+    // Ponto de milhar sem decimal explícito
+    s = clean.replace(/\./g, "")
+  }
   const n = parseFloat(s)
   return isNaN(n) ? null : n
 }
