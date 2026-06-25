@@ -45,29 +45,40 @@ const verifyResponsavel = (signed: string) => verifyHmac(signed, "resp:")
  * pelo PRÓPRIO handler (webhooks por assinatura, cron/sync por Bearer/token).
  * Estas precisam passar pelo proxy — senão ficam inalcançáveis pelos chamadores
  * externos (MercadoPago, scheduler de cron, FPFS), que não têm cookie de sessão. */
+/** Retorna true se o pathname começa com prefix seguido de "/" ou "?" ou é exatamente igual. */
+function hasPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix ||
+    pathname.startsWith(prefix + "/") ||
+    pathname.startsWith(prefix + "?")
+}
+
+/** Rotas que NÃO exigem sessão de admin: ou são públicas, ou são autenticadas
+ * pelo PRÓPRIO handler (webhooks por assinatura, cron/sync por Bearer/token).
+ * Estas precisam passar pelo proxy — senão ficam inalcançáveis pelos chamadores
+ * externos (MercadoPago, scheduler de cron, FPFS), que não têm cookie de sessão. */
 export function isPublicPath(pathname: string): boolean {
   return (
     pathname === "/" ||
-    pathname.startsWith("/login") ||
+    pathname === "/login" ||
     pathname === "/api/health" ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/responsavel") ||
+    hasPrefix(pathname, "/api/auth") ||
+    hasPrefix(pathname, "/api/responsavel") ||
     pathname.startsWith("/api/push/") ||
     pathname.startsWith("/api/whatsapp/") ||   // webhook + reativar (auth própria)
     pathname.startsWith("/api/webhooks/") ||   // mercadopago (assinatura HMAC)
     pathname.startsWith("/api/cron/") ||       // lembretes/fpfs (Bearer secret)
     pathname.startsWith("/api/sync/") ||       // fpfs (x-fpfs-token)
-    pathname.startsWith("/api/config/public") ||
-    pathname.startsWith("/api/upload/matricula") ||
+    hasPrefix(pathname, "/api/config/public") ||
+    hasPrefix(pathname, "/api/upload/matricula") ||
     pathname.startsWith("/uploads/fotos/") ||
-    pathname.startsWith("/matricula") ||
+    hasPrefix(pathname, "/matricula") ||
     pathname.startsWith("/qr/") ||
-    pathname.startsWith("/resultados") ||
-    pathname.startsWith("/horarios") ||
-    pathname.startsWith("/noticias/publico") ||
-    pathname.startsWith("/responsavel/login") ||
-    pathname.startsWith("/responsavel/recuperar-senha") ||
-    pathname.startsWith("/responsavel/redefinir-senha") ||
+    hasPrefix(pathname, "/resultados") ||
+    hasPrefix(pathname, "/horarios") ||
+    hasPrefix(pathname, "/noticias/publico") ||
+    hasPrefix(pathname, "/responsavel/login") ||
+    hasPrefix(pathname, "/responsavel/recuperar-senha") ||
+    hasPrefix(pathname, "/responsavel/redefinir-senha") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname === "/logo.png" ||

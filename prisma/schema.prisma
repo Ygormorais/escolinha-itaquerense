@@ -163,6 +163,9 @@ model ResetToken {
   usado         Boolean     @default(false)
   expiresAt     DateTime
   createdAt     DateTime    @default(now())
+
+  @@index([responsavelId])
+  @@index([expiresAt])
 }
 
 model Evento {
@@ -177,6 +180,9 @@ model Evento {
   descricao  String?
   status     String   @default("pendente") // pendente, confirmado, cancelado, realizado
   createdAt  DateTime @default(now())
+
+  @@index([data])
+  @@index([status])
 }
 
 model Usuario {
@@ -244,6 +250,8 @@ model Partida {
   createdAt    DateTime           @default(now())
 
   @@unique([campeonatoId, fpfsJogoId])
+  @@index([campeonatoId])
+  @@index([data])
 }
 
 model ClassificacaoFpfs {
@@ -381,6 +389,8 @@ model Solicitacao {
   updatedAt     DateTime    @updatedAt
 
   @@index([responsavelId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model PreMatricula {
@@ -396,6 +406,9 @@ model PreMatricula {
   observacoes     String?
   status          String   @default("pendente") // pendente, aprovada, recusada
   createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Produto {
@@ -437,6 +450,7 @@ model Avaliacao {
   createdAt         DateTime @default(now())
 
   @@unique([alunoId, periodo])
+  @@index([alunoId])
 }
 
 model Recebimento {
