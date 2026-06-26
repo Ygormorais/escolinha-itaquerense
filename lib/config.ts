@@ -38,10 +38,14 @@ const DEFAULT: ClubConfig = {
   templateFalta: "Olá {responsavel}! Registramos a *falta* de *{aluno}* no treino do dia {data}.\n\nQualquer dúvida, entre em contato.",
 }
 
+let cachedConfig: ClubConfig | null = null
+
 export function getConfig(): ClubConfig {
+  if (cachedConfig) return cachedConfig
   try {
     const raw = fs.readFileSync(CONFIG_PATH, "utf-8")
-    return { ...DEFAULT, ...JSON.parse(raw) }
+    cachedConfig = { ...DEFAULT, ...JSON.parse(raw) }
+    return cachedConfig as ClubConfig
   } catch {
     return DEFAULT
   }
@@ -49,4 +53,5 @@ export function getConfig(): ClubConfig {
 
 export function saveConfig(config: ClubConfig) {
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf-8")
+  cachedConfig = config
 }

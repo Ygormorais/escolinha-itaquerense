@@ -47,7 +47,7 @@ export async function registrarPagamento(
     revalidatePath("/caixa/dinheiro")
     revalidatePath("/caixa/pix")
     revalidatePath("/caixa/boleto")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
@@ -99,7 +99,7 @@ export async function registrarPagamentosLote(
     revalidatePath("/inadimplencia")
     revalidatePath("/caixa")
     revalidatePath("/caixa/recebimentos")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { atualizados: ids.length }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamentos em lote" }
@@ -113,7 +113,7 @@ export async function gerarMensalidadesMes(
   try {
     const result = await runGerarMensalidadesMes(mes)
     revalidatePath("/pagamentos")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return result
   } catch (e) {
     // P2002: o unique(alunoId, mesReferencia) rejeitou uma corrida cron×manual (sem cobrança dupla).
@@ -131,7 +131,7 @@ export async function gerarMensalidadesAno(
   try {
     const rawDia = getConfig().diaVencimento
     const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
-    const alunos = await db.aluno.findMany({ where: { status: "Ativo" } })
+    const alunos = await db.aluno.findMany({ where: { status: "Ativo" }, select: { id: true } })
     let criados = 0
     let ignorados = 0
 
@@ -160,7 +160,7 @@ export async function gerarMensalidadesAno(
     }
 
     revalidatePath("/pagamentos")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { criados, ignorados }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao gerar mensalidades anuais" }
@@ -187,7 +187,7 @@ export async function deletePagamento(id: number): Promise<ActionResult> {
     })
     revalidatePath("/pagamentos")
     revalidatePath("/inadimplencia")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao excluir pagamento" }
@@ -232,7 +232,7 @@ export async function marcarComoPago(
     }
     revalidatePath("/inadimplencia")
     revalidatePath("/pagamentos")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     if (pag) revalidatePath(`/alunos/${pag.aluno.id}`)
     return { success: true }
   } catch (e) {

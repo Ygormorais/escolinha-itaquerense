@@ -9,7 +9,13 @@ import {
 import { TrendingUp, TrendingDown, Wallet, AlertCircle, BarChart2 } from "lucide-react"
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { RelatorioHeader, RelatorioChart, RelatorioPrintStyle } from "./relatorio-client"
+import dynamic from "next/dynamic"
+import { RelatorioHeader, RelatorioPrintStyle } from "./relatorio-client"
+
+const RelatorioChart = dynamic(
+  () => import("./relatorio-client").then((m) => ({ default: m.RelatorioChart })),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
+)
 import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 
 export const metadata = { title: "Relatório Financeiro — Escolinha Itaquerense" }

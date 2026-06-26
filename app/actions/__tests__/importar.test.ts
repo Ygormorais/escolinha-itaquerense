@@ -99,7 +99,7 @@ describe("importarAlunosCSV", () => {
 
     expect(registrarLog).toHaveBeenCalledWith("aluno_novo", expect.stringContaining("importado"))
     expect(revalidatePath).toHaveBeenCalledWith("/alunos")
-    expect(revalidatePath).toHaveBeenCalledWith("/")
+    expect(revalidatePath).toHaveBeenCalledWith("/dashboard")
   })
 
   it("não registra log quando nenhum aluno é importado", async () => {

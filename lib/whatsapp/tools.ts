@@ -307,12 +307,16 @@ export async function executarObterPixMensalidade(
   })
   if (!resp) return { alunos: [] }
 
+  const alunoIds = resp.alunos.map((a) => a.id)
+  const pagamentos = await db.pagamento.findMany({
+    where: { alunoId: { in: alunoIds }, mesReferencia: mesAtual },
+    include: { aluno: { select: { mensalidade: true } } },
+  })
+  const pagMap = new Map(pagamentos.map((p) => [p.alunoId, p]))
+
   const resultados = await Promise.all(
     resp.alunos.map(async (aluno) => {
-      const pag = await db.pagamento.findFirst({
-        where: { alunoId: aluno.id, mesReferencia: mesAtual },
-        include: { aluno: { select: { mensalidade: true } } },
-      })
+      const pag = pagMap.get(aluno.id) ?? null
       if (!pag) return { nome: aluno.nome, mes: mesAtual, valor: aluno.mensalidade, pixCopiaECola: null, status: "sem_cobranca" as const }
       if (pag.dataPagamento) return { nome: aluno.nome, mes: mesAtual, valor: pag.aluno.mensalidade, pixCopiaECola: null, status: "pago" as const }
       if (pag.pixCopiaECola && pag.statusCobranca === "pendente") {

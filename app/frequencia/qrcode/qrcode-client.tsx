@@ -96,7 +96,7 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
           <Button variant="outline" onClick={handleDownload} className="flex-1">
             <Download className="size-4" /> Baixar SVG
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setData(format(new Date(), "yyyy-MM-dd"))}>
+          <Button variant="outline" size="icon" aria-label="Atualizar para hoje" onClick={() => setData(format(new Date(), "yyyy-MM-dd"))}>
             <RefreshCw className="size-4" />
           </Button>
         </div>

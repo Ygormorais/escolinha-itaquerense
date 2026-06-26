@@ -73,6 +73,10 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/uploads/fotos/") ||
     hasPrefix(pathname, "/matricula") ||
     pathname.startsWith("/qr/") ||
+    hasPrefix(pathname, "/checkin") ||
+    pathname.startsWith("/api/checkin") ||
+    hasPrefix(pathname, "/frequencia/scanner") ||
+    hasPrefix(pathname, "/frequencia/qrcode") ||
     hasPrefix(pathname, "/resultados") ||
     hasPrefix(pathname, "/horarios") ||
     hasPrefix(pathname, "/noticias/publico") ||

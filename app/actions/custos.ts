@@ -162,7 +162,7 @@ export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: nu
 
     revalidatePath("/custos")
     revalidatePath("/relatorio")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
 
     return { criados: modelos.length }
   } catch (e) {

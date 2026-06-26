@@ -86,7 +86,7 @@ export async function createAluno(data: {
     revalidatePath("/alunos")
     revalidatePath("/secretaria")
     revalidatePath("/turmas")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao cadastrar aluno" }
@@ -141,7 +141,7 @@ export async function updateAluno(
     revalidatePath("/alunos")
     revalidatePath("/secretaria")
     revalidatePath("/turmas")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao atualizar aluno" }
@@ -157,7 +157,7 @@ export async function inativarAluno(id: number): Promise<ActionResult> {
     revalidatePath("/secretaria")
     revalidatePath("/turmas")
     revalidatePath("/inadimplencia")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao inativar aluno" }
@@ -204,7 +204,7 @@ export async function reativarAluno(id: number): Promise<ActionResult> {
     revalidatePath("/secretaria")
     revalidatePath("/turmas")
     revalidatePath("/inadimplencia")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao reativar aluno" }

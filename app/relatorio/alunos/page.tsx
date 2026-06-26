@@ -4,7 +4,14 @@ import { RelatorioAlunosClient } from "./alunos-client"
 
 export const metadata = { title: "Relatório de Alunos — Escolinha Itaquerense" }
 
-export default async function RelatorioAlunosPage() {
+export default async function RelatorioAlunosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ turma?: string }>
+}) {
+  const params = await searchParams
+  const turmaInicial = params.turma && (TURMAS as readonly string[]).includes(params.turma) ? params.turma : "todas"
+
   const alunos = await db.aluno.findMany({
     orderBy: { nome: "asc" },
     select: {
@@ -21,5 +28,5 @@ export default async function RelatorioAlunosPage() {
     },
   })
 
-  return <RelatorioAlunosClient alunos={alunos} turmas={[...TURMAS]} />
+  return <RelatorioAlunosClient alunos={alunos} turmas={[...TURMAS]} turmaInicial={turmaInicial} />
 }

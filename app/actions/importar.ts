@@ -72,7 +72,7 @@ export async function importarAlunosCSV(alunos: AlunoCSV[]): Promise<ImportResul
     if (importados > 0) {
       await registrarLog("aluno_novo", `${importados} aluno(s) importado(s) via CSV`)
       revalidatePath("/alunos")
-      revalidatePath("/")
+      revalidatePath("/dashboard")
     }
 
     return { importados, erros }

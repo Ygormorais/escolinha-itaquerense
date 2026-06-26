@@ -3,6 +3,7 @@
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { requireAuth } from "@/lib/auth"
+import { registrarLog } from "@/app/actions/log"
 
 export async function adicionarMidia(data: {
   tipo: "video" | "fotos"
@@ -25,6 +26,7 @@ export async function adicionarMidia(data: {
 
   try {
     await db.media.create({ data })
+    void registrarLog("midia_adicionada", `Mídia adicionada — ${data.titulo}`, { tipo: data.tipo })
     revalidatePath("/configuracoes/midia")
     revalidatePath("/responsavel/galeria")
     return { success: true }
@@ -36,7 +38,9 @@ export async function adicionarMidia(data: {
 export async function removerMidia(id: number) {
   await requireAuth(["admin", "secretaria"])
   try {
+    const midia = await db.media.findUnique({ where: { id }, select: { titulo: true, tipo: true } })
     await db.media.delete({ where: { id } })
+    void registrarLog("midia_removida", `Mídia removida — ${midia?.titulo ?? `ID ${id}`}`, { id, tipo: midia?.tipo })
     revalidatePath("/configuracoes/midia")
     revalidatePath("/responsavel/galeria")
     return { success: true }

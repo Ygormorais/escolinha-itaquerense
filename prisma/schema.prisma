@@ -423,6 +423,9 @@ model Produto {
   imagem    String?            // URL da imagem
   movimentos MovimentoEstoque[]
   createdAt DateTime           @default(now())
+
+  @@index([ativo])
+  @@index([createdAt])
 }
 
 model MovimentoEstoque {
@@ -551,4 +554,7 @@ model Noticia {
   destaque   Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([publicado])
+  @@index([createdAt])
 }

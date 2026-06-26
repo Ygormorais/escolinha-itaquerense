@@ -110,7 +110,6 @@ export async function sincronizarFpfs(campeonatoId: number) {
     const resumo = await syncCampeonato(campeonatoId)
     revalidatePath(`/campeonatos/${campeonatoId}`)
     revalidatePath("/campeonatos")
-    revalidatePath("/")
     revalidatePath("/responsavel/jogos")
     revalidatePath("/responsavel/classificacao")
     revalidatePath("/agenda")
@@ -125,7 +124,6 @@ export async function sincronizarTodosFpfs() {
   try {
     const resumos = await syncTodos()
     revalidatePath("/campeonatos")
-    revalidatePath("/")
     revalidatePath("/responsavel/jogos")
     revalidatePath("/responsavel/classificacao")
     revalidatePath("/agenda")

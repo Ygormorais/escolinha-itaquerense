@@ -1,14 +1,24 @@
 import { db } from "@/lib/db"
 import { TURMAS } from "@/lib/constants"
-import { startOfMonth, endOfMonth, subMonths, format } from "date-fns"
+import { startOfMonth, endOfMonth, format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import { RelatorioFrequenciaClient } from "./frequencia-client"
 
 export const metadata = { title: "Relatório de Frequência — Escolinha Itaquerense" }
 
-export default async function RelatorioFrequenciaPage() {
+export default async function RelatorioFrequenciaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mes?: string }>
+}) {
+  const params = await searchParams
   const now = new Date()
-  const inicioMes = startOfMonth(now)
-  const fimMes = endOfMonth(now)
+  const mesSelecionado = params.mes ?? format(now, "yyyy-MM")
+
+  const [anoRef, mesRef] = mesSelecionado.split("-").map(Number)
+  const dataRef = new Date(anoRef, mesRef - 1, 1)
+  const inicioMes = startOfMonth(dataRef)
+  const fimMes = endOfMonth(dataRef)
 
   const alunos = await db.aluno.findMany({
     where: { status: "Ativo" },
@@ -18,14 +28,10 @@ export default async function RelatorioFrequenciaPage() {
 
   const frequencias = await db.frequencia.findMany({
     where: {
-      data: { gte: subMonths(inicioMes, 2), lte: fimMes },
+      data: { gte: inicioMes, lte: fimMes },
       alunoId: { in: alunos.map((a) => a.id) },
     },
-    select: {
-      alunoId: true,
-      data: true,
-      presenca: true,
-    },
+    select: { alunoId: true, presenca: true },
   })
 
   const stats = alunos.map((aluno) => {
@@ -36,11 +42,14 @@ export default async function RelatorioFrequenciaPage() {
     return { ...aluno, totalAulas, totalPresencas, percentual }
   })
 
+  const mesLabel = format(dataRef, "MMMM yyyy", { locale: ptBR })
+
   return (
     <RelatorioFrequenciaClient
       stats={stats}
       turmas={[...TURMAS]}
-      mesAtual={format(now, "MMMM yyyy")}
+      mesAtual={mesLabel}
+      mesSelecionado={mesSelecionado}
     />
   )
 }

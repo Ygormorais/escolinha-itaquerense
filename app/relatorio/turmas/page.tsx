@@ -202,10 +202,10 @@ export default async function RelatorioTurmasPage() {
               )}
 
               <Link
-                href={`/turmas`}
+                href={`/relatorio/alunos?turma=${encodeURIComponent(t.turma)}`}
                 className="block text-[11px] text-brand-700 hover:underline"
               >
-                Ver turma →
+                Ver alunos desta turma →
               </Link>
             </CardContent>
           </Card>

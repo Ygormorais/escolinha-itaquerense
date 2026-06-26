@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Users, Download, Printer, Search } from "lucide-react"
+import { Users, Download, Printer, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
 import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
+import { EmptyState } from "@/components/ui/empty-state"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
 import { printHTML } from "@/lib/print"
@@ -48,16 +49,45 @@ const FAIXAS: Faixa[] = [
   { key: "adulto",label: "Adulto (17+)",   min: 17, max: 99 },
 ]
 
-export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; turmas: string[] }) {
-  const [filtroTurma, setFiltroTurma] = useState("todas")
-  const [filtroStatus, setFiltroStatus] = useState("todos")
+type SortKey = "nome" | "turma" | "horario" | "status" | "idade" | "mensalidade" | "dataMatricula"
+
+function SortIcon({ col, current, dir }: { col: SortKey; current: SortKey; dir: "asc" | "desc" }) {
+  if (col !== current) return <ArrowUpDown className="ml-1 inline size-3 opacity-40" />
+  return dir === "asc"
+    ? <ArrowUp className="ml-1 inline size-3" />
+    : <ArrowDown className="ml-1 inline size-3" />
+}
+
+export function RelatorioAlunosClient({
+  alunos,
+  turmas,
+  turmaInicial = "todas",
+}: {
+  alunos: Aluno[]
+  turmas: string[]
+  turmaInicial?: string
+}) {
+  const [filtroTurma, setFiltroTurma] = useState(turmaInicial)
+  const [filtroStatus, setFiltroStatus] = useState("ativos")
   const [filtroFaixa, setFiltroFaixa] = useState("todas")
   const [busca, setBusca] = useState("")
+  const [sortKey, setSortKey] = useState<SortKey>("nome")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+
+  function handleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+    } else {
+      setSortKey(key)
+      setSortDir("asc")
+    }
+  }
 
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase()
     const faixa = FAIXAS.find((f) => f.key === filtroFaixa)
-    return alunos.filter((a) => {
+
+    let result = alunos.filter((a) => {
       if (q && !a.nome.toLowerCase().includes(q) && !(a.responsavel ?? "").toLowerCase().includes(q)) return false
       if (filtroTurma !== "todas" && a.turma !== filtroTurma) return false
       if (filtroStatus === "ativos" && a.status !== "Ativo") return false
@@ -68,7 +98,23 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
       }
       return true
     })
-  }, [alunos, filtroTurma, filtroStatus, filtroFaixa, busca])
+
+    result = [...result].sort((a, b) => {
+      let cmp = 0
+      switch (sortKey) {
+        case "nome": cmp = a.nome.localeCompare(b.nome, "pt-BR"); break
+        case "turma": cmp = a.turma.localeCompare(b.turma, "pt-BR"); break
+        case "horario": cmp = a.horario.localeCompare(b.horario, "pt-BR"); break
+        case "status": cmp = a.status.localeCompare(b.status, "pt-BR"); break
+        case "idade": cmp = calcIdade(a.dataNascimento) - calcIdade(b.dataNascimento); break
+        case "mensalidade": cmp = a.mensalidade - b.mensalidade; break
+        case "dataMatricula": cmp = new Date(a.dataMatricula).getTime() - new Date(b.dataMatricula).getTime(); break
+      }
+      return sortDir === "asc" ? cmp : -cmp
+    })
+
+    return result
+  }, [alunos, filtroTurma, filtroStatus, filtroFaixa, busca, sortKey, sortDir])
 
   const ativos = filtrados.filter((a) => a.status === "Ativo")
   const inativos = filtrados.filter((a) => a.status !== "Ativo")
@@ -104,7 +150,7 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
         format(new Date(a.dataMatricula), "dd/MM/yyyy"),
       ].map(sanitizeCSVCell).join(";")
     )
-    const csv = "\uFEFF" + header + "\n" + rows.join("\n")
+    const csv = "﻿" + header + "\n" + rows.join("\n")
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -113,6 +159,8 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
     a.click()
     URL.revokeObjectURL(url)
   }
+
+  const thClass = "cursor-pointer select-none hover:text-foreground transition-colors"
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
@@ -199,48 +247,70 @@ export function RelatorioAlunosClient({ alunos, turmas }: { alunos: Aluno[]; tur
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Turma</TableHead>
-                  <TableHead>Horário</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Idade</TableHead>
-                  <TableHead>Responsável</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead className="text-right">Mensalidade</TableHead>
-                  <TableHead>Matrícula</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtrados.map((a) => (
-                  <TableRow key={a.id}>
-                    <TableCell className="font-medium">
-                      <Link href={`/alunos/${a.id}`} className="hover:underline text-brand-800">{a.nome}</Link>
-                    </TableCell>
-                    <TableCell><Badge variant="secondary" className="text-xs">{a.turma}</Badge></TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{a.horario}</TableCell>
-                    <TableCell>
-                      <Badge variant={a.status === "Ativo" ? "default" : "outline"} className="text-xs">
-                        {a.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center text-sm text-muted-foreground">
-                      {calcIdade(a.dataNascimento)} anos
-                    </TableCell>
-                    <TableCell className="text-sm">{a.responsavel ?? "—"}</TableCell>
-                    <TableCell className="text-sm">{a.telefone ?? "—"}</TableCell>
-                    <TableCell className="text-right text-sm">{formatMoney(a.mensalidade)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(a.dataMatricula), "dd/MM/yyyy")}
-                    </TableCell>
+          {filtrados.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="Nenhum aluno encontrado"
+              description="Ajuste os filtros ou a busca para ver resultados."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className={thClass} onClick={() => handleSort("nome")}>
+                      Nome <SortIcon col="nome" current={sortKey} dir={sortDir} />
+                    </TableHead>
+                    <TableHead className={thClass} onClick={() => handleSort("turma")}>
+                      Turma <SortIcon col="turma" current={sortKey} dir={sortDir} />
+                    </TableHead>
+                    <TableHead className={thClass} onClick={() => handleSort("horario")}>
+                      Horário <SortIcon col="horario" current={sortKey} dir={sortDir} />
+                    </TableHead>
+                    <TableHead className={thClass} onClick={() => handleSort("status")}>
+                      Status <SortIcon col="status" current={sortKey} dir={sortDir} />
+                    </TableHead>
+                    <TableHead className={`text-center ${thClass}`} onClick={() => handleSort("idade")}>
+                      Idade <SortIcon col="idade" current={sortKey} dir={sortDir} />
+                    </TableHead>
+                    <TableHead>Responsável</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead className={`text-right ${thClass}`} onClick={() => handleSort("mensalidade")}>
+                      Mensalidade <SortIcon col="mensalidade" current={sortKey} dir={sortDir} />
+                    </TableHead>
+                    <TableHead className={thClass} onClick={() => handleSort("dataMatricula")}>
+                      Matrícula <SortIcon col="dataMatricula" current={sortKey} dir={sortDir} />
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {filtrados.map((a) => (
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">
+                        <Link href={`/alunos/${a.id}`} className="hover:underline text-brand-800">{a.nome}</Link>
+                      </TableCell>
+                      <TableCell><Badge variant="secondary" className="text-xs">{a.turma}</Badge></TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{a.horario}</TableCell>
+                      <TableCell>
+                        <Badge variant={a.status === "Ativo" ? "default" : "outline"} className="text-xs">
+                          {a.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center text-sm text-muted-foreground">
+                        {calcIdade(a.dataNascimento)} anos
+                      </TableCell>
+                      <TableCell className="text-sm">{a.responsavel ?? "—"}</TableCell>
+                      <TableCell className="text-sm">{a.telefone ?? "—"}</TableCell>
+                      <TableCell className="text-right text-sm">{formatMoney(a.mensalidade)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(a.dataMatricula), "dd/MM/yyyy")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

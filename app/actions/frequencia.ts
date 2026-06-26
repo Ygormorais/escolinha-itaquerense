@@ -30,7 +30,7 @@ export async function salvarFrequencia(
     // Notifica responsáveis de ausentes/justificados — best-effort, não bloqueia o salvamento
     await notificarFaltas(registros).catch((e) => logger.error("notificarFaltas falhou", { error: String(e) }))
     revalidatePath("/frequencia")
-    revalidatePath("/")
+    revalidatePath("/dashboard")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao salvar frequência" }
@@ -40,9 +40,12 @@ export async function salvarFrequencia(
 export async function getFrequenciaPorTurmaData(turma: string, data: string) {
   const alunos = await db.aluno.findMany({
     where: { turma, status: "Ativo" },
-    include: {
+    select: {
+      id: true,
+      nome: true,
       frequencias: {
         where: { data: new Date(data) },
+        select: { presenca: true },
       },
     },
     orderBy: { nome: "asc" },
@@ -114,9 +117,12 @@ export async function getResumoFrequenciaMes(turma: string, mes: string) {
 
   const alunos = await db.aluno.findMany({
     where: { turma, status: "Ativo" },
-    include: {
+    select: {
+      id: true,
+      nome: true,
       frequencias: {
         where: { data: { gte: inicio, lte: fim } },
+        select: { presenca: true },
       },
     },
     orderBy: { nome: "asc" },

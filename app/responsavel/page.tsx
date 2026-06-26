@@ -26,18 +26,17 @@ export default async function ResponsavelPage() {
 
   if (!responsavel) redirect("/responsavel/login")
 
-  const comunicados = await db.whatsAppMensagem.findMany({
-    where: {
-      alunoId: { in: responsavel.alunos.map((a) => a.id) },
-      origem: "comunicado",
-      direcao: "outgoing",
-    },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  })
-
+  const alunoIds = responsavel.alunos.map((a) => a.id)
   const turmasAlunos = responsavel.alunos.map((a) => a.turma)
-  const proximosEventos = await buscarProximosEventos(session.responsavelId!, turmasAlunos)
+
+  const [comunicados, proximosEventos] = await Promise.all([
+    db.whatsAppMensagem.findMany({
+      where: { alunoId: { in: alunoIds }, origem: "comunicado", direcao: "outgoing" },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    buscarProximosEventos(session.responsavelId!, turmasAlunos),
+  ])
 
   return <ResponsavelDashboardClient responsavel={responsavel} comunicados={comunicados} proximosEventos={proximosEventos} />
 }

@@ -3,6 +3,7 @@
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
+import { registrarLog } from "@/app/actions/log"
 
 export async function listarProdutos() {
   await requireAuth(["admin"])
@@ -16,6 +17,7 @@ export async function criarProduto(data: { nome: string; descricao?: string; pre
   if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
   if (data.estoque !== undefined && (!Number.isFinite(data.estoque) || data.estoque < 0)) return { error: "Estoque inválido" }
   await db.produto.create({ data: { ...data, nome: data.nome.trim() } })
+  void registrarLog("produto_criado", `Produto criado — ${data.nome.trim()}`, { preco, estoque: data.estoque })
   revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
@@ -28,7 +30,8 @@ export async function atualizarProduto(id: number, data: { nome?: string; descri
     if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
   }
   if (data.estoque !== undefined && (!Number.isFinite(data.estoque) || data.estoque < 0)) return { error: "Estoque inválido" }
-  await db.produto.update({ where: { id }, data })
+  const produto = await db.produto.update({ where: { id }, data })
+  void registrarLog("produto_atualizado", `Produto atualizado — ${produto.nome}`, { id })
   revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
@@ -36,7 +39,9 @@ export async function atualizarProduto(id: number, data: { nome?: string; descri
 
 export async function removerProduto(id: number) {
   await requireAuth(["admin"])
+  const produto = await db.produto.findUnique({ where: { id }, select: { nome: true } })
   await db.produto.delete({ where: { id } })
+  void registrarLog("produto_excluido", `Produto excluído — ${produto?.nome ?? `ID ${id}`}`, { id })
   revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
@@ -60,6 +65,7 @@ export async function ajustarEstoque(
     db.movimentoEstoque.create({ data: { produtoId, tipo, quantidade, motivo } }),
     db.produto.update({ where: { id: produtoId }, data: { estoque: { increment: delta } } }),
   ])
+  void registrarLog("estoque_ajustado", `Estoque ${tipo} — ${produto.nome} (${tipo === "entrada" ? "+" : "-"}${quantidade})`, { produtoId, tipo, quantidade, motivo })
   revalidatePath("/produtos")
   return { success: true as const }
 }

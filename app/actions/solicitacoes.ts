@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { getResponsavelSession } from "@/lib/responsavel-session"
+import { registrarLog } from "@/app/actions/log"
 
 export async function criarSolicitacao(data: {
   tipo: string
@@ -65,6 +66,7 @@ export async function responderSolicitacao(
       prazo: prazo ? new Date(prazo) : undefined,
     },
   })
+  void registrarLog("solicitacao_respondida", `Solicitação #${id} — status: ${status}`, { id, status })
   revalidatePath("/configuracoes/solicitacoes")
   return { success: true }
 }

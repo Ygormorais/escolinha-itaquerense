@@ -1,5 +1,3 @@
-"use client"
-
 import { PiggyBank, TrendingUp, CreditCard, Smartphone, FileText, Percent, Banknote, Building2, Inbox } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {

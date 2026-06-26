@@ -1,10 +1,19 @@
+import dynamic from "next/dynamic"
 import { PageHeader } from "@/components/layout/page-header"
 import { FrequenciaClient } from "./frequencia-client"
-import { ResumoFrequenciaClient } from "./resumo-client"
-import { EstatisticasFrequencia } from "./estatisticas-client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { db } from "@/lib/db"
 import { TURMAS } from "@/lib/constants"
+import { TableSkeleton } from "@/components/ui/skeleton"
+
+const ResumoFrequenciaClient = dynamic(
+  () => import("./resumo-client").then((m) => ({ default: m.ResumoFrequenciaClient })),
+  { loading: () => <TableSkeleton /> }
+)
+const EstatisticasFrequencia = dynamic(
+  () => import("./estatisticas-client").then((m) => ({ default: m.EstatisticasFrequencia })),
+  { loading: () => <TableSkeleton /> }
+)
 
 export const metadata = { title: "Frequência — Escolinha Itaquerense" }
 

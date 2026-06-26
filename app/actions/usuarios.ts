@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { requireAuth, ROLES } from "@/lib/auth"
 import { getSessionSecret } from "@/lib/env"
+import { registrarLog } from "@/app/actions/log"
 
 function hashSenha(senha: string): string {
   return bcrypt.hashSync(senha, 10)
@@ -34,29 +35,35 @@ export async function criarUsuario(data: {
       role: data.role,
     },
   })
+  void registrarLog("usuario_criado", `Usuário criado — ${data.nome} (${data.username})`, { username: data.username, role: data.role })
   revalidatePath("/configuracoes/usuarios")
   return { success: true }
 }
 
 export async function alterarSenha(id: number, novaSenha: string) {
   await requireAuth(["admin"])
+  const usuario = await db.usuario.findUnique({ where: { id }, select: { username: true } })
   await db.usuario.update({
     where: { id },
     data: { senha: hashSenha(novaSenha) },
   })
+  void registrarLog("senha_alterada", `Senha alterada — ${usuario?.username ?? `ID ${id}`}`, { id })
   revalidatePath("/configuracoes/usuarios")
   return { success: true }
 }
 
 export async function toggleUsuario(id: number, ativo: boolean) {
   await requireAuth(["admin"])
-  await db.usuario.update({ where: { id }, data: { ativo } })
+  const usuario = await db.usuario.update({ where: { id }, data: { ativo }, select: { username: true } })
+  void registrarLog("usuario_toggle", `Usuário ${ativo ? "ativado" : "desativado"} — ${usuario.username}`, { id, ativo })
   revalidatePath("/configuracoes/usuarios")
 }
 
 export async function deletarUsuario(id: number) {
   await requireAuth(["admin"])
+  const usuario = await db.usuario.findUnique({ where: { id }, select: { username: true, nome: true } })
   await db.usuario.delete({ where: { id } })
+  void registrarLog("usuario_excluido", `Usuário excluído — ${usuario?.username ?? `ID ${id}`} (${usuario?.nome})`, { id })
   revalidatePath("/configuracoes/usuarios")
 }
 
