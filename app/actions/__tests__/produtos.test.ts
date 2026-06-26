@@ -4,12 +4,14 @@ vi.mock("@/lib/db", () => ({
   db: {
     produto: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
     },
   },
 }))
+vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
 vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ user: "admin" }),
@@ -24,6 +26,7 @@ import { revalidatePath } from "next/cache"
 const m = db as unknown as {
   produto: {
     findMany: ReturnType<typeof vi.fn>
+    findUnique: ReturnType<typeof vi.fn>
     create: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
     delete: ReturnType<typeof vi.fn>
@@ -33,8 +36,9 @@ const m = db as unknown as {
 beforeEach(() => {
   vi.clearAllMocks()
   m.produto.findMany.mockResolvedValue([])
+  m.produto.findUnique.mockResolvedValue({ nome: "Camisa" })
   m.produto.create.mockResolvedValue({ id: 1 })
-  m.produto.update.mockResolvedValue({ id: 1 })
+  m.produto.update.mockResolvedValue({ id: 1, nome: "Camisa", preco: 0 })
   m.produto.delete.mockResolvedValue({ id: 1 })
 })
 
@@ -59,7 +63,7 @@ describe("criarProduto", () => {
   })
 
   it("rejeita estoque negativo sem criar", async () => {
-    const res = await criarProduto({ nome: "X", preco: 10, estoque: -5 })
+    const res = await criarProduto({ nome: "XX", preco: 10, estoque: -5 })
     expect(res).toEqual({ error: "Estoque inválido" })
     expect(m.produto.create).not.toHaveBeenCalled()
   })

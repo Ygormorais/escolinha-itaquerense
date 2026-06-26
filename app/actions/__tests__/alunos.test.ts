@@ -44,7 +44,7 @@ beforeEach(() => {
 describe("updateAluno — validação espelha createAluno", () => {
   it("rejeita nome vazio sem atualizar", async () => {
     const res = await updateAluno(1, { ...dadosValidos, nome: "   " })
-    expect(res).toEqual({ error: "Nome do aluno é obrigatório" })
+    expect(res).toEqual({ error: "Nome deve ter pelo menos 3 caracteres" })
     expect(m.aluno.update).not.toHaveBeenCalled()
   })
 

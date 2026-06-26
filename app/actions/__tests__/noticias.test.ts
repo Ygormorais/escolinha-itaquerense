@@ -2,25 +2,27 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
   const db = {
-    noticia: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    noticia: { findMany: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   }
   return { db }
 })
 
 vi.mock("@/lib/auth", () => ({ requireAuth: vi.fn().mockResolvedValue({}) }))
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
+vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
 import { listarNoticias, criarNoticia, editarNoticia, deletarNoticia, togglePublicado } from "@/app/actions/noticias"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 
-const m = db as unknown as { noticia: { findMany: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> } }
+const m = db as unknown as { noticia: { findMany: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> } }
 
 const noticiaBase = { titulo: "Vitória na copa", subtitulo: "3 a 0", categoria: "Jogo", publicado: true, destaque: false }
 
 beforeEach(() => {
   vi.clearAllMocks()
   m.noticia.findMany.mockResolvedValue([])
+  m.noticia.findUnique.mockResolvedValue({ titulo: "Vitória na copa" })
   m.noticia.create.mockResolvedValue({ id: 1, ...noticiaBase })
   m.noticia.update.mockResolvedValue({ id: 1, ...noticiaBase })
   m.noticia.delete.mockResolvedValue({})

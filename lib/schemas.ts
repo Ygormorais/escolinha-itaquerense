@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const AlunoSchema = z.object({
-  nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres").max(120, "Nome muito longo"),
+  nome: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(120, "Nome muito longo"),
   dataNascimento: z.string().min(1, "Data de nascimento obrigatória"),
   turma: z.string().min(1, "Selecione uma turma"),
   horario: z.string().min(1, "Selecione um horário"),
@@ -31,7 +31,10 @@ export const CustoSchema = z.object({
   categoria: z.string().min(1, "Selecione uma categoria").max(80),
   descricao: z.string().min(3, "Descrição deve ter pelo menos 3 caracteres").max(300),
   fornecedor: z.string().min(2, "Fornecedor obrigatório").max(120),
-  valor: z.coerce.number().min(0.01, "Valor deve ser maior que zero"),
+  valor: z
+    .any()
+    .transform((v) => Number(v))
+    .refine((v) => Number.isFinite(v) && v > 0, "Valor inválido"),
   formaPagamento: z.string().min(1, "Selecione a forma de pagamento").max(60),
   comprovante: z.boolean().default(false),
   observacoes: z.string().max(2000).optional(),
