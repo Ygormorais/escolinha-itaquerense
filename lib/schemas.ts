@@ -1,17 +1,19 @@
 import { z } from "zod"
 
 export const AlunoSchema = z.object({
-  nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+  nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres").max(120, "Nome muito longo"),
   dataNascimento: z.string().min(1, "Data de nascimento obrigatória"),
   turma: z.string().min(1, "Selecione uma turma"),
   horario: z.string().min(1, "Selecione um horário"),
-  responsavel: z.string().min(3, "Nome do responsável obrigatório"),
-  telefone: z.string().min(8, "Telefone inválido"),
-  email: z.string().email("E-mail inválido"),
+  responsavel: z.string().min(3, "Nome do responsável obrigatório").max(120, "Nome muito longo"),
+  telefone: z.string().min(8, "Telefone inválido").max(20, "Telefone inválido"),
+  email: z.union([z.string().email("E-mail inválido"), z.literal("")]),
   dataMatricula: z.string().min(1, "Data de matrícula obrigatória"),
-  mensalidade: z.coerce.number().min(1, "Mensalidade deve ser maior que zero"),
+  mensalidade: z.coerce.number().min(0, "Mensalidade inválida"),
+  desconto: z.coerce.number().min(0).optional(),
   status: z.enum(["Ativo", "Inativo"]),
-  observacoes: z.string().optional(),
+  posicao: z.string().max(50).nullable().optional(),
+  observacoes: z.string().max(2000).optional(),
 })
 
 export type AlunoFormValues = z.infer<typeof AlunoSchema>
@@ -26,13 +28,37 @@ export type PagamentoFormValues = z.infer<typeof PagamentoSchema>
 
 export const CustoSchema = z.object({
   data: z.string().min(1, "Data obrigatória"),
-  categoria: z.string().min(1, "Selecione uma categoria"),
-  descricao: z.string().min(3, "Descrição deve ter pelo menos 3 caracteres"),
-  fornecedor: z.string().min(2, "Fornecedor obrigatório"),
+  categoria: z.string().min(1, "Selecione uma categoria").max(80),
+  descricao: z.string().min(3, "Descrição deve ter pelo menos 3 caracteres").max(300),
+  fornecedor: z.string().min(2, "Fornecedor obrigatório").max(120),
   valor: z.coerce.number().min(0.01, "Valor deve ser maior que zero"),
-  formaPagamento: z.string().min(1, "Selecione a forma de pagamento"),
+  formaPagamento: z.string().min(1, "Selecione a forma de pagamento").max(60),
   comprovante: z.boolean().default(false),
-  observacoes: z.string().optional(),
+  observacoes: z.string().max(2000).optional(),
 })
 
 export type CustoFormValues = z.infer<typeof CustoSchema>
+
+export const NoticiaSchema = z.object({
+  titulo: z.string().min(3, "Título muito curto").max(200, "Título muito longo"),
+  subtitulo: z.string().max(400).optional(),
+  categoria: z.string().min(1, "Selecione uma categoria").max(80),
+  imagemUrl: z.string().url("URL inválida").max(500).optional().or(z.literal("")),
+  publicado: z.boolean(),
+  destaque: z.boolean(),
+})
+
+export type NoticiaFormValues = z.infer<typeof NoticiaSchema>
+
+export const ProdutoSchema = z.object({
+  nome: z.string().min(2, "Nome obrigatório").max(120),
+  descricao: z.string().max(1000).optional(),
+  preco: z.coerce.number().min(0, "Preço inválido"),
+  categoria: z.string().max(80).optional(),
+  tamanhos: z.string().max(200).optional(),
+  estoque: z.coerce.number().int().min(0, "Estoque inválido").optional(),
+  ativo: z.boolean().optional(),
+  imagem: z.string().url("URL inválida").max(500).optional().or(z.literal("")).optional(),
+})
+
+export type ProdutoFormValues = z.infer<typeof ProdutoSchema>

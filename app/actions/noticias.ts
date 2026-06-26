@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
+import { NoticiaSchema } from "@/lib/schemas"
 
 export async function listarNoticias() {
   return db.noticia.findMany({ orderBy: { createdAt: "desc" } })
@@ -18,7 +19,9 @@ export async function criarNoticia(data: {
   destaque: boolean
 }) {
   await requireAuth(["admin", "secretaria"])
-  const noticia = await db.noticia.create({ data })
+  const parsed = NoticiaSchema.safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
+  const noticia = await db.noticia.create({ data: parsed.data })
   await registrarLog("noticia_criada", `Notícia criada — ${data.titulo}`, { categoria: data.categoria, publicado: data.publicado })
   revalidatePath("/noticias")
   revalidatePath("/")
@@ -34,7 +37,9 @@ export async function editarNoticia(id: number, data: {
   destaque: boolean
 }) {
   await requireAuth(["admin", "secretaria"])
-  const noticia = await db.noticia.update({ where: { id }, data })
+  const parsed = NoticiaSchema.safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
+  const noticia = await db.noticia.update({ where: { id }, data: parsed.data })
   await registrarLog("noticia_editada", `Notícia editada — ${data.titulo}`, { id, categoria: data.categoria })
   revalidatePath("/noticias")
   revalidatePath("/")

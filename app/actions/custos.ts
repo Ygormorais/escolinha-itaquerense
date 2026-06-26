@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
-import { dataValida } from "@/lib/utils"
+import { CustoSchema } from "@/lib/schemas"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -19,23 +19,23 @@ export async function createCusto(data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth(["admin"])
-  if (!dataValida(data.data)) return { error: "Data inválida" }
-  if (!data.descricao?.trim()) return { error: "Descrição é obrigatória" }
-  if (!Number.isFinite(data.valor) || data.valor <= 0) return { error: "Valor inválido" }
+  const parsed = CustoSchema.safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
   try {
+    const d = parsed.data
     await db.custo.create({
       data: {
-        data: new Date(data.data),
-        categoria: data.categoria,
-        descricao: data.descricao,
-        fornecedor: data.fornecedor,
-        valor: data.valor,
-        formaPagamento: data.formaPagamento,
-        comprovante: data.comprovante,
-        observacoes: data.observacoes ?? null,
+        data: new Date(d.data),
+        categoria: d.categoria,
+        descricao: d.descricao,
+        fornecedor: d.fornecedor,
+        valor: d.valor,
+        formaPagamento: d.formaPagamento,
+        comprovante: d.comprovante,
+        observacoes: d.observacoes ?? null,
       },
     })
-    await registrarLog("custo_novo", `Custo registrado — ${data.descricao}`, { categoria: data.categoria, valor: data.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) })
+    await registrarLog("custo_novo", `Custo registrado — ${d.descricao}`, { categoria: d.categoria, valor: d.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) })
     revalidatePath("/custos")
     return { success: true }
   } catch (e) {
@@ -54,21 +54,21 @@ export async function updateCusto(id: number, data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth(["admin"])
-  if (!dataValida(data.data)) return { error: "Data inválida" }
-  if (!data.descricao?.trim()) return { error: "Descrição é obrigatória" }
-  if (!Number.isFinite(data.valor) || data.valor <= 0) return { error: "Valor inválido" }
+  const parsed = CustoSchema.safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
   try {
+    const d = parsed.data
     await db.custo.update({
       where: { id },
       data: {
-        data: new Date(data.data),
-        categoria: data.categoria,
-        descricao: data.descricao,
-        fornecedor: data.fornecedor,
-        valor: data.valor,
-        formaPagamento: data.formaPagamento,
-        comprovante: data.comprovante,
-        observacoes: data.observacoes ?? null,
+        data: new Date(d.data),
+        categoria: d.categoria,
+        descricao: d.descricao,
+        fornecedor: d.fornecedor,
+        valor: d.valor,
+        formaPagamento: d.formaPagamento,
+        comprovante: d.comprovante,
+        observacoes: d.observacoes ?? null,
       },
     })
     revalidatePath("/custos")

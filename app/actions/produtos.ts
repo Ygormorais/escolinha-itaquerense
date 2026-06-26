@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { registrarLog } from "@/app/actions/log"
+import { ProdutoSchema } from "@/lib/schemas"
 
 export async function listarProdutos() {
   await requireAuth(["admin"])
@@ -12,12 +13,11 @@ export async function listarProdutos() {
 
 export async function criarProduto(data: { nome: string; descricao?: string; preco: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
   await requireAuth(["admin"])
-  if (!data.nome?.trim()) return { error: "Nome do produto é obrigatório" }
-  const preco = Number(data.preco)
-  if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
-  if (data.estoque !== undefined && (!Number.isFinite(data.estoque) || data.estoque < 0)) return { error: "Estoque inválido" }
-  await db.produto.create({ data: { ...data, nome: data.nome.trim() } })
-  void registrarLog("produto_criado", `Produto criado — ${data.nome.trim()}`, { preco, estoque: data.estoque })
+  const parsed = ProdutoSchema.safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
+  const d = { ...parsed.data, nome: parsed.data.nome.trim() }
+  await db.produto.create({ data: d })
+  void registrarLog("produto_criado", `Produto criado — ${d.nome}`, { preco: d.preco, estoque: d.estoque })
   revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")
   return { success: true as const }
@@ -25,12 +25,9 @@ export async function criarProduto(data: { nome: string; descricao?: string; pre
 
 export async function atualizarProduto(id: number, data: { nome?: string; descricao?: string; preco?: number; categoria?: string; tamanhos?: string; estoque?: number; ativo?: boolean; imagem?: string }) {
   await requireAuth(["admin"])
-  if (data.preco !== undefined) {
-    const preco = Number(data.preco)
-    if (!Number.isFinite(preco) || preco < 0) return { error: "Preço inválido" }
-  }
-  if (data.estoque !== undefined && (!Number.isFinite(data.estoque) || data.estoque < 0)) return { error: "Estoque inválido" }
-  const produto = await db.produto.update({ where: { id }, data })
+  const parsed = ProdutoSchema.partial().safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
+  const produto = await db.produto.update({ where: { id }, data: parsed.data })
   void registrarLog("produto_atualizado", `Produto atualizado — ${produto.nome}`, { id })
   revalidatePath("/produtos")
   revalidatePath("/responsavel/lojinha")

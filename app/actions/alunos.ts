@@ -6,8 +6,8 @@ import { addMonths, setDate } from "date-fns"
 import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
 import { getConfig } from "@/lib/config"
-import { dataValida } from "@/lib/utils"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
+import { AlunoSchema } from "@/lib/schemas"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -27,31 +27,29 @@ export async function createAluno(data: {
   observacoes?: string
 }): Promise<ActionResult> {
   await requireAuth(["admin", "secretaria"])
-  if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
-  const mensalidade = Number(data.mensalidade)
-  if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
-  if (!dataValida(data.dataNascimento)) return { error: "Data de nascimento inválida" }
-  if (!dataValida(data.dataMatricula)) return { error: "Data de matrícula inválida" }
+  const parsed = AlunoSchema.safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
+  const d = parsed.data
   try {
     const aluno = await db.aluno.create({
       data: {
-        nome: data.nome.trim(),
-        dataNascimento: new Date(data.dataNascimento),
-        turma: data.turma,
-        horario: data.horario,
-        responsavel: data.responsavel,
-        telefone: data.telefone,
-        email: data.email,
-        dataMatricula: new Date(data.dataMatricula),
-        mensalidade: data.mensalidade,
+        nome: d.nome.trim(),
+        dataNascimento: new Date(d.dataNascimento),
+        turma: d.turma,
+        horario: d.horario,
+        responsavel: d.responsavel,
+        telefone: d.telefone,
+        email: d.email,
+        dataMatricula: new Date(d.dataMatricula),
+        mensalidade: d.mensalidade,
         desconto: data.desconto ?? 0,
-        status: data.status,
-        posicao: data.posicao ?? null,
-        observacoes: data.observacoes ?? null,
+        status: d.status,
+        posicao: d.posicao ?? null,
+        observacoes: d.observacoes ?? null,
       },
     })
 
-    const baseDate = new Date(data.dataMatricula)
+    const baseDate = new Date(d.dataMatricula)
     const pagamentos = Array.from({ length: 12 }, (_, i) => {
       const month = addMonths(baseDate, i)
       return {
@@ -62,18 +60,18 @@ export async function createAluno(data: {
     })
     await db.pagamento.createMany({ data: pagamentos })
 
-    await registrarLog("aluno_novo", `Novo aluno cadastrado — ${data.nome}`, { turma: data.turma })
+    await registrarLog("aluno_novo", `Novo aluno cadastrado — ${d.nome}`, { turma: d.turma })
 
-    const tel = data.telefone?.replace(/\D/g, "")
+    const tel = d.telefone?.replace(/\D/g, "")
     if (tel && tel.length >= 8) {
       try {
         const config = getConfig()
         const msg = [
-          `Olá ${data.responsavel?.split(" ")[0] ?? "responsável"}!`,
+          `Olá ${d.responsavel?.split(" ")[0] ?? "responsável"}!`,
           ``,
           `Bem-vindo(a) à *${config.nome}*! 🎉`,
           ``,
-          `O(a) aluno(a) *${data.nome}* foi matriculado(a) na turma *${data.turma}* no horário *${data.horario}*.`,
+          `O(a) aluno(a) *${d.nome}* foi matriculado(a) na turma *${d.turma}* no horário *${d.horario}*.`,
           ``,
           `Qualquer dúvida, estamos à disposição!`,
         ].join("\n")
@@ -112,32 +110,30 @@ export async function updateAluno(
   }
 ): Promise<ActionResult> {
   await requireAuth(["admin", "secretaria"])
-  if (!data.nome?.trim()) return { error: "Nome do aluno é obrigatório" }
-  const mensalidade = Number(data.mensalidade)
-  if (!Number.isFinite(mensalidade) || mensalidade < 0) return { error: "Mensalidade inválida" }
-  if (!dataValida(data.dataNascimento)) return { error: "Data de nascimento inválida" }
-  if (!dataValida(data.dataMatricula)) return { error: "Data de matrícula inválida" }
+  const parsed = AlunoSchema.safeParse(data)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" }
+  const d = parsed.data
   try {
     await db.aluno.update({
       where: { id },
       data: {
-        nome: data.nome.trim(),
-        dataNascimento: new Date(data.dataNascimento),
-        turma: data.turma,
-        horario: data.horario,
-        responsavel: data.responsavel,
-        telefone: data.telefone,
-        email: data.email,
-        dataMatricula: new Date(data.dataMatricula),
-        mensalidade: data.mensalidade,
-        desconto: data.desconto ?? 0,
-        status: data.status,
-        posicao: data.posicao ?? null,
-        observacoes: data.observacoes ?? null,
+        nome: d.nome.trim(),
+        dataNascimento: new Date(d.dataNascimento),
+        turma: d.turma,
+        horario: d.horario,
+        responsavel: d.responsavel,
+        telefone: d.telefone,
+        email: d.email,
+        dataMatricula: new Date(d.dataMatricula),
+        mensalidade: d.mensalidade,
+        desconto: d.desconto ?? 0,
+        status: d.status,
+        posicao: d.posicao ?? null,
+        observacoes: d.observacoes ?? null,
       },
     })
 
-    await registrarLog("aluno_editado", `Aluno atualizado — ${data.nome}`, { turma: data.turma })
+    await registrarLog("aluno_editado", `Aluno atualizado — ${d.nome}`, { turma: d.turma })
     revalidatePath("/alunos")
     revalidatePath("/secretaria")
     revalidatePath("/turmas")
