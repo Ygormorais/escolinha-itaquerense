@@ -124,7 +124,7 @@ export default async function LojinhaPage() {
         </div>
       )}
 
-      <Card className="mt-8 bg-brand-600 text-white">
+      <Card className="bg-brand-600 text-white">
         <CardContent className="p-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Phone className="size-5" />

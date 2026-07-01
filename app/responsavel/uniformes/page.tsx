@@ -106,7 +106,7 @@ export default async function UniformesPage() {
                         <td className="py-2.5 pr-4">
                           {u.entregue
                             ? <Badge className="bg-success-100 text-success-700 border-success-200">Entregue</Badge>
-                            : <Badge variant="outline" className="text-amber-600 border-amber-300">Pendente</Badge>
+                            : <Badge variant="outline" className="text-warning-600 border-warning-300">Pendente</Badge>
                           }
                         </td>
                         <td className="py-2.5 text-muted-foreground">
