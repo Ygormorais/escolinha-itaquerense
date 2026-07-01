@@ -25,24 +25,20 @@ test.describe("Detalhe do Aluno", () => {
 
   test("página de aluno inexistente redireciona ou exibe 404", async ({ page }) => {
     await page.goto("/alunos/999999999")
-    // deve mostrar not-found ou redirecionar para /alunos
-    const isNotFound = await page.getByText("404").isVisible({ timeout: 5000 }).catch(() => false)
-    const isRedirected = page.url().includes("/alunos") && !page.url().includes("999999999")
-    expect(isNotFound || isRedirected).toBe(true)
+    // isVisible() não espera — usar assertion com auto-wait no not-found real
+    await expect(page.getByRole("heading", { name: /Página não encontrada/i })).toBeVisible()
   })
 
-  test("abas de pagamentos e frequência estão presentes", async ({ page }) => {
+  test("seções de financeiro e adimplência estão presentes", async ({ page }) => {
     await page.goto("/alunos")
     await page.waitForLoadState("networkidle")
     const link = page.locator("table tbody tr a, .divide-y > div a").first()
     if (!(await link.isVisible({ timeout: 5000 }).catch(() => false))) return
     await link.click()
-    await page.waitForLoadState("networkidle")
 
-    // tabs de pagamentos / frequência
-    const tabs = page.locator('[role="tab"]')
-    const tabCount = await tabs.count()
-    expect(tabCount).toBeGreaterThanOrEqual(1)
+    // a página de detalhe é scroll único com seções (sem tabs desde o redesign)
+    await expect(page.getByText("Financeiro", { exact: true }).first()).toBeVisible()
+    await expect(page.getByText(/Adimplência/i).first()).toBeVisible()
   })
 })
 

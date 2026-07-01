@@ -124,6 +124,8 @@ test.describe("Uniformes — gerenciar itens de um aluno", () => {
 
       const selectItem = dialog.getByRole("combobox")
       await selectItem.click()
+      // espera o popover montar antes de coletar (allTextContents não espera)
+      await expect(page.locator('[role="option"]').first()).toBeVisible()
       const opcoes = await page.locator('[role="option"]').allTextContents()
       const itensEsperados = ["Camisa", "Short", "Meião", "Agasalho", "Chuteira"]
       for (const item of itensEsperados) {

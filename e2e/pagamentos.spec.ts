@@ -45,8 +45,8 @@ test.describe("Pagamentos — registro manual", () => {
       await btnPagar.click()
       const dialog = page.getByRole("dialog")
       await expect(dialog).toBeVisible()
-      // cancela sem confirmar
-      await dialog.getByRole("button", { name: /Cancelar/i }).click()
+      // cancela sem confirmar (dialog pode ter só o X "Close")
+      await dialog.getByRole("button", { name: /Cancelar|Close|Fechar/i }).first().click()
       await expect(dialog).not.toBeVisible()
     }
   })

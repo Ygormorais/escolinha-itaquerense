@@ -76,7 +76,8 @@ test.describe("Alunos — criar novo aluno", () => {
       await expect(page.getByText(nomeUnico)).toBeVisible()
     } else {
       // tenta verificar se aluno foi criado mesmo com dialog aberto (edge case)
-      await dialog.getByRole("button", { name: /Cancelar|Close|Fechar/i }).click()
+      // o dialog tem Cancelar E o X (Close) — .first() evita strict violation
+      await dialog.getByRole("button", { name: /Cancelar|Close|Fechar/i }).first().click()
       await page.reload()
       // aluno pode ou não ter sido criado dependendo da validação
     }

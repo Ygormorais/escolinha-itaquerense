@@ -20,8 +20,8 @@ test.describe("Produtos", () => {
     await btnNovo.click()
     const dialog = page.getByRole("dialog")
     await expect(dialog).toBeVisible()
-    await expect(dialog.locator('input[id="nome"], input[placeholder*="nome"]').first()).toBeVisible()
-    await page.getByRole("button", { name: /Cancelar/i }).click()
+    await expect(dialog.locator('input[id="prod-nome"], input[placeholder*="nome"]').first()).toBeVisible()
+    await dialog.getByRole("button", { name: /Cancelar|Close|Fechar/i }).first().click()
     await expect(dialog).not.toBeVisible()
   })
 
