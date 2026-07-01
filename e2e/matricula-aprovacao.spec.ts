@@ -19,7 +19,7 @@ async function criarPreMatriculaPublica(page: Parameters<typeof loginAsAdmin>[0]
   await page.waitForLoadState("networkidle")
 
   await page.fill('input[id="aluno"]', nomeAluno)
-  await page.fill('input[id="dataNasc"]', "2015-03-20")
+  await page.fill('input[id="dataNasc"]', "20032015")
   await page.fill('input[id="responsavel"]', "Responsável E2E Aprovacao")
   await page.fill('input[id="telefone"]', "(11) 98765-4321")
   await page.fill('input[id="email"]', `e2e.aprovacao.${Date.now()}@email.test`)

@@ -29,7 +29,7 @@ test.describe("Pré-Matrícula Pública", () => {
     // aguarda hidratação para o handler JS de submit estar ativo
     await page.waitForLoadState("networkidle")
     await page.fill('input[id="aluno"]', "Teste E2E")
-    await page.fill('input[id="dataNasc"]', "2015-06-15")
+    await page.fill('input[id="dataNasc"]', "15062015")
     await page.fill('input[id="responsavel"]', "Responsável Teste")
     await page.fill('input[id="telefone"]', "(11) 99999-8888")
     await page.fill('input[id="email"]', "teste@email.com")
@@ -45,7 +45,7 @@ test.describe("Admin - Pré-Matrículas", () => {
 
   test("página de pré-matrículas lista registros", async ({ page }) => {
     await page.goto("/configuracoes/matriculas")
-    await expect(page.locator("h1")).toContainText("Pré-Matrículas")
+    await expect(page.locator("h1")).toContainText("Matrículas")
   })
 
   test("botão Aprovar abre diálogo com campo de mensalidade", async ({ page }) => {

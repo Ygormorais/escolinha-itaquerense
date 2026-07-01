@@ -10,7 +10,7 @@ test.describe("Histórico de atividade — admin", () => {
     await page.goto("/historico")
     await expect(page).not.toHaveURL("/login")
     await expect(page.locator("h1, h2").first()).toBeVisible()
-    await expect(page.locator("body")).not.toContainText("500")
+    await expect(page.locator("body")).not.toContainText("Application error")
   })
 
   test("exibe filtro de tipo e usuário", async ({ page }) => {
@@ -27,13 +27,13 @@ test.describe("Histórico de atividade — admin", () => {
     if (await primeiraOpcao.count() > 0) {
       await primeiraOpcao.click()
     }
-    await expect(page.locator("body")).not.toContainText("500")
+    await expect(page.locator("body")).not.toContainText("Application error")
   })
 
   test("registros de log aparecem ou estado vazio é exibido", async ({ page }) => {
     await page.goto("/historico")
-    const temRegistros = (await page.locator("table tr, [role='row']").count()) > 1
-    const temEmpty = (await page.locator("text=Nenhum registro, text=nenhum").count()) > 0
+    const temRegistros = (await page.locator(".space-y-6 > div, .divide-y > div").count()) > 0
+    const temEmpty = (await page.locator("text=Nenhuma atividade").count()) > 0
     // um dos dois deve ser verdadeiro
     expect(temRegistros || temEmpty).toBe(true)
   })

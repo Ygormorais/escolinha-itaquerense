@@ -33,7 +33,7 @@ const PDF_MAGIC = new Uint8Array([0x25, 0x50, 0x44, 0x46, ...new Array(100).fill
 const INVALID_MAGIC = new Uint8Array([0x00, 0x00, 0x00, 0x00, ...new Array(100).fill(0)])
 
 function makeFile(name: string, bytes: Uint8Array) {
-  return new File([bytes], name, { type: "application/octet-stream" })
+  return new File([bytes.buffer as ArrayBuffer], name, { type: "application/octet-stream" })
 }
 
 function makeRequest(file?: File) {

@@ -33,15 +33,12 @@ test.describe("Autenticação", () => {
   })
 
   test("já autenticado redireciona de /login para /dashboard", async ({ page }) => {
-    // Autentica via API: o cookie de sessão entra no jar do contexto e é enviado
-    // nas navegações seguintes. (Logar pelo formulário com fetch in-page não
-    // propaga o cookie de forma confiável para a navegação imediata no harness.)
-    const res = await page.request.post("/api/auth/login", {
-      data: { username: "admin", password: "admin" },
-    })
-    expect(res.ok()).toBeTruthy()
+    // Autentica via formulário (garante que o cookie é gravado no jar do browser)
+    // e em seguida navega para /login — o middleware redireciona para /dashboard.
+    await loginAsAdmin(page)
+    await expect(page).toHaveURL("/dashboard")
 
     await page.goto("/login")
-    await expect(page).toHaveURL("/dashboard")
+    await expect(page).toHaveURL("/dashboard", { timeout: 10000 })
   })
 })

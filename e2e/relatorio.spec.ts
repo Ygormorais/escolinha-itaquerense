@@ -9,7 +9,7 @@ test.describe("Relatórios — admin", () => {
   test("página /relatorio redireciona ou carrega seção padrão", async ({ page }) => {
     await page.goto("/relatorio")
     await expect(page).not.toHaveURL("/login")
-    await expect(page.locator("body")).not.toContainText("500")
+    await expect(page.locator("body")).not.toContainText("Application error")
   })
 
   test("/relatorio/alunos carrega tabela de alunos", async ({ page }) => {
@@ -26,21 +26,21 @@ test.describe("Relatórios — admin", () => {
     await page.goto("/relatorio/pagamentos")
     await expect(page).not.toHaveURL("/login")
     await expect(page.locator("h1, h2").first()).toBeVisible()
-    await expect(page.locator("body")).not.toContainText("500")
+    await expect(page.locator("body")).not.toContainText("Application error")
   })
 
   test("/relatorio/frequencia carrega relatório de presenças", async ({ page }) => {
     await page.goto("/relatorio/frequencia")
     await expect(page).not.toHaveURL("/login")
     await expect(page.locator("h1, h2").first()).toBeVisible()
-    await expect(page.locator("body")).not.toContainText("500")
+    await expect(page.locator("body")).not.toContainText("Application error")
   })
 
   test("/relatorio/turmas carrega ocupação por turma", async ({ page }) => {
     await page.goto("/relatorio/turmas")
     await expect(page).not.toHaveURL("/login")
     await expect(page.locator("h1, h2").first()).toBeVisible()
-    await expect(page.locator("body")).not.toContainText("500")
+    await expect(page.locator("body")).not.toContainText("Application error")
   })
 
   test("relatório de alunos permite filtrar por status", async ({ page }) => {

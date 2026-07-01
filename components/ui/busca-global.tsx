@@ -89,6 +89,7 @@ export function BuscaGlobal() {
     <>
       <button
         onClick={() => setOpen(true)}
+        aria-label="Buscar alunos, responsáveis ou campeonatos"
         className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted"
       >
         <Search className="size-3.5 shrink-0" />

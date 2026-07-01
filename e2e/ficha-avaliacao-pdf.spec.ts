@@ -53,7 +53,8 @@ test.describe("Ficha de avaliação PDF — portal responsável", () => {
     // "Página não encontrada". We assert on the rendered content instead — this tests
     // the same behaviour (user sees a 404 page) without fighting the framework.
     await page.goto("/responsavel/boletim/pdf?alunoId=999999&periodo=2026-1S")
-    await expect(page.getByRole("heading", { name: "404" })).toBeVisible()
+    // O 404 personalizado usa um <div> estilizado, não um heading semântico
+    await expect(page.getByText("404")).toBeVisible()
     await expect(page.getByText(/Página não encontrada/i)).toBeVisible()
   })
 })

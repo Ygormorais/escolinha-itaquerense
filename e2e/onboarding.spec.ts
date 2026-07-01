@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test"
+import { ADMIN_TESTE } from "./test-credentials"
 
 // Login sem o initScript dos helpers: aqui queremos o onboarding de verdade
 async function loginSemSuprimirOnboarding(page: import("@playwright/test").Page) {
   await page.goto("/login")
-  await page.locator("#login-usuario").fill("admin")
-  await page.locator("#login-senha").fill("admin")
+  await page.locator("#login-usuario").fill(ADMIN_TESTE.username)
+  await page.locator("#login-senha").fill(ADMIN_TESTE.senha)
   await page.click('button[type="submit"]')
   await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 15000 })
 }
