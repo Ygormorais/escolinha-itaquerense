@@ -9,7 +9,8 @@ test.describe("Dashboard", () => {
   test("carrega e mostra stat cards", async ({ page }) => {
     await expect(page.locator("text=Alunos Ativos")).toBeVisible()
     await expect(page.locator("text=Receita do Mês")).toBeVisible()
-    await expect(page.locator("text=Inadimplentes")).toBeVisible()
+    // exact: o card de risco de presença contém "Inadimplentes com presença..."
+    await expect(page.getByText("Inadimplentes", { exact: true })).toBeVisible()
     // exact: o card de alerta de frequência também contém "Presença média ..."
     await expect(page.getByText("Presença Média", { exact: true })).toBeVisible()
   })
