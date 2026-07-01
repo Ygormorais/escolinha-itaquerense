@@ -40,6 +40,7 @@ export function Sheet({ open, onClose, children, side = "left" }: SheetProps) {
       >
         <button
           onClick={onClose}
+          aria-label="Fechar"
           className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
         >
           <X className="size-4" />

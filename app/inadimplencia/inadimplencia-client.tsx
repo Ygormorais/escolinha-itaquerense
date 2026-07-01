@@ -341,7 +341,7 @@ export function InadimplenciaClient({
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
-                <button onClick={toggleTodos} className="flex items-center justify-center">
+                <button onClick={toggleTodos} aria-label="Selecionar todos" className="flex items-center justify-center">
                   {selecionados.size === filtered.length && filtered.length > 0
                     ? <CheckSquare className="size-4 text-brand-600" />
                     : <Square className="size-4 text-muted-foreground" />}
@@ -384,7 +384,7 @@ export function InadimplenciaClient({
               return (
                 <TableRow key={a.alunoId} className={selecionados.has(a.alunoId) ? "bg-brand-50" : ""}>
                   <TableCell>
-                    <button onClick={() => toggleSelecionado(a.alunoId)} className="flex items-center justify-center">
+                    <button onClick={() => toggleSelecionado(a.alunoId)} aria-label={`Selecionar ${a.nome}`} className="flex items-center justify-center">
                       {selecionados.has(a.alunoId)
                         ? <CheckSquare className="size-4 text-brand-600" />
                         : <Square className="size-4 text-muted-foreground" />}

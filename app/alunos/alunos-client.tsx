@@ -442,7 +442,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
               </TableRow>
             )}
             {alunos.map((aluno) => (
-              <TableRow key={aluno.id}>
+              <TableRow key={aluno.id} className="cursor-pointer hover:bg-muted/50">
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <Link

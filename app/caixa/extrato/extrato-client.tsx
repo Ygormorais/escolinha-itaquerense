@@ -300,6 +300,7 @@ export function ExtratoClient({ lancamentos: initial, resumo: initialResumo, mes
                       <button
                         onClick={() => handleIgnorar(l.id)}
                         title="Ignorar"
+                        aria-label="Ignorar lançamento"
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         <EyeOff className="size-3.5" />
@@ -308,6 +309,7 @@ export function ExtratoClient({ lancamentos: initial, resumo: initialResumo, mes
                     <button
                       onClick={() => handleDeletar(l.id)}
                       title="Remover"
+                      aria-label="Remover lançamento"
                       className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 className="size-3.5" />

@@ -267,6 +267,7 @@ export function MidiaClient({
                     {youtubeId ? (
                       <button
                         onClick={() => setVideoPlayer(youtubeId)}
+                        aria-label={`Reproduzir vídeo: ${m.titulo}`}
                         className="group relative block size-16 shrink-0 overflow-hidden rounded-md bg-muted"
                       >
                         <Image

@@ -24,6 +24,7 @@ export function VideoModal({
         <div className="absolute top-2 right-2 z-10">
           <button
             onClick={onClose}
+            aria-label="Fechar vídeo"
             className="flex size-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
           >
             <X className="size-4" />
