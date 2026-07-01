@@ -64,7 +64,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                 Mensalidades
               </h1>
               <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
-                Consulte pagamentos, valores em aberto e o historico recente dos alunos vinculados a {responsavel.nome}.
+                Consulte pagamentos, valores em aberto e o histórico recente dos alunos vinculados a {responsavel.nome}.
               </p>
             </div>
           </div>
