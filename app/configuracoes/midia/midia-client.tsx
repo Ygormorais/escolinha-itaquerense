@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
 import { Film, Image as ImageIcon, Trash2, Plus, Play, Loader2 } from "lucide-react"
+import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -154,8 +155,10 @@ export function MidiaClient({
 
   return (
     <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mídia</h1>
+      <PageHeader
+        title="Mídia"
+        description="Fotos e vídeos das partidas e do clube"
+        action={
         <Dialog open={open} onOpenChange={setOpen}>
           <Button size="sm" onClick={() => setOpen(true)}>
             <Plus className="size-4 mr-1" /> Nova Mídia
@@ -237,7 +240,8 @@ export function MidiaClient({
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
 
       {midias.length === 0 ? (
         <p className="text-muted-foreground">Nenhuma mídia cadastrada.</p>

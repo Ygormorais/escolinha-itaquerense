@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus, Pencil, Trash2, UserPlus, UserX, Mail, Phone, Search, MessageSquare, Loader2, Users } from "lucide-react"
+import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -142,11 +143,10 @@ export function ResponsaveisClient({
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold font-heading">Responsáveis</h1>
-          <p className="text-sm text-muted-foreground">Gerencie contas de acesso dos pais/responsáveis</p>
-        </div>
+      <PageHeader
+        title="Responsáveis"
+        description="Gerencie contas de acesso dos pais/responsáveis"
+        action={
         <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="size-4" /> Novo Responsável
@@ -206,7 +206,8 @@ export function ResponsaveisClient({
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
 
       <div className="relative max-w-xs">
         <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />

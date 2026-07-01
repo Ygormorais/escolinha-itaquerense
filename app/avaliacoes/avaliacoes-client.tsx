@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react"
 import { plural } from "@/lib/utils"
+import { PageHeader } from "@/components/layout/page-header"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { Plus, Pencil, Trash2, ClipboardX, Loader2, Download } from "lucide-react"
@@ -381,19 +382,19 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
   }
 
   return (
-    <div className="space-y-4 p-6 lg:p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-xl font-semibold">Avaliações</h1>
-          <p className="text-sm text-muted-foreground">{plural(listaFiltrada.length, "avaliação registrada", "avaliações registradas", "nenhuma")}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={exportarCSV} disabled={listaFiltrada.length === 0}>
-            <Download className="size-4" /> Exportar CSV
-          </Button>
-          <NovaAvaliacaoDialog alunos={alunos} />
-        </div>
-      </div>
+    <div className="flex flex-col gap-6 p-6 lg:p-8">
+      <PageHeader
+        title="Avaliações"
+        description={plural(listaFiltrada.length, "avaliação registrada", "avaliações registradas", "nenhuma")}
+        action={
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={exportarCSV} disabled={listaFiltrada.length === 0}>
+              <Download className="size-4" /> Exportar CSV
+            </Button>
+            <NovaAvaliacaoDialog alunos={alunos} />
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border bg-card p-3">

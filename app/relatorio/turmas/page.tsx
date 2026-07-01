@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Users, CreditCard, CalendarCheck, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { ExportTurmasButton } from "./export-button"
+import { PageHeader } from "@/components/layout/page-header"
 
 export const metadata = { title: "Relatório por Turma — Escolinha Itaquerense" }
 
@@ -91,20 +92,20 @@ export default async function RelatorioTurmasPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">Relatório por Turma</h1>
-          <p className="text-sm text-muted-foreground capitalize">{mesLabel}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <ExportTurmasButton data={turmaStats} mes={mesAtual} />
-          <div className="flex gap-2">
-            <Link href="/relatorio" className="text-sm text-brand-700 hover:underline">← Financeiro</Link>
-            <span className="text-muted-foreground">|</span>
-            <Link href="/relatorio/frequencia" className="text-sm text-brand-700 hover:underline">Frequência →</Link>
+      <PageHeader
+        title="Relatório por Turma"
+        description={mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1)}
+        action={
+          <div className="flex items-center gap-3">
+            <ExportTurmasButton data={turmaStats} mes={mesAtual} />
+            <div className="flex gap-2">
+              <Link href="/relatorio" className="text-sm text-brand-700 hover:underline">← Financeiro</Link>
+              <span className="text-muted-foreground">|</span>
+              <Link href="/relatorio/frequencia" className="text-sm text-brand-700 hover:underline">Frequência →</Link>
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Totais */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

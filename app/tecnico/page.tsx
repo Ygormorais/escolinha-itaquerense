@@ -9,6 +9,7 @@ import { CalendarCheck, Trophy, Megaphone, TrendingDown, Heart, Medal, CalendarX
 import Link from "next/link"
 import { getEstatisticasFrequencia } from "@/app/actions/frequencia"
 import { filtrarEmQueda } from "@/lib/frequencia-alertas"
+import { PageHeader } from "@/components/layout/page-header"
 
 export const metadata = { title: "Painel do Técnico — Escolinha Itaquerense" }
 
@@ -47,12 +48,10 @@ export default async function TecnicoPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Painel do Técnico</h1>
-        <p className="text-sm text-muted-foreground">
-          {format(now, "EEEE, dd 'de' MMMM", { locale: ptBR })}
-        </p>
-      </div>
+      <PageHeader
+        title="Painel do Técnico"
+        description={format(now, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+      />
 
       {/* KPIs rápidos */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

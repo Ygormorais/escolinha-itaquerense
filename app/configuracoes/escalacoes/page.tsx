@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Shield, Users, CalendarDays, ChevronRight, CheckCircle2, Clock } from "lucide-react"
 import { POSICOES_QUADRA, LABEL_POSICAO } from "@/lib/escalacao/posicoes"
+import { PageHeader } from "@/components/layout/page-header"
 
 export const metadata = { title: "Convocações — Escolinha Itaquerense" }
 
@@ -38,12 +39,10 @@ export default async function ConvocacoesPage() {
 
   return (
     <div className="flex flex-col gap-8 p-6 lg:p-8">
-      <div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight">Convocações</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Monte a escalação de cada jogo arrastando os jogadores para a quadra
-        </p>
-      </div>
+      <PageHeader
+        title="Convocações"
+        description="Monte a escalação de cada jogo arrastando os jogadores para a quadra"
+      />
 
       {/* Próximos jogos */}
       <section className="space-y-4">

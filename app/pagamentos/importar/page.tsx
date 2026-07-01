@@ -1,21 +1,25 @@
 import { requireAuth } from "@/lib/auth"
 import { ImportarExtratoClient } from "@/components/pagamentos/importar-extrato-client"
+import { PageHeader } from "@/components/layout/page-header"
 
 export const metadata = { title: "Importar Extrato OFX — Pagamentos" }
 
 export default async function ImportarExtratoPage() {
   await requireAuth()
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-4">
+    <div className="flex flex-col gap-6 p-6">
       <div>
         <a
           href="/pagamentos"
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           ← Pagamentos
         </a>
+        <PageHeader
+          title="Importar Extrato OFX"
+          description="Importe o arquivo OFX do banco e reconcilie com os pagamentos"
+        />
       </div>
-      <h1 className="text-2xl font-bold">Importar Extrato OFX</h1>
       <ImportarExtratoClient />
     </div>
   )

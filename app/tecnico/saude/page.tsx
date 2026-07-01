@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Heart, AlertTriangle, Phone, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { PageHeader } from "@/components/layout/page-header"
 
 export const metadata = { title: "Fichas de Saúde — Painel do Técnico" }
 
@@ -43,8 +44,10 @@ export default async function TecnicoSaudePage() {
         <Link href="/tecnico" className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" /> Painel do Técnico
         </Link>
-        <h1 className="font-heading text-2xl font-bold">Fichas de Saúde</h1>
-        <p className="text-sm text-muted-foreground">Informações médicas e contatos de emergência dos alunos</p>
+        <PageHeader
+          title="Fichas de Saúde"
+          description="Informações médicas e contatos de emergência dos alunos"
+        />
       </div>
 
       {/* Resumo */}
