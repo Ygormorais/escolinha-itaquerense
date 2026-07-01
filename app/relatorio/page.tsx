@@ -14,7 +14,7 @@ import { RelatorioHeader, RelatorioPrintStyle } from "./relatorio-client"
 
 const RelatorioChart = dynamic(
   () => import("./relatorio-client").then((m) => ({ default: m.RelatorioChart })),
-  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
+  { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
 )
 import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 

@@ -19,7 +19,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns", "recharts", "sonner"],
-    optimizeCss: true,
+    // optimizeCss exige o pacote `critters` (não instalado) — sem ele, qualquer
+    // render da página _error explode com MODULE_NOT_FOUND e vira 500 em cascata.
     webpackBuildWorker: true,
   },
   logging: {
