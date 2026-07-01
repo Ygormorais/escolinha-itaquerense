@@ -56,12 +56,10 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
         ],
       },
-      {
-        source: "/_next/static/(.*)",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
+      // /_next/static: NÃO sobrescrever Cache-Control aqui. Em produção o Next
+      // já serve com immutable (nomes com hash); em dev os chunks do Turbopack
+      // têm nome estável, e um immutable de 1 ano faz o browser rodar JS velho
+      // (UI fantasma, hydration mismatch, "botões sem efeito").
     ]
   },
 };
