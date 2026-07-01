@@ -51,7 +51,7 @@ export function CaixaClient({
     { href: "/caixa/dinheiro", label: "Dinheiro", icon: Banknote, color: "text-success-600 bg-success-50", valor: formatMoney(porForma["Dinheiro"] ?? 0), sub: noMes },
     { href: "/caixa/maquina", label: "Maquininha", icon: CreditCard, color: "text-brand-800 bg-brand-100", valor: formatMoney(totalMaquininhaPendente), sub: "pendente de reconciliação" },
     { href: "/caixa/descontos", label: "Descontos", icon: Percent, color: "text-danger-600 bg-danger-50", valor: formatMoney(totalDescontos), sub: "concedidos por mês" },
-    { href: "/caixa/extrato", label: "Extrato", icon: Building2, color: "text-slate-600 bg-slate-100", valor: "Banco", sub: "entradas e saídas" },
+    { href: "/caixa/extrato", label: "Extrato", icon: Building2, color: "text-muted-foreground bg-muted", valor: "Banco", sub: "entradas e saídas" },
   ]
 
   return (

@@ -168,7 +168,7 @@ export function ImportarExtratoClient() {
                   r.confianca === "nenhuma"
                     ? "opacity-50"
                     : r.confianca === "baixa"
-                    ? "bg-yellow-50"
+                    ? "bg-warning-50"
                     : ""
                 }
               >
@@ -185,7 +185,7 @@ export function ImportarExtratoClient() {
                 <td className="px-3 py-2">
                   {r.mesReferencia ?? "—"}
                   {r.confianca === "baixa" && (
-                    <span className="ml-1 text-xs text-yellow-700">verificar</span>
+                    <span className="ml-1 text-xs text-warning-600">verificar</span>
                   )}
                 </td>
                 <td className="px-3 py-2 text-center">

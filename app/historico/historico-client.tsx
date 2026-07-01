@@ -37,7 +37,7 @@ const TIPO_CONFIG: Record<string, { icon: React.ElementType; cor: string; label:
   aluno_inativo: { icon: UserX, cor: "text-danger-600 bg-danger-50", label: "Inativação" },
   aluno_reativo: { icon: UserCheck, cor: "text-success-600 bg-success-50", label: "Reativação" },
   frequencia: { icon: CalendarCheck, cor: "text-info-600 bg-info-50", label: "Frequência" },
-  recibo: { icon: Receipt, cor: "text-violet-600 bg-violet-50", label: "Recibo" },
+  recibo: { icon: Receipt, cor: "text-info-600 bg-info-50", label: "Recibo" },
   config: { icon: Settings, cor: "text-muted-foreground bg-muted", label: "Configuração" },
   inadimplencia: { icon: AlertCircle, cor: "text-warning-600 bg-warning-50", label: "Inadimplência" },
   evento_criado: { icon: CalendarCheck, cor: "text-brand-600 bg-brand-50", label: "Evento" },
@@ -46,8 +46,8 @@ const TIPO_CONFIG: Record<string, { icon: React.ElementType; cor: string; label:
   custo_novo: { icon: Receipt, cor: "text-warning-600 bg-warning-50", label: "Custo" },
   campeonato_criado: { icon: Trophy, cor: "text-brand-600 bg-brand-50", label: "Campeonato" },
   escalacao_chatbot: { icon: AlertCircle, cor: "text-warning-600 bg-warning-50", label: "Chatbot" },
-  avaliacao_criada: { icon: ClipboardList, cor: "text-violet-600 bg-violet-50", label: "Avaliação" },
-  avaliacao_editada: { icon: Pencil, cor: "text-violet-600 bg-violet-50", label: "Avaliação" },
+  avaliacao_criada: { icon: ClipboardList, cor: "text-info-600 bg-info-50", label: "Avaliação" },
+  avaliacao_editada: { icon: Pencil, cor: "text-info-600 bg-info-50", label: "Avaliação" },
   avaliacao_excluida: { icon: Trash2, cor: "text-danger-600 bg-danger-50", label: "Avaliação" },
 }
 
