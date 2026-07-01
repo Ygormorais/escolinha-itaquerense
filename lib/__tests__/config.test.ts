@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import fs from "fs"
 import path from "path"
-import { getConfig, saveConfig, type ClubConfig } from "../config"
+import { getConfig, saveConfig, resetConfigCache, type ClubConfig } from "../config"
 
 const TEST_CONFIG_PATH = path.join(process.cwd(), "club.config.json")
 const DEFAULT: ClubConfig = {
@@ -23,6 +23,7 @@ const DEFAULT: ClubConfig = {
 
 describe("lib/config", () => {
   beforeEach(() => {
+    resetConfigCache()
     if (fs.existsSync(TEST_CONFIG_PATH)) {
       fs.unlinkSync(TEST_CONFIG_PATH)
     }

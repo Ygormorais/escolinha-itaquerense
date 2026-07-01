@@ -1,17 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
-  const db = { media: { create: vi.fn(), delete: vi.fn() } }
+  const db = { media: { create: vi.fn(), delete: vi.fn(), findUnique: vi.fn() } }
   return { db }
 })
 
 vi.mock("@/lib/auth", () => ({ requireAuth: vi.fn().mockResolvedValue({}) }))
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
+vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn().mockResolvedValue(undefined) }))
 
 import { adicionarMidia, removerMidia } from "@/app/actions/midia"
 import { db } from "@/lib/db"
 
-const m = db as unknown as { media: { create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> } }
+const m = db as unknown as { media: { create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn> } }
 
 const midiaValida = { tipo: "video" as const, titulo: "Gol do Gabriel", url: "https://youtube.com/watch?v=abc", partidaId: 1 }
 
@@ -19,6 +20,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   m.media.create.mockResolvedValue({ id: 1 })
   m.media.delete.mockResolvedValue({})
+  m.media.findUnique.mockResolvedValue({ titulo: "Gol do Gabriel", tipo: "video" })
 })
 
 describe("adicionarMidia", () => {

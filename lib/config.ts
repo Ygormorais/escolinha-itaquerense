@@ -40,6 +40,11 @@ const DEFAULT: ClubConfig = {
 
 let cachedConfig: ClubConfig | null = null
 
+// Só para testes: o cache em memória persiste entre casos do mesmo arquivo.
+export function resetConfigCache() {
+  cachedConfig = null
+}
+
 export function getConfig(): ClubConfig {
   if (cachedConfig) return cachedConfig
   try {

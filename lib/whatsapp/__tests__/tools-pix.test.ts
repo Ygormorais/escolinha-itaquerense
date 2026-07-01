@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 vi.mock("@/lib/db", () => ({
   db: {
     responsavel: { findUnique: vi.fn() },
-    pagamento: { findFirst: vi.fn(), update: vi.fn() },
+    pagamento: { findMany: vi.fn(), update: vi.fn() },
   },
 }))
 
@@ -18,7 +18,7 @@ import { db } from "@/lib/db"
 
 const m = db as unknown as {
   responsavel: { findUnique: ReturnType<typeof vi.fn> }
-  pagamento: { findFirst: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }
+  pagamento: { findMany: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }
 }
 
 const mesAtual = new Date().toISOString().slice(0, 7)
@@ -32,11 +32,11 @@ beforeEach(() => {
 describe("executarObterPixMensalidade", () => {
   it("retorna pix existente quando pendente", async () => {
     m.responsavel.findUnique.mockResolvedValue({ email: "r@test.com", alunos: [{ id: 1, nome: "João", mensalidade: 200 }] })
-    m.pagamento.findFirst.mockResolvedValue({
-      id: 10, mesReferencia: mesAtual, dataPagamento: null,
+    m.pagamento.findMany.mockResolvedValue([{
+      id: 10, alunoId: 1, mesReferencia: mesAtual, dataPagamento: null,
       pixCopiaECola: "00020126...", statusCobranca: "pendente",
       aluno: { mensalidade: 200 },
-    })
+    }])
     const res = await executarObterPixMensalidade({ responsavelId: 1 })
     expect(res.alunos[0].status).toBe("pendente")
     expect(res.alunos[0].pixCopiaECola).toBe("00020126...")
@@ -44,22 +44,22 @@ describe("executarObterPixMensalidade", () => {
 
   it("retorna status pago quando dataPagamento existe", async () => {
     m.responsavel.findUnique.mockResolvedValue({ email: "r@test.com", alunos: [{ id: 1, nome: "João", mensalidade: 200 }] })
-    m.pagamento.findFirst.mockResolvedValue({
-      id: 10, mesReferencia: mesAtual, dataPagamento: new Date(),
+    m.pagamento.findMany.mockResolvedValue([{
+      id: 10, alunoId: 1, mesReferencia: mesAtual, dataPagamento: new Date(),
       pixCopiaECola: null, statusCobranca: "pago",
       aluno: { mensalidade: 200 },
-    })
+    }])
     const res = await executarObterPixMensalidade({ responsavelId: 1 })
     expect(res.alunos[0].status).toBe("pago")
   })
 
   it("não tenta gerar PIX quando mensalidade <= 0 (bolsista) → sem_cobranca", async () => {
     m.responsavel.findUnique.mockResolvedValue({ email: "r@test.com", alunos: [{ id: 1, nome: "João", mensalidade: 0 }] })
-    m.pagamento.findFirst.mockResolvedValue({
-      id: 10, mesReferencia: mesAtual, dataPagamento: null,
+    m.pagamento.findMany.mockResolvedValue([{
+      id: 10, alunoId: 1, mesReferencia: mesAtual, dataPagamento: null,
       pixCopiaECola: null, statusCobranca: null,
       aluno: { mensalidade: 0 },
-    })
+    }])
     const res = await executarObterPixMensalidade({ responsavelId: 1 })
     expect(res.alunos[0].status).toBe("sem_cobranca")
     expect(mpCreate).not.toHaveBeenCalled()
@@ -67,7 +67,7 @@ describe("executarObterPixMensalidade", () => {
 
   it("retorna sem_cobranca quando nao ha pagamento no mes", async () => {
     m.responsavel.findUnique.mockResolvedValue({ email: "r@test.com", alunos: [{ id: 1, nome: "João", mensalidade: 200 }] })
-    m.pagamento.findFirst.mockResolvedValue(null)
+    m.pagamento.findMany.mockResolvedValue([])
     const res = await executarObterPixMensalidade({ responsavelId: 1 })
     expect(res.alunos[0].status).toBe("sem_cobranca")
   })

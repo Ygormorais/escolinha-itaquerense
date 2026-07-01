@@ -29,8 +29,13 @@ describe("AlunoSchema", () => {
     expect(r.success).toBe(false)
   })
 
-  it("rejeita mensalidade zero", () => {
+  it("aceita mensalidade zero (bolsista)", () => {
     const r = AlunoSchema.safeParse({ ...valid, mensalidade: 0 })
+    expect(r.success).toBe(true)
+  })
+
+  it("rejeita mensalidade negativa", () => {
+    const r = AlunoSchema.safeParse({ ...valid, mensalidade: -50 })
     expect(r.success).toBe(false)
   })
 
