@@ -6,8 +6,6 @@
 import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
-import * as crypto from "crypto"
-
 const RED   = "\x1b[31m"
 const GREEN = "\x1b[32m"
 const YELLOW = "\x1b[33m"

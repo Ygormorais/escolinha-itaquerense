@@ -28,7 +28,7 @@ import { POST, DELETE } from "../route"
 import { db } from "@/lib/db"
 import { getSession } from "@/lib/session"
 import { validateFotoUpload } from "@/lib/upload-foto"
-import { writeFile, mkdir } from "fs/promises"
+import { writeFile } from "fs/promises"
 
 const mockDb = db as unknown as {
   aluno: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> }

@@ -22,7 +22,7 @@ function NotaBadge({ valor }: { valor: number | null }) {
   return <Badge className={`text-xs ${cls}`}>{valor.toFixed(1)}</Badge>
 }
 
-export function AvaliacoesCard({ alunoId, avaliacoes }: { alunoId: number; avaliacoes: Avaliacao[] }) {
+export function AvaliacoesCard({ alunoId: _alunoId, avaliacoes }: { alunoId: number; avaliacoes: Avaliacao[] }) {
   const [expanded, setExpanded] = useState(false)
 
   if (avaliacoes.length === 0) return null

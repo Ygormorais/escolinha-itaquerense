@@ -2,9 +2,7 @@
 
 import { useRef, useState, useTransition } from "react"
 import { toast } from "sonner"
-import { Upload, TrendingUp, TrendingDown, Minus, Trash2, EyeOff, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Upload, TrendingUp, TrendingDown, Trash2, EyeOff } from "lucide-react"
 import { importarExtrato, ignorarLancamento, deletarLancamento, categorizarLancamento } from "@/app/actions/extrato"
 import { formatMoney } from "@/lib/utils"
 
@@ -44,13 +42,9 @@ interface Props {
   mes: string
 }
 
-function formatDate(d: Date) {
-  return new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
-}
-
-export function ExtratoClient({ lancamentos: initial, resumo: initialResumo, mes }: Props) {
+export function ExtratoClient({ lancamentos: initial, resumo: initialResumo, mes: _mes }: Props) {
   const [lancamentos, setLancamentos] = useState(initial)
-  const [resumo, setResumo] = useState(initialResumo)
+  const [resumo] = useState(initialResumo)
   const [filtroTipo, setFiltroTipo] = useState("todos")
   const [filtroStatus, setFiltroStatus] = useState("todos")
   const [filtroCategoria, setFiltroCategoria] = useState("todas")

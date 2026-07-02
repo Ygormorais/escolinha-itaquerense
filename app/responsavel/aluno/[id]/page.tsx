@@ -203,7 +203,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
             </div>
             {avaliacaoRecente.observacoes && (
               <p className="rounded-lg bg-muted/40 px-4 py-3 text-sm text-muted-foreground italic">
-                "{avaliacaoRecente.observacoes}"
+                &ldquo;{avaliacaoRecente.observacoes}&rdquo;
               </p>
             )}
           </CardContent>

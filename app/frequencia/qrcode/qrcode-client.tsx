@@ -16,6 +16,7 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
   const [baseUrl, setBaseUrl] = useState("")
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBaseUrl(window.location.origin)
   }, [])
 

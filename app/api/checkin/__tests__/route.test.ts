@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import type { NextRequest } from "next/server"
 
 vi.mock("@/lib/db", () => ({
   db: {
@@ -45,24 +46,24 @@ beforeEach(() => {
 
 describe("GET /api/checkin", () => {
   it("retorna 400 quando token ausente", async () => {
-    const res = await GET(makeRequest({}) as any)
+    const res = await GET(makeRequest({}) as unknown as NextRequest)
     expect(res.status).toBe(400)
   })
 
   it("retorna 400 quando data no token é malformada", async () => {
-    const res = await GET(makeRequest({ token: "Sub-13:20260624" }) as any)
+    const res = await GET(makeRequest({ token: "Sub-13:20260624" }) as unknown as NextRequest)
     expect(res.status).toBe(400)
   })
 
   it("sem alunoId: redireciona para página de seleção", async () => {
-    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24" }) as any)
+    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24" }) as unknown as NextRequest)
     expect(res.status).toBe(307)
     expect(res.headers.get("location")).toContain("/checkin?token=Sub-13:2026-06-24")
     expect(res.headers.get("location")).not.toContain("alunoId")
   })
 
   it("registra presença e redireciona com ok=1", async () => {
-    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24", alunoId: "1" }) as any)
+    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24", alunoId: "1" }) as unknown as NextRequest)
     expect(mockDb.frequencia.create).toHaveBeenCalledOnce()
     expect(res.status).toBe(307)
     expect(res.headers.get("location")).toContain("ok=1")
@@ -71,20 +72,20 @@ describe("GET /api/checkin", () => {
 
   it("redireciona com ja=1 quando presença já registrada", async () => {
     mockDb.frequencia.findFirst.mockResolvedValue({ id: 99 })
-    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24", alunoId: "1" }) as any)
+    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24", alunoId: "1" }) as unknown as NextRequest)
     expect(mockDb.frequencia.create).not.toHaveBeenCalled()
     expect(res.headers.get("location")).toContain("ja=1")
   })
 
   it("redireciona com erro=aluno quando aluno não encontrado na turma", async () => {
     mockDb.aluno.findFirst.mockResolvedValue(null)
-    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24", alunoId: "99" }) as any)
+    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24", alunoId: "99" }) as unknown as NextRequest)
     expect(res.headers.get("location")).toContain("erro=aluno")
   })
 
   it("retorna 429 quando rate limit excedido", async () => {
     mockRateLimit.mockReturnValue({ ok: false, retryAfterMs: 60_000 })
-    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24" }) as any)
+    const res = await GET(makeRequest({ token: "Sub-13:2026-06-24" }) as unknown as NextRequest)
     expect(res.status).toBe(429)
   })
 })

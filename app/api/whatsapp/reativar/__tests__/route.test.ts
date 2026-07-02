@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import type { NextRequest } from "next/server"
 
 vi.mock("@/lib/whatsapp/session", () => ({
   unblockSession: vi.fn(),
@@ -16,13 +17,13 @@ import { verifyEvolutionAuth } from "@/lib/env"
 const mockUnblock = unblockSession as ReturnType<typeof vi.fn>
 const mockVerify = verifyEvolutionAuth as ReturnType<typeof vi.fn>
 
-function makeRequest(body: object, authorized = true) {
+function makeRequest(body: object, authorized = true): NextRequest {
   mockVerify.mockReturnValue(authorized)
   return new Request("http://localhost/api/whatsapp/reativar", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: "Bearer api-key-secret" },
     body: JSON.stringify(body),
-  }) as any
+  }) as unknown as NextRequest
 }
 
 beforeEach(() => {

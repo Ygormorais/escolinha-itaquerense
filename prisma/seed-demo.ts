@@ -20,7 +20,7 @@ import fs from "fs"
 import { PrismaClient } from "@prisma/client"
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
 import { hashSync } from "bcryptjs"
-import { addDays, subDays, format, startOfMonth, setDate } from "date-fns"
+import { addDays, subDays } from "date-fns"
 
 // ── 1. Setup do banco demo ─────────────────────────────────────────────────
 
@@ -184,7 +184,7 @@ async function main() {
   const datasUnicas = [...new Map(datasFreq.map((d) => [d.getTime(), d])).values()]
 
   for (const dataFreq of datasUnicas) {
-    for (const { id, raw } of alunosAtivos) {
+    for (const { id } of alunosAtivos) {
       // 75% de presença
       const presente = Math.random() < 0.75
       try {
