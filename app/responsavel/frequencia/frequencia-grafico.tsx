@@ -42,7 +42,7 @@ export function FrequenciaGrafico({ frequencias }: Props) {
   if (dados.length === 0) return null
 
   return (
-    <div className="h-36">
+    <div style={{ height: "144px", minHeight: "144px", width: "100%" }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={dados} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />

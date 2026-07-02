@@ -36,7 +36,7 @@ export default async function DesempenhoPage() {
     const snapshots: AvaliacaoSnapshot[] = aluno.avaliacoes
       .filter((a) => a.notaTecnica != null)
       .map((a) => ({
-        label: a.periodo,
+        label: (() => { const s = a.periodo.match(/^(\d{4})-(\d)S$/); if (s) return `${s[2]}ºSem/${s[1]}`; const w = a.periodo.match(/^(\d{4})-(\d{1,2})$/); return w ? `Sem${w[2]}/${w[1]}` : a.periodo })(),
         data: a.createdAt,
         notas: {
           tecnica: a.notaTecnica ?? 0,

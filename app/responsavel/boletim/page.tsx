@@ -6,6 +6,14 @@ import { Badge } from "@/components/ui/badge"
 import { Award, BarChart3, Brain, Heart, TrendingUp, ArrowLeft, Printer } from "lucide-react"
 import Link from "next/link"
 
+function formatPeriodo(periodo: string): string {
+  const mSem = periodo.match(/^(\d{4})-(\d)S$/)
+  if (mSem) return `${mSem[2]}º Semestre/${mSem[1]}`
+  const mWeek = periodo.match(/^(\d{4})-(\d{1,2})$/)
+  if (mWeek) return `Semana ${mWeek[2]}/${mWeek[1]}`
+  return periodo
+}
+
 function notaColor(nota: number | null): string {
   if (nota === null || nota === undefined) return "text-muted-foreground"
   if (nota >= 7) return "text-success-600"
@@ -118,7 +126,7 @@ export default async function BoletimPage() {
                       <CardHeader className="border-b border-black/5 pb-3">
                         <CardTitle className="flex items-center gap-2 text-sm">
                           <BarChart3 className="size-4 text-brand-600" />
-                          Período {av.periodo}
+                          Período {formatPeriodo(av.periodo)}
                           <Link
                             href={`/responsavel/boletim/pdf?alunoId=${aluno.id}&periodo=${encodeURIComponent(av.periodo)}`}
                             target="_blank"
