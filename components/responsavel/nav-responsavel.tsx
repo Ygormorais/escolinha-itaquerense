@@ -8,22 +8,22 @@ import { cn } from "@/lib/utils"
 import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
 
 const links = [
-  { href: "/responsavel", label: "Início" },
-  { href: "/responsavel/mensalidades", label: "Mensalidades" },
-  { href: "/responsavel/frequencia", label: "Frequência" },
-  { href: "/responsavel/jogos", label: "Jogos" },
-  { href: "/responsavel/calendario", label: "Calendário" },
-  { href: "/responsavel/classificacao", label: "Classificação" },
-  { href: "/responsavel/desempenho", label: "Desempenho" },
-  { href: "/responsavel/uniformes", label: "Uniforme" },
-  { href: "/responsavel/galeria", label: "Mural" },
-  { href: "/responsavel/boletim", label: "Boletim" },
-  { href: "/responsavel/carteirinha", label: "Carteirinha" },
-  { href: "/responsavel/lojinha", label: "Lojinha" },
-  { href: "/responsavel/solicitacoes", label: "Solicitações" },
-  { href: "/responsavel/renovacao", label: "Renovação" },
-  { href: "/responsavel/notificacoes", label: "Notificações" },
-  { href: "/responsavel/historia", label: "História" },
+  { href: "/responsavel",                  label: "Início" },
+  { href: "/responsavel/mensalidades",     label: "Mensalidades" },
+  { href: "/responsavel/frequencia",       label: "Frequência" },
+  { href: "/responsavel/jogos",            label: "Jogos" },
+  { href: "/responsavel/calendario",       label: "Calendário" },
+  { href: "/responsavel/desempenho",       label: "Desempenho" },
+  { href: "/responsavel/boletim",          label: "Boletim" },
+  { href: "/responsavel/uniformes",        label: "Uniforme" },
+  { href: "/responsavel/carteirinha",      label: "Carteirinha" },
+  { href: "/responsavel/classificacao",    label: "Classificação" },
+  { href: "/responsavel/lojinha",          label: "Lojinha" },
+  { href: "/responsavel/galeria",          label: "Mural" },
+  { href: "/responsavel/solicitacoes",     label: "Solicitações" },
+  { href: "/responsavel/notificacoes",     label: "Notificações" },
+  { href: "/responsavel/renovacao",        label: "Renovação" },
+  { href: "/responsavel/historia",         label: "História" },
 ]
 
 export function NavResponsavel() {
