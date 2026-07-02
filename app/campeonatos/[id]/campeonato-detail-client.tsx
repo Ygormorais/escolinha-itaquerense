@@ -290,7 +290,7 @@ export function CampeonatoDetailClient({
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold font-heading">{campeonato.nome}</h1>
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">{campeonato.nome}</h1>
             <Badge variant={st.variant}>{st.label}</Badge>
           </div>
           {campeonato.descricao && (
@@ -564,7 +564,7 @@ export function CampeonatoDetailClient({
               {campeonato.inscricoes.map((insc) => {
                 const valorDevido = Math.max(0, totalCustos - insc.desconto)
                 return (
-                  <TableRow key={insc.id}>
+                  <TableRow key={insc.id} className="cursor-pointer hover:bg-muted/30 transition-colors">
                     <TableCell>
                       <Link href={`/alunos/${insc.aluno.id}`} className="font-medium hover:underline text-brand-800">{insc.aluno.nome}</Link>
                       <p className="text-xs text-muted-foreground">{insc.aluno.responsavel} · {insc.aluno.telefone}</p>

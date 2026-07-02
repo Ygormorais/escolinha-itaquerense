@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 import { criarPartida, editarPartida, deletarPartida } from "@/app/actions/campeonatos"
 import { calcularClassificacao } from "@/lib/campeonatos"
 import { format } from "date-fns"
@@ -260,7 +261,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
               </TableHeader>
               <TableBody>
                 {pendentes.map((p) => (
-                  <TableRow key={p.id}>
+                  <TableRow key={p.id} className="cursor-pointer hover:bg-muted/30 transition-colors">
                     <TableCell>{format(new Date(p.data), "dd/MM/yyyy")}</TableCell>
                     <TableCell className="font-medium">{p.adversario}</TableCell>
                     <TableCell><Badge variant="secondary" className="text-[10px]">{p.local}</Badge></TableCell>
@@ -401,7 +402,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                 </TableRow>
               )}
               {filtradas.map((p) => (
-                <TableRow key={p.id} className={p.resultado == null ? "bg-warning-50/30" : ""}>
+                <TableRow key={p.id} className={cn(p.resultado == null ? "bg-warning-50/30" : "", "cursor-pointer hover:bg-muted/30 transition-colors")}>
                   <TableCell className="text-muted-foreground">{p.rodada}</TableCell>
                   <TableCell>{format(new Date(p.data), "dd/MM")}</TableCell>
                   <TableCell className="font-medium">{p.adversario}</TableCell>
