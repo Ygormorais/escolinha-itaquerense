@@ -41,7 +41,7 @@ export default function NotFound() {
       </p>
       <div className="nf-links">
         <Link href="/" className="nf-btn primary">← Voltar ao início</Link>
-        <Link href="/matricula" className="nf-btn secondary">Fazer matrícula</Link>
+        <Link href="/horarios" className="nf-btn secondary">Ver turmas &amp; horários</Link>
       </div>
     </div>
   )

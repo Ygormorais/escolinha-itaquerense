@@ -222,6 +222,8 @@ export function LandingClient({
   sobre,
   galeria,
   depoimentos,
+  endereco,
+  cidade,
 }: {
   noticias: NoticiaCard[]
   noticiasClube: NoticiaClube[]
@@ -230,6 +232,8 @@ export function LandingClient({
   sobre: SobreConteudo | null
   galeria: FotoGaleria[]
   depoimentos: Depoimento[]
+  endereco?: string
+  cidade?: string
 }) {
   const [navOpen, setNavOpen] = useState(false)
 
@@ -413,16 +417,11 @@ export function LandingClient({
           <div className="fcol">
             <h4>Contato</h4>
             <div className="foot-addr">
-              <p>R. Augusto Carlos Baumann, 588</p>
-              <p>Itaquera — São Paulo/SP</p>
+              {endereco && <p>{endereco}</p>}
+              {cidade && <p>{cidade}</p>}
               <p style={{marginTop:"8px"}}>
                 <a href={waUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
               </p>
-            </div>
-            <div className="foot-social">
-              <a href="#" aria-label="Instagram"><i className="ti ti-brand-instagram"></i></a>
-              <a href="#" aria-label="Facebook"><i className="ti ti-brand-facebook"></i></a>
-              <a href="#" aria-label="YouTube"><i className="ti ti-brand-youtube"></i></a>
             </div>
           </div>
         </div>

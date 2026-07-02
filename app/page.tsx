@@ -30,7 +30,8 @@ export default async function Page() {
       sobre={sobre}
       galeria={galeria}
       depoimentos={depoimentos}
-
+      endereco={config.endereco}
+      cidade={config.cidade}
     />
   )
 }
