@@ -8,10 +8,8 @@ describe("conteúdo da landing (config-driven com guarda)", () => {
     expect(temDepoimentos()).toBe(depoimentos.length > 0)
   })
 
-  it("começa vazio (sem conteúdo falso)", () => {
-    // Atualizar/remover este teste quando o Ygor preencher a config.
-    expect(sobre).toBeNull()
-    expect(galeria).toEqual([])
-    expect(depoimentos).toEqual([])
+  it("sobre está preenchido com conteúdo real", () => {
+    expect(sobre).not.toBeNull()
+    expect(sobre!.paragrafos.length).toBeGreaterThan(0)
   })
 })
