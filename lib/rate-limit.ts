@@ -1,8 +1,16 @@
 import { createMemoryRateLimitStore, type RateLimitStore } from "@/lib/rate-limit-store"
+import { createSqliteRateLimitStore } from "@/lib/rate-limit-store-sqlite"
 
-const defaultStore = createMemoryRateLimitStore()
+function createDefaultStore(): RateLimitStore {
+  if (process.env.NODE_ENV === "test") return createMemoryRateLimitStore()
+  try {
+    return createSqliteRateLimitStore()
+  } catch {
+    return createMemoryRateLimitStore()
+  }
+}
 
-let activeStore: RateLimitStore = defaultStore
+let activeStore: RateLimitStore = createDefaultStore()
 
 /** Troca o store (apenas testes). */
 export function setRateLimitStore(store: RateLimitStore): void {
