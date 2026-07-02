@@ -97,13 +97,21 @@ const css = `
   .lp .cat:hover .circle{transform:scale(1.06)}
   .lp .cat b{font-family:var(--font-body),sans-serif;text-transform:uppercase;display:block;font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
   .lp .cat span{font-size:13px;color:var(--text-muted)}
+  .lp{flex:1}
   .lp footer{background:var(--red-deep);color:#fff;padding-top:60px}
-  .lp .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:36px}
+  .lp .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px}
   .lp .foot-brand .shield{width:68px;height:68px;margin-bottom:16px}
   .lp .foot-brand p{font-size:13px;opacity:.78;margin-bottom:18px;max-width:280px;line-height:1.65}
   .lp footer h4{font-family:var(--font-body),sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:1.5px;font-weight:700;margin-bottom:16px;color:rgba(255,255,255,.6)}
   .lp footer .fcol a{display:block;font-size:13px;opacity:.75;padding:6px 0;transition:var(--transition)}
   .lp footer .fcol a:hover{opacity:1;color:#FFCDD2;padding-left:6px}
+  .lp .foot-addr{font-size:13px;opacity:.75;line-height:1.7}
+  .lp .foot-addr p{margin-bottom:4px}
+  .lp .foot-addr a{opacity:1;color:inherit;transition:var(--transition)}
+  .lp .foot-addr a:hover{color:#FFCDD2}
+  .lp .foot-social{display:flex;gap:12px;margin-top:14px}
+  .lp .foot-social a{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:16px;transition:var(--transition)}
+  .lp .foot-social a:hover{border-color:#fff;background:rgba(255,255,255,.12)}
   .lp .foot-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:48px;padding:20px 0}
   .lp .foot-bottom .container{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px;opacity:.7}
   @media(max-width:900px){
@@ -115,7 +123,7 @@ const css = `
     .lp nav.main>ul>li.nav-access{display:block}
     .lp .burger{display:block}
     .lp .cat-grid{grid-template-columns:repeat(2,1fr)}
-    .lp .foot-grid{grid-template-columns:1fr 1fr}
+    .lp .foot-grid{grid-template-columns:1fr 1fr;row-gap:28px}
     .lp .hero h1{font-size:38px}
     .lp section{padding:56px 0}
   }
@@ -180,6 +188,13 @@ const css = `
   .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
   @media(max-width:900px){.lp .depo .grid{grid-template-columns:1fr}}
   .lp .modalidades{border-top:1px solid var(--border)}
+  .lp .stats{background:var(--red-dark);color:#fff;padding:0}
+  .lp .stats-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+  .lp .stat{text-align:center;padding:36px 24px;border-right:1px solid rgba(255,255,255,.15)}
+  .lp .stat:last-child{border-right:none}
+  .lp .stat .num{font-family:var(--font-heading),Georgia,serif;font-size:44px;font-weight:800;line-height:1;color:#fff;letter-spacing:-1px}
+  .lp .stat .lbl{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.8;margin-top:6px}
+  @media(max-width:600px){.lp .stats-grid{grid-template-columns:1fr}.lp .stat{border-right:none;border-bottom:1px solid rgba(255,255,255,.12);padding:24px}.lp .stat:last-child{border-bottom:none}}
 
   /* ACESSO RÁPIDO */
   .lp .acesso{background:var(--bg-muted);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
@@ -301,7 +316,7 @@ export function LandingClient({
       {/* ===== Sobre / História (guardado) ===== */}
       {temSobre() && sobre && (
         <section className="sobre">
-          <div className="container">
+          <div className="container" style={sobre.foto ? undefined : {display:"block",maxWidth:"760px"}}>
             <div className="txt">
               <h2 className="section-title">{sobre.titulo}</h2>
               {sobre.paragrafos.map((p, i) => (
@@ -354,6 +369,17 @@ export function LandingClient({
         </section>
       )}
 
+      {/* ===== ESTATÍSTICAS ===== */}
+      <div className="stats">
+        <div className="container" style={{padding:0,maxWidth:"100%"}}>
+          <div className="stats-grid">
+            <div className="stat"><div className="num">1922</div><div className="lbl">Fundado em Itaquera</div></div>
+            <div className="stat"><div className="num">6.000+</div><div className="lbl">Atletas formados</div></div>
+            <div className="stat"><div className="num">🏆 2012</div><div className="lbl">Campeão Mundial Sub-13</div></div>
+          </div>
+        </div>
+      </div>
+
       {/* ===== 4. MEMBERSHIP BANNER ===== */}
       <section className="membership">
         <div className="container">
@@ -384,6 +410,21 @@ export function LandingClient({
           </div>
           <div className="fcol"><h4>Futebol</h4><a href="/horarios">Turmas &amp; Horários</a><a href="/resultados">Resultados &amp; Classificação</a></div>
           <div className="fcol"><h4>Serviços</h4><a href="/matricula">Pré-Matrícula</a><a href="/responsavel">Portal do Responsável</a></div>
+          <div className="fcol">
+            <h4>Contato</h4>
+            <div className="foot-addr">
+              <p>R. Augusto Carlos Baumann, 588</p>
+              <p>Itaquera — São Paulo/SP</p>
+              <p style={{marginTop:"8px"}}>
+                <a href={waUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+              </p>
+            </div>
+            <div className="foot-social">
+              <a href="#" aria-label="Instagram"><i className="ti ti-brand-instagram"></i></a>
+              <a href="#" aria-label="Facebook"><i className="ti ti-brand-facebook"></i></a>
+              <a href="#" aria-label="YouTube"><i className="ti ti-brand-youtube"></i></a>
+            </div>
+          </div>
         </div>
         <div className="foot-bottom">
           <div className="container">
