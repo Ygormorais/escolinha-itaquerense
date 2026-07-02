@@ -3,7 +3,7 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarCheck, TrendingUp, User } from "lucide-react"
+import { CalendarCheck, TrendingUp, User, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -25,9 +25,9 @@ function badgePresenca(perc: number | null) {
 }
 
 function iconePresenca(presenca: string) {
-  if (presenca === "Presente") return "✅"
-  if (presenca === "Justificado") return "🟡"
-  return "❌"
+  if (presenca === "Presente") return <CheckCircle2 className="size-5 text-success-600 shrink-0" />
+  if (presenca === "Justificado") return <AlertCircle className="size-5 text-warning-600 shrink-0" />
+  return <XCircle className="size-5 text-danger-600 shrink-0" />
 }
 
 export default async function FrequenciaPage() {
