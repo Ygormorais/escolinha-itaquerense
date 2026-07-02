@@ -2,11 +2,11 @@ import { redirect } from "next/navigation"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Shirt, ShoppingBag, Package, Phone, ArrowLeft, Tags } from "lucide-react"
+import { Shirt, ShoppingBag, Package, Phone } from "lucide-react"
 import { db } from "@/lib/db"
 import Image from "next/image"
-import Link from "next/link"
 import { formatMoney } from "@/lib/utils"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 
 function ProdutoIcon({ categoria }: { categoria: string }) {
   if (categoria === "uniforme") return <Shirt className="size-7" />
@@ -33,43 +33,16 @@ export default async function LojinhaPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-          <div className="space-y-4">
-            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
-              <ArrowLeft className="size-4" />
-              Voltar ao portal
-            </Link>
-            <div className="space-y-2">
-              <h1 className="flex items-center gap-3 font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
-                <ShoppingBag className="size-8" />
-                Lojinha
-              </h1>
-              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
-                Uniformes e acessórios oficiais da escolinha, com valores e tamanhos disponíveis para consulta rápida.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Produtos</p>
-              <p className="mt-2 text-2xl font-bold">{produtos.length}</p>
-            </div>
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Categorias</p>
-              <p className="mt-2 text-2xl font-bold">{new Set(produtos.map((produto) => produto.categoria)).size}</p>
-            </div>
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pedidos</p>
-              <p className="mt-2 flex items-center gap-2 text-2xl font-bold">
-                <Tags className="size-5" />
-                WhatsApp
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PortalHero
+        backHref="/responsavel"
+        title="Lojinha"
+        description="Uniformes e acessórios oficiais da escolinha, com valores e tamanhos disponíveis para consulta rápida."
+        stats={[
+          { label: "Produtos", value: produtos.length },
+          { label: "Categorias", value: new Set(produtos.map((produto) => produto.categoria)).size },
+          { label: "Pedidos", value: "WhatsApp" },
+        ]}
+      />
 
       {produtos.length === 0 ? (
         <Card>

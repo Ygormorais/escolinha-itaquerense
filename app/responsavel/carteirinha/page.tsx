@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Image from "next/image"
-import Link from "next/link"
-import { ArrowLeft, IdCard, Shirt } from "lucide-react"
+import { IdCard, Shirt } from "lucide-react"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 
 export const metadata = { title: "Carteirinha — Escolinha Itaquerense" }
 
@@ -33,20 +33,12 @@ export default async function CarteirinhaPage() {
   if (alunos.length === 0) {
     return (
       <div className="space-y-6">
-        <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-          <div className="space-y-4">
-            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
-              <ArrowLeft className="size-4" />
-              Voltar ao portal
-            </Link>
-            <div className="space-y-2">
-              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">Carteirinhas</h1>
-              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
-                Visualize a carteirinha digital dos alunos vinculados a sua conta.
-              </p>
-            </div>
-          </div>
-        </section>
+        <PortalHero
+          backHref="/responsavel"
+          icon={IdCard}
+          title="Carteirinhas"
+          description="Visualize a carteirinha digital dos alunos vinculados a sua conta."
+        />
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             Nenhum aluno vinculado à sua conta.
@@ -58,37 +50,17 @@ export default async function CarteirinhaPage() {
 
   return (
     <div className="space-y-8">
-      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-          <div className="space-y-4">
-            <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
-              <ArrowLeft className="size-4" />
-              Voltar ao portal
-            </Link>
-            <div className="space-y-2">
-              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">Carteirinhas</h1>
-              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
-                Carteirinhas digitais dos alunos vinculados, com dados de identificação e registros de uniforme.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos</p>
-              <p className="mt-2 text-2xl font-bold">{alunos.length}</p>
-            </div>
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Carteirinhas</p>
-              <p className="mt-2 text-2xl font-bold">{alunos.length}</p>
-            </div>
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Uniformes</p>
-              <p className="mt-2 text-2xl font-bold">{alunos.reduce((acc, aluno) => acc + aluno.uniformes.filter((u) => u.entregue).length, 0)}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PortalHero
+        backHref="/responsavel"
+        icon={IdCard}
+        title="Carteirinhas"
+        description="Carteirinhas digitais dos alunos vinculados, com dados de identificação e registros de uniforme."
+        stats={[
+          { label: "Alunos", value: alunos.length },
+          { label: "Carteirinhas", value: alunos.length },
+          { label: "Uniformes entregues", value: alunos.flatMap((a) => a.uniformes).filter((u) => u.entregue).length },
+        ]}
+      />
 
       <div className="grid gap-6 md:grid-cols-2">
         {alunos.map((aluno) => {

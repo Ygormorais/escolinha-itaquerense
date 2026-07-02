@@ -4,8 +4,8 @@ import { useState, useTransition } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useRouter } from "next/navigation"
-import { CheckCircle2, Clock, XCircle, RefreshCw, Loader2, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { CheckCircle2, Clock, XCircle, RefreshCw, Loader2 } from "lucide-react"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -57,18 +57,11 @@ export function RenovacaoClient({ alunos, renovacoes }: { alunos: Aluno[]; renov
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-        <div className="space-y-4">
-          <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
-            <ArrowLeft className="size-4" />
-            Voltar ao portal
-          </Link>
-          <div className="space-y-2">
-            <h1 className="font-heading text-3xl font-extrabold tracking-tight">Renovação de Matrícula</h1>
-            <p className="text-sm leading-7 text-white/78">Solicite a renovação da matrícula do seu filho para o próximo período.</p>
-          </div>
-        </div>
-      </section>
+      <PortalHero
+        backHref="/responsavel"
+        title="Renovação de Matrícula"
+        description="Solicite a renovação da matrícula do seu filho para o próximo período."
+      />
 
       <Card>
         <CardHeader>

@@ -3,9 +3,10 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, CreditCard, CalendarCheck, Shirt, Star, Heart, AlertTriangle, Phone } from "lucide-react"
+import { CreditCard, CalendarCheck, Shirt, Star, Heart, AlertTriangle, Phone } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatMoney } from "@/lib/utils"
@@ -50,51 +51,40 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
   return (
     <div className="flex flex-col gap-6">
       {/* Hero */}
-      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-        <div className="space-y-4">
-          <Link
-            href="/responsavel"
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16"
-          >
-            <ArrowLeft className="size-4" />
-            Voltar ao portal
-          </Link>
+      <PortalHero backHref="/responsavel" title={aluno.nome}>
+        <div className="flex items-center gap-5">
+          {aluno.foto ? (
+            <div className="relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-white/30 shadow-lg">
+              <Image
+                src={aluno.foto}
+                alt={aluno.nome}
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex size-20 shrink-0 items-center justify-center rounded-full border-2 border-white/30 bg-white/15 text-2xl font-extrabold">
+              {aluno.nome[0]}
+            </div>
+          )}
 
-          <div className="flex items-center gap-5">
-            {aluno.foto ? (
-              <div className="relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-white/30 shadow-lg">
-                <Image
-                  src={aluno.foto}
-                  alt={aluno.nome}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="flex size-20 shrink-0 items-center justify-center rounded-full border-2 border-white/30 bg-white/15 text-2xl font-extrabold">
-                {aluno.nome[0]}
-              </div>
-            )}
-
-            <div className="min-w-0">
-              <h1 className="font-heading text-3xl font-extrabold tracking-tight">{aluno.nome}</h1>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/80">
-                <Badge className="border-white/20 bg-white/15 text-white">{aluno.turma}</Badge>
-                {aluno.horario && <span>{aluno.horario}</span>}
-                {aluno.posicao && (
-                  <Badge className="border-yellow-300/40 bg-yellow-400/20 text-yellow-200">
-                    {aluno.posicao === "GOLEIRO" ? "Goleiro" : aluno.posicao === "FIXO" ? "Fixo" : aluno.posicao === "ALA_ESQ" ? "Ala Esq." : aluno.posicao === "ALA_DIR" ? "Ala Dir." : aluno.posicao === "PIVO" ? "Pivô" : aluno.posicao}
-                  </Badge>
-                )}
-                {aluno.dataNascimento && (
-                  <span>Nasc. {format(new Date(aluno.dataNascimento), "dd/MM/yyyy")}</span>
-                )}
-              </div>
+          <div className="min-w-0">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/80">
+              <Badge className="border-white/20 bg-white/15 text-white">{aluno.turma}</Badge>
+              {aluno.horario && <span>{aluno.horario}</span>}
+              {aluno.posicao && (
+                <Badge className="border-yellow-300/40 bg-yellow-400/20 text-yellow-200">
+                  {aluno.posicao === "GOLEIRO" ? "Goleiro" : aluno.posicao === "FIXO" ? "Fixo" : aluno.posicao === "ALA_ESQ" ? "Ala Esq." : aluno.posicao === "ALA_DIR" ? "Ala Dir." : aluno.posicao === "PIVO" ? "Pivô" : aluno.posicao}
+                </Badge>
+              )}
+              {aluno.dataNascimento && (
+                <span>Nasc. {format(new Date(aluno.dataNascimento), "dd/MM/yyyy")}</span>
+              )}
             </div>
           </div>
         </div>
-      </section>
+      </PortalHero>
 
       {/* Situação Financeira */}
       <Card>

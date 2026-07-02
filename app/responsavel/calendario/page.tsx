@@ -2,7 +2,8 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { eventoAplicaATurma, montarAgenda, type ItemAgenda } from "@/lib/agenda"
@@ -51,22 +52,10 @@ export default async function CalendarioPage({
   const { ano, mesNum } = resolverMes(mesParam)
   const tituloMes = format(new Date(ano, mesNum - 1, 1), "MMMM 'de' yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())
 
-  const Hero = (
-    <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-      <div className="space-y-4">
-        <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
-          <ArrowLeft className="size-4" />
-          Voltar ao portal
-        </Link>
-        <h1 className="font-heading text-3xl font-extrabold tracking-tight">Calendário</h1>
-      </div>
-    </section>
-  )
-
   if (alunos.length === 0) {
     return (
       <div className="flex flex-col gap-6">
-        {Hero}
+        <PortalHero backHref="/responsavel" title={tituloMes} />
         <p className="text-muted-foreground">Nenhum aluno ativo vinculado.</p>
       </div>
     )
@@ -98,7 +87,7 @@ export default async function CalendarioPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {Hero}
+      <PortalHero backHref="/responsavel" title={tituloMes} />
 
       {alunos.length > 1 && (
         <div className="flex flex-wrap items-center gap-2">

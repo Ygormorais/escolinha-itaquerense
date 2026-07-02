@@ -15,6 +15,7 @@ import { formatMoney, plural } from "@/lib/utils"
 import type { RscDate } from "@/lib/rsc-date"
 import type { ItemAgendaDashboard } from "@/lib/responsavel-eventos"
 import { HistoricoPagamentos } from "@/components/responsavel/historico-pagamentos"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 
 type Aluno = {
   id: number
@@ -72,38 +73,16 @@ export function ResponsavelDashboardClient({
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.95)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.84)_100%)] px-6 py-7 text-white shadow-lg sm:px-8 sm:py-8">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-          <div className="space-y-4">
-            <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
-              Portal do Responsável
-            </div>
-            <div className="space-y-2">
-              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
-                Olá, {responsavel.nome}
-              </h1>
-              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
-                Veja mensalidades, acompanhamento recente, entregas e os comunicados mais importantes da rotina na escolinha.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Alunos vinculados</p>
-              <p className="mt-2 text-2xl font-bold">{totalAlunos}</p>
-            </div>
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Pendências</p>
-              <p className="mt-2 text-2xl font-bold">{pendencias}</p>
-            </div>
-            <div className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">Comunicados</p>
-              <p className="mt-2 text-2xl font-bold">{totalComunicados}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PortalHero
+        badge="Portal do Responsável"
+        title={`Olá, ${responsavel.nome}`}
+        description="Veja mensalidades, acompanhamento recente, entregas e os comunicados mais importantes da rotina na escolinha."
+        stats={[
+          { label: "Alunos vinculados", value: totalAlunos },
+          { label: "Pendências", value: pendencias },
+          { label: "Comunicados", value: totalComunicados },
+        ]}
+      />
 
       {responsavel.alunos.length > 0 && (
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState, useTransition } from "react"
-import { Bell, Loader2, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { Bell, Loader2 } from "lucide-react"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -54,19 +54,12 @@ export default function NotificacoesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-        <div className="space-y-4">
-          <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
-            <ArrowLeft className="size-4" />
-            Voltar ao portal
-          </Link>
-          <div className="flex items-center gap-2">
-            <Bell className="size-6 opacity-80" />
-            <h1 className="font-heading text-3xl font-extrabold tracking-tight">Notificações</h1>
-          </div>
-          <p className="text-sm text-white/75">Escolha o que deseja receber no celular</p>
-        </div>
-      </section>
+      <PortalHero
+        backHref="/responsavel"
+        icon={Bell}
+        title="Notificações"
+        description="Escolha o que deseja receber no celular"
+      />
       {!ativo && (
         <div className="rounded-xl border border-brand-200 bg-brand-50 p-4 flex items-center justify-between gap-3">
           <div>

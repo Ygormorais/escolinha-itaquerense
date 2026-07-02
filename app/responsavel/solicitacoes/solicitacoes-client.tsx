@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ArrowLeft, Send, HelpCircle, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react"
+import { Send, HelpCircle, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react"
+import { PortalHero } from "@/components/responsavel/portal-hero"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -11,7 +12,6 @@ import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import Link from "next/link"
 import { criarSolicitacao } from "@/app/actions/solicitacoes"
 import { Label } from "@/components/ui/label"
 import type { RscDate } from "@/lib/rsc-date"
@@ -56,15 +56,11 @@ export function SolicitacoesClient({ solicitacoes }: { solicitacoes: Solicitacao
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="overflow-hidden rounded-3xl border border-black/5 bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)] px-6 py-7 text-white shadow-lg sm:px-8">
-        <div className="space-y-4">
-          <Link href="/responsavel" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16">
-            <ArrowLeft className="size-4" /> Voltar ao portal
-          </Link>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight">Solicitações</h1>
-          <p className="max-w-2xl text-sm leading-7 text-white/78">Envie solicitações sobre uniforme, horários, documentos ou outros assuntos.</p>
-        </div>
-      </section>
+      <PortalHero
+        backHref="/responsavel"
+        title="Solicitações"
+        description="Envie solicitações sobre uniforme, horários, documentos ou outros assuntos."
+      />
 
       <Card>
         <CardHeader>
