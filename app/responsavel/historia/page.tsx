@@ -26,10 +26,10 @@ export default async function HistoriaPage() {
         description="Conheça a origem, os valores e a missão da Escolinha Itaquerense."
       />
 
-      <Card className="mb-8">
-        <CardContent className="prose prose-sm max-w-none p-6 space-y-4">
+      <Card className="border-border/80 border-l-4 border-l-brand-600 shadow-sm">
+        <CardContent className="max-w-none space-y-4 p-6 font-body text-sm leading-7 text-[var(--color-ink-700)] sm:p-8">
           <p>
-            A <strong>Escolinha Itaquerense</strong> nasceu da paixão pelo futebol e do desejo
+            A <strong className="font-heading text-[var(--color-ink-950)]">Escolinha Itaquerense</strong> nasceu da paixão pelo futebol e do desejo
             de transformar vidas através do esporte. Fundada no coração do bairro Itaquerense,
             nossa escolinha é mais do que um lugar para aprender a jogar futebol — é uma
             família que acolhe, ensina e prepara crianças e jovens para os desafios da vida.
@@ -48,17 +48,17 @@ export default async function HistoriaPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2">
         {valores.map((v) => (
-          <Card key={v.titulo}>
+          <Card key={v.titulo} className="border-border/80 shadow-sm transition-shadow hover:shadow-md">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-brand-100">
                   <v.icon className="size-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">{v.titulo}</h3>
-                  <p className="text-sm text-muted-foreground">{v.desc}</p>
+                  <h3 className="mb-1 font-heading text-base font-extrabold tracking-tight">{v.titulo}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{v.desc}</p>
                 </div>
               </div>
             </CardContent>
@@ -66,9 +66,9 @@ export default async function HistoriaPage() {
         ))}
       </div>
 
-      <Card>
-        <CardContent className="p-6 text-center">
-          <h2 className="text-lg font-semibold mb-2">Venha fazer parte dessa história!</h2>
+      <Card className="border-border/80 bg-[var(--color-paper-50)] shadow-sm dark:bg-muted/30">
+        <CardContent className="p-6 text-center sm:p-8">
+          <h2 className="mb-2 font-heading text-lg font-extrabold">Venha fazer parte dessa história!</h2>
           <p className="text-sm text-muted-foreground">
             Entre em contato pelo WhatsApp e agende uma aula experimental.
           </p>

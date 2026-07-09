@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Award, BarChart3, Brain, Heart, TrendingUp, Printer } from "lucide-react"
 import Link from "next/link"
 import { PortalHero } from "@/components/responsavel/portal-hero"
+import { EmptyState } from "@/components/ui/empty-state"
 
 function formatPeriodo(periodo: string): string {
   const mSem = periodo.match(/^(\d{4})-(\d)S$/)
@@ -39,14 +40,30 @@ export const metadata = { title: "Boletim — Escolinha Itaquerense" }
 
 export default async function BoletimPage() {
   const session = await getResponsavelSession()
-  if (!session.authenticated) redirect("/responsavel/login")
+  if (!session.authenticated || session.responsavelId == null) redirect("/responsavel/login")
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
-    include: {
+    select: {
       alunos: {
-        include: {
-          avaliacoes: { orderBy: { periodo: "asc" } },
+        where: { status: "Ativo" },
+        select: {
+          id: true,
+          nome: true,
+          turma: true,
+          avaliacoes: {
+            orderBy: { periodo: "asc" },
+            take: 24,
+            select: {
+              id: true,
+              periodo: true,
+              notaTecnica: true,
+              notaFisica: true,
+              notaComportamento: true,
+              frequencia: true,
+              observacoes: true,
+            },
+          },
         },
       },
     },
@@ -72,17 +89,13 @@ export default async function BoletimPage() {
       />
 
       {!temAvaliacao && (
-        <Card className="py-12">
-          <CardContent className="flex flex-col items-center justify-center text-center gap-3">
-            <Award className="size-12 text-muted-foreground" />
-            <p className="text-lg font-medium text-muted-foreground">
-              Nenhuma avaliação publicada ainda
-            </p>
-            <p className="text-sm text-muted-foreground max-w-md">
-              As notas e frequências dos atletas aparecerão aqui assim que forem registradas pela equipe técnica.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Award}
+          title="Nenhuma avaliação publicada ainda"
+          description="As notas e frequências dos atletas aparecerão aqui assim que forem registradas pela equipe técnica."
+          href="/responsavel"
+          hrefLabel="Voltar ao portal"
+        />
       )}
 
       <div className="space-y-8">

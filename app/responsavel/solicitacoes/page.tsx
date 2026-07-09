@@ -7,12 +7,20 @@ export const metadata = { title: "Solicitações — Escolinha Itaquerense" }
 
 export default async function SolicitacoesPage() {
   const session = await getResponsavelSession()
-  if (!session.authenticated) redirect("/responsavel/login")
+  if (!session.authenticated || session.responsavelId == null) redirect("/responsavel/login")
 
   const solicitacoes = await db.solicitacao.findMany({
     where: { responsavelId: session.responsavelId },
     orderBy: { createdAt: "desc" },
-    take: 50,
+    take: 40,
+    select: {
+      id: true,
+      tipo: true,
+      descricao: true,
+      status: true,
+      resposta: true,
+      createdAt: true,
+    },
   })
 
   return <SolicitacoesClient solicitacoes={solicitacoes} />

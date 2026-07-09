@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   User, CreditCard,
@@ -16,6 +15,9 @@ import type { RscDate } from "@/lib/rsc-date"
 import type { ItemAgendaDashboard } from "@/lib/responsavel-eventos"
 import { HistoricoPagamentos } from "@/components/responsavel/historico-pagamentos"
 import { PortalHero } from "@/components/responsavel/portal-hero"
+import { EmptyState } from "@/components/ui/empty-state"
+import type { JogoPortal } from "@/lib/responsavel-jogos"
+import { nomeTime } from "@/lib/landing/times"
 
 type Aluno = {
   id: number
@@ -36,22 +38,25 @@ type Aluno = {
 
 type Comunicado = { mensagem: string; createdAt: RscDate }
 
+function placarLabel(j: JogoPortal): string {
+  if (j.golsPro != null && j.golsContra != null) return `${j.golsPro} × ${j.golsContra}`
+  return "A realizar"
+}
+
 export function ResponsavelDashboardClient({
   responsavel,
   comunicados,
   proximosEventos,
+  jogos = { proximos: [], recentes: [] },
+  whatsapp = "5511999999999",
 }: {
   responsavel: { nome: string; alunos: Aluno[] }
   comunicados: Comunicado[]
   proximosEventos: ItemAgendaDashboard[]
+  jogos?: { proximos: JogoPortal[]; recentes: JogoPortal[] }
+  whatsapp?: string
 }) {
-  const [whatsappNumber, setWhatsappNumber] = useState("5511999999999")
-  useEffect(() => {
-    fetch("/api/config/public")
-      .then((r) => r.json())
-      .then((d) => { if (d.whatsapp) setWhatsappNumber(d.whatsapp) })
-      .catch(() => {})
-  }, [])
+  const whatsappNumber = whatsapp || "5511999999999"
 
   function statusPagamento(aluno: Aluno): { label: string; variant: "default" | "secondary" | "outline" | "destructive" } {
     const mesAtual = format(new Date(), "yyyy-MM")
@@ -143,17 +148,101 @@ export function ResponsavelDashboardClient({
         </section>
       )}
 
+      {/* Jogos FPFS das categorias dos alunos */}
+      {(jogos.proximos.length > 0 || jogos.recentes.length > 0) && (
+        <Card className="overflow-hidden border-brand-100 shadow-sm">
+          <CardHeader className="border-b border-border/60 bg-brand-50/40 pb-4 dark:bg-brand-950/20">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 font-heading text-lg font-extrabold">
+                <Trophy className="size-5 text-brand-600" />
+                Jogos das categorias
+              </CardTitle>
+              <Link
+                href="/responsavel/jogos"
+                className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:underline"
+              >
+                Ver todos
+                <ArrowRight className="size-3" />
+              </Link>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Partidas FPFS das turmas dos seus atletas (próximos e resultados recentes).
+            </p>
+          </CardHeader>
+          <CardContent className="grid gap-6 pt-5 md:grid-cols-2">
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-800/80">
+                Próximos
+              </p>
+              {jogos.proximos.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                  Nenhum jogo agendado no momento.
+                </p>
+              ) : (
+                jogos.proximos.map((j) => (
+                  <div
+                    key={j.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-[var(--color-paper-50)] px-3 py-3 dark:bg-muted/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        vs {nomeTime(j.adversario)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {j.categoria} · {format(new Date(j.data), "dd/MM · HH'h'mm", { locale: ptBR })} · {j.local}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0 border-brand-200 text-brand-700">
+                      VS
+                    </Badge>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-800/80">
+                Últimos resultados
+              </p>
+              {jogos.recentes.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                  Sem resultados recentes.
+                </p>
+              ) : (
+                jogos.recentes.map((j) => (
+                  <div
+                    key={j.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-[var(--color-paper-50)] px-3 py-3 dark:bg-muted/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        vs {nomeTime(j.adversario)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {j.categoria} · {format(new Date(j.data), "dd/MM/yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+                    <span className="shrink-0 font-heading text-base font-extrabold tabular-nums text-foreground">
+                      {placarLabel(j)}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {proximosEventos.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 font-heading text-lg font-extrabold">
               <CalendarDays className="size-5 text-brand-600" />
               Próximos eventos
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {proximosEventos.map((item) => (
-              <div key={`${item.tipo}-${item.data}-${item.titulo}`} className="flex items-start gap-3 rounded-lg border border-border p-3">
+              <div key={`${item.tipo}-${item.data}-${item.titulo}`} className="flex items-start gap-3 rounded-xl border border-border p-3">
                 <span className="text-xl leading-none">{item.tipo === "jogo" ? "🏆" : "📣"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">{item.titulo}</p>
@@ -178,27 +267,33 @@ export function ResponsavelDashboardClient({
           </CardContent>
         </Card>
       )}
-      {proximosEventos.length === 0 && (
-        <Card>
-          <CardContent className="py-6 text-center text-sm text-muted-foreground">
-            Nenhum evento nos próximos 30 dias.
-          </CardContent>
-        </Card>
+      {proximosEventos.length === 0 && jogos.proximos.length === 0 && jogos.recentes.length === 0 && (
+        <EmptyState
+          icon={CalendarDays}
+          title="Nada na agenda agora"
+          description="Quando houver jogos FPFS ou eventos da escolinha, eles aparecem aqui."
+          href="/responsavel/calendario"
+          hrefLabel="Abrir calendário"
+        />
       )}
 
       <div className="space-y-2">
-        <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">Resumo dos alunos</h2>
-        <p className="text-sm text-[var(--color-ink-700)]">
+        <h2 className="font-heading text-2xl font-extrabold tracking-tight text-foreground">
+          Resumo dos alunos
+        </h2>
+        <p className="text-sm text-muted-foreground">
           Uma visão rápida da situação de cada aluno vinculado ao portal.
         </p>
       </div>
 
       {responsavel.alunos.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhum aluno vinculado à sua conta.
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={User}
+          title="Nenhum aluno vinculado"
+          description="Assim que a secretaria vincular um atleta à sua conta, o resumo aparece aqui."
+          href="/responsavel/solicitacoes"
+          hrefLabel="Fazer uma solicitação"
+        />
       )}
 
       {responsavel.alunos.map((aluno) => {
@@ -256,7 +351,7 @@ export function ResponsavelDashboardClient({
                 </div>
                 <div className="flex flex-col gap-2">
                   <Link href={`/responsavel/aluno/${aluno.id}`} className="flex w-full">
-                    <Button size="lg" className="w-full justify-between bg-brand-800 hover:bg-brand-900">
+                    <Button size="lg" className="w-full justify-between bg-brand-600 hover:bg-brand-700">
                       Ver Perfil
                       <ArrowRight className="size-4" />
                     </Button>
@@ -314,7 +409,7 @@ export function ResponsavelDashboardClient({
             href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-800 px-4 text-sm font-semibold text-white shadow-md transition-colors hover:bg-brand-900"
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white shadow-md transition-colors hover:bg-brand-700"
           >
             <MessageSquare className="size-4" /> Falar no WhatsApp
           </a>

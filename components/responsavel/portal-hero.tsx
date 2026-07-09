@@ -21,8 +21,9 @@ interface PortalHeroProps {
   className?: string
 }
 
+/** Mesmo gradiente alvirrubro do hero da landing (red-deep → red → warm) */
 const GRADIENT =
-  "bg-[linear-gradient(135deg,_rgba(127,0,0,0.96)_0%,_rgba(183,28,28,0.92)_55%,_rgba(229,57,53,0.82)_100%)]"
+  "bg-[linear-gradient(135deg,_var(--red-deep,#4A0B0B)_0%,_var(--red,#C62828)_52%,_var(--red-warm,#D84040)_100%)]"
 
 export function PortalHero({
   title,
@@ -40,7 +41,7 @@ export function PortalHero({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-3xl border border-black/5 px-6 py-7 text-white shadow-lg sm:px-8 sm:py-8",
+        "overflow-hidden rounded-3xl border border-black/5 px-6 py-7 text-white shadow-[0_14px_40px_rgba(198,40,40,0.16)] sm:px-8 sm:py-8",
         GRADIENT,
         className,
       )}
@@ -50,14 +51,14 @@ export function PortalHero({
           {backHref && (
             <Link
               href={backHref}
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/90 transition-colors hover:bg-white/16"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 font-body text-sm font-semibold tracking-[0.02em] text-white/90 transition-colors hover:bg-white/16"
             >
               <ArrowLeft className="size-4" />
               {backLabel}
             </Link>
           )}
           {badge && !backHref && (
-            <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
+            <div className="inline-flex rounded-full border border-white/30 bg-white/15 px-3.5 py-1.5 font-body text-[11px] font-bold uppercase tracking-[0.12em] text-white/95 backdrop-blur-sm">
               {badge}
             </div>
           )}
@@ -65,17 +66,17 @@ export function PortalHero({
             {Icon ? (
               <div className="flex items-center gap-2">
                 <Icon className="size-6 opacity-80" />
-                <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+                <h1 className="font-heading text-3xl font-extrabold tracking-[-0.02em] text-white sm:text-4xl">
                   {title}
                 </h1>
               </div>
             ) : (
-              <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">
+              <h1 className="font-heading text-3xl font-extrabold tracking-[-0.02em] text-white sm:text-4xl">
                 {title}
               </h1>
             )}
             {description && (
-              <p className="max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px]">
+              <p className="max-w-2xl font-body text-sm leading-7 text-white/80 sm:text-[15px]">
                 {description}
               </p>
             )}
@@ -90,10 +91,10 @@ export function PortalHero({
                 key={s.label}
                 className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">
+                <p className="font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">
                   {s.label}
                 </p>
-                <p className="mt-2 text-2xl font-bold">{s.value}</p>
+                <p className="mt-2 font-heading text-2xl font-extrabold tabular-nums">{s.value}</p>
               </div>
             ))}
           </div>

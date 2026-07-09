@@ -29,22 +29,31 @@ export function ConvocacaoCard({ convocacao }: { convocacao: ConvocacaoPendente 
   }
 
   return (
-    <Card className="border-l-4 border-l-brand-600">
+    <Card className="overflow-hidden border-brand-100 shadow-sm">
+      <div className="h-1 bg-gradient-to-r from-brand-950 via-brand-600 to-brand-500" aria-hidden />
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">
-          {convocacao.alunoNome} foi convocado(a) — vs {convocacao.adversario}
+        <CardTitle className="font-heading text-base font-extrabold tracking-tight">
+          {convocacao.alunoNome} foi convocado(a)
         </CardTitle>
+        <p className="text-sm font-semibold text-brand-700">
+          vs {convocacao.adversario}
+        </p>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          {format(new Date(convocacao.data), "EEEE, dd/MM 'às' HH:mm", { locale: ptBR })} · {convocacao.local}
+          {format(new Date(convocacao.data), "EEEE, dd/MM 'às' HH:mm", { locale: ptBR })} ·{" "}
+          {convocacao.local}
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
             onClick={() => responder("confirmado")}
             disabled={pending}
-            className={convocacao.confirmacao === "confirmado" ? "bg-success-600 text-white" : "bg-brand-800 text-white hover:bg-brand-900"}
+            className={
+              convocacao.confirmacao === "confirmado"
+                ? "bg-success-600 text-white hover:bg-success-600"
+                : "bg-brand-600 text-white hover:bg-brand-700"
+            }
           >
             {convocacao.confirmacao === "confirmado" ? "✓ Presença confirmada" : "Confirmar presença"}
           </Button>

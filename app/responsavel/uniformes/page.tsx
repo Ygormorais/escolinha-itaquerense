@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { ShoppingBag } from "lucide-react"
+import { ShoppingBag, Users } from "lucide-react"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Badge } from "@/components/ui/badge"
@@ -9,20 +9,33 @@ import { buttonVariants } from "@/components/ui/button"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { PortalHero } from "@/components/responsavel/portal-hero"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export const metadata = { title: "Uniformes — Escolinha Itaquerense" }
 
 export default async function UniformesPage() {
   const session = await getResponsavelSession()
-  if (!session.authenticated) redirect("/responsavel/login")
+  if (!session.authenticated || session.responsavelId == null) redirect("/responsavel/login")
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
-    include: {
+    select: {
       alunos: {
         where: { status: "Ativo" },
-        include: {
-          uniformes: { orderBy: { createdAt: "asc" } },
+        select: {
+          id: true,
+          nome: true,
+          turma: true,
+          uniformes: {
+            orderBy: { createdAt: "asc" },
+            select: {
+              id: true,
+              item: true,
+              tamanho: true,
+              entregue: true,
+              dataEntrega: true,
+            },
+          },
         },
       },
     },
@@ -46,13 +59,14 @@ export default async function UniformesPage() {
         ]}
       />
 
-      {/* Conteúdo */}
       {alunos.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhum aluno vinculado a esta conta.
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Users}
+          title="Nenhum aluno vinculado"
+          description="Quando houver atletas associados à sua conta, os uniformes aparecem aqui."
+          href="/responsavel"
+          hrefLabel="Voltar ao portal"
+        />
       )}
 
       {alunos.map((aluno) => (

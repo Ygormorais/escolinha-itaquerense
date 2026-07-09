@@ -3,11 +3,12 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarCheck, TrendingUp, User, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+import { CalendarCheck, TrendingUp, User, CheckCircle2, XCircle, AlertCircle, Users } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
+import { EmptyState } from "@/components/ui/empty-state"
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { FrequenciaGrafico } from "./frequencia-grafico"
+import { FrequenciaGraficoLazy } from "./frequencia-grafico-lazy"
 
 export const metadata = { title: "Frequência — Portal do Responsável" }
 
@@ -36,12 +37,17 @@ export default async function FrequenciaPage() {
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
-    include: {
+    select: {
       alunos: {
-        include: {
+        where: { status: "Ativo" },
+        select: {
+          id: true,
+          nome: true,
+          turma: true,
           frequencias: {
             orderBy: { data: "desc" },
-            take: 60,
+            take: 40,
+            select: { data: true, presenca: true },
           },
         },
       },
@@ -54,17 +60,39 @@ export default async function FrequenciaPage() {
   const mesAtual = { inicio: startOfMonth(now), fim: endOfMonth(now) }
   const mesAnterior = { inicio: startOfMonth(subMonths(now, 1)), fim: endOfMonth(subMonths(now, 1)) }
 
+  const mediaGeral =
+    responsavel.alunos.length > 0
+      ? Math.round(
+          responsavel.alunos.reduce((acc, aluno) => {
+            const p = calcPresenca(aluno.frequencias)
+            return acc + (p ?? 0)
+          }, 0) / responsavel.alunos.length
+        )
+      : 0
+  const totalRegistros = responsavel.alunos.reduce((acc, a) => acc + a.frequencias.length, 0)
+
   return (
     <div className="flex flex-col gap-8">
       <PortalHero
         backHref="/responsavel"
         icon={CalendarCheck}
         title="Frequência"
-        description="Acompanhe a presença nos treinos"
+        description="Acompanhe a presença nos treinos de cada atleta vinculado à sua conta."
+        stats={[
+          { label: "Alunos", value: responsavel.alunos.length },
+          { label: "Média geral", value: totalRegistros > 0 ? `${mediaGeral}%` : "—" },
+          { label: "Registros", value: totalRegistros },
+        ]}
       />
 
       {responsavel.alunos.length === 0 && (
-        <p className="text-center text-muted-foreground">Nenhum aluno vinculado à sua conta.</p>
+        <EmptyState
+          icon={Users}
+          title="Nenhum aluno vinculado"
+          description="Quando houver atletas associados à sua conta, a frequência de treinos aparece aqui."
+          href="/responsavel"
+          hrefLabel="Voltar ao portal"
+        />
       )}
 
       {responsavel.alunos.map((aluno) => {
@@ -80,24 +108,22 @@ export default async function FrequenciaPage() {
 
         return (
           <div key={aluno.id} className="flex flex-col gap-4">
-            {/* Nome do aluno */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 border-l-4 border-brand-600 pl-3">
               <User className="size-5 text-brand-600" />
-              <h2 className="font-heading text-xl font-bold">{aluno.nome}</h2>
-              <Badge variant="secondary">{aluno.turma}</Badge>
+              <h2 className="font-heading text-xl font-extrabold tracking-tight">{aluno.nome}</h2>
+              <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
             </div>
 
-            {/* Cards de resumo */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <Card>
+              <Card className="border-border/80 shadow-sm">
                 <CardHeader className="pb-1">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <CardTitle className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
                     {format(now, "MMMM", { locale: ptBR })}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-end gap-2">
-                    <span className="font-heading text-3xl font-extrabold">
+                    <span className="font-heading text-3xl font-extrabold text-[var(--color-ink-950)]">
                       {percAtual !== null ? `${percAtual}%` : "—"}
                     </span>
                     {badgePresenca(percAtual)}
@@ -108,15 +134,15 @@ export default async function FrequenciaPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-border/80 shadow-sm">
                 <CardHeader className="pb-1">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <CardTitle className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
                     {format(subMonths(now, 1), "MMMM", { locale: ptBR })}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-end gap-2">
-                    <span className="font-heading text-3xl font-extrabold">
+                    <span className="font-heading text-3xl font-extrabold text-[var(--color-ink-950)]">
                       {percAnterior !== null ? `${percAnterior}%` : "—"}
                     </span>
                     {badgePresenca(percAnterior)}
@@ -127,15 +153,15 @@ export default async function FrequenciaPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-border/80 border-l-4 border-l-brand-600 shadow-sm">
                 <CardHeader className="pb-1">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <CardTitle className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
                     <TrendingUp className="size-3" /> Geral
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-end gap-2">
-                    <span className="font-heading text-3xl font-extrabold">
+                    <span className="font-heading text-3xl font-extrabold text-[var(--color-ink-950)]">
                       {percGeral !== null ? `${percGeral}%` : "—"}
                     </span>
                     {badgePresenca(percGeral)}
@@ -147,33 +173,36 @@ export default async function FrequenciaPage() {
               </Card>
             </div>
 
-            {/* Gráfico por mês */}
             {aluno.frequencias.length >= 3 && (
-              <Card>
+              <Card className="border-border/80 shadow-sm">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold">Evolução mensal</CardTitle>
+                  <CardTitle className="font-heading text-sm font-extrabold">Evolução mensal</CardTitle>
                 </CardHeader>
                 <CardContent className="pb-4">
-                  <FrequenciaGrafico frequencias={aluno.frequencias} />
+                  <FrequenciaGraficoLazy frequencias={aluno.frequencias} />
                 </CardContent>
               </Card>
             )}
 
-            {/* Histórico recente */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold">Últimos treinos</CardTitle>
+            <Card className="border-border/80 shadow-sm">
+              <CardHeader className="border-b border-black/5 pb-3">
+                <CardTitle className="font-heading text-sm font-extrabold">Últimos treinos</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 {aluno.frequencias.length === 0 ? (
-                  <p className="px-6 py-4 text-sm text-muted-foreground">Nenhum registro de frequência ainda.</p>
+                  <EmptyState
+                    icon={CalendarCheck}
+                    title="Sem registros ainda"
+                    description="A frequência deste atleta aparece assim que os treinos forem lançados."
+                    className="rounded-none border-0 bg-transparent py-10"
+                  />
                 ) : (
                   <div className="divide-y divide-border">
                     {aluno.frequencias.slice(0, 20).map((f, i) => (
-                      <div key={i} className="flex items-center justify-between px-6 py-3">
+                      <div key={i} className="flex items-center justify-between px-6 py-3 transition-colors hover:bg-[var(--color-paper-50)]">
                         <div className="flex items-center gap-3">
-                          <span className="text-lg">{iconePresenca(f.presenca)}</span>
-                          <span className="text-sm font-medium">
+                          {iconePresenca(f.presenca)}
+                          <span className="text-sm font-medium capitalize text-[var(--color-ink-900)]">
                             {format(new Date(f.data), "EEEE, dd 'de' MMMM", { locale: ptBR })}
                           </span>
                         </div>

@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 import { getSessionSecret } from "@/lib/env"
@@ -27,14 +28,15 @@ function verify(signed: string): string | null {
   return value
 }
 
-export async function getResponsavelSession(): Promise<{ authenticated: boolean; responsavelId?: number }> {
+/** Deduplica leitura do cookie na mesma request (layout + page). */
+export const getResponsavelSession = cache(async (): Promise<{ authenticated: boolean; responsavelId?: number }> => {
   const jar = await cookies()
   const raw = jar.get(COOKIE_NAME)?.value
   if (!raw) return { authenticated: false }
   const value = verify(raw)
   if (!value || !value.startsWith("resp:")) return { authenticated: false }
   return { authenticated: true, responsavelId: Number(value.slice(5)) }
-}
+})
 
 export async function createResponsavelSession(responsavelId: number): Promise<string> {
   return sign(`resp:${responsavelId}`)

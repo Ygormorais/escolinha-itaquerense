@@ -20,11 +20,56 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
 
   const aluno = await db.aluno.findUnique({
     where: { id: Number(id) },
-    include: {
-      pagamentos: { orderBy: { dataVencimento: "desc" }, take: 12 },
-      frequencias: { orderBy: { data: "desc" }, take: 20 },
-      uniformes: true,
-      avaliacoes: { orderBy: { periodo: "desc" }, take: 1 },
+    select: {
+      id: true,
+      nome: true,
+      turma: true,
+      horario: true,
+      posicao: true,
+      foto: true,
+      responsavel: true,
+      responsavelId: true,
+      dataNascimento: true,
+      mensalidade: true,
+      desconto: true,
+      tipoSanguineo: true,
+      alergias: true,
+      condicaoSaude: true,
+      contatoEmergenciaNome: true,
+      contatoEmergenciaTel: true,
+      contatoEmergenciaParentesco: true,
+      pagamentos: {
+        orderBy: { dataVencimento: "desc" },
+        take: 12,
+        select: {
+          id: true,
+          mesReferencia: true,
+          dataVencimento: true,
+          dataPagamento: true,
+          valorRecebido: true,
+          formaPagamento: true,
+        },
+      },
+      frequencias: {
+        orderBy: { data: "desc" },
+        take: 20,
+        select: { id: true, data: true, presenca: true },
+      },
+      uniformes: {
+        select: { id: true, item: true, tamanho: true, entregue: true, dataEntrega: true },
+      },
+      avaliacoes: {
+        orderBy: { periodo: "desc" },
+        take: 1,
+        select: {
+          periodo: true,
+          notaTecnica: true,
+          notaFisica: true,
+          notaComportamento: true,
+          frequencia: true,
+          observacoes: true,
+        },
+      },
     },
   })
 

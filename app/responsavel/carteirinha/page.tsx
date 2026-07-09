@@ -6,21 +6,32 @@ import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Image from "next/image"
-import { IdCard, Shirt } from "lucide-react"
+import { IdCard, Shirt, Users } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export const metadata = { title: "Carteirinha — Escolinha Itaquerense" }
 
 export default async function CarteirinhaPage() {
   const session = await getResponsavelSession()
-  if (!session.authenticated) redirect("/responsavel/login")
+  if (!session.authenticated || session.responsavelId == null) redirect("/responsavel/login")
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
-    include: {
+    select: {
       alunos: {
-        include: {
-          uniformes: true,
+        where: { status: "Ativo" },
+        select: {
+          id: true,
+          nome: true,
+          turma: true,
+          dataNascimento: true,
+          foto: true,
+          responsavel: true,
+          uniformes: {
+            where: { entregue: true },
+            select: { id: true, item: true, entregue: true },
+          },
         },
       },
     },
@@ -39,11 +50,13 @@ export default async function CarteirinhaPage() {
           title="Carteirinhas"
           description="Visualize a carteirinha digital dos alunos vinculados a sua conta."
         />
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhum aluno vinculado à sua conta.
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Users}
+          title="Nenhum aluno vinculado"
+          description="Quando houver atletas associados à sua conta, as carteirinhas digitais aparecem aqui."
+          href="/responsavel"
+          hrefLabel="Voltar ao portal"
+        />
       </div>
     )
   }
@@ -66,7 +79,7 @@ export default async function CarteirinhaPage() {
         {alunos.map((aluno) => {
           const nascimento = format(new Date(aluno.dataNascimento), "dd/MM/yyyy", { locale: ptBR })
           const matricula = String(aluno.id).padStart(6, "0")
-          const uniformesEntregues = aluno.uniformes.filter((u) => u.entregue)
+          const uniformesEntregues = aluno.uniformes
 
           return (
             <Card key={aluno.id} className="overflow-hidden border-0 shadow-lg">

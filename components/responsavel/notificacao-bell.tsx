@@ -38,15 +38,32 @@ export function NotificacaoBell() {
     }
   }, [])
 
+  // Contagem leve após idle (não compete com a hidratação da página)
   useEffect(() => {
-    const run = () => {
+    let cancelled = false
+    let interval: ReturnType<typeof setInterval> | undefined
+    const start = () => {
+      if (cancelled) return
       void fetchNotificacoes()
+      interval = setInterval(() => {
+        if (!document.hidden) void fetchNotificacoes()
+      }, 60_000)
     }
-    const initial = setTimeout(run, 0)
-    const interval = setInterval(run, 30000)
+    // requestIdleCallback quando disponível; senão atraso curto
+    let idleHandle: number | undefined
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined
+    if (typeof window.requestIdleCallback === "function") {
+      idleHandle = window.requestIdleCallback(start, { timeout: 2500 })
+    } else {
+      timeoutHandle = setTimeout(start, 1500)
+    }
     return () => {
-      clearTimeout(initial)
-      clearInterval(interval)
+      cancelled = true
+      if (idleHandle != null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleHandle)
+      }
+      if (timeoutHandle != null) clearTimeout(timeoutHandle)
+      if (interval) clearInterval(interval)
     }
   }, [fetchNotificacoes])
 
@@ -60,8 +77,11 @@ export function NotificacaoBell() {
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
-        className="relative flex items-center justify-center size-9 rounded-md hover:bg-muted transition-colors"
+        onClick={() => {
+          setOpen((v) => !v)
+          void fetchNotificacoes()
+        }}
+        className="relative flex size-9 items-center justify-center rounded-md transition-colors hover:bg-muted"
         aria-label="Notificações"
       >
         {naoLidas > 0 ? (

@@ -7,15 +7,35 @@ export const metadata = { title: "Mensalidades — Escolinha Itaquerense" }
 
 export default async function MensalidadesPage() {
   const session = await getResponsavelSession()
-  if (!session.authenticated) redirect("/responsavel/login")
+  if (!session.authenticated || session.responsavelId == null) redirect("/responsavel/login")
+
+  const anoAtual = new Date().getFullYear()
+  // Ano atual + dezembro anterior (mensalidades de virada) — evita payload histórico
+  const mesInicio = `${anoAtual - 1}-12`
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
-    include: {
+    select: {
+      nome: true,
       alunos: {
         where: { status: "Ativo" },
-        include: {
-          pagamentos: { orderBy: { dataVencimento: "desc" } },
+        select: {
+          id: true,
+          nome: true,
+          turma: true,
+          mensalidade: true,
+          desconto: true,
+          pagamentos: {
+            where: { mesReferencia: { gte: mesInicio } },
+            orderBy: { dataVencimento: "desc" },
+            select: {
+              mesReferencia: true,
+              dataVencimento: true,
+              dataPagamento: true,
+              valorRecebido: true,
+              formaPagamento: true,
+            },
+          },
         },
       },
     },

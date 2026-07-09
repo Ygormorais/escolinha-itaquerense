@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { CheckCircle, AlertTriangle, Search, Wallet, Clock3, ReceiptText } from "lucide-react"
+import { CheckCircle, AlertTriangle, Search, Wallet, Clock3, ReceiptText, Users } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -65,9 +66,9 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
       />
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="border-border/80 border-l-4 border-l-brand-600 shadow-sm">
           <CardContent className="flex items-start gap-3 py-1">
-            <div className="mt-1 rounded-lg bg-brand-50 p-2 text-brand-800">
+            <div className="mt-1 rounded-xl bg-brand-50 p-2.5 text-brand-800 ring-1 ring-brand-100">
               <Wallet className="size-4" />
             </div>
             <div>
@@ -78,9 +79,9 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/80 shadow-sm">
           <CardContent className="flex items-start gap-3 py-1">
-            <div className="mt-1 rounded-lg bg-success-50 p-2 text-success-600">
+            <div className="mt-1 rounded-xl bg-success-50 p-2.5 text-success-600 ring-1 ring-success-600/15">
               <ReceiptText className="size-4" />
             </div>
             <div>
@@ -91,9 +92,9 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/80 shadow-sm">
           <CardContent className="flex items-start gap-3 py-1">
-            <div className="mt-1 rounded-lg bg-warning-50 p-2 text-warning-600">
+            <div className="mt-1 rounded-xl bg-warning-50 p-2.5 text-warning-600 ring-1 ring-warning-600/15">
               <Clock3 className="size-4" />
             </div>
             <div>
@@ -106,22 +107,34 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
         </Card>
       </section>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
-        <Input className="pl-11" placeholder="Buscar aluno..." value={search} onChange={(e) => setSearch(e.target.value)} />
-      </div>
+      {responsavel.alunos.length > 0 && (
+        <div className="relative max-w-sm">
+          <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
+          <Input className="pl-11" placeholder="Buscar aluno..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      )}
+
+      {responsavel.alunos.length === 0 && (
+        <EmptyState
+          icon={Users}
+          title="Nenhum aluno ativo"
+          description="Quando houver atletas vinculados à sua conta, as mensalidades e o histórico de pagamentos aparecem aqui."
+          href="/responsavel"
+          hrefLabel="Voltar ao portal"
+        />
+      )}
 
       {filtered.map((aluno) => {
         const getPagamento = (mes: string) => aluno.pagamentos.find((p) => p.mesReferencia === mes)
         return (
-          <Card key={aluno.id}>
-            <CardHeader className="border-b border-black/5 pb-4">
+          <Card key={aluno.id} className="overflow-hidden border-border/80 shadow-sm">
+            <CardHeader className="border-b border-black/5 bg-[var(--color-paper-50)]/60 pb-4 dark:bg-muted/30">
               <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  {aluno.nome}
+                <CardTitle className="flex items-center gap-2 font-heading text-xl font-extrabold">
+                  <span className="border-l-4 border-brand-600 pl-2.5">{aluno.nome}</span>
                   <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
                 </CardTitle>
-                <Link href={`/responsavel/declaracao?alunoId=${aluno.id}&ano=${new Date().getFullYear()}`} className="text-xs text-brand-600 underline-offset-2 hover:underline">
+                <Link href={`/responsavel/declaracao?alunoId=${aluno.id}&ano=${new Date().getFullYear()}`} className="text-xs font-semibold text-brand-700 underline-offset-2 hover:underline">
                   Declaração anual
                 </Link>
               </div>
@@ -131,14 +144,14 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
               </p>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y">
+              <div className="divide-y divide-border">
                 {meses.map((mes) => {
                   const p = getPagamento(mes)
                   const [ano, mesNum] = mes.split("-")
                   const nomeMes = format(new Date(Number(ano), Number(mesNum) - 1), "MMMM", { locale: ptBR })
                   const emDia = p?.dataPagamento
                   return (
-                    <div key={mes} className="flex flex-col gap-2 px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+                    <div key={mes} className="flex flex-col gap-2 px-5 py-4 text-sm transition-colors hover:bg-[var(--color-paper-50)] sm:flex-row sm:items-center sm:justify-between dark:hover:bg-muted/30">
                       <span className="font-medium capitalize text-[var(--color-ink-900)]">{nomeMes}/{ano}</span>
                       <div className="flex flex-wrap items-center gap-3">
                         {p ? (
@@ -146,7 +159,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                             <span className="text-xs text-[var(--color-ink-500)]">
                               {p.formaPagamento ? `${p.formaPagamento} · ${format(new Date(p.dataPagamento!), "dd/MM")}` : ""}
                             </span>
-                            <span className={`font-semibold ${emDia ? "text-success-600" : "text-[var(--color-ink-700)]"}`}>
+                            <span className={`font-semibold tabular-nums ${emDia ? "text-success-600" : "text-[var(--color-ink-700)]"}`}>
                               {p.valorRecebido != null ? formatMoney(p.valorRecebido) : "—"}
                             </span>
                             {emDia
@@ -157,7 +170,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
                         ) : (
                           <>
                             <span className="text-xs text-[var(--color-ink-500)]">Aguardando</span>
-                            <span className="text-[var(--color-ink-700)]">{formatMoney(aluno.mensalidade - aluno.desconto)}</span>
+                            <span className="tabular-nums text-[var(--color-ink-700)]">{formatMoney(aluno.mensalidade - aluno.desconto)}</span>
                             <AlertTriangle className="size-4 text-warning-600" />
                           </>
                         )}
@@ -171,12 +184,12 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
         )
       })}
 
-      {filtered.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center text-[var(--color-ink-700)]">
-            Nenhum aluno encontrado para essa busca.
-          </CardContent>
-        </Card>
+      {responsavel.alunos.length > 0 && filtered.length === 0 && (
+        <EmptyState
+          icon={Search}
+          title="Nenhum aluno encontrado"
+          description="Ajuste o termo da busca para localizar outro atleta."
+        />
       )}
     </div>
   )

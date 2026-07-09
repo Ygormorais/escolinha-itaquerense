@@ -12,15 +12,40 @@ export default async function GaleriaPage() {
   if (!session.authenticated) redirect("/responsavel/login")
 
   const midias = await db.media.findMany({
-    include: { partida: { include: { campeonato: true } }, campeonato: true },
+    select: {
+      id: true,
+      tipo: true,
+      titulo: true,
+      url: true,
+      partidaId: true,
+      campeonatoId: true,
+      createdAt: true,
+      partida: {
+        select: {
+          id: true,
+          adversario: true,
+          data: true,
+          golsPro: true,
+          golsContra: true,
+          campeonatoId: true,
+          campeonato: { select: { id: true, nome: true } },
+        },
+      },
+      campeonato: { select: { id: true, nome: true } },
+    },
     orderBy: { createdAt: "desc" },
+    take: 120,
   })
 
-  const campeonatoMap = new Map<number, {
-    campeonato: { id: number; nome: string }
-    midiasCampeonato: typeof midias
-    partidasComMidia: Map<number, { partida: NonNullable<(typeof midias)[0]["partida"]>; midias: typeof midias }>
-  }>()
+  type M = (typeof midias)[0]
+  const campeonatoMap = new Map<
+    number,
+    {
+      campeonato: { id: number; nome: string }
+      midiasCampeonato: M[]
+      partidasComMidia: Map<number, { partida: NonNullable<M["partida"]>; midias: M[] }>
+    }
+  >()
 
   for (const m of midias) {
     if (m.campeonatoId && m.campeonato) {
@@ -36,7 +61,7 @@ export default async function GaleriaPage() {
       const campId = m.partida.campeonatoId
       if (!campeonatoMap.has(campId)) {
         campeonatoMap.set(campId, {
-          campeonato: m.partida.campeonato!,
+          campeonato: m.partida.campeonato,
           midiasCampeonato: [],
           partidasComMidia: new Map(),
         })
@@ -49,7 +74,13 @@ export default async function GaleriaPage() {
     }
   }
 
-  const grupos = Array.from(campeonatoMap.values())
+  // Serializa Map → array (client components não recebem Map)
+  const grupos = Array.from(campeonatoMap.values()).map((g) => ({
+    campeonato: g.campeonato,
+    midiasCampeonato: g.midiasCampeonato,
+    partidas: Array.from(g.partidasComMidia.values()),
+  }))
+
   const totalMidias = midias.length
 
   return (
@@ -62,7 +93,7 @@ export default async function GaleriaPage() {
         stats={[
           { label: "Mídias", value: totalMidias },
           { label: "Campeonatos", value: campeonatoMap.size },
-          { label: "Acervo", value: "Ativo" },
+          { label: "Acervo", value: totalMidias > 0 ? "Ativo" : "Vazio" },
         ]}
       />
 

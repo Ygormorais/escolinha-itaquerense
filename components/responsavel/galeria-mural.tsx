@@ -28,7 +28,8 @@ type Midia = {
 type GrupoCampeonato = {
   campeonato: { id: number; nome: string }
   midiasCampeonato: Midia[]
-  partidasComMidia: Map<number, { partida: NonNullable<Midia["partida"]>; midias: Midia[] }>
+  /** Array serializável (Map não atravessa a fronteira RSC → client) */
+  partidas: { partida: NonNullable<Midia["partida"]>; midias: Midia[] }[]
 }
 
 export function GaleriaMural({ grupos }: { grupos: GrupoCampeonato[] }) {
@@ -48,26 +49,28 @@ export function GaleriaMural({ grupos }: { grupos: GrupoCampeonato[] }) {
   return (
     <>
       {grupos.length === 0 && (
-        <p className="text-muted-foreground">Nenhuma mídia disponível ainda.</p>
+        <p className="rounded-2xl border border-dashed border-brand-100 bg-[var(--color-paper-50)] px-6 py-12 text-center text-sm text-muted-foreground">
+          Nenhuma mídia disponível ainda.
+        </p>
       )}
 
       <div className="space-y-12">
-        {grupos.map(({ campeonato, midiasCampeonato, partidasComMidia }) => (
+        {grupos.map(({ campeonato, midiasCampeonato, partidas }) => (
           <section key={campeonato.id}>
-            <h2 className="text-xl font-bold text-brand-600 mb-6 flex items-center gap-2">
+            <h2 className="mb-6 flex items-center gap-2 font-heading text-xl font-extrabold text-brand-600">
               <span className="size-2 rounded-full bg-brand-600" />
               {campeonato.nome}
             </h2>
 
             {midiasCampeonato.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+              <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {midiasCampeonato.map((m) => (
                   <MidiaCard key={m.id} midia={m} onPlay={handlePlayVideo} />
                 ))}
               </div>
             )}
 
-            {Array.from(partidasComMidia.values()).map(({ partida, midias: midiasPartida }) => {
+            {partidas.map(({ partida, midias: midiasPartida }) => {
               const resultado = partida.golsPro != null && partida.golsContra != null
                 ? ` ${partida.golsPro}×${partida.golsContra}`
                 : ""
@@ -77,11 +80,11 @@ export function GaleriaMural({ grupos }: { grupos: GrupoCampeonato[] }) {
               })
               return (
                 <div key={partida.id} className="mb-8">
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                     <span className="size-1.5 rounded-full bg-muted-foreground/40" />
                     ⚽ {partida.adversario}{resultado} — {data}
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {midiasPartida.map((m) => (
                       <MidiaCard key={m.id} midia={m} onPlay={handlePlayVideo} />
                     ))}

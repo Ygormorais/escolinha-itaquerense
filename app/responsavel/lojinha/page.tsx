@@ -7,6 +7,8 @@ import { db } from "@/lib/db"
 import Image from "next/image"
 import { formatMoney } from "@/lib/utils"
 import { PortalHero } from "@/components/responsavel/portal-hero"
+import { EmptyState } from "@/components/ui/empty-state"
+import { getConfig } from "@/lib/config"
 
 function ProdutoIcon({ categoria }: { categoria: string }) {
   if (categoria === "uniforme") return <Shirt className="size-7" />
@@ -20,16 +22,24 @@ export default async function LojinhaPage() {
   const session = await getResponsavelSession()
   if (!session.authenticated) redirect("/responsavel/login")
 
-  const [config, produtos] = await Promise.all([
-    db.configuracao.findUnique({ where: { chave: "whatsapp" } }),
+  const [produtos, config] = await Promise.all([
     db.produto.findMany({
       where: { ativo: true },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        nome: true,
+        descricao: true,
+        preco: true,
+        categoria: true,
+        tamanhos: true,
+        imagem: true,
+      },
+      take: 60,
     }),
+    Promise.resolve(getConfig()),
   ])
-  const whatsapp = config?.valor ?? "5511999999999"
-
-
+  const whatsapp = config.whatsapp || "5511999999999"
 
   return (
     <div className="flex flex-col gap-8">
@@ -45,18 +55,17 @@ export default async function LojinhaPage() {
       />
 
       {produtos.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Package className="size-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Nenhum produto disponível no momento.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Package}
+          title="Nenhum produto disponível"
+          description="Quando a lojinha tiver itens ativos, eles aparecem aqui para consulta e pedido."
+          href="/responsavel"
+          hrefLabel="Voltar ao portal"
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {produtos.map((p) => (
-            <Card key={p.id} className="overflow-hidden">
+            <Card key={p.id} className="overflow-hidden border-border/80 shadow-sm transition-shadow hover:shadow-md">
               <div className="relative aspect-[4/3] overflow-hidden border-b border-black/5 bg-[var(--color-paper-100)]">
                 {p.imagem ? (
                   <Image
@@ -73,16 +82,16 @@ export default async function LojinhaPage() {
                   </div>
                 )}
               </div>
-              <CardContent className="p-6">
-                <div className="mb-4 flex size-14 items-center justify-center rounded-xl bg-brand-100 text-brand-600">
+              <CardContent className="p-5">
+                <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-brand-100">
                   <ProdutoIcon categoria={p.categoria} />
                 </div>
-                <h3 className="font-semibold mb-1">{p.nome}</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  {p.descricao}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-brand-600">
+                <h3 className="mb-1 font-heading text-base font-extrabold tracking-tight">{p.nome}</h3>
+                {p.descricao && (
+                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{p.descricao}</p>
+                )}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-heading text-lg font-extrabold tabular-nums text-brand-600">
                     {formatMoney(p.preco)}
                   </span>
                   {p.tamanhos && (
@@ -97,20 +106,20 @@ export default async function LojinhaPage() {
         </div>
       )}
 
-      <Card className="bg-brand-600 text-white">
-        <CardContent className="p-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Phone className="size-5" />
-            <h2 className="text-lg font-semibold">Faça seu pedido pelo WhatsApp</h2>
+      <Card className="overflow-hidden border-0 bg-[linear-gradient(135deg,_#4A0B0B_0%,_#C62828_55%,_#D84040_100%)] text-white shadow-lg">
+        <CardContent className="p-6 text-center sm:p-8">
+          <div className="mb-2 flex items-center justify-center gap-2">
+            <Phone className="size-5 opacity-90" />
+            <h2 className="font-heading text-lg font-extrabold">Faça seu pedido pelo WhatsApp</h2>
           </div>
-          <p className="text-sm text-white/80 mb-4">
+          <p className="mb-5 text-sm text-white/80">
             Consulte disponibilidade de tamanhos, formas de pagamento e retirada.
           </p>
           <a
             href={`https://wa.me/${whatsapp}?text=Olá! Tenho interesse nos produtos da lojinha.`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-2.5 text-sm font-semibold text-brand-600 hover:bg-white/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-brand-700 shadow-sm transition-colors hover:bg-white/90"
           >
             <ShoppingBag className="size-4" /> Quero comprar
           </a>

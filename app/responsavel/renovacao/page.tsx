@@ -18,6 +18,16 @@ export default async function RenovacaoPage() {
     db.renovacaoMatricula.findMany({
       where: { responsavelId: session.responsavelId },
       orderBy: { createdAt: "desc" },
+      take: 30,
+      select: {
+        id: true,
+        alunoId: true,
+        periodo: true,
+        status: true,
+        observacoes: true,
+        resposta: true,
+        createdAt: true,
+      },
     }),
   ])
 
