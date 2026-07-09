@@ -61,24 +61,30 @@ describe("getHeroDestaque", () => {
 
   it("prioriza a proxima partida futura", async () => {
     m.partida.findFirst.mockResolvedValueOnce({
+      id: 42,
       adversario: "Atlético Leste", local: "Casa", data: new Date("2026-06-14T16:00:00"),
-      golsPro: null, golsContra: null, resultado: null,
-      campeonato: { nome: "Sub-11 A2" },
+      golsPro: null, golsContra: null, resultado: null, sumulaUrl: null,
+      campeonato: { nome: "Sub-11 A2", fpfsEventoId: null },
     })
     const d = await getHeroDestaque(agora)
-    expect(d).toMatchObject({ tipo: "proximo", adversario: "Atlético Leste", campeonato: "Sub-11 A2" })
+    expect(d).toMatchObject({
+      tipo: "proximo", id: 42, adversario: "Atlético Leste", campeonato: "Sub-11 A2",
+    })
   })
 
   it("sem partida futura, usa o ultimo resultado realizado", async () => {
     m.partida.findFirst
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({
+        id: 7,
         adversario: "Vila Real", local: "Fora", data: new Date("2026-06-01T16:00:00"),
-        golsPro: 2, golsContra: 1, resultado: "Vitoria",
-        campeonato: { nome: "Sub-9 A3" },
+        golsPro: 2, golsContra: 1, resultado: "Vitoria", sumulaUrl: null,
+        campeonato: { nome: "Sub-9 A3", fpfsEventoId: null },
       })
     const d = await getHeroDestaque(agora)
-    expect(d).toMatchObject({ tipo: "resultado", adversario: "Vila Real", placar: "2 × 1", resultado: "Vitoria" })
+    expect(d).toMatchObject({
+      tipo: "resultado", id: 7, adversario: "Vila Real", placar: "2 × 1", resultado: "Vitoria",
+    })
   })
 
   it("sem partida alguma, retorna institucional", async () => {
@@ -88,34 +94,56 @@ describe("getHeroDestaque", () => {
 })
 
 describe("heroView", () => {
-  const base = { adversario: "Vila Real", data: new Date("2026-06-14T16:00:00"), local: "Casa", campeonato: "Sub-9 A3" }
+  const base = {
+    id: 1,
+    adversario: "Vila Real",
+    data: new Date("2026-06-14T16:00:00"),
+    local: "Casa",
+    campeonato: "Sub-9 A3",
+  }
 
-  it("proximo jogo vira manchete com CTA para /resultados", () => {
-    const v = heroView({ tipo: "proximo", ...base })
+  it("proximo jogo vira manchete com CTA FPFS quando ha evento", () => {
+    const v = heroView({ tipo: "proximo", ...base, sumulaUrl: null, fpfsEventoId: 920 })
     expect(v.badge).toBe("Sub-9 A3")
     expect(v.titulo).toContain("Vila Real")
     expect(v.descricao).toContain("14/06")
-    expect(v.ctaHref).toBe("/resultados")
+    expect(v.ctaHref).toBe("https://eventos.admfutsal.com.br/evento/920/jogos")
+    expect(v.ctaExterno).toBe(true)
   })
 
-  it("vitoria celebra com placar", () => {
-    const v = heroView({ tipo: "resultado", ...base, placar: "2 × 1", resultado: "Vitoria" })
+  it("vitoria celebra com placar e link de sumula", () => {
+    const v = heroView({
+      tipo: "resultado",
+      ...base,
+      placar: "2 × 1",
+      resultado: "Vitoria",
+      sumulaUrl: "http://admfutsal.com.br/sumula_online/sumula_imprimir.php?id_jogo=9",
+      fpfsEventoId: 920,
+    })
     expect(v.titulo).toContain("vence")
     expect(v.titulo).toContain("2 × 1")
-    expect(v.ctaHref).toBe("/resultados")
+    expect(v.ctaHref).toContain("id_jogo=9")
+    expect(v.ctaExterno).toBe(true)
   })
 
   it("empate e derrota usam tom neutro", () => {
-    const empate = heroView({ tipo: "resultado", ...base, placar: "1 × 1", resultado: "Empate" })
+    const empate = heroView({
+      tipo: "resultado", ...base, placar: "1 × 1", resultado: "Empate",
+      sumulaUrl: null, fpfsEventoId: null,
+    })
     expect(empate.titulo).toContain("empata")
-    const derrota = heroView({ tipo: "resultado", ...base, placar: "0 × 2", resultado: "Derrota" })
+    expect(empate.ctaHref).toBe("/resultados")
+    const derrota = heroView({
+      tipo: "resultado", ...base, placar: "0 × 2", resultado: "Derrota",
+      sumulaUrl: null, fpfsEventoId: null,
+    })
     expect(derrota.titulo).not.toContain("vence")
     expect(derrota.titulo).toContain("0 × 2")
   })
 
-  it("institucional aponta para turmas (matricula ja tem banner proprio)", () => {
+  it("institucional aponta para horarios (matricula fica no CTA de conversao)", () => {
     const v = heroView({ tipo: "institucional" })
-    expect(v.ctaHref).toBe("/turmas")
+    expect(v.ctaHref).toBe("/horarios")
     expect(v.titulo.length).toBeGreaterThan(10)
   })
 })

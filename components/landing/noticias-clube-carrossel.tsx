@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import "./noticias-clube-carrossel.css"
 
 export interface NoticiaClube {
   id: number
@@ -20,54 +21,6 @@ const CORES: Record<string, string> = {
   "Comunicado":  "linear-gradient(140deg,#1A1A2E 0%,#2D2D4E 100%)",
   "Notícia":     "linear-gradient(140deg,#4A0B0B 0%,#C62828 60%,#D84040 100%)",
 }
-
-const css = `
-  .ncc *{margin:0;padding:0;box-sizing:border-box}
-  .ncc{background:var(--bg);padding:0 0 56px}
-  .ncc .container{max-width:1060px;margin:0 auto;padding:0 24px}
-
-  .ncc-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:24px}
-  .ncc-header h2{font-family:var(--font-heading),Georgia,serif;font-size:28px;font-weight:800;
-    color:var(--text);letter-spacing:-.5px}
-  .ncc-header a{font-size:13px;font-weight:600;color:var(--red);display:flex;align-items:center;gap:5px;transition:opacity .2s}
-  .ncc-header a:hover{opacity:.75}
-
-  /* Track: mostra 3 cards lado a lado, scroll controlado */
-  .ncc-track-wrap{position:relative}
-  .ncc-track{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  @media(max-width:760px){.ncc-track{grid-template-columns:1fr}}
-  @media(max-width:1020px) and (min-width:761px){.ncc-track{grid-template-columns:repeat(2,1fr)}}
-
-  .ncc-card{border-radius:16px;overflow:hidden;position:relative;height:220px;cursor:pointer;
-    box-shadow:0 4px 16px rgba(26,26,46,.12);transition:transform .25s,box-shadow .25s}
-  .ncc-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(26,26,46,.18)}
-  .ncc-bg{position:absolute;inset:0}
-  .ncc-bg img{width:100%;height:100%;object-fit:cover}
-  .ncc-bg-grad{position:absolute;inset:0}
-  .ncc-pattern{position:absolute;inset:0;
-    background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,.05)' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='12'/%3E%3Cline x1='0' y1='20' x2='40' y2='20'/%3E%3C/g%3E%3C/svg%3E");
-    background-size:40px 40px}
-  .ncc-logo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-  .ncc-logo img{width:56px;height:56px;object-fit:contain;opacity:.2;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3))}
-  .ncc-overlay{position:absolute;bottom:0;left:0;right:0;
-    background:linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.5) 55%,transparent 100%);
-    padding:16px 18px 18px}
-  .ncc-badge{display:inline-flex;align-items:center;gap:5px;
-    background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);
-    font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
-    padding:3px 9px;border-radius:100px;border:1px solid rgba(255,255,255,.2);margin-bottom:8px}
-  .ncc-titulo{font-family:var(--font-heading),Georgia,serif;font-size:16px;font-weight:800;
-    color:#fff;line-height:1.2;letter-spacing:-.2px;
-    text-shadow:0 1px 4px rgba(0,0,0,.4);margin-bottom:4px;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .ncc-sub{font-size:11px;color:rgba(255,255,255,.72);font-weight:400;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-  .ncc-dots{display:flex;align-items:center;justify-content:center;gap:7px;padding-top:18px}
-  .ncc-dot{width:7px;height:7px;border-radius:50%;border:none;cursor:pointer;background:var(--border);
-    transition:all .2s;padding:0}
-  .ncc-dot.active{background:var(--red);width:20px;border-radius:3px}
-`
 
 const PAGE_SIZE = 3
 
@@ -90,7 +43,7 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
 
   return (
     <section className="ncc">
-      <style dangerouslySetInnerHTML={{ __html: css }} />
+
       <div className="container">
         <div className="ncc-header">
           <h2>Notícias do Clube</h2>

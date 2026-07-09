@@ -1,7 +1,18 @@
 import path from "path"
-import { defineConfig } from "vitest/config"
+import { defineConfig, type Plugin } from "vitest/config"
+
+/** CSS global da landing não precisa de conteúdo nos testes unitários. */
+function cssStub(): Plugin {
+  return {
+    name: "css-stub",
+    load(id) {
+      if (id.endsWith(".css")) return "export default {}"
+    },
+  }
+}
 
 export default defineConfig({
+  plugins: [cssStub()],
   test: {
     globals: true,
     environment: "node",

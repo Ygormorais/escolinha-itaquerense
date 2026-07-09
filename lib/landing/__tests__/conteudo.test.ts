@@ -11,5 +11,15 @@ describe("conteúdo da landing (config-driven com guarda)", () => {
   it("sobre está preenchido com conteúdo real", () => {
     expect(sobre).not.toBeNull()
     expect(sobre!.paragrafos.length).toBeGreaterThan(0)
+    expect(sobre!.titulo.length).toBeGreaterThan(5)
+    expect(sobre!.paragrafos.join(" ").toLowerCase()).toMatch(/elite|itaquerense/)
+  })
+
+  it("galeria tem fotos locais com paths em /landing", () => {
+    expect(galeria.length).toBeGreaterThan(0)
+    for (const f of galeria) {
+      expect(f.src.startsWith("/landing/")).toBe(true)
+      expect(f.alt.length).toBeGreaterThan(5)
+    }
   })
 })
