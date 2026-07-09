@@ -7,6 +7,10 @@ vi.mock("@/lib/fpfs/sync", () => ({
   syncCampeonato: vi.fn(),
 }))
 
+vi.mock("@/lib/fpfs/revalidate-public", () => ({
+  revalidateFpfsPublico: vi.fn(),
+}))
+
 import { POST } from "@/app/api/sync/fpfs/route"
 import * as fpfsSync from "@/lib/fpfs/sync"
 

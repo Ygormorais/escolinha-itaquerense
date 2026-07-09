@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic"
+export const maxDuration = 300
 
 import { NextResponse } from "next/server"
 import { env } from "@/lib/env"
 import { syncTodos, syncCampeonato } from "@/lib/fpfs/sync"
+import { revalidateFpfsPublico } from "@/lib/fpfs/revalidate-public"
 
 export async function POST(request: Request) {
   const token = request.headers.get("x-fpfs-token")
@@ -19,9 +21,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const resultado = campeonatoId != null
-      ? [await syncCampeonato(campeonatoId)]
-      : await syncTodos()
+    const resultado =
+      campeonatoId != null ? [await syncCampeonato(campeonatoId)] : await syncTodos()
+    revalidateFpfsPublico()
     return NextResponse.json({ ok: true, resultado })
   } catch (e) {
     return NextResponse.json({ ok: false, erro: String(e) }, { status: 500 })

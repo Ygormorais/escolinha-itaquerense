@@ -12,8 +12,10 @@ vi.mock("@/lib/env", () => ({
 }))
 
 vi.mock("@/lib/fpfs/sync", () => ({ syncTodos, syncCampeonato }))
+vi.mock("@/lib/fpfs/revalidate-public", () => ({ revalidateFpfsPublico: vi.fn() }))
+vi.mock("@/lib/logger", () => ({ logger: { info: vi.fn(), error: vi.fn() } }))
 
-import { GET } from "@/app/api/cron/fpfs/route"
+import { GET, POST } from "@/app/api/cron/fpfs/route"
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -52,5 +54,12 @@ describe("GET /api/cron/fpfs", () => {
     syncTodos.mockRejectedValue(new Error("falhou"))
     const res = await GET(req())
     expect(res.status).toBe(500)
+  })
+
+  it("POST tambem dispara syncTodos", async () => {
+    verifyBearerSecret.mockReturnValue(true)
+    const res = await POST(req())
+    expect(res.status).toBe(200)
+    expect(syncTodos).toHaveBeenCalled()
   })
 })

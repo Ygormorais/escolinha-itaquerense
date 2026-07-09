@@ -66,5 +66,12 @@ echo "==> Caddy"
 sudo cp "$APP_DIR/deploy/Caddyfile" /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 
+echo "==> Cron FPFS (jogos a cada 2h)"
+if [[ -f "$APP_DIR/.env" ]] && grep -q '^CRON_SECRET=.' "$APP_DIR/.env" 2>/dev/null; then
+  bash "$APP_DIR/deploy/install-fpfs-cron.sh" || echo "    (cron FPFS: rode depois: bash deploy/install-fpfs-cron.sh https://SEU_DOMINIO)"
+else
+  echo "    Defina CRON_SECRET e rode: bash deploy/install-fpfs-cron.sh https://SEU_DOMINIO"
+fi
+
 echo "==> Pronto. Se o provedor tiver firewall de nuvem (Hetzner Cloud Firewall /"
 echo "    DO Cloud Firewall / Oracle VCN Security List), libere 80/443 lá também."

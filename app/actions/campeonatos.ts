@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { syncCampeonato, syncTodos } from "@/lib/fpfs/sync"
+import { revalidateFpfsPublico } from "@/lib/fpfs/revalidate-public"
 import { dataValida } from "@/lib/utils"
 
 export async function listarCampeonatos() {
@@ -110,9 +111,7 @@ export async function sincronizarFpfs(campeonatoId: number) {
     const resumo = await syncCampeonato(campeonatoId)
     revalidatePath(`/campeonatos/${campeonatoId}`)
     revalidatePath("/campeonatos")
-    revalidatePath("/responsavel/jogos")
-    revalidatePath("/responsavel/classificacao")
-    revalidatePath("/agenda")
+    revalidateFpfsPublico()
     return resumo
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Falha ao sincronizar com a FPFS" }
@@ -124,9 +123,7 @@ export async function sincronizarTodosFpfs() {
   try {
     const resumos = await syncTodos()
     revalidatePath("/campeonatos")
-    revalidatePath("/responsavel/jogos")
-    revalidatePath("/responsavel/classificacao")
-    revalidatePath("/agenda")
+    revalidateFpfsPublico()
     const totais = resumos.reduce(
       (acc, r) => ({ novos: acc.novos + r.jogosNovos, atualizados: acc.atualizados + r.jogosAtualizados }),
       { novos: 0, atualizados: 0 },

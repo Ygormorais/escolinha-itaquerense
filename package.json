@@ -20,7 +20,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "housekeeping": "npx tsx scripts/housekeeping.ts"
+    "housekeeping": "npx tsx scripts/housekeeping.ts",
+    "fpfs:sync": "npx tsx scripts/fpfs-sync-once.ts",
+    "fpfs:setup": "npx tsx scripts/setup-fpfs-sync.ts",
+    "fpfs:daemon": "npx tsx scripts/fpfs-daemon.ts",
+    "fpfs:install-cron": "powershell -ExecutionPolicy Bypass -File scripts/install-fpfs-cron.ps1"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
@@ -54,6 +58,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.76.0",
     "recharts": "^3.8.1",
+    "server-only": "^0.0.1",
     "shadcn": "^4.7.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
