@@ -1,0 +1,140 @@
+[
+  {
+    "contains": "CORINTHIANS",
+    "src": "/landing/escudos/sport-club-corinthians-paulista.png",
+    "nota": "auto baixado"
+  },
+  {
+    "contains": "PALMEIRAS",
+    "src": "/landing/escudos/se-palmeiras.png",
+    "nota": "auto baixado"
+  },
+  {
+    "pattern": "S[AÃ]O\\s*PAULO|SAO\\s*PAULO",
+    "src": "/landing/escudos/sao-paulo-futebol-clube.png",
+    "nota": "auto baixado — cubre SÃO PAULO F.C. A/B"
+  },
+  {
+    "pattern": "\\bSANTOS\\s*(FUTEBOL|FC|F\\.C)",
+    "src": "/landing/escudos/santos-fc.png",
+    "nota": "auto baixado"
+  },
+  {
+    "contains": "SÃO CAETANO",
+    "src": "/landing/escudos/sao-caetano-futebol-clube.png",
+    "nota": "auto baixado"
+  },
+  {
+    "contains": "SAO CAETANO",
+    "src": "/landing/escudos/sao-caetano-futebol-clube.png",
+    "nota": "auto baixado"
+  },
+  {
+    "contains": "SANTO ANDRÉ",
+    "src": "/landing/escudos/santo-andre-futsal.png",
+    "nota": "auto baixado"
+  },
+  {
+    "contains": "SANTO ANDRE",
+    "src": "/landing/escudos/santo-andre-futsal.png",
+    "nota": "auto baixado"
+  },
+  {
+    "contains": "SÃO BERNARDO",
+    "src": "/landing/escudos/a-d-do-abcd.png",
+    "nota": "auto: A.D. DO ABCD/MESC SÃO BERNARDO (logo São Bernardo)"
+  },
+  {
+    "contains": "SAO BERNARDO",
+    "src": "/landing/escudos/a-d-do-abcd.png"
+  },
+  {
+    "contains": "MAGNUS",
+    "src": "/landing/escudos/magnus.png",
+    "nota": "TODO: coloque magnus.png nesta pasta"
+  },
+  {
+    "contains": "INDAIATUBA",
+    "src": "/landing/escudos/indaiatuba.png",
+    "nota": "TODO: coloque indaiatuba.png"
+  },
+  {
+    "contains": "LAUSANNE",
+    "src": "/landing/escudos/lausanne.png",
+    "nota": "TODO: coloque lausanne.png"
+  },
+  {
+    "contains": "MOGI",
+    "src": "/landing/escudos/mogi.png",
+    "nota": "TODO: coloque mogi.png"
+  },
+  {
+    "contains": "STADIUM",
+    "src": "/landing/escudos/stadium.png",
+    "nota": "TODO: coloque stadium.png"
+  },
+  {
+    "contains": "OSASCO",
+    "src": "/landing/escudos/osasco-audax.png",
+    "nota": "TODO: coloque osasco-audax.png"
+  },
+  {
+    "contains": "TAUBAT",
+    "src": "/landing/escudos/taubate.png",
+    "nota": "TODO: coloque taubate.png"
+  },
+  {
+    "contains": "SANCAETANENSE",
+    "src": "/landing/escudos/sancaetanense.png",
+    "nota": "TODO: coloque sancaetanense.png"
+  },
+  {
+    "contains": "BANCO DO BRASIL",
+    "src": "/landing/escudos/aabb.png",
+    "nota": "TODO: coloque aabb.png"
+  },
+  {
+    "contains": "SÃO JOSÉ FUTSAL",
+    "src": "/landing/escudos/sao-jose-futsal.png",
+    "nota": "TODO: coloque sao-jose-futsal.png"
+  },
+  {
+    "contains": "SAO JOSE FUTSAL",
+    "src": "/landing/escudos/sao-jose-futsal.png"
+  },
+  {
+    "contains": "TABUCA",
+    "src": "/landing/escudos/tabuca.png",
+    "nota": "TODO: coloque tabuca.png"
+  },
+  {
+    "contains": "MARVEL",
+    "src": "/landing/escudos/marvel.png",
+    "nota": "TODO: coloque marvel.png (x12 jogos — prioridade)"
+  },
+  {
+    "contains": "HORTOLANDIA",
+    "src": "/landing/escudos/hortolandia.png",
+    "nota": "TODO: coloque hortolandia.png"
+  },
+  {
+    "contains": "SOROCABA",
+    "src": "/landing/escudos/desportivo-sorocaba.png",
+    "nota": "TODO: coloque desportivo-sorocaba.png"
+  },
+  {
+    "contains": "SUZANO",
+    "src": "/landing/escudos/suzano.png",
+    "nota": "TODO: coloque suzano.png"
+  },
+  {
+    "contains": "COTIA",
+    "src": "/landing/escudos/adef-cotia.png",
+    "nota": "TODO: coloque adef-cotia.png"
+  },
+  {
+    "contains": "DISCIPULOS",
+    "src": "/landing/escudos/discipulos.png",
+    "nota": "TODO: coloque discipulos.png"
+  }
+]

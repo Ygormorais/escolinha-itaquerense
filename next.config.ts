@@ -15,6 +15,27 @@ const nextConfig: NextConfig = {
         hostname: "img.youtube.com",
         pathname: "/vi/**",
       },
+      // Escudos FPFS + fontes públicas (logodetimes / wikimedia)
+      {
+        protocol: "https",
+        hostname: "admfutsal.com.br",
+        pathname: "/assets/images/foto/escudo/**",
+      },
+      {
+        protocol: "http",
+        hostname: "admfutsal.com.br",
+        pathname: "/assets/images/foto/escudo/**",
+      },
+      {
+        protocol: "https",
+        hostname: "logodetimes.com",
+        pathname: "/times/**",
+      },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+        pathname: "/wikipedia/**",
+      },
     ],
   },
   experimental: {

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Nunito } from "next/font/google"
+import { Inter, Playfair_Display } from "next/font/google"
 
 import "./globals.css"
 import { Toaster } from "sonner"
@@ -10,16 +10,19 @@ import { ShellGate } from "@/components/layout/shell-gate"
 import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
 
+/** Canônico: Inter (corpo) + Playfair (títulos) — site, admin e portal. */
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
+  display: "swap",
 })
 
-const nunito = Nunito({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
-  variable: "--font-nunito",
+  weight: ["700", "800"],
+  variable: "--font-playfair",
+  display: "swap",
 })
 
 export const viewport: Viewport = {
@@ -27,8 +30,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
+    { media: "(prefers-color-scheme: light)", color: "#FAF8F5" },
+    { media: "(prefers-color-scheme: dark)", color: "#1C1412" },
   ],
 }
 
@@ -96,7 +99,7 @@ export default async function RootLayout({
     : [0, 0, 0]
 
   return (
-      <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${nunito.variable}`} suppressHydrationWarning>
+      <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript jsonLd={jsonLd} />
         <link rel="manifest" href="/manifest.json" />
@@ -107,7 +110,7 @@ export default async function RootLayout({
         <meta name="application-name" content="Escolinha Itaquerense" />
         <link rel="apple-touch-icon" href="/logo.png" sizes="500x500" />
       </head>
-      <body className="flex h-full bg-background font-sans">
+      <body className="flex h-full bg-background font-body antialiased">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-brand-800 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none"

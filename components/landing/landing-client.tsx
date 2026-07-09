@@ -1,52 +1,37 @@
 "use client"
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Inter, Playfair_Display } from "next/font/google"
 import Link from "next/link"
 import { Lock, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { NoticiasCarrossel } from "./noticias-carrossel"
-import { NoticiasClubCarrossel } from "./noticias-clube-carrossel"
+import { MateriasTabs } from "./materias-tabs"
 import type { HeroView } from "@/lib/landing/jogos"
-import type { NoticiaCard } from "@/lib/landing/noticias"
+import type { CategoriaNoticias } from "@/lib/landing/noticias"
 import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
-import { temSobre, temGaleria, temDepoimentos } from "@/lib/landing/conteudo"
-import type { EstatisticasClube } from "@/lib/landing/stats"
+import { marcos } from "@/lib/landing/conteudo"
+import { publicFontClass } from "@/lib/public-fonts"
 import "./landing.css"
 
 /** Asset real do clube — hero com foto (não stock). */
 const HERO_BG = "/landing/galeria/sede-elite.webp"
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-body",
-})
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-heading",
-})
-
 export function LandingClient({
-  noticias,
+  jogosPorCategoria,
   noticiasClube,
   whatsapp,
   hero,
-  stats,
   sobre,
   galeria,
   depoimentos,
   endereco,
   cidade,
 }: {
-  noticias: NoticiaCard[]
+  /** Jogos/resultados agrupados por Sub (abas no carrossel). */
+  jogosPorCategoria: CategoriaNoticias[]
   noticiasClube: NoticiaClube[]
   whatsapp?: string
   hero: HeroView
-  /** Números reais do banco; some se temAlgo=false ou omitido. */
-  stats?: EstatisticasClube | null
   sobre: SobreConteudo | null
   galeria: FotoGaleria[]
   depoimentos: Depoimento[]
@@ -84,17 +69,8 @@ export function LandingClient({
     ? `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de mais informações sobre a Escolinha Itaquerense.")}`
     : null
 
-  const statItems = stats?.temAlgo
-    ? [
-        { val: stats.alunosAtivos, lbl: "Alunos ativos" },
-        { val: stats.categorias, lbl: "Categorias" },
-        { val: stats.jogosTemporada, lbl: "Jogos na temporada" },
-        { val: stats.vitorias, lbl: "Vitórias" },
-      ].filter((s) => s.val > 0)
-    : []
-
   return (
-    <div className={`${inter.variable} ${playfair.variable} lp`}>
+    <div className={`${publicFontClass} lp`}>
       <a className="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
 
       <header className="site">
@@ -135,6 +111,7 @@ export function LandingClient({
             <ul>
               <li><a href="/horarios" onClick={closeNav}>Turmas</a></li>
               <li><a href="/resultados" onClick={closeNav}>Resultados</a></li>
+              <li><a href="#materias" onClick={closeNav}>Notícias</a></li>
               <li><a href="#sobre" onClick={closeNav}>História</a></li>
               <li><a href="#galeria" onClick={closeNav}>Galeria</a></li>
               <li className="nav-access"><a href="/responsavel" onClick={closeNav}>Portal da família</a></li>
@@ -177,30 +154,26 @@ export function LandingClient({
           </div>
         </div>
 
-        {statItems.length > 0 && (
-          <section className="stats" aria-label="Números do clube">
-            <div className="container">
-              <div className="grid">
-                {statItems.map((s) => (
-                  <div className="item" key={s.lbl}>
-                    <div className="val">{s.val}</div>
-                    <div className="lbl">{s.lbl}</div>
-                  </div>
-                ))}
-              </div>
+        {marcos.length > 0 && (
+          <section className="marcos" aria-label="Marcos do clube">
+            <div className="container marcos-grid">
+              {marcos.map((m) => (
+                <div className="marcos-item" key={m.rotulo}>
+                  <strong>{m.valor}</strong>
+                  <span>{m.rotulo}</span>
+                </div>
+              ))}
             </div>
           </section>
         )}
 
         <div id="noticias">
-          <NoticiasCarrossel items={noticias} />
+          <NoticiasCarrossel grupos={jogosPorCategoria ?? []} />
         </div>
 
-        {noticiasClube.length > 0 && (
-          <NoticiasClubCarrossel items={noticiasClube} />
-        )}
+        <MateriasTabs publicacoes={noticiasClube} />
 
-        {temSobre() && sobre && (
+        {sobre && sobre.paragrafos.length > 0 && (
           <section className="sobre" id="sobre">
             <div className="container" style={sobre.foto ? undefined : { display: "block", maxWidth: "760px" }}>
               <div className="txt">
@@ -218,7 +191,7 @@ export function LandingClient({
           </section>
         )}
 
-        {temGaleria() && (
+        {galeria.length > 0 && (
           <section className="galeria" id="galeria">
             <div className="container">
               <h2 className="section-title">Galeria</h2>
@@ -239,11 +212,11 @@ export function LandingClient({
           </section>
         )}
 
-        {temDepoimentos() && (
-          <section className="depo">
+        {depoimentos.length > 0 && (
+          <section className="depo" id="voz">
             <div className="container">
-              <h2 className="section-title">O que dizem os pais</h2>
-              <div className="grid">
+              <h2 className="section-title">Voz do clube</h2>
+              <div className="grid depo-grid-single">
                 {depoimentos.map((d, i) => (
                   <div className="card" key={i}>
                     <div className="quote" aria-hidden="true">&ldquo;</div>
@@ -283,6 +256,7 @@ export function LandingClient({
           </div>
           <div className="fcol">
             <h4>Clube</h4>
+            <a href="#materias">Notícias</a>
             <a href="#sobre">História</a>
             <a href="#galeria">Galeria</a>
             <a href="/resultados">Resultados</a>

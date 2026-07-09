@@ -12,6 +12,11 @@ vi.mock("@/lib/fpfs/client", () => ({
 vi.mock("@/lib/fpfs/parser", () => ({
   parseJogos: vi.fn().mockReturnValue([]),
   parseClassificacao: vi.fn().mockReturnValue([]),
+  extractTemporadaMeta: vi.fn().mockReturnValue({
+    temporada: null,
+    categoria: null,
+    divisao: null,
+  }),
 }))
 vi.mock("@/lib/db", () => {
   const db = {
@@ -47,8 +52,12 @@ describe("syncTodos", () => {
     const resumos = await syncTodos()
 
     expect(m.campeonato.findMany).toHaveBeenCalledWith({
-      where: { fpfsEventoId: { not: null } },
+      where: {
+        fpfsEventoId: { not: null },
+        status: { not: "encerrado" },
+      },
       select: { id: true },
+      orderBy: { id: "asc" },
     })
     expect(resumos).toHaveLength(2)
     expect(resumos.map((r) => r.campeonatoId).sort()).toEqual([1, 2])

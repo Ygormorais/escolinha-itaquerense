@@ -6,6 +6,10 @@ export interface JogoFpfs {
   ginasio: string | null
   mandante: string
   visitante: string
+  /** Escudo do mandante (URL https da FPFS) */
+  mandanteEscudo: string | null
+  /** Escudo do visitante (URL https da FPFS) */
+  visitanteEscudo: string | null
   golsMandante: number | null
   golsVisitante: number | null
   sumulaUrl: string | null

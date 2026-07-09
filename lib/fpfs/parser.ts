@@ -1,9 +1,33 @@
 import * as cheerio from "cheerio"
 import type { JogoFpfs, LinhaClassificacao } from "./types"
 
+/**
+ * Extrai o ano da temporada e metadados do HTML da FPFS.
+ * Ex.: "Campeonato Paulista, Temporada 2026 Categoria Sub-7, Divisao A3"
+ */
+export function extractTemporadaMeta(html: string): {
+  temporada: number | null
+  categoria: string | null
+  divisao: string | null
+} {
+  const block = html.replace(/\s+/g, " ")
+  const t = block.match(/Temporada\s+(\d{4})/i)?.[1]
+  const catRaw = block.match(/Categoria\s+(Sub[-\s]?\d+)/i)?.[1]
+  // Normaliza "Sub 7" / "Sub7" / "Sub-7" → "Sub-7" (sem Sub--)
+  const cat = catRaw
+    ? `Sub-${catRaw.replace(/^Sub[-\s]?/i, "")}`
+    : null
+  const div = block.match(/Divis[aã]o\s+([A-Z0-9]+)/i)?.[1] ?? null
+  return {
+    temporada: t ? Number(t) : null,
+    categoria: cat,
+    divisao: div,
+  }
+}
+
 function dataIso(dataBr: string, anoTemporada?: number): string {
-  // O site exibe datas como "11/04" (sem ano). Usamos o ano da temporada
-  // (data de inicio do campeonato) quando disponivel; senao o ano corrente.
+  // O site exibe datas como "11/04" (sem ano). Prioridade:
+  // 1) ano explícito no texto  2) temporada do HTML/evento  3) ano corrente
   const [dia, mes, ano] = dataBr.trim().split("/")
   const yyyy = ano ?? String(anoTemporada ?? new Date().getFullYear())
   return `${yyyy}-${(mes ?? "").padStart(2, "0")}-${(dia ?? "").padStart(2, "0")}`
@@ -25,7 +49,24 @@ function num(txt: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
+/** Aceita só hosts da FPFS e força https. */
+export function normalizeEscudoUrl(src: string | undefined | null): string | null {
+  if (!src?.trim()) return null
+  try {
+    const u = new URL(src.trim(), "https://admfutsal.com.br")
+    const host = u.hostname.replace(/^www\./, "").toLowerCase()
+    if (host !== "admfutsal.com.br" && host !== "eventos.admfutsal.com.br") return null
+    u.protocol = "https:"
+    return u.toString()
+  } catch {
+    return null
+  }
+}
+
 export function parseJogos(html: string, anoTemporada?: number): JogoFpfs[] {
+  // Preferir o ano impresso no HTML da FPFS (evita forçar 2026 em eventos 2024)
+  const fromHtml = extractTemporadaMeta(html).temporada
+  const ano = fromHtml ?? anoTemporada ?? undefined
   const $ = cheerio.load(html)
   const jogos: JogoFpfs[] = []
   $("table.classification_table tbody tr").each((_, el) => {
@@ -38,17 +79,22 @@ export function parseJogos(html: string, anoTemporada?: number): JogoFpfs[] {
     const nomes = $(tds[3]).find(".nome_clube")
     const mandante = $(nomes[0]).text().trim()
     const visitante = $(nomes[1]).text().trim()
+    const escudos = $(tds[3]).find("img.escudo")
+    const mandanteEscudo = normalizeEscudoUrl($(escudos[0]).attr("src"))
+    const visitanteEscudo = normalizeEscudoUrl($(escudos[1]).attr("src"))
     const [golsMandante, golsVisitante] = parseGols($(tds[3]).find(".result").text().trim())
     const sumulaHref = $(tds[3]).find('a[href*="sumula"]').attr("href")
     if (!mandante || !visitante) return
     jogos.push({
       fpfsJogoId: jogoIdDaSumula(sumulaHref),
       rodada: 1,
-      data: dataIso(dataTxt, anoTemporada),
+      data: dataIso(dataTxt, ano),
       hora: horaTxt || null,
       ginasio,
       mandante,
       visitante,
+      mandanteEscudo,
+      visitanteEscudo,
       golsMandante,
       golsVisitante,
       sumulaUrl: sumulaHref ?? null,

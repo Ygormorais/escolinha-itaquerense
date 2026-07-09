@@ -1,4 +1,17 @@
-import { Inter, Playfair_Display } from "next/font/google"
+/**
+ * Fontes canônicas já são carregadas no root layout (`app/layout.tsx`):
+ *   --font-inter   (Inter)
+ *   --font-playfair (Playfair Display)
+ *   --font-body / --font-heading (mapeados em globals.css)
+ *
+ * NÃO chamar next/font de novo aqui — instanciar duas vezes quebra o HMR
+ * do Turbopack ("No link element found for chunk …css").
+ */
 
-export const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" })
-export const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-heading" })
+/** Classe no-op para wrappers de página pública (variáveis vêm do <html>). */
+export const publicFontClass = ""
+
+/** @deprecated Use publicFontClass — mantido para imports legados. */
+export const inter = { variable: "", className: "" }
+/** @deprecated Use publicFontClass — mantido para imports legados. */
+export const playfair = { variable: "", className: "" }

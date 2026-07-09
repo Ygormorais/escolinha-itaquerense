@@ -2,14 +2,19 @@
   .ncc{background:var(--bg,#FAF8F5);padding:0 0 clamp(48px,7vw,72px)}
   .ncc .container{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,28px)}
 
-  .ncc-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:24px;flex-wrap:wrap}
+  .ncc-header{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;padding-bottom:24px;flex-wrap:wrap}
   .ncc-header h2{
     font-family:var(--font-heading),Georgia,serif;
     font-size:clamp(24px,3vw,32px);font-weight:700;color:var(--text,#1C1412);
-    letter-spacing:-.015em;border-left:4px solid var(--red,#C62828);padding-left:14px;line-height:1.2
+    letter-spacing:-.015em;border-left:4px solid var(--red,#C62828);padding-left:14px;line-height:1.2;
+    margin:0;flex:1 1 auto;min-width:min(100%,200px)
   }
-  .ncc-header a{font-size:13px;font-weight:600;color:var(--red,#C62828);display:flex;align-items:center;gap:5px;transition:opacity .2s}
+  .ncc-header a{font-size:13px;font-weight:600;color:var(--red,#C62828);display:inline-flex;align-items:center;gap:6px;line-height:1;white-space:nowrap;flex:0 0 auto;transition:opacity .2s}
   .ncc-header a:hover{opacity:.75}
+  @media(max-width:640px){
+    .ncc-header{flex-direction:column;align-items:flex-start;gap:12px}
+    .ncc-header a{margin-left:18px}
+  }
 
   .ncc-track-wrap{position:relative}
   .ncc-track{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}

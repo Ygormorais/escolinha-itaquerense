@@ -1,27 +1,53 @@
 /**
- * Tokens canônicos do site público — alinhados ao Design System landing v2
- * (Orgânico/Humano: papel quente, texto quente, sombras com matiz vermelha).
- * Defina aqui, use em todos os page.tsx públicos via pubBase().
+ * Design tokens canônicos — site público, login e páginas isoladas.
+ * Orgânico/Humano: papel quente, texto quente, accent vermelho alvirrubro.
+ *
+ * Use em todo page.tsx público via `pubBase("ns")` + `publicFontClass`.
  */
 export const PUB_TOKENS = `
-  --red:#C62828;--red-dark:#9F1D1D;--red-deep:#4A0B0B;--red-warm:#D84040;--red-darker:#7F0000;
-  --white:#fff;--bg:#FAF8F5;--bg-card:#fff;--bg-muted:#F3EFE9;--bg-elevated:#FFFCF9;
-  --text:#1C1412;--text-muted:#5C534E;--text-light:#8A827C;
-  --border:#E8E2DA;--border-strong:#D4CBC0;
+  --red:#C62828;
+  --red-dark:#9F1D1D;
+  --red-deep:#4A0B0B;
+  --red-warm:#D84040;
+  --red-darker:#7F0000;
+  --red-soft:#E53935;
+  --white:#fff;
+  --bg:#FAF8F5;
+  --bg-card:#fff;
+  --bg-muted:#F3EFE9;
+  --bg-elevated:#FFFCF9;
+  --text:#1C1412;
+  --text-muted:#5C534E;
+  --text-light:#8A827C;
+  --border:#E8E2DA;
+  --border-strong:#D4CBC0;
   --shadow-sm:0 2px 8px rgba(74,11,11,.06);
   --shadow-md:0 8px 28px rgba(74,11,11,.10);
   --shadow-hover:0 14px 40px rgba(198,40,40,.16);
   --shadow-red:0 8px 28px rgba(198,40,40,.22);
-  --radius-sm:10px;--radius-md:14px;--radius-lg:20px;--radius-xl:24px;--radius-pill:999px;
+  --radius-sm:10px;
+  --radius-md:14px;
+  --radius-lg:20px;
+  --radius-xl:24px;
+  --radius-pill:999px;
   --ease:cubic-bezier(.25,.46,.45,.94);
-  font-family:var(--font-body),Arial,sans-serif;
-  color:var(--text);background:var(--bg);line-height:1.65;
-  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:clip
+  font-family:var(--font-body),var(--font-inter),Inter,system-ui,sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  overflow-x:clip
 `
 
 /** CSS base para um namespace público: tokens + reset + link reset */
 export function pubBase(ns: string): string {
-  return `.${ns}{${PUB_TOKENS}}\n.${ns} *{margin:0;padding:0;box-sizing:border-box}\n.${ns} a{text-decoration:none;color:inherit}`
+  return [
+    `.${ns}{${PUB_TOKENS}}`,
+    `.${ns} *{margin:0;padding:0;box-sizing:border-box}`,
+    `.${ns} a{text-decoration:none;color:inherit}`,
+    `.${ns} h1,.${ns} h2,.${ns} h3,.${ns} h4{font-family:var(--font-heading),var(--font-playfair),Georgia,serif}`,
+  ].join("\n")
 }
 
 /**
@@ -55,12 +81,13 @@ export const PUB_HDR_CSS = `
   }
   .pub-hdr .back:hover{background:var(--red);color:#fff;transform:translateY(-1px)}
   @media(max-width:520px){
-    .pub-hdr .inner{width:min(calc(100% - 24px),1200px);height:62px;gap:10px}
+    .pub-hdr .inner{width:min(calc(100% - 24px),1200px);height:62px;gap:10px;
+      padding-left:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))}
     .pub-hdr .brand{gap:10px}
     .pub-hdr .brand img{width:34px;height:34px;flex-basis:34px}
     .pub-hdr .brand-name{font-size:15px}
     .pub-hdr .brand-sub{font-size:9px;letter-spacing:1px}
-    .pub-hdr .back{padding:6px 10px;font-size:11px}
+    .pub-hdr .back{padding:6px 10px;font-size:11px;min-height:36px}
   }
   @media(max-width:380px){
     .pub-hdr .back{max-width:42px;overflow:hidden;text-indent:-999px;position:relative}
@@ -70,8 +97,8 @@ export const PUB_HDR_CSS = `
 
 /** Footer padrão (copyright + links) — horários, notícias, etc. */
 export const PUB_FOOT_CSS = `
-  .pub-foot{border-top:1px solid var(--border);padding:24px 0}
-  .pub-foot .inner{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,28px);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-light);flex-wrap:wrap;gap:10px}
+  .pub-foot{border-top:1px solid var(--border);padding:24px 0;background:var(--bg)}
+  .pub-foot .inner{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,28px);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-light);flex-wrap:wrap;gap:10px;font-family:var(--font-body),Inter,sans-serif}
   .pub-foot a{color:var(--text-muted);font-weight:600;transition:color .2s}
   .pub-foot a:hover{color:var(--red)}
 `

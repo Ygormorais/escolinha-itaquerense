@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 import { getConfig } from "@/lib/config"
-import { inter, playfair } from "@/lib/public-fonts"
+import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase, PUB_HDR_CSS, PUB_FOOT_CSS } from "@/lib/public-css"
 import { PublicHeader } from "@/components/public/public-header"
 import HorariosClient from "./horarios-client"
@@ -46,11 +46,11 @@ const css = `
 
 export default async function HorariosPage() {
   const [turmas, config] = await Promise.all([getTurmasHorarios(), getConfig()])
-  const waNumber = config.whatsapp?.replace(/\D/g, "") || "5511999999999"
+  const waNumber = config.whatsapp?.replace(/\D/g, "") || "5511958686579"
   const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de saber sobre as turmas e horários da Escolinha Itaquerense.")}`
 
   return (
-    <div className={`${inter.variable} ${playfair.variable} hp`}>
+    <div className={`${publicFontClass} hp`}>
       <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/dist/tabler-icons.min.css" rel="stylesheet" />
       <style dangerouslySetInnerHTML={{ __html: css }} />
 

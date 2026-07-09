@@ -7,7 +7,7 @@ describe("landing publica", () => {
   const hero = heroView({ tipo: "institucional" })
   const html = renderToStaticMarkup(
     <LandingClient
-      noticias={[]}
+      jogosPorCategoria={[]}
       noticiasClube={[]}
       hero={hero}
       sobre={null}
@@ -32,41 +32,14 @@ describe("landing publica", () => {
   it("nao repete faixas de navegacao/pitch (acesso-grid nem O que oferecemos)", () => {
     expect(html).not.toContain("acesso-grid")
     expect(html).not.toContain("O que oferecemos")
-    // Destinos continuam no header / CTA final
     expect(html).toContain('href="/horarios"')
     expect(html).toContain('href="/resultados"')
     expect(html).toContain('href="/responsavel"')
   })
-  it("nao exibe faixa de stats sem dados reais", () => {
+  it("nao exibe faixa de alunos/categorias/stats", () => {
     expect(html).not.toContain("Alunos ativos")
     expect(html).not.toContain("Jogos na temporada")
     expect(html).not.toContain('class="stats"')
-  })
-
-  it("exibe stats reais apenas com metrica > 0 e temAlgo", () => {
-    const h = renderToStaticMarkup(
-      <LandingClient
-        noticias={[]}
-        noticiasClube={[]}
-        hero={hero}
-        stats={{
-          alunosAtivos: 12,
-          categorias: 0,
-          jogosTemporada: 9,
-          vitorias: 0,
-          temAlgo: true,
-        }}
-        sobre={null}
-        galeria={[]}
-        depoimentos={[]}
-      />
-    )
-    expect(h).toContain('class="stats"')
-    expect(h).toContain("Alunos ativos")
-    expect(h).toContain("Jogos na temporada")
-    // métricas zeradas não viram card (hero pode citar a palavra "Categorias" no copy)
-    expect(h).not.toContain('class="lbl">Categorias')
-    expect(h).not.toContain('class="lbl">Vitórias')
   })
   it("hero de proximo jogo renderiza manchete e CTA FPFS", () => {
     const proximo = heroView({
@@ -76,7 +49,7 @@ describe("landing publica", () => {
     })
     const h = renderToStaticMarkup(
       <LandingClient
-        noticias={[]}
+        jogosPorCategoria={[]}
         noticiasClube={[]}
         hero={proximo}
         sobre={null}
@@ -91,21 +64,88 @@ describe("landing publica", () => {
 
   it("com noticias vazias nao renderiza carrossel de jogos", () => {
     expect(html).not.toContain(">Jogos e resultados</h2>")
-    expect(html).not.toContain(">Destaques</h2>")
+  })
+
+  it("exibe secao de noticias e conquistas com abas", () => {
+    expect(html).toContain("Notícias e conquistas")
+    expect(html).toContain("Mundial")
+    expect(html).toContain("Campeão Mundial Sub-13 na França")
+    expect(html).toContain('href="#materias"')
+  })
+
+  it("exibe marcos reais do clube", () => {
+    expect(html).toContain("Mundial Sub-13")
+    expect(html).toContain("1922")
+    expect(html).toContain("6 mil+")
+    expect(html).not.toContain('class="stats"')
+  })
+
+  it("exibe voz institucional quando ha depoimento", () => {
+    const comVoz = renderToStaticMarkup(
+      <LandingClient
+        jogosPorCategoria={[]}
+        noticiasClube={[]}
+        hero={hero}
+        sobre={null}
+        galeria={[]}
+        depoimentos={[
+          {
+            texto: "Formar caráter pelo esporte.",
+            autor: 'Moacir Bernardes · "Simão"',
+            categoria: "Coordenador de futsal",
+          },
+        ]}
+      />,
+    )
+    expect(comVoz).toContain("Voz do clube")
+    expect(comVoz).toContain("Simão")
   })
 
   it("hero institucional e carrossel de jogos nao repetem a mesma manchete", () => {
     const comJogos = renderToStaticMarkup(
       <LandingClient
-        noticias={[
+        jogosPorCategoria={[
           {
-            id: 10,
-            badge: "Sub-13",
-            titulo: "Vitória! Itaquerense 7 × 4 Vila Real",
-            subtitulo: "11 de abril de 2026 · Jogo em casa",
-            resultado: "Vitoria",
-            href: "/resultados",
-            externo: false,
+            categoria: "Sub-13",
+            items: [
+              {
+                id: 10,
+                badge: "Sub-13",
+                titulo: "Vitória! Itaquerense 7 × 4 Vila Real",
+                subtitulo: "11 de abril de 2026 · Jogo em casa",
+                resultado: "Vitoria",
+                href: "/resultados",
+                externo: false,
+                casa: "Itaquerense",
+                fora: "Vila Real",
+                nosCasa: true,
+                placar: "7 × 4",
+                foraEscudos: [
+                  "https://logodetimes.com/times/corinthians/logo-corinthians-256.png",
+                ],
+              },
+            ],
+          },
+          {
+            categoria: "Sub-18",
+            items: [
+              {
+                id: 20,
+                badge: "Sub-18",
+                titulo: "Empate",
+                subtitulo: "1 de maio",
+                resultado: "Empate",
+                href: "/resultados",
+                externo: false,
+                casa: "Itaquerense",
+                fora: "Palmeiras",
+                nosCasa: true,
+                placar: "1 × 1",
+                foraEscudos: [
+                  "https://logodetimes.com/times/palmeiras/logo-palmeiras-256.png",
+                ],
+              },
+            ],
           },
         ]}
         noticiasClube={[]}
@@ -115,16 +155,20 @@ describe("landing publica", () => {
         depoimentos={[]}
       />
     )
-    // Hero = formação de base; jogos só no carrossel
     expect(comJogos).toContain("Formação de base com paixão itaquerense")
     expect(comJogos).toContain("Jogos e resultados")
-    expect(comJogos).toContain("Vitória! Itaquerense 7 × 4 Vila Real")
+    expect(comJogos).toContain("Vila Real")
+    expect(comJogos).toContain("Sub-13")
+    expect(comJogos).toContain("Sub-18")
+    expect(comJogos).toContain('class="nc-tabs"')
+    expect(comJogos).toContain('class="nc-tab active"')
+    expect(comJogos).toContain('class="nc-feature')
+    expect(comJogos).toContain('class="nc-scoreline"')
     const heroSlice = comJogos.slice(
       comJogos.indexOf('class="hero"'),
       comJogos.indexOf('id="noticias"'),
     )
-    expect(heroSlice).not.toContain("Vitória!")
-    expect(heroSlice).not.toContain("7 × 4")
+    expect(heroSlice).not.toContain("Vila Real")
   })
   it("nao tem mais placeholders de noticias nem patrocinadores", () => {
     expect(html).not.toContain("Patrocinadores")
@@ -146,7 +190,7 @@ describe("landing publica", () => {
   it("mostra WhatsApp flutuante com numero configurado", () => {
     const h = renderToStaticMarkup(
       <LandingClient
-        noticias={[]}
+        jogosPorCategoria={[]}
         noticiasClube={[]}
         hero={hero}
         sobre={null}

@@ -36,9 +36,18 @@ describe("parseJogos", () => {
       expect(j.fpfsJogoId).not.toBeNull()
     }
   })
-  it("usa o ano da temporada quando a data nao traz ano", () => {
-    const jogos2025 = parseJogos(html, 2025)
-    expect(jogos2025.length).toBeGreaterThan(0)
-    for (const j of jogos2025) expect(j.data.startsWith("2025-")).toBe(true)
+  it("usa o ano da temporada do HTML (prioridade sobre o argumento)", () => {
+    // Fixture é Temporada 2026; mesmo passando 2025, o HTML manda
+    const parsed = parseJogos(html, 2025)
+    expect(parsed.length).toBeGreaterThan(0)
+    for (const j of parsed) expect(j.data.startsWith("2026-")).toBe(true)
+  })
+  it("extrai escudos https dos dois times", () => {
+    const comEscudo = jogos.filter((j) => j.mandanteEscudo && j.visitanteEscudo)
+    expect(comEscudo.length).toBeGreaterThan(0)
+    for (const j of comEscudo) {
+      expect(j.mandanteEscudo).toMatch(/^https:\/\/admfutsal\.com\.br\/assets\/images\/foto\/escudo\//)
+      expect(j.visitanteEscudo).toMatch(/^https:\/\/admfutsal\.com\.br\/assets\/images\/foto\/escudo\//)
+    }
   })
 })

@@ -13,7 +13,16 @@ vi.mock("@/lib/db", () => {
   }
   return { db }
 })
-vi.mock("@/lib/fpfs/parser", () => ({ parseJogos: vi.fn(), parseClassificacao: vi.fn() }))
+vi.mock("@/lib/fpfs/parser", () => ({
+  parseJogos: vi.fn(),
+  parseClassificacao: vi.fn(),
+  extractTemporadaMeta: vi.fn(() => ({
+    temporada: 2026,
+    categoria: "Sub-7",
+    divisao: "A3",
+  })),
+  normalizeEscudoUrl: (src: string | null | undefined) => src ?? null,
+}))
 
 import { syncCampeonato } from "@/lib/fpfs/sync"
 import { db } from "@/lib/db"
@@ -28,7 +37,13 @@ const m = db as unknown as {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  m.campeonato.findUnique.mockResolvedValue({ id: 1, fpfsEventoId: 920, fpfsTimeNome: "E.C. Itaquerense" })
+  m.campeonato.findUnique.mockResolvedValue({
+    id: 1,
+    nome: "Sub-7 A3",
+    fpfsEventoId: 920,
+    fpfsTimeNome: "E.C. Itaquerense",
+    dataInicio: new Date("2026-01-01"),
+  })
   m.campeonato.update.mockResolvedValue({})
   m.partida.create.mockResolvedValue({ id: 10 })
   m.partida.update.mockResolvedValue({ id: 10 })
@@ -37,7 +52,10 @@ beforeEach(() => {
   ;(fetchHtml as ReturnType<typeof vi.fn>).mockResolvedValue("<html></html>")
   ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValue([
     { fpfsJogoId: "555", rodada: 1, data: "2026-04-11", hora: "17:00", ginasio: "G1",
-      mandante: "E.C. Itaquerense", visitante: "Vila Real", golsMandante: 3, golsVisitante: 1, sumulaUrl: "s/555" },
+      mandante: "E.C. Itaquerense", visitante: "Vila Real",
+      mandanteEscudo: "https://admfutsal.com.br/assets/images/foto/escudo/1.png",
+      visitanteEscudo: "https://admfutsal.com.br/assets/images/foto/escudo/2.png",
+      golsMandante: 3, golsVisitante: 1, sumulaUrl: "s/555" },
   ])
   ;(parseClassificacao as ReturnType<typeof vi.fn>).mockReturnValue([
     { fase: "1ª Fase", grupo: "Grupo A", posicao: 1, timeNome: "E.C. Itaquerense",
@@ -54,6 +72,10 @@ describe("syncCampeonato", () => {
     expect(m.partida.create).toHaveBeenCalledTimes(1)
     expect(resumo.jogosNovos).toBe(1)
     expect(resumo.jogosAtualizados).toBe(0)
+    // Casa: adversario = visitante → escudo do visitante
+    expect(m.partida.create.mock.calls[0][0].data.adversarioEscudoUrl).toBe(
+      "https://admfutsal.com.br/assets/images/foto/escudo/2.png",
+    )
   })
   it("atualiza partida existente em vez de duplicar (idempotente)", async () => {
     m.partida.findFirst.mockResolvedValue({ id: 10 })
@@ -85,7 +107,9 @@ describe("syncCampeonato", () => {
   it("usa chave estavel para jogo sem sumula (nao duplica entre syncs)", async () => {
     ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValue([
       { fpfsJogoId: null, rodada: 1, data: "2026-04-11", hora: "10:00", ginasio: "G2",
-        mandante: "Time X", visitante: "Time Y", golsMandante: null, golsVisitante: null, sumulaUrl: null },
+        mandante: "Time X", visitante: "Time Y",
+        mandanteEscudo: null, visitanteEscudo: null,
+        golsMandante: null, golsVisitante: null, sumulaUrl: null },
     ])
     // 1a execucao: nao existe -> cria com chave sintetica nao nula
     m.partida.findFirst.mockResolvedValue(null)
@@ -99,14 +123,22 @@ describe("syncCampeonato", () => {
 
     // 2a execucao: agora existe -> atualiza, nao duplica
     vi.clearAllMocks()
-    m.campeonato.findUnique.mockResolvedValue({ id: 1, fpfsEventoId: 920, fpfsTimeNome: "E.C. Itaquerense" })
+    m.campeonato.findUnique.mockResolvedValue({
+      id: 1,
+      nome: "Sub-7 A3",
+      fpfsEventoId: 920,
+      fpfsTimeNome: "E.C. Itaquerense",
+      dataInicio: new Date("2026-01-01"),
+    })
     m.campeonato.update.mockResolvedValue({})
     m.classificacaoFpfs.deleteMany.mockResolvedValue({})
     m.classificacaoFpfs.createMany.mockResolvedValue({})
     ;(parseClassificacao as ReturnType<typeof vi.fn>).mockReturnValue([])
     ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValue([
       { fpfsJogoId: null, rodada: 1, data: "2026-04-11", hora: "10:00", ginasio: "G2",
-        mandante: "Time X", visitante: "Time Y", golsMandante: null, golsVisitante: null, sumulaUrl: null },
+        mandante: "Time X", visitante: "Time Y",
+        mandanteEscudo: null, visitanteEscudo: null,
+        golsMandante: null, golsVisitante: null, sumulaUrl: null },
     ])
     m.partida.findFirst.mockResolvedValue({ id: 77 })
     await syncCampeonato(1)
@@ -119,7 +151,10 @@ describe("syncCampeonato", () => {
     // também a chave sintética usada antes, achando e atualizando o row antigo.
     ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValue([
       { fpfsJogoId: "555", rodada: 1, data: "2026-04-11", hora: "17:00", ginasio: "G1",
-        mandante: "E.C. Itaquerense", visitante: "Vila Real", golsMandante: 3, golsVisitante: 1, sumulaUrl: "s/555" },
+        mandante: "E.C. Itaquerense", visitante: "Vila Real",
+        mandanteEscudo: "https://admfutsal.com.br/assets/images/foto/escudo/1.png",
+        visitanteEscudo: "https://admfutsal.com.br/assets/images/foto/escudo/2.png",
+        golsMandante: 3, golsVisitante: 1, sumulaUrl: "s/555" },
     ])
     m.partida.findFirst.mockResolvedValue({ id: 88 })
     await syncCampeonato(1)

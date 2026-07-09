@@ -56,9 +56,32 @@ export const galeria: FotoGaleria[] = [
     src: "/landing/galeria/futsal-simao.jpg",
     alt: "Projeto de futsal de base do Elite Itaquerense",
   },
+  {
+    src: "/landing/galeria/atleta-formacao.jpg",
+    alt: "Formação de atletas nas categorias de base do Elite Itaquerense",
+  },
 ]
 
-export const depoimentos: Depoimento[] = []
+/**
+ * Marcos reais do clube (não inventar números).
+ * Fontes: Fato Paulista (série Elite 100 anos), acervo institucional.
+ */
+export const marcos: { valor: string; rotulo: string }[] = [
+  { valor: "1922", rotulo: "Fundação em Itaquera" },
+  { valor: "2012", rotulo: "Mundial Sub-13 · França" },
+  { valor: "6 mil+", rotulo: "Atletas formados" },
+  { valor: "1ª div.", rotulo: "Futsal Paulista" },
+]
+
+/** Citação real de Moacir Bernardes (“Simão”) — Fato Paulista, 2022. */
+export const vozClube: Depoimento | null = {
+  texto:
+    "A filosofia do clube é a de formar seres humanos do bem e com caráter. O esporte direciona e dá disciplina — muitos que fizeram a escolinha hoje são engenheiros, professores, profissionais de sucesso.",
+  autor: "Moacir Bernardes · “Simão”",
+  categoria: "Coordenador de futsal",
+}
+
+export const depoimentos: Depoimento[] = vozClube ? [vozClube] : []
 // =====================
 
 export function temSobre(): boolean {

@@ -238,6 +238,8 @@ model Partida {
   rodada       Int                @default(1)
   data         DateTime
   adversario   String
+  /** URL do escudo do adversário (FPFS admfutsal) */
+  adversarioEscudoUrl String?
   local        String             @default("Casa") // Casa, Fora, Neutro
   golsPro      Int?
   golsContra   Int?
