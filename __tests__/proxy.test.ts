@@ -21,6 +21,8 @@ describe("isPublicPath — prefixos de API públicos", () => {
     "/api/cron/lembretes",
     "/api/sync/fpfs",
     "/api/config/public",
+    "/api/escudo",
+    "/api/escudo?u=https%3A%2F%2Fadmfutsal.com.br%2Fassets%2Fimages%2Ffoto%2Fescudo%2F1.png",
     "/api/upload/matricula",
     "/uploads/fotos/1.jpg",
     "/matricula",
@@ -36,6 +38,9 @@ describe("isPublicPath — prefixos de API públicos", () => {
     "/responsavel/redefinir-senha",
     "/_next/static/chunks/app.js",
     "/favicon.ico",
+    "/landing/galeria/escudo-historico.jpg",
+    "/landing/galeria/sede-elite.webp",
+    "/logo.jpg",
   ])("%s é público", (path) => expect(isPublicPath(path)).toBe(true))
 })
 

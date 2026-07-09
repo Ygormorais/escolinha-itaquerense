@@ -18,7 +18,7 @@ export default async function MaquinaPage() {
   ])
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Maquininha"
         description="Importe o CSV da sua maquininha e reconcilie com os alunos"

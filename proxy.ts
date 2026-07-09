@@ -69,6 +69,7 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/api/cron/") ||       // lembretes/fpfs (Bearer secret)
     pathname.startsWith("/api/sync/") ||       // fpfs (x-fpfs-token)
     hasPrefix(pathname, "/api/config/public") ||
+    hasPrefix(pathname, "/api/escudo") || // escudos FPFS na landing (proxy anti-hotlink)
     hasPrefix(pathname, "/api/upload/matricula") ||
     pathname.startsWith("/uploads/fotos/") ||
     hasPrefix(pathname, "/matricula") ||
@@ -85,7 +86,9 @@ export function isPublicPath(pathname: string): boolean {
     hasPrefix(pathname, "/responsavel/redefinir-senha") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
+    pathname.startsWith("/landing/") || // fotos/história da landing pública
     pathname === "/logo.png" ||
+    pathname === "/logo.jpg" ||
     pathname === "/sw.js" ||
     pathname === "/manifest.json"
   )
@@ -124,18 +127,11 @@ export async function proxy(request: NextRequest) {
     return nextResponse()
   }
 
-  // Usuário já autenticado não deve ver a página de login — redireciona para o
-  // painel. Feito aqui (middleware = 307 confiável) porque o redirect() de
-  // Server Component nesta versão do Next emite apenas um meta-refresh que não
-  // dispara de forma confiável após a hidratação.
+  // /login é sempre acessível (público). Não redirecionar sessão ativa aqui —
+  // a página de login decide se mostra o formulário ou a sessão existente
+  // (com opção de sair). Pular o formulário silenciosamente era confuso e
+  // escondia o gate de autenticação.
   if (pathname === "/login") {
-    const token = request.cookies.get(COOKIE_NAME)?.value
-    if (token && (await verify(token))) {
-      const url = request.nextUrl.clone()
-      url.pathname = "/dashboard"
-      url.search = ""
-      return NextResponse.redirect(url)
-    }
     return nextResponse()
   }
 

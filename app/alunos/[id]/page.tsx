@@ -110,7 +110,7 @@ export default async function AlunoDetailPage({
   const totalPagesPag = Math.max(1, Math.ceil(totalPagamentos / PAG_PAGE_SIZE))
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <div>
         <Link
           href="/alunos"

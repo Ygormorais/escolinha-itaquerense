@@ -45,32 +45,14 @@ type Midia = {
   createdAt: Date
   partida: {
     id: number
-    campeonatoId: number
-    rodada: number
     data: Date
     adversario: string
-    local: string
     golsPro: number | null
     golsContra: number | null
-    resultado: string | null
-    observacoes: string | null
-    createdAt: Date
   } | null
   campeonato: {
     id: number
     nome: string
-    descricao: string | null
-    dataInicio: Date
-    dataFim: Date | null
-    local: string | null
-    taxaInscricao: number
-    taxaJogo: number
-    taxaArbitragem: number
-    custoTransporte: number
-    custoUniforme: number
-    observacoes: string | null
-    status: string
-    createdAt: Date
   } | null
 }
 
@@ -154,7 +136,7 @@ export function MidiaClient({
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Mídia"
         description="Fotos e vídeos das partidas e do clube"

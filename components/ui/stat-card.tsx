@@ -47,15 +47,17 @@ export function StatCard({
 
   const inner = (
     <Card className={cn(
-      "h-full transition-all duration-200",
-      href && "cursor-pointer hover:-translate-y-px hover:shadow-md",
+      "h-full border-border/80 bg-card shadow-sm transition-all duration-200",
+      href && "cursor-pointer hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md",
       borderAccent && "border-l-4 border-l-brand-600",
       className
     )}>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
-          <div className={cn("flex size-10 items-center justify-center rounded-lg", iconCls)}>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+            {title}
+          </p>
+          <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", iconCls)}>
             <Icon className="size-5" />
           </div>
         </div>

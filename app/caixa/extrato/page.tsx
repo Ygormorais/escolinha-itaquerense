@@ -19,7 +19,7 @@ export default async function ExtratoPage({
   ])
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Extrato Bancário"
         description="Importe o extrato do seu banco e acompanhe entradas e saídas"

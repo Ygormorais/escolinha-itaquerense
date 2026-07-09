@@ -15,7 +15,15 @@ type LogRow = {
 export default async function HistoricoPage() {
   const logs: LogRow[] = await db.log.findMany({
     orderBy: { createdAt: "desc" },
-    take: 500,
+    take: 250,
+    select: {
+      id: true,
+      tipo: true,
+      descricao: true,
+      usuario: true,
+      meta: true,
+      createdAt: true,
+    },
   })
 
   return <HistoricoClient logs={logs} />

@@ -43,10 +43,10 @@ export function LoginForm({ next }: { next?: string }) {
     <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
       <div className="mb-6 space-y-2">
         <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
-          Entrar
+          Entrar na equipe
         </h2>
         <p className="text-sm leading-6 text-[var(--color-ink-700)]">
-          Use seu usuario e senha para acessar o painel.
+          Informe usuário e senha da equipe. Este acesso não é para pais ou responsáveis.
         </p>
       </div>
 

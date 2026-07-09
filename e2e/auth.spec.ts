@@ -32,13 +32,16 @@ test.describe("Autenticação", () => {
     await expect(page).toHaveURL("/login")
   })
 
-  test("já autenticado redireciona de /login para /dashboard", async ({ page }) => {
-    // Autentica via formulário (garante que o cookie é gravado no jar do browser)
-    // e em seguida navega para /login — o middleware redireciona para /dashboard.
+  test("já autenticado em /login mostra sessão ativa (não pula o gate)", async ({ page }) => {
+    // Autentica via formulário e volta em /login: deve permanecer no gate,
+    // nunca pular o formulário/sessão em silêncio para o painel.
     await loginAsAdmin(page)
     await expect(page).toHaveURL("/dashboard")
 
     await page.goto("/login")
-    await expect(page).toHaveURL("/dashboard", { timeout: 10000 })
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
+    await expect(page.getByText("Sessão ativa")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Continuar para o painel" })).toBeVisible()
+    await expect(page.getByRole("button", { name: /Sair e trocar de usuário/i })).toBeVisible()
   })
 })

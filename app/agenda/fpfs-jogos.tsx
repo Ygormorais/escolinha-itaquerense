@@ -25,11 +25,25 @@ export async function FpfsJogos() {
   const isAdmin = session.role === "admin"
   const agora = new Date()
 
+  const statusClass = (status: string) => {
+    if (status === "aberto") return "border-success-600/20 bg-success-50 text-success-700"
+    if (status === "andamento") return "border-brand-200 bg-brand-50 text-brand-800"
+    if (status === "encerrado") return "border-border bg-muted text-muted-foreground"
+    return "border-border bg-muted text-muted-foreground"
+  }
+
+  const statusLabel = (status: string) => {
+    if (status === "aberto") return "Aberto"
+    if (status === "andamento") return "Em Andamento"
+    if (status === "encerrado") return "Encerrado"
+    return status
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 border-b border-border pb-4">
+      <div className="flex items-center gap-2 border-b border-border border-l-4 border-l-brand-600 pb-4 pl-3">
         <Trophy className="h-5 w-5 text-brand-600" />
-        <h2 className="font-heading text-xl font-bold tracking-tight text-foreground">
+        <h2 className="font-heading text-xl font-extrabold tracking-tight text-foreground">
           Jogos FPFS
         </h2>
       </div>
@@ -44,14 +58,17 @@ export async function FpfsJogos() {
           .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
 
         return (
-          <Card key={camp.id}>
-            <CardHeader className="pb-3">
+          <Card key={camp.id} className="overflow-hidden border-border/80 border-l-4 border-l-brand-600 shadow-sm">
+            <CardHeader className="border-b border-black/5 bg-[var(--color-paper-50)]/50 pb-3 dark:bg-muted/20">
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <CardTitle className="text-base">{camp.nome}</CardTitle>
-                  <Badge variant="outline" className="capitalize text-xs">
-                    {camp.status}
+                <div className="flex flex-wrap items-center gap-2">
+                  <CardTitle className="font-heading text-base font-extrabold">{camp.nome}</CardTitle>
+                  <Badge variant="outline" className={`text-xs ${statusClass(camp.status)}`}>
+                    {statusLabel(camp.status)}
                   </Badge>
+                  <span className="inline-flex items-center gap-1 rounded border border-success-200 bg-success-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-success-700">
+                    FPFS
+                  </span>
                   {camp.fpfsSyncEm && (
                     <span className="text-xs text-muted-foreground">
                       Atualizado {format(new Date(camp.fpfsSyncEm), "dd/MM 'às' HH'h'mm", { locale: ptBR })}

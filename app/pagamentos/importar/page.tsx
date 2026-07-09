@@ -7,7 +7,7 @@ export const metadata = { title: "Importar Extrato OFX — Pagamentos" }
 export default async function ImportarExtratoPage() {
   await requireAuth()
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <div>
         <a
           href="/pagamentos"

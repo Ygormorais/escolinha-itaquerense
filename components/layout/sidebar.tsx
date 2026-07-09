@@ -135,30 +135,38 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
   ]
 
   return (
-    <aside className="hidden md:flex h-screen w-64 flex-col border-r border-border bg-card">
+    <aside className="flex h-full min-h-screen w-64 flex-col border-r border-border bg-[var(--color-paper-50)] dark:bg-card md:h-screen">
+      {/* faixa de marca alvirrubra */}
+      <div className="h-1 w-full bg-gradient-to-r from-brand-950 via-brand-600 to-brand-500" aria-hidden />
+
       <div className="flex h-16 items-center gap-3 border-b border-border px-4">
         <Image
           src="/logo.png"
           alt="E.C. Itaquerense"
-          width={36}
-          height={36}
+          width={40}
+          height={40}
           priority
-          className="rounded-lg object-contain"
+          className="rounded-xl object-contain shadow-sm ring-1 ring-brand-100"
           aria-hidden="true"
         />
-        <span className="font-heading text-sm font-bold leading-tight text-brand-900 dark:text-brand-300">
-          Escolinha<br />Itaquerense
-        </span>
+        <div className="min-w-0">
+          <p className="font-heading text-[15px] font-extrabold leading-tight tracking-tight text-brand-600">
+            Escolinha
+          </p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Itaquerense · Admin
+          </p>
+        </div>
       </div>
 
       <div className="px-3 pt-3">
         <BuscaGlobal />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-4 overflow-y-auto p-3 pt-4" aria-label="Navegação principal">
+      <nav className="flex flex-1 flex-col gap-5 overflow-y-auto p-3 pt-4" aria-label="Navegação principal">
         {navGroups.map((group) => (
           <div key={group.label}>
-            <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-800/70 dark:text-brand-300/70">
               {group.label}
             </p>
             <div className="flex flex-col gap-0.5">
@@ -171,16 +179,16 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                     onClick={onClose}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-brand-50 text-brand-800 font-semibold before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:rounded-r-full before:bg-brand-600"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-brand-50 text-brand-800 font-semibold shadow-sm ring-1 ring-brand-100 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r-full before:bg-brand-600"
+                        : "text-muted-foreground hover:bg-white hover:text-foreground hover:shadow-sm dark:hover:bg-muted"
                     )}
                   >
-                    <Icon className="size-4 shrink-0" />
+                    <Icon className={cn("size-4 shrink-0", isActive && "text-brand-600")} />
                     <span className="flex-1 truncate">{label}</span>
                     {badge != null && badge > 0 && (
-                      <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+                      <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-semibold text-white">
                         {badge > 99 ? "99+" : badge}
                       </span>
                     )}
@@ -192,10 +200,10 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                   <button
                     onClick={() => setRelOpen((v) => !v)}
                     className={cn(
-                      "relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                       pathname.startsWith("/relatorio")
-                        ? "bg-brand-50 text-brand-800 font-semibold"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-brand-50 text-brand-800 font-semibold ring-1 ring-brand-100"
+                        : "text-muted-foreground hover:bg-white hover:text-foreground dark:hover:bg-muted"
                     )}
                   >
                     <BarChart3 className="size-4 shrink-0" />
@@ -203,7 +211,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                     <ChevronRight className={cn("size-3.5 shrink-0 transition-transform", relOpen && "rotate-90")} />
                   </button>
                   {relOpen && (
-                    <div className="ml-4 flex flex-col gap-0.5 border-l border-border pl-3">
+                    <div className="ml-4 flex flex-col gap-0.5 border-l-2 border-brand-100 pl-3 dark:border-brand-900">
                       {filterByRole([
                         { href: "/relatorio", label: "Financeiro", icon: BarChart3 },
                         { href: "/relatorio/turmas", label: "Por Turma", icon: Users2 },
@@ -219,7 +227,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                             onClick={onClose}
                             aria-current={isActive ? "page" : undefined}
                             className={cn(
-                              "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors",
+                              "flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors",
                               isActive
                                 ? "text-brand-800 font-semibold"
                                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -239,8 +247,8 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
         ))}
       </nav>
 
-      <div className="border-t border-border px-4 py-3 flex items-center justify-between">
-        <p className="text-[10px] text-muted-foreground">E.C. Itaquerense · v0.1</p>
+      <div className="border-t border-border bg-white/60 px-4 py-3 flex items-center justify-between dark:bg-card">
+        <p className="text-[10px] font-medium text-muted-foreground">E.C. Itaquerense</p>
         <div className="flex items-center gap-1">
           <OnboardingRestart />
           <ThemeToggle />

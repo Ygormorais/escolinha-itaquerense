@@ -46,7 +46,7 @@ export default async function TecnicoPage() {
   const totalFreqHoje = frequenciaHoje.length
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Painel do Técnico"
         description={format(now, "EEEE, dd 'de' MMMM", { locale: ptBR })}

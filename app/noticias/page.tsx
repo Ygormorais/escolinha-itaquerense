@@ -10,7 +10,7 @@ export default async function NoticiasPage() {
   const publicadas = noticias.filter((n) => n.publicado).length
   const destaques = noticias.filter((n) => n.destaque).length
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Notícias"
         description={`${plural(noticias.length, "publicação cadastrada", "publicações cadastradas")} · ${publicadas} publicadas · ${destaques} em destaque`}

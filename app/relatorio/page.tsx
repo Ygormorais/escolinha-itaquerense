@@ -79,7 +79,7 @@ export default async function RelatorioPage({
     .sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="relatorio-print flex flex-col gap-6 p-6">
+    <div className="relatorio-print flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <RelatorioPrintStyle />
       <RelatorioNav />
       <PageHeader

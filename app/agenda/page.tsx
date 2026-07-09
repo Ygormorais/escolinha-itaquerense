@@ -49,7 +49,7 @@ export default async function AgendaPage({
   }))
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Agenda"
         description="Calendário de treinos, jogos, eventos e reuniões"

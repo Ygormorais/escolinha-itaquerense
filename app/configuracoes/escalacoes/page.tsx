@@ -37,7 +37,7 @@ export default async function ConvocacoesPage() {
   const passadas = partidas.filter((p) => p.data < agora).reverse().slice(0, 5)
 
   return (
-    <div className="flex flex-col gap-8 p-6 lg:p-8">
+    <div className="flex flex-col gap-8 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Convocações"
         description="Monte a escalação de cada jogo arrastando os jogadores para a quadra"

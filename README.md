@@ -73,19 +73,25 @@ tela do campeonato (Editar):
   destacar nossa linha na classificação e identificar nossos jogos).
 
 A sincronização busca **classificação** e **jogos** do site oficial e grava no banco; as telas
-do responsável leem sempre do banco (nunca da FPFS ao vivo). Disparo:
+públicas e do responsável leem do banco (nunca da FPFS ao vivo). Disparo:
 
-- **Manual:** botão "Atualizar da FPFS" na tela do campeonato.
-- **Automático (cron externo):** agende no host uma chamada à rota protegida, reutilizando o
-  `CRON_SECRET` (header `Authorization: Bearer`). Recomendado a cada 3–6 h, mais frequente em
-  dias de rodada:
+- **Manual (admin):** botão "Atualizar da FPFS" no campeonato, ou `npm run fpfs:sync`.
+- **Automático (recomendado):** a cada **2 horas** o cron chama `/api/cron/fpfs` e atualiza
+  todos os campeonatos **ativos** com evento FPFS. A landing e `/resultados` são revalidadas.
 
+  **VPS (crontab):**
+  ```bash
+  bash deploy/install-fpfs-cron.sh https://SEU_DOMINIO
   ```
-  0 */4 * * * curl -s "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SECRET"
+
+  **Manual / teste:**
+  ```bash
+  curl -s "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SECRET"
   ```
 
-  Sincroniza todos os campeonatos com evento FPFS configurado. Para um único campeonato, passe
-  `?campeonatoId=N` na URL.
+  **Vercel:** `vercel.json` já agenda `15 */2 * * *` (exige `CRON_SECRET` no projeto).
+
+  Um único campeonato: `?campeonatoId=N` na URL.
 
 ## Funcionalidades
 

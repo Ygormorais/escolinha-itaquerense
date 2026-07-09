@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { inter, playfair } from "@/lib/public-fonts"
+import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase, PUB_HDR_CSS } from "@/lib/public-css"
 import { PublicHeader } from "@/components/public/public-header"
 import { MatriculaForm } from "./matricula-form"
@@ -151,7 +151,7 @@ const TRUST = [
 
 export default function MatriculaPage() {
   return (
-    <div className={`mat ${inter.variable} ${playfair.variable}`}>
+    <div className={`mat ${publicFontClass}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
       <PublicHeader subtitle="Pré-Matrícula" />

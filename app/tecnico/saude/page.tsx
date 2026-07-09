@@ -39,7 +39,7 @@ export default async function TecnicoSaudePage() {
   )
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <div>
         <Link href="/tecnico" className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" /> Painel do Técnico

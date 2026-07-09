@@ -91,7 +91,7 @@ export default async function RelatorioTurmasPage() {
   const mesLabel = format(now, "MMMM yyyy", { locale: ptBR })
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Relatório por Turma"
         description={mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1)}

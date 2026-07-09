@@ -20,7 +20,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-border bg-card md:hidden safe-area-bottom"
+      className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-border bg-[var(--color-paper-50)]/95 backdrop-blur md:hidden dark:bg-card/95"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       aria-label="Navegação rápida"
     >
@@ -31,13 +31,19 @@ export function BottomNav() {
             key={href}
             href={href}
             className={cn(
-              "flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] font-medium transition-colors min-h-[44px] min-w-[44px] justify-center",
+              "relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 px-3 py-1.5 text-[10px] font-semibold transition-colors",
               isActive
-                ? "text-brand-800"
+                ? "text-brand-600"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon className="size-5" />
+            {isActive && (
+              <span
+                className="absolute top-0 h-0.5 w-8 rounded-b-full bg-brand-600"
+                aria-hidden
+              />
+            )}
+            <Icon className="size-5" strokeWidth={isActive ? 2.25 : 2} />
             {label}
           </Link>
         )

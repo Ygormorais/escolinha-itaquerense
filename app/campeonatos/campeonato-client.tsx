@@ -39,10 +39,19 @@ type Campeonato = {
   _count: { inscricoes: number }
 }
 
-const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
-  aberto: { label: "Aberto", variant: "secondary" },
-  andamento: { label: "Em Andamento", variant: "default" },
-  encerrado: { label: "Encerrado", variant: "outline" },
+const STATUS_MAP: Record<string, { label: string; className: string }> = {
+  aberto: {
+    label: "Aberto",
+    className: "border-success-600/20 bg-success-50 text-success-700",
+  },
+  andamento: {
+    label: "Em Andamento",
+    className: "border-brand-200 bg-brand-50 text-brand-800",
+  },
+  encerrado: {
+    label: "Encerrado",
+    className: "border-border bg-muted text-muted-foreground",
+  },
 }
 
 export function CampeonatoClient({
@@ -143,43 +152,43 @@ export function CampeonatoClient({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Card>
+        <Card className="border-border/80 border-l-4 border-l-brand-600 shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Total</CardTitle>
+            <CardTitle className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{campeonatos.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">{plural(encerrados, "encerrado", "encerrados", "nenhum")}</p>
+            <p className="font-heading text-2xl font-extrabold tabular-nums">{campeonatos.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{plural(encerrados, "encerrado", "encerrados", "nenhum")}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/80 shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Abertos</CardTitle>
+            <CardTitle className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Abertos</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading text-success-600">{abertos}</p>
+            <p className="font-heading text-2xl font-extrabold tabular-nums text-success-600">{abertos}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/80 shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Em Andamento</CardTitle>
+            <CardTitle className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Em Andamento</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading text-brand-600">{andamento}</p>
+            <p className="font-heading text-2xl font-extrabold tabular-nums text-brand-600">{andamento}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/80 shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Receita Potencial</CardTitle>
+            <CardTitle className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Receita Potencial</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{formatMoney(receitaPotencial)}</p>
-            <p className="text-xs text-muted-foreground mt-1">{totalInscricoes} inscricoes no total</p>
+            <p className="font-heading text-2xl font-extrabold tabular-nums">{formatMoney(receitaPotencial)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{totalInscricoes} inscricoes no total</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-card p-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-[220px] flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -322,26 +331,32 @@ export function CampeonatoClient({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filtrados.map((c) => {
           const st = STATUS_MAP[c.status] || STATUS_MAP.aberto
+          const accent =
+            c.status === "andamento"
+              ? "border-l-brand-600"
+              : c.status === "aberto"
+              ? "border-l-success-600"
+              : "border-l-muted-foreground/40"
           return (
             <Link key={c.id} href={`/campeonatos/${c.id}`}>
-              <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-brand-300">
+              <Card className={`group h-full cursor-pointer border-border/80 border-l-4 ${accent} shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md`}>
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="size-5 text-brand-600" />
-                      <CardTitle className="text-base">{c.nome}</CardTitle>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Trophy className="size-5 shrink-0 text-brand-600" />
+                      <CardTitle className="truncate font-heading text-base font-extrabold">{c.nome}</CardTitle>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
                       {c.fpfsEventoId != null ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wide px-1.5 py-0.5 rounded bg-success-50 text-success-700 border border-success-200">
+                        <span className="inline-flex items-center gap-1 rounded border border-success-200 bg-success-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-success-700">
                           <Wifi className="size-2.5" /> FPFS
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                        <span className="inline-flex items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-muted-foreground">
                           <WifiOff className="size-2.5" /> Sem FPFS
                         </span>
                       )}
-                      <Badge variant={st.variant}>{st.label}</Badge>
+                      <Badge variant="outline" className={st.className}>{st.label}</Badge>
                     </div>
                   </div>
                   {c.descricao && (

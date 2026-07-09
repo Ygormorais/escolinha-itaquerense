@@ -40,7 +40,7 @@ export default async function DinheiroPage() {
   const total = entradas.reduce((s, e) => s + e.valor, 0)
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Dinheiro"
         description={`${plural(entradas.length, "entrada", "entradas", "nenhuma")} no mês · ${formatMoney(total)}`}

@@ -25,17 +25,23 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:m-2 focus:rounded-lg focus:bg-brand-800 focus:p-3 focus:text-white">
         Pular para o conteúdo principal
       </a>
-      <header className="flex h-14 items-center gap-3 border-b border-border bg-card px-4 md:hidden">
+      <header className="relative flex h-14 items-center gap-3 border-b border-border bg-[var(--color-paper-50)] px-4 md:hidden dark:bg-card">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-brand-950 via-brand-600 to-brand-500" aria-hidden />
         <button
           onClick={() => setSidebarOpen(true)}
-          className="flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
+          className="flex size-10 items-center justify-center rounded-xl text-brand-700 hover:bg-brand-50"
           aria-label="Abrir menu de navegação"
         >
           <Menu className="size-5" />
         </button>
-        <span className="font-heading text-sm font-bold text-brand-900">
-          E.C. Itaquerense
-        </span>
+        <div className="min-w-0">
+          <p className="font-heading text-sm font-extrabold tracking-tight text-brand-600">
+            E.C. Itaquerense
+          </p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Painel admin
+          </p>
+        </div>
       </header>
 
       <div className="hidden md:flex">

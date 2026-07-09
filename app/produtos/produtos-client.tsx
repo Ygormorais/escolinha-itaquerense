@@ -273,7 +273,7 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
   }
 
   return (
-    <div className="space-y-6 p-6 lg:p-8">
+    <div className="space-y-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-bold tracking-tight flex items-center gap-2">
           <ShoppingBag className="size-6 text-brand-600" />

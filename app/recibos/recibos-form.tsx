@@ -99,7 +99,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
         }
       `}</style>
 
-      <div className="flex flex-col gap-6 p-6 no-print">
+      <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 no-print dark:bg-transparent">
         <PageHeader
           title="Recibos"
           description="Geração e impressão de recibos de pagamento"

@@ -11,7 +11,7 @@ export const metadata = { title: "Configurações — Escolinha Itaquerense" }
 export default async function ConfiguracoesPage() {
   const config = await getClubConfig()
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Configurações"
         description="Dados do clube exibidos nos recibos"

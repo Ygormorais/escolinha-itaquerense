@@ -28,7 +28,7 @@ export default async function MatriculasPage() {
   const pendentes = renovacoes.filter((r) => r.status === "pendente").length
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader title="Matrículas" description="Pré-matrículas e renovações recebidas." />
 
       <div className="space-y-8">

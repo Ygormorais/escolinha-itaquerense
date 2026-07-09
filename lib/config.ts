@@ -29,7 +29,7 @@ const DEFAULT: ClubConfig = {
   metaMensal: 0,
   capacidadeTurma: 20,
   chavePix: "ygorcamisa1@gmail.com",
-  whatsapp: "5511999999999",
+  whatsapp: "5511958686579",
   googleCalendarId: "",
   diaVencimento: 10,
   intervaloDiasLembreteInadimplencia: 7,

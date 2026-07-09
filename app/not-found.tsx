@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { inter, playfair } from "@/lib/public-fonts"
+import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase } from "@/lib/public-css"
 
 const css = `
@@ -31,7 +31,7 @@ const css = `
 
 export default function NotFound() {
   return (
-    <div className={`${inter.variable} ${playfair.variable} nf`}>
+    <div className={`${publicFontClass} nf`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <Image src="/logo.png" alt="E.C. Itaquerense" width={64} height={64} className="nf-logo" />
       <div className="nf-code">404</div>

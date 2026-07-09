@@ -41,7 +41,7 @@ export default async function ComunicadosPage() {
   }
 
   return (
-    <div className="space-y-6 p-6 lg:p-8">
+    <div className="space-y-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Comunicados"
         description="Abra o WhatsApp com o aviso pronto para enviar a um grupo ou lista de transmissão"

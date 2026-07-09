@@ -55,7 +55,7 @@ export function TurmasClient({
   const totalExibidos = alunosFiltrados.length
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Turmas"
         description={`${plural(totalExibidos, "aluno", "alunos", "nenhum")} em ${plural(turmas.length, "turma", "turmas", "nenhuma")}`}

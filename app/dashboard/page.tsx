@@ -263,7 +263,7 @@ export default async function DashboardPage({
   const custosAnterior = mesAnteriorCustos.custos
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Dashboard"
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}

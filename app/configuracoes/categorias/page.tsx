@@ -22,7 +22,7 @@ export default async function CategoriasPage() {
   }))
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Virada de categoria"
         description={`Categorias propostas pela idade que o aluno completa em ${anoRef}`}
