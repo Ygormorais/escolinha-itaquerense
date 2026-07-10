@@ -9,7 +9,7 @@ import {
 import { TURMAS, HORARIOS } from "@/lib/constants"
 import { criarPreMatricula } from "@/app/actions/matricula"
 
-export function MatriculaForm() {
+export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) {
   const [aluno, setAluno] = useState("")
   const [dataNasc, setDataNasc] = useState("")
   const [turma, setTurma] = useState("Sub-9")
@@ -96,7 +96,28 @@ export function MatriculaForm() {
           <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
         </div>
         <h2>Pré-matrícula enviada!</h2>
-        <p>Recebemos seus dados. Entraremos em contato em até 48h para finalizar a matrícula.</p>
+        <p>
+          Recebemos os dados de {aluno.trim() || "seu filho"}. Nossa equipe entra em contato
+          em até 48h (geralmente pelo WhatsApp) para confirmar a vaga e a documentação.
+        </p>
+        <div className="mat-success-actions">
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              className="mat-success-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Falar no WhatsApp
+            </a>
+          )}
+          <a href="/horarios" className="mat-success-secondary">
+            Ver turmas
+          </a>
+          <a href="/" className="mat-success-secondary">
+            Voltar ao site
+          </a>
+        </div>
       </div>
     )
   }
@@ -247,23 +268,24 @@ export function MatriculaForm() {
           <div className="mat-sec-icon">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14,2 14,8 20,8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10,9 9,9 8,9" /></svg>
           </div>
-          <span className="mat-sec-title">Documentos</span>
+          <span className="mat-sec-title">Documentos (opcional)</span>
           <div className="mat-sec-line" />
         </div>
 
         <div className="mat-field">
-          <label>Anexar documentos (RG, comprovante, etc.)</label>
+          <label>Anexar documentos se já tiver (RG, comprovante, etc.)</label>
+          <p className="mat-hint">Pode enviar depois — a pré-matrícula não depende do anexo.</p>
           <label
             htmlFor="documento"
             className={`mat-upload${uploading ? " uploading" : ""}`}
           >
-            <div className="mat-upload-icon">📎</div>
+            <div className="mat-upload-icon" aria-hidden>↑</div>
             {uploading ? (
               <div className="mat-upload-main" style={{ color: "var(--text-muted)" }}>Enviando...</div>
             ) : (
               <>
-                <div className="mat-upload-main">Clique para selecionar</div>
-                <div className="mat-upload-sub">PDF, JPG ou PNG</div>
+                <div className="mat-upload-main">Clique para selecionar arquivo</div>
+                <div className="mat-upload-sub">PDF, JPG ou PNG · opcional agora</div>
               </>
             )}
             <input
@@ -279,7 +301,7 @@ export function MatriculaForm() {
             <div className="mat-docs">
               {documentos.map((doc, i) => (
                 <div key={i} className="mat-doc">
-                  <span>📄</span>
+                  <span aria-hidden>•</span>
                   {doc.name}
                 </div>
               ))}
@@ -313,10 +335,14 @@ export function MatriculaForm() {
 
       <button type="submit" disabled={pending} className="mat-submit">
         {pending
-          ? <><Loader2 size={20} className="animate-spin" /> Enviando...</>
-          : "Enviar Pré-Matrícula →"
+          ? <><Loader2 size={20} className="animate-spin" /> Enviando…</>
+          : "Enviar pré-matrícula"
         }
       </button>
+      <p className="mat-hint" style={{ textAlign: "center", marginTop: 12 }}>
+        Ao enviar, a secretaria recebe o pedido e retorna em até 48h.{" "}
+        <a href="/horarios">Conferir horários das turmas</a>
+      </p>
     </form>
   )
 }

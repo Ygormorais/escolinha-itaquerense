@@ -463,27 +463,84 @@ a.nc-feature-link,
   right: 12px;
 }
 
+/* Controles: setas laterais no desktop; barra + dots no mobile */
+.nc-controls {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 16px;
+}
+
+.nc-ctrl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border, #E8E2DA);
+  background: var(--bg-card, #fff);
+  color: var(--text, #1C1412);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.nc-ctrl:hover {
+  border-color: var(--red, #C62828);
+  color: var(--red, #C62828);
+}
+
+.nc-ctrl:focus-visible {
+  outline: 2px solid var(--red, #C62828);
+  outline-offset: 2px;
+}
+
 /* Dots */
 .nc-dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   padding-top: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.nc-controls .nc-dots {
+  padding-top: 0;
 }
 
 .nc-dot {
-  width: 8px;
-  height: 8px;
+  /* hit area 44px; bolinha visual menor via box */
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  background: #D4CBC0;
+  background: transparent;
   padding: 0;
+  position: relative;
+  flex-shrink: 0;
   transition: all 0.22s;
 }
 
-.nc-dot.active {
+.nc-dot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #D4CBC0;
+  transform: translate(-50%, -50%);
+  transition: all 0.22s;
+}
+
+.nc-dot.active::after {
   background: var(--red, #C62828);
   width: 26px;
   border-radius: 4px;
@@ -491,13 +548,21 @@ a.nc-feature-link,
 
 .nc-dot:focus-visible {
   outline: 2px solid var(--red, #C62828);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
 /* Mobile */
 @media (max-width: 700px) {
   .nc-arrow {
     display: none;
+  }
+
+  .nc-controls {
+    display: flex;
+  }
+
+  .lp .nc .nc-feature {
+    touch-action: pan-y;
   }
 
   .nc-stage {
@@ -561,7 +626,19 @@ a.nc-feature-link,
 
 @media (prefers-reduced-motion: reduce) {
   .nc-action-primary svg,
-  .nc-dot {
+  .nc-dot,
+  .nc-dot::after,
+  .nc-ctrl {
     transition: none;
+  }
+}
+
+/* Desktop: dots centrados abaixo (sem setas da barra) */
+@media (min-width: 701px) {
+  .nc-controls {
+    display: flex;
+  }
+  .nc-ctrl {
+    display: none;
   }
 }

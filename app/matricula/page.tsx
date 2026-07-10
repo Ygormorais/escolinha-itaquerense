@@ -2,11 +2,13 @@ import Link from "next/link"
 import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase, PUB_HDR_CSS } from "@/lib/public-css"
 import { PublicHeader } from "@/components/public/public-header"
+import { getConfig } from "@/lib/config"
 import { MatriculaForm } from "./matricula-form"
 
 export const metadata = {
   title: "Pré-Matrícula — E.C. Itaquerense",
-  description: "Faça a pré-matrícula do seu filho na Escolinha Itaquerense de Futsal.",
+  description:
+    "Pré-matrícula da escolinha de futsal do E.C. Itaquerense. Envie os dados do aluno e do responsável — respondemos em até 48h.",
 }
 
 const css = `
@@ -125,7 +127,19 @@ const css = `
   }
   .mat-success-icon svg{width:40px;height:40px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
   .mat-success h2{font-family:var(--font-heading),Georgia,serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:10px}
-  .mat-success p{font-size:15px;color:var(--text-muted);line-height:1.65;max-width:380px;margin:0 auto}
+  .mat-success p{font-size:15px;color:var(--text-muted);line-height:1.65;max-width:400px;margin:0 auto 24px}
+  .mat-success-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .mat-success-actions a{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    min-height:44px;padding:10px 18px;border-radius:var(--radius-sm,10px);
+    font-size:14px;font-weight:700;text-decoration:none;transition:transform .15s,box-shadow .15s
+  }
+  .mat-success-primary{background:var(--red);color:#fff;box-shadow:0 4px 14px rgba(198,40,40,.3)}
+  .mat-success-primary:hover{transform:translateY(-1px)}
+  .mat-success-secondary{border:1.5px solid var(--border);color:var(--text);background:var(--bg-elevated,#FFFCF9)}
+  .mat-success-secondary:hover{border-color:var(--red);color:var(--red)}
+  .mat-hint{font-size:12px;color:var(--text-muted);margin-top:8px;line-height:1.5}
+  .mat-hint a{color:var(--red);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 
   /* ── FOOTER ── */
   .mat-foot{border-top:1px solid var(--border);padding:24px}
@@ -146,10 +160,19 @@ const css = `
 const TRUST = [
   "Resposta em até 48h",
   "Vagas limitadas por categoria",
-  "Sem compromisso inicial",
+  "Sem taxa para se inscrever",
 ]
 
-export default function MatriculaPage() {
+export default async function MatriculaPage() {
+  const config = await getConfig()
+  const waDigits = config.whatsapp?.replace(/\D/g, "") ?? ""
+  const whatsappUrl =
+    waDigits.length >= 10
+      ? `https://wa.me/${waDigits}?text=${encodeURIComponent(
+          "Olá! Enviei a pré-matrícula e gostaria de mais informações sobre a escolinha.",
+        )}`
+      : null
+
   return (
     <div className={`mat ${publicFontClass}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
@@ -158,9 +181,12 @@ export default function MatriculaPage() {
 
       <div className="mat-hero">
         <div className="inner">
-          <div className="mat-season">⚽ Temporada 2026</div>
+          <div className="mat-season">Temporada 2026 · Futsal de base</div>
           <h1>Pré-Matrícula</h1>
-          <p>Preencha os dados abaixo e entraremos em contato em até 48h para confirmar a vaga e passar as informações sobre mensalidade e documentação.</p>
+          <p>
+            Reserve o interesse do seu filho na escolinha alvirrubra. Preencha o formulário —
+            em até 48h a equipe confirma a vaga e explica mensalidade, horários e documentos.
+          </p>
           <div className="mat-trust">
             {TRUST.map((t) => (
               <span key={t} className="mat-trust-item">{t}</span>
@@ -172,17 +198,23 @@ export default function MatriculaPage() {
       <div className="mat-body">
         <div className="mat-card">
           <div className="mat-form-hdr">
-            <div className="mat-form-title">Formulário de Inscrição</div>
-            <div className="mat-form-sub">Campos com * são obrigatórios</div>
+            <div className="mat-form-title">Dados para a inscrição</div>
+            <div className="mat-form-sub">
+              Campos com * são obrigatórios.{" "}
+              <span className="mat-hint" style={{ display: "inline", margin: 0 }}>
+                Em dúvida sobre a categoria?{" "}
+                <Link href="/horarios">Ver turmas e horários</Link>
+              </span>
+            </div>
           </div>
-          <MatriculaForm />
+          <MatriculaForm whatsappUrl={whatsappUrl} />
         </div>
       </div>
 
       <footer className="mat-foot">
         <div className="inner">
-          <Link href="/responsavel">Portal do Responsável</Link>
-          <Link href="/resultados">Resultados</Link>
+          <Link href="/horarios">Turmas e horários</Link>
+          <Link href="/responsavel">Portal da família</Link>
           <Link href="/">← Voltar ao site</Link>
         </div>
       </footer>

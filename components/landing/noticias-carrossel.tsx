@@ -92,6 +92,7 @@ export function NoticiasCarrossel({
   const [ativo, setAtivo] = useState(0)
   const [pausado, setPausado] = useState(false)
   const tabsRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef<number | null>(null)
 
   const gruposSafe = useMemo((): CategoriaNoticias[] => {
     if (Array.isArray(grupos) && grupos.length > 0) return grupos
@@ -289,6 +290,20 @@ export function NoticiasCarrossel({
           className={`nc-feature nc-feature-${status.tone}`}
           onMouseEnter={() => setPausado(true)}
           onMouseLeave={() => setPausado(false)}
+          onTouchStart={(e) => {
+            touchStartX.current = e.changedTouches[0]?.clientX ?? null
+            setPausado(true)
+          }}
+          onTouchEnd={(e) => {
+            const start = touchStartX.current
+            touchStartX.current = null
+            setPausado(false)
+            if (start == null || items.length <= 1) return
+            const dx = (e.changedTouches[0]?.clientX ?? start) - start
+            if (Math.abs(dx) < 48) return
+            if (dx < 0) next()
+            else prev()
+          }}
         >
           {items.length > 1 && (
             <>
@@ -328,18 +343,36 @@ export function NoticiasCarrossel({
         </div>
 
         {items.length > 1 && (
-          <div className="nc-dots" role="tablist" aria-label="Selecionar jogo">
-            {items.map((it, i) => (
-              <button
-                key={it.id}
-                type="button"
-                role="tab"
-                aria-selected={i === ativo}
-                className={"nc-dot" + (i === ativo ? " active" : "")}
-                onClick={() => setAtivo(i)}
-                aria-label={`${it.casa} versus ${it.fora}`}
-              />
-            ))}
+          <div className="nc-controls">
+            <button
+              type="button"
+              className="nc-ctrl nc-ctrl-prev"
+              onClick={prev}
+              aria-label="Jogo anterior"
+            >
+              <ChevronLeft size={20} aria-hidden />
+            </button>
+            <div className="nc-dots" role="tablist" aria-label="Selecionar jogo">
+              {items.map((it, i) => (
+                <button
+                  key={it.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === ativo}
+                  className={"nc-dot" + (i === ativo ? " active" : "")}
+                  onClick={() => setAtivo(i)}
+                  aria-label={`${it.casa} versus ${it.fora}`}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              className="nc-ctrl nc-ctrl-next"
+              onClick={next}
+              aria-label="Próximo jogo"
+            >
+              <ChevronRight size={20} aria-hidden />
+            </button>
           </div>
         )}
       </div>
