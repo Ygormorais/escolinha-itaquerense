@@ -1,8 +1,8 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useSyncExternalStore } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Lock, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { Lock, Menu, X, ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react"
 import { NoticiasCarrossel } from "./noticias-carrossel"
 import { MateriasTabs } from "./materias-tabs"
 import type { HeroView } from "@/lib/landing/jogos"
@@ -11,7 +11,10 @@ import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { marcos } from "@/lib/landing/conteudo"
 import { publicFontClass } from "@/lib/public-fonts"
+import { useTheme } from "@/components/theme"
 import "./landing.css"
+
+const emptySubscribe = () => () => {}
 
 /** Asset real do clube — hero com foto (não stock). */
 const HERO_BG = "/landing/galeria/sede-elite.webp"
@@ -40,6 +43,8 @@ export function LandingClient({
 }) {
   const [navOpen, setNavOpen] = useState(false)
   const [lbIndex, setLbIndex] = useState<number | null>(null)
+  const { theme, setTheme } = useTheme()
+  const themeMounted = useSyncExternalStore(emptySubscribe, () => true, () => false)
   const closeNav = () => setNavOpen(false)
   const closeLb = () => setLbIndex(null)
 
@@ -87,6 +92,20 @@ export function LandingClient({
               <span className="btn-short">Portal</span>
             </a>
           </div>
+
+          {themeMounted ? (
+            <button
+              type="button"
+              className="btn-theme"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+              aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
+            >
+              {theme === "dark" ? <Sun size={16} strokeWidth={2} aria-hidden /> : <Moon size={16} strokeWidth={2} aria-hidden />}
+            </button>
+          ) : (
+            <span className="btn-theme" aria-hidden style={{ visibility: "hidden" }} />
+          )}
 
           <a
             href="/login"

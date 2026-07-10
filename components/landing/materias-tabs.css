@@ -253,6 +253,11 @@
   padding: 4px 10px;
   line-height: 1;
 }
+html.dark .lp .mt .mt-badge {
+  background: rgba(198, 40, 40, 0.18);
+  border-color: rgba(198, 40, 40, 0.35);
+  color: #ffb4b0;
+}
 
 .lp .mt .mt-fonte {
   font-size: 11px;

@@ -40,10 +40,28 @@ export const PUB_TOKENS = `
   overflow-x:clip
 `
 
+/** Tokens escuros — mantém brand vermelho; superfícies em carvão quente. */
+export const PUB_TOKENS_DARK = `
+  --bg:#14110F;
+  --bg-card:#1F1A18;
+  --bg-muted:#1A1614;
+  --bg-elevated:#24201D;
+  --text:#F5F0EB;
+  --text-muted:#B8AFA8;
+  --text-light:#8A827C;
+  --border:#3A332E;
+  --border-strong:#4A423C;
+  --shadow-sm:0 2px 8px rgba(0,0,0,.28);
+  --shadow-md:0 8px 28px rgba(0,0,0,.36);
+  --shadow-hover:0 14px 40px rgba(198,40,40,.28);
+  --shadow-red:0 8px 28px rgba(198,40,40,.32)
+`
+
 /** CSS base para um namespace público: tokens + reset + link reset */
 export function pubBase(ns: string): string {
   return [
     `.${ns}{${PUB_TOKENS}}`,
+    `html.dark .${ns}{${PUB_TOKENS_DARK}}`,
     `.${ns} *{margin:0;padding:0;box-sizing:border-box}`,
     `.${ns} a{text-decoration:none;color:inherit}`,
     `.${ns} h1,.${ns} h2,.${ns} h3,.${ns} h4{font-family:var(--font-heading),var(--font-playfair),Georgia,serif}`,
@@ -60,6 +78,7 @@ export const PUB_HDR_CSS = `
     color:var(--text);position:sticky;top:0;z-index:100;
     box-shadow:0 1px 0 var(--border), var(--shadow-sm);overflow:hidden
   }
+  html.dark .pub-hdr{background:rgba(31,26,24,.96)}
   .pub-hdr .inner{
     width:min(calc(100% - 48px),1200px);margin:0 auto;
     display:flex;align-items:center;height:68px;gap:14px

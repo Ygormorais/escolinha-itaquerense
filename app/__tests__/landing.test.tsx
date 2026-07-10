@@ -106,6 +106,11 @@ describe("landing publica", () => {
     expect(comVoz).toContain("fatopaulista.com.br")
   })
 
+  it("reserva controle de tema no header (dark mode)", () => {
+    // No SSR o botão real só monta no client; placeholder evita layout shift
+    expect(html).toContain("btn-theme")
+  })
+
   it("hero institucional e carrossel de jogos nao repetem a mesma manchete", () => {
     const comJogos = renderToStaticMarkup(
       <LandingClient

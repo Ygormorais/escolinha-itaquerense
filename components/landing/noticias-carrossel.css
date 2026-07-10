@@ -266,7 +266,7 @@ a.nc-feature-link,
   justify-content: center;
   flex-shrink: 0;
   border: 1px solid var(--border, #E8E2DA);
-  background: #fff;
+  background: var(--bg-card, #fff);
   box-shadow: 0 4px 16px rgba(74, 11, 11, 0.08);
   overflow: hidden;
 }
@@ -290,7 +290,7 @@ a.nc-feature-link,
 
 /* Foto real do escudo (proxy /api/escudo) */
 .lp .nc .nc-crest-photo {
-  background: #fff !important;
+  background: var(--bg-card, #fff) !important;
   border: 1px solid var(--border, #E8E2DA) !important;
   box-shadow: 0 4px 16px rgba(74, 11, 11, 0.08);
   padding: 8px !important;
@@ -631,6 +631,27 @@ a.nc-feature-link,
   .nc-ctrl {
     transition: none;
   }
+}
+
+/* Dark mode — pills e acentos claros */
+html.dark .lp .nc .nc-status-win {
+  background: rgba(15, 122, 90, 0.22);
+  color: #6fd4a8;
+}
+html.dark .lp .nc .nc-status-loss {
+  background: rgba(179, 38, 30, 0.22);
+  color: #f0a09a;
+}
+html.dark .lp .nc .nc-status-draw {
+  background: rgba(138, 130, 124, 0.2);
+  color: #c4bbb4;
+}
+html.dark .lp .nc .nc-status-next {
+  background: rgba(198, 40, 40, 0.22);
+  color: #ffb4b0;
+}
+html.dark .lp .nc .nc-dot::after {
+  background: #5a524c;
 }
 
 /* Desktop: dots centrados abaixo (sem setas da barra) */

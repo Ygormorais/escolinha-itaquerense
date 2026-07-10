@@ -119,6 +119,21 @@ sqlite3 prisma/prod.db ".backup backups/prod-$(date +%F).db"   # backup manual
 Backup automático: agendar o comando acima no cron da VPS (diário) e copiar
 para fora da VM de tempos em tempos.
 
+### Cron FPFS (sync a cada 2 horas)
+
+```bash
+# Na VPS, com CRON_SECRET e NEXT_PUBLIC_APP_URL no .env:
+bash deploy/install-fpfs-cron.sh
+# ou: bash deploy/install-fpfs-cron.sh https://seudominio.com.br
+
+crontab -l | grep escolinha-fpfs
+curl -sS "${NEXT_PUBLIC_APP_URL%/}/api/cron/fpfs" \
+  -H "Authorization: Bearer $CRON_SECRET"
+# log: /tmp/escolinha-fpfs-cron.log
+```
+
+O `setup-vps.sh` já tenta instalar o cron quando `CRON_SECRET` está presente.
+
 ---
 
 ## Domínio

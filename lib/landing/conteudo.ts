@@ -76,18 +76,39 @@ export const marcos: { valor: string; rotulo: string }[] = [
   { valor: "1ª div.", rotulo: "Futsal Paulista" },
 ]
 
-/** Citação real de Moacir Bernardes (“Simão”) — Fato Paulista, 2022. */
-export const vozClube: Depoimento | null = {
-  texto:
-    "A filosofia do clube é a de formar seres humanos do bem e com caráter. O esporte direciona e dá disciplina — muitos que fizeram a escolinha hoje são engenheiros, professores, profissionais de sucesso.",
-  autor: "Moacir Bernardes · “Simão”",
-  categoria: "Coordenador de futsal",
+/**
+ * Citações públicas reais (entrevista Fato Paulista, série Elite 100 anos, 2022).
+ * Não inventar depoimentos de pais/alunos sem consentimento explícito.
+ */
+const FONTE_FATO_2022 = {
   fonte: "Fato Paulista · série Elite 100 anos (2022)",
   fonteUrl:
     "https://fatopaulista.com.br/futsal-do-elite-orgulha-a-zona-leste-com-conquistas-e-revelando-craques/",
-}
+} as const
 
-export const depoimentos: Depoimento[] = vozClube ? [vozClube] : []
+export const depoimentos: Depoimento[] = [
+  {
+    texto:
+      "A filosofia do clube é a de formar seres humanos do bem e com caráter. O esporte direciona e dá disciplina — muitos que fizeram a escolinha hoje são engenheiros, professores, profissionais de sucesso.",
+    autor: "Moacir Bernardes · “Simão”",
+    categoria: "Coordenador de futsal",
+    ...FONTE_FATO_2022,
+  },
+  {
+    texto:
+      "Quem quiser trazer os filhos para a escolinha será bem-vindo, podendo pagar ou não a mensalidade. Vamos acolher: o grande objetivo é formar o caráter — o esporte direciona e dá disciplina.",
+    autor: "Moacir Bernardes · “Simão”",
+    categoria: "Diretor de Esportes",
+    ...FONTE_FATO_2022,
+  },
+  {
+    texto:
+      "Somos muito gratos ao nosso técnico da época, o Douglinhas, que ficou 15 anos conosco. A grande conquista do clube foi o Mundial Sub-13 na França, em 2012 — todos nós somos eternamente gratos a ele.",
+    autor: "Moacir Bernardes · “Simão”",
+    categoria: "Coordenador de futsal",
+    ...FONTE_FATO_2022,
+  },
+]
 // =====================
 
 export function temSobre(): boolean {

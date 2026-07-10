@@ -81,3 +81,31 @@ git pull && npm ci && npx prisma generate && npx prisma migrate deploy && npm ru
 ```
 
 Rollback de deploy: ver `deploy/rollback.sh` e a seção correspondente em `deploy/README.md`.
+
+---
+
+## Cron FPFS (jogos / classificação a cada 2h)
+
+O endpoint `GET /api/cron/fpfs` exige `Authorization: Bearer $CRON_SECRET`.
+O `setup-vps.sh` tenta instalar o cron se `CRON_SECRET` já estiver no `.env`.
+
+Na VPS (app no ar, domínio ou `NEXT_PUBLIC_APP_URL` definidos):
+
+```bash
+cd ~/escolinha-itaquerense   # ou o path do clone
+# garante CRON_SECRET e NEXT_PUBLIC_APP_URL no .env
+bash deploy/install-fpfs-cron.sh
+# ou explícito:
+bash deploy/install-fpfs-cron.sh https://SEU_DOMINIO
+```
+
+Verificar:
+
+```bash
+crontab -l | grep escolinha-fpfs
+curl -sS "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SECRET"
+# log: /tmp/escolinha-fpfs-cron.log
+```
+
+Sem SSH/VPS local: este passo **não** roda na máquina de desenvolvimento —
+só na instância de produção.
