@@ -114,6 +114,9 @@ export function LandingClient({
               <li><a href="#materias" onClick={closeNav}>Notícias</a></li>
               <li><a href="#sobre" onClick={closeNav}>História</a></li>
               <li><a href="#galeria" onClick={closeNav}>Galeria</a></li>
+              {depoimentos.length > 0 && (
+                <li><a href="#voz" onClick={closeNav}>Voz do clube</a></li>
+              )}
               <li className="nav-access"><a href="/responsavel" onClick={closeNav}>Portal da família</a></li>
             </ul>
           </nav>
@@ -216,16 +219,30 @@ export function LandingClient({
           <section className="depo" id="voz">
             <div className="container">
               <h2 className="section-title">Voz do clube</h2>
-              <div className="grid depo-grid-single">
+              <div className={"grid" + (depoimentos.length === 1 ? " depo-grid-single" : "")}>
                 {depoimentos.map((d, i) => (
-                  <div className="card" key={i}>
+                  <blockquote className="card" key={i}>
                     <div className="quote" aria-hidden="true">&ldquo;</div>
                     <p className="texto">{d.texto}</p>
-                    <div className="autor">
+                    <footer className="autor">
                       <b>{d.autor}</b>
                       {d.categoria && <span>{d.categoria}</span>}
-                    </div>
-                  </div>
+                      {d.fonte && (
+                        d.fonteUrl ? (
+                          <a
+                            className="fonte"
+                            href={d.fonteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Fonte: {d.fonte}
+                          </a>
+                        ) : (
+                          <span className="fonte">Fonte: {d.fonte}</span>
+                        )
+                      )}
+                    </footer>
+                  </blockquote>
                 ))}
               </div>
             </div>
@@ -259,6 +276,7 @@ export function LandingClient({
             <a href="#materias">Notícias</a>
             <a href="#sobre">História</a>
             <a href="#galeria">Galeria</a>
+            {depoimentos.length > 0 && <a href="#voz">Voz do clube</a>}
             <a href="/resultados">Resultados</a>
           </div>
           <div className="fcol">

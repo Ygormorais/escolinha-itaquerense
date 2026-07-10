@@ -172,11 +172,14 @@
 
   .lp .depo .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
   .lp .depo .depo-grid-single{grid-template-columns:1fr;max-width:720px}
-  .lp .depo .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+  .lp .depo .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);margin:0}
   .lp .depo .quote{font-family:var(--font-heading),Georgia,serif;color:var(--red);font-size:40px;line-height:1;margin-bottom:8px}
-  .lp .depo .texto{color:var(--text);line-height:1.7;margin-bottom:18px}
+  .lp .depo .texto{color:var(--text);line-height:1.7;margin-bottom:18px;font-size:clamp(16px,2vw,18px)}
+  .lp .depo .autor{display:flex;flex-direction:column;gap:4px}
   .lp .depo .autor b{display:block;font-size:14px;font-weight:700}
   .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
+  .lp .depo .autor .fonte{font-size:11px;color:var(--text-light);margin-top:6px;text-decoration:none;font-weight:600}
+  .lp .depo .autor a.fonte:hover{color:var(--red);text-decoration:underline;text-underline-offset:2px}
 
   @media(max-width:1180px){
     .lp .btn-access .btn-full{display:none}

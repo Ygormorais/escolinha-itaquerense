@@ -18,6 +18,9 @@ export interface Depoimento {
   autor: string
   /** categoria/turma do filho, ex.: "Sub-11" */
   categoria?: string
+  /** Crédito de fonte pública (não inventar) */
+  fonte?: string
+  fonteUrl?: string
 }
 
 // === CONTEÚDO REAL ===
@@ -79,6 +82,9 @@ export const vozClube: Depoimento | null = {
     "A filosofia do clube é a de formar seres humanos do bem e com caráter. O esporte direciona e dá disciplina — muitos que fizeram a escolinha hoje são engenheiros, professores, profissionais de sucesso.",
   autor: "Moacir Bernardes · “Simão”",
   categoria: "Coordenador de futsal",
+  fonte: "Fato Paulista · série Elite 100 anos (2022)",
+  fonteUrl:
+    "https://fatopaulista.com.br/futsal-do-elite-orgulha-a-zona-leste-com-conquistas-e-revelando-craques/",
 }
 
 export const depoimentos: Depoimento[] = vozClube ? [vozClube] : []

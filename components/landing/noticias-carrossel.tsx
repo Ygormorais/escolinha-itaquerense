@@ -113,7 +113,13 @@ export function NoticiasCarrossel({
     const root = tabsRef.current
     if (!root) return
     const active = root.querySelector<HTMLElement>(".nc-tab.active")
-    active?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" })
+    if (!active) return
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    active.scrollIntoView({
+      inline: "center",
+      block: "nearest",
+      behavior: reduce ? "auto" : "smooth",
+    })
   }, [catSegura])
 
   const prev = useCallback(

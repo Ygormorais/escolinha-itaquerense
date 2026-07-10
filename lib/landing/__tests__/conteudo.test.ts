@@ -22,4 +22,13 @@ describe("conteúdo da landing (config-driven com guarda)", () => {
       expect(f.alt.length).toBeGreaterThan(5)
     }
   })
+
+  it("voz do clube tem citação real com fonte pública", async () => {
+    const { vozClube } = await import("@/lib/landing/conteudo")
+    expect(vozClube).not.toBeNull()
+    expect(vozClube!.texto.length).toBeGreaterThan(40)
+    expect(vozClube!.autor.toLowerCase()).toMatch(/simão|simao|bernardes/)
+    expect(vozClube!.fonte).toMatch(/Fato Paulista/i)
+    expect(vozClube!.fonteUrl).toMatch(/^https:\/\//)
+  })
 })

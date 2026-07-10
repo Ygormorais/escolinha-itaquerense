@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ExternalLink } from "lucide-react"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import type { CategoriaNoticias, NoticiaCard } from "@/lib/landing/noticias"
 import "./resultados-client.css"
 
@@ -222,7 +224,13 @@ export function ResultadosClient({
     const root = tabsRef.current
     if (!root) return
     const active = root.querySelector<HTMLElement>(".rm-tab.active")
-    active?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" })
+    if (!active) return
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    active.scrollIntoView({
+      inline: "center",
+      block: "nearest",
+      behavior: reduce ? "auto" : "smooth",
+    })
   }, [catSegura])
 
   if (gruposSafe.length === 0) {
@@ -328,11 +336,8 @@ export function ResultadosClient({
               {camp.fpfsSyncEm && (
                 <p className="rm-sync">
                   Atualizado em{" "}
-                  {new Date(camp.fpfsSyncEm).toLocaleString("pt-BR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
+                  {format(new Date(camp.fpfsSyncEm), "dd/MM 'às' HH:mm", {
+                    locale: ptBR,
                   })}
                 </p>
               )}

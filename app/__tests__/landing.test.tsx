@@ -93,12 +93,17 @@ describe("landing publica", () => {
             texto: "Formar caráter pelo esporte.",
             autor: 'Moacir Bernardes · "Simão"',
             categoria: "Coordenador de futsal",
+            fonte: "Fato Paulista · série Elite 100 anos (2022)",
+            fonteUrl: "https://fatopaulista.com.br/exemplo/",
           },
         ]}
       />,
     )
     expect(comVoz).toContain("Voz do clube")
     expect(comVoz).toContain("Simão")
+    expect(comVoz).toContain('href="#voz"')
+    expect(comVoz).toContain("Fonte: Fato Paulista")
+    expect(comVoz).toContain("fatopaulista.com.br")
   })
 
   it("hero institucional e carrossel de jogos nao repetem a mesma manchete", () => {

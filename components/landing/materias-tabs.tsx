@@ -126,7 +126,13 @@ export function MateriasTabs({
     const root = tabsRef.current
     if (!root) return
     const active = root.querySelector<HTMLElement>(".mt-tab.active")
-    active?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" })
+    if (!active) return
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    active.scrollIntoView({
+      inline: "center",
+      block: "nearest",
+      behavior: reduce ? "auto" : "smooth",
+    })
   }, [aba])
 
   // Se publicações sumirem e a aba estiver nela, volta para destaques
