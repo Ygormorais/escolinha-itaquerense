@@ -3,6 +3,8 @@
 import { useState } from "react"
 import Image from "next/image"
 import { ImageIcon, Play, ExternalLink } from "lucide-react"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import { VideoModal } from "@/components/responsavel/video-modal"
 import { extractYoutubeId, getYoutubeThumbnail } from "@/lib/youtube"
 
@@ -74,15 +76,13 @@ export function GaleriaMural({ grupos }: { grupos: GrupoCampeonato[] }) {
               const resultado = partida.golsPro != null && partida.golsContra != null
                 ? ` ${partida.golsPro}×${partida.golsContra}`
                 : ""
-              const data = new Date(partida.data).toLocaleDateString("pt-BR", {
-                day: "2-digit",
-                month: "2-digit",
-              })
+              // date-fns (mesmo fuso no SSR e no client) — evita hydration mismatch de toLocaleDateString
+              const data = format(new Date(partida.data), "dd/MM", { locale: ptBR })
               return (
                 <div key={partida.id} className="mb-8">
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                     <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-                    ⚽ {partida.adversario}{resultado} — {data}
+                    {partida.adversario}{resultado} — {data}
                   </h3>
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {midiasPartida.map((m) => (
