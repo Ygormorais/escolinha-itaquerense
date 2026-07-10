@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { CalendarClock } from "lucide-react"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 import { getConfig } from "@/lib/config"
 import { publicFontClass } from "@/lib/public-fonts"
@@ -6,7 +7,11 @@ import { pubBase, PUB_HDR_CSS, PUB_FOOT_CSS } from "@/lib/public-css"
 import { PublicHeader } from "@/components/public/public-header"
 import HorariosClient from "./horarios-client"
 
-export const metadata = { title: "Turmas & Horários — E.C. Itaquerense" }
+export const metadata = {
+  title: "Turmas & Horários — E.C. Itaquerense",
+  description:
+    "Turmas e horários da escolinha e do futsal federado do E.C. Itaquerense. Veja a categoria do seu filho e faça a pré-matrícula.",
+}
 
 const css = `
   ${pubBase("hp")}
@@ -26,6 +31,7 @@ const css = `
     background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:700;
     letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;
     border:1px solid rgba(255,255,255,.3);margin-bottom:22px}
+  .hp .hero-badge svg{flex-shrink:0;opacity:.95}
   .hp .hero h1{font-family:var(--font-heading),Georgia,serif;font-size:54px;font-weight:900;
     line-height:1.05;letter-spacing:-1px;margin-bottom:16px;max-width:700px}
   .hp .hero h1 em{font-style:normal;opacity:.75}
@@ -51,7 +57,6 @@ export default async function HorariosPage() {
 
   return (
     <div className={`${publicFontClass} hp`}>
-      <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/dist/tabler-icons.min.css" rel="stylesheet" />
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
       <PublicHeader subtitle="Turmas & Horários" />
@@ -61,11 +66,14 @@ export default async function HorariosPage() {
         <div className="hero-deco2" />
         <div className="container hero-inner">
           <div className="hero-badge">
-            <i className="ti ti-calendar-time"></i>
+            <CalendarClock size={14} strokeWidth={2.25} aria-hidden />
             Temporada 2026
           </div>
           <h1>Turmas <em>&amp;</em><br />Horários</h1>
-          <p>Escolha a modalidade e a faixa etária certa para o seu filho e dê o primeiro passo na formação esportiva do E.C. Itaquerense.</p>
+          <p>
+            Escolha a modalidade e a faixa etária do seu filho — escolinha de formação ou
+            equipes federadas — e dê o primeiro passo no E.C. Itaquerense.
+          </p>
         </div>
       </div>
 

@@ -237,7 +237,7 @@ export function ResultadosClient({
     return (
       <div className="rm-empty">
         <div className="rm-empty-icon" aria-hidden>
-          ⚽
+          ·
         </div>
         <h2>Nenhum campeonato em andamento</h2>
         <p>
@@ -246,10 +246,10 @@ export function ResultadosClient({
         </p>
         <div className="rm-empty-links">
           <Link href="/horarios" className="rm-btn rm-btn-primary">
-            Ver turmas &amp; horários
+            Ver turmas e horários
           </Link>
           <Link href="/matricula" className="rm-btn rm-btn-secondary">
-            Fazer matrícula
+            Fazer pré-matrícula
           </Link>
         </div>
       </div>
