@@ -419,7 +419,7 @@ export default async function DashboardPage({
       )}
 
       {riscoEvasao.length > 0 && (
-        <Card className="border-danger-200">
+        <Card className="border-danger-600/20">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-danger-600">
               <UserX className="size-4" />

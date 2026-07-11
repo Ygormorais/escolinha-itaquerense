@@ -247,7 +247,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3 gap-4">
               <div>
-                <p className="text-sm font-medium flex items-center gap-1.5"><Star className="size-3.5 text-warning-500" /> Destaque</p>
+                <p className="text-sm font-medium flex items-center gap-1.5"><Star className="size-3.5 text-warning-600" /> Destaque</p>
                 <p className="text-xs text-muted-foreground">Aparece primeiro no carrossel</p>
               </div>
               <Switch checked={form.destaque} onCheckedChange={(v) => setForm({ ...form, destaque: v })} />

@@ -69,7 +69,7 @@ export function FichaMedicaCard(props: Props) {
     <Card className={!temDados && !editing ? "border-dashed" : undefined}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Heart className="size-4 text-danger-500" />
+          <Heart className="size-4 text-danger-600" />
           Ficha Médica
         </CardTitle>
         {!editing ? (
@@ -172,7 +172,7 @@ export function FichaMedicaCard(props: Props) {
               <>
                 {props.tipoSanguineo && (
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-full bg-danger-50 px-2.5 py-1 text-xs font-bold text-danger-700">
+                    <span className="inline-flex items-center rounded-full bg-danger-50 px-2.5 py-1 text-xs font-bold text-danger-600">
                       {props.tipoSanguineo}
                     </span>
                     <span className="text-muted-foreground text-xs">Tipo sanguíneo</span>
@@ -204,7 +204,7 @@ export function FichaMedicaCard(props: Props) {
 
                 {props.alergias && (
                   <div className="rounded-lg border border-warning-200 bg-warning-50 p-3">
-                    <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-warning-700 uppercase tracking-wide">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-warning-600 uppercase tracking-wide">
                       <AlertTriangle className="size-3" />
                       Alergias
                     </div>

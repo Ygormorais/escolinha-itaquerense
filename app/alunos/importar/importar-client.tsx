@@ -175,12 +175,12 @@ export function ImportarAlunosClient() {
                 <span className="font-medium">{plural(resultado.importados, "aluno importado", "alunos importados", "nenhum")} com sucesso</span>
               </div>
               {resultado.erros.length > 0 && (
-                <div className="rounded-lg border border-danger-200 bg-danger-50 p-4">
-                  <div className="flex items-center gap-2 text-danger-700 font-medium mb-2">
+                <div className="rounded-lg border border-danger-600/20 bg-danger-50 p-4">
+                  <div className="flex items-center gap-2 text-danger-600 font-medium mb-2">
                     <AlertCircle className="size-4" />
                     {plural(resultado.erros.length, "linha", "linhas", "nenhuma")} com erro:
                   </div>
-                  <ul className="space-y-1 text-xs text-danger-700">
+                  <ul className="space-y-1 text-xs text-danger-600">
                     {resultado.erros.map((e) => (
                       <li key={e.linha}>Linha {e.linha}: {e.erro}</li>
                     ))}

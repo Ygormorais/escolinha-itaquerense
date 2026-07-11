@@ -192,7 +192,7 @@ export function RelatorioAlunosClient({
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Receita Mensal</p>
-          <p className="mt-1 text-xl font-extrabold text-success-700">{formatMoney(totalMensalidade)}</p>
+          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(totalMensalidade)}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Mensalidade</p>

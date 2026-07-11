@@ -109,7 +109,7 @@ export function FotoUpload({
               variant="ghost"
               size="sm"
               disabled={removing}
-              className="h-auto gap-1 p-0 text-xs text-danger-600 hover:text-danger-700 hover:bg-transparent"
+              className="h-auto gap-1 p-0 text-xs text-danger-600 hover:text-danger-600/80 hover:bg-transparent"
             >
               <Trash2 className="size-3" />
               Remover

@@ -59,7 +59,7 @@ export function ConfirmDialog({
           <Button
             onClick={handleConfirm}
             disabled={pending}
-            className={variant === "danger" ? "bg-danger-600 text-white hover:bg-danger-700" : "bg-warning-600 text-white hover:bg-warning-700"}
+            className={variant === "danger" ? "bg-danger-600 text-white hover:bg-danger-600/90" : "bg-warning-600 text-white hover:bg-warning-600/90"}
           >
             {pending ? <><Loader2 className="size-4 animate-spin" /> Aguarde...</> : confirmLabel}
           </Button>

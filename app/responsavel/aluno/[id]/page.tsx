@@ -250,13 +250,13 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Heart className="size-4 text-danger-500" /> Ficha Médica
+              <Heart className="size-4 text-danger-600" /> Ficha Médica
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {aluno.tipoSanguineo && (
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-danger-50 px-2.5 py-1 text-xs font-bold text-danger-700">
+                <span className="inline-flex items-center rounded-full bg-danger-50 px-2.5 py-1 text-xs font-bold text-danger-600">
                   {aluno.tipoSanguineo}
                 </span>
                 <span className="text-muted-foreground text-xs">Tipo sanguíneo</span>
@@ -282,7 +282,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
             )}
             {aluno.alergias && (
               <div className="rounded-lg border border-warning-200 bg-warning-50 p-3">
-                <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-warning-700 uppercase tracking-wide">
+                <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-warning-600 uppercase tracking-wide">
                   <AlertTriangle className="size-3" /> Alergias
                 </div>
                 <p className="text-xs text-warning-900">{aluno.alergias}</p>
@@ -317,7 +317,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
                   key={u.id}
                   className={`rounded-xl border p-3 text-sm ${
                     u.entregue
-                      ? "border-success-200 bg-success-50"
+                      ? "border-success-600/20 bg-success-50"
                       : "border-black/5 bg-[var(--color-paper-50)]"
                   }`}
                 >

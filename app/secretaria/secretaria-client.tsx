@@ -298,7 +298,7 @@ export function SecretariaClient({
                       <p className="text-sm font-medium">{p.aluno.nome}</p>
                       <p className="text-xs text-muted-foreground">{p.mesReferencia} · {p.formaPagamento}</p>
                     </div>
-                    <span className="text-sm font-semibold text-success-700">
+                    <span className="text-sm font-semibold text-success-600">
                       {formatMoney(p.valorRecebido ?? 0)}
                     </span>
                   </div>
@@ -319,7 +319,7 @@ export function SecretariaClient({
               <ClipboardList className="size-4 text-warning-600" /> Pré-matrículas Pendentes
             </CardTitle>
             {preMatriculasPendentes.length > 0 && (
-              <Badge className="bg-warning-100 text-warning-700 hover:bg-warning-100">
+              <Badge className="bg-warning-50 text-warning-600 hover:bg-warning-50 border border-warning-600/20">
                 {preMatriculasPendentes.length}
               </Badge>
             )}
@@ -369,7 +369,7 @@ export function SecretariaClient({
               <FileText className="size-4 text-danger-600" /> Pendências de Cadastro
             </CardTitle>
             {pendenciasDoc.length > 0 && (
-              <Badge className="bg-danger-100 text-danger-700 hover:bg-danger-100">
+              <Badge className="bg-danger-50 text-danger-600 hover:bg-danger-50 border border-danger-600/20">
                 {pendenciasDoc.length} alunos
               </Badge>
             )}

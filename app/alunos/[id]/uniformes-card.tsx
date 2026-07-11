@@ -140,7 +140,7 @@ export function UniformesCard({ alunoId, uniformes }: { alunoId: number; uniform
             <div
               key={u.id}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
-                u.entregue ? "bg-success-50 border border-success-200" : "bg-muted/40 border border-border"
+                u.entregue ? "bg-success-50 border border-success-600/20" : "bg-muted/40 border border-border"
               }`}
             >
               <div className="flex-1 min-w-0">
