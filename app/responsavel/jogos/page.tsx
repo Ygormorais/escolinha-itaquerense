@@ -14,8 +14,10 @@ import { PortalHero } from "@/components/responsavel/portal-hero"
 import { ConvocacaoCard } from "@/components/responsavel/convocacao-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { categoriaCurta, nomeTime } from "@/lib/landing/times"
+import { candidatosEscudoAdversario, viaProxyEscudo } from "@/lib/landing/escudo-adversario"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+
 
 export const metadata = { title: "Jogos — Escolinha Itaquerense" }
 
@@ -70,6 +72,7 @@ export default async function JogosPage() {
   const partidaSelect = {
     id: true,
     adversario: true,
+    adversarioEscudoUrl: true,
     data: true,
     local: true,
     golsPro: true,
@@ -259,12 +262,49 @@ export default async function JogosPage() {
   )
 }
 
+function AdvCrest({ urls, name }: { urls: string[]; name: string }) {
+  const src = urls[0]
+  const initials =
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? "")
+      .join("") || "ADV"
+  if (!src) {
+    return (
+      <span
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground"
+        aria-hidden
+      >
+        {initials}
+      </span>
+    )
+  }
+  const proxied = viaProxyEscudo(src)
+  return (
+    <span className="relative size-10 shrink-0 overflow-hidden rounded-full border border-border bg-white">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={proxied}
+        alt=""
+        width={40}
+        height={40}
+        className="size-full object-contain p-0.5"
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </span>
+  )
+}
+
 function MatchCard({
   p,
 }: {
   p: {
     id: number
     adversario: string
+    adversarioEscudoUrl: string | null
     data: Date
     local: string
     golsPro: number | null
@@ -280,6 +320,7 @@ function MatchCard({
   const hora = format(new Date(p.data), "HH:mm", { locale: ptBR })
   const placar =
     p.golsPro != null && p.golsContra != null ? `${p.golsPro} × ${p.golsContra}` : null
+  const crests = candidatosEscudoAdversario(p.adversario, p.adversarioEscudoUrl)
 
   return (
     <article
@@ -290,13 +331,16 @@ function MatchCard({
       <div className={cn("h-1 bg-gradient-to-r", meta.bar)} aria-hidden />
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Itaquerense ×
-            </p>
-            <h3 className="font-heading text-base font-extrabold leading-snug tracking-tight truncate">
-              {adv}
-            </h3>
+          <div className="flex min-w-0 items-start gap-3">
+            <AdvCrest urls={crests} name={adv} />
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                Itaquerense ×
+              </p>
+              <h3 className="font-heading text-base font-extrabold leading-snug tracking-tight truncate">
+                {adv}
+              </h3>
+            </div>
           </div>
           <Badge variant="outline" className={cn("shrink-0 text-[10px] font-bold", meta.className)}>
             {meta.label}
