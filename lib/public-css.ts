@@ -93,6 +93,15 @@ export const PUB_HDR_CSS = `
     font-size:10px;color:var(--text-light);text-transform:uppercase;
     letter-spacing:1.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
   }
+  .pub-hdr .pub-hdr-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .pub-hdr .pub-theme{
+    width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+    color:var(--text-light);background:transparent;padding:0
+  }
+  .pub-hdr .pub-theme:hover{
+    color:var(--text);border-color:var(--text-muted);background:var(--bg-muted)
+  }
+  .pub-hdr .pub-theme:focus-visible{outline:3px solid var(--red);outline-offset:2px}
   .pub-hdr .back{
     font-size:12px;font-weight:600;color:var(--red);
     border:1.5px solid var(--red);border-radius:999px;padding:7px 14px;
@@ -106,6 +115,7 @@ export const PUB_HDR_CSS = `
     .pub-hdr .brand img{width:34px;height:34px;flex-basis:34px}
     .pub-hdr .brand-name{font-size:15px}
     .pub-hdr .brand-sub{font-size:9px;letter-spacing:1px}
+    .pub-hdr .pub-theme{width:34px;height:34px}
     .pub-hdr .back{padding:6px 10px;font-size:11px;min-height:36px}
   }
   @media(max-width:380px){
