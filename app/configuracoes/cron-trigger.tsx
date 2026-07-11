@@ -47,7 +47,7 @@ export function CronTrigger() {
               </p>
             ) : (
               <>
-                <p className="flex items-center gap-2 text-success-700 font-medium">
+                <p className="flex items-center gap-2 text-success-600 font-medium">
                   <CheckCircle className="size-4 shrink-0" /> Executado com sucesso
                 </p>
                 <p className="text-muted-foreground">

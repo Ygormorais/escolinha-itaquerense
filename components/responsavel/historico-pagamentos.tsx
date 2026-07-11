@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils"
 import { calcularHistorico, type PagamentoMin } from "@/lib/historico-pagamentos"
 
 const STATUS_STYLES = {
-  pago: "bg-success-100 text-success-700 border-success-200 dark:bg-success-900/30 dark:text-success-400",
-  pendente: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400",
-  atrasado: "bg-destructive/10 text-destructive border-destructive/20 dark:bg-destructive/20",
+  pago: "bg-success-50 text-success-600 border-success-600/20 dark:bg-success-600/15 dark:text-success-50",
+  pendente: "bg-warning-50 text-warning-600 border-warning-600/20 dark:bg-warning-600/15 dark:text-warning-50",
+  atrasado: "bg-danger-50 text-danger-600 border-danger-600/20 dark:bg-danger-600/15 dark:text-danger-50",
   "sem-registro": "bg-muted text-muted-foreground border-border",
 }
 

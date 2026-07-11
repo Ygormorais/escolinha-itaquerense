@@ -42,7 +42,7 @@ type Campeonato = {
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
   aberto: {
     label: "Aberto",
-    className: "border-success-600/20 bg-success-50 text-success-700",
+    className: "border-success-600/20 bg-success-50 text-success-600",
   },
   andamento: {
     label: "Em Andamento",
@@ -348,7 +348,7 @@ export function CampeonatoClient({
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
                       {c.fpfsEventoId != null ? (
-                        <span className="inline-flex items-center gap-1 rounded border border-success-200 bg-success-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-success-700">
+                        <span className="inline-flex items-center gap-1 rounded border border-success-600/20 bg-success-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-success-600">
                           <Wifi className="size-2.5" /> FPFS
                         </span>
                       ) : (

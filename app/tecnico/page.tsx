@@ -239,10 +239,10 @@ export default async function TecnicoPage() {
         )}
 
         {/* Fichas de Saúde */}
-        <Card className="border-danger-100 bg-danger-50/30">
+        <Card className="border-danger-600/20 bg-danger-50/30">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between text-sm font-heading">
-              <span className="flex items-center gap-2"><Heart className="size-4 text-danger-500" /> Fichas de Saúde</span>
+              <span className="flex items-center gap-2"><Heart className="size-4 text-danger-600" /> Fichas de Saúde</span>
               <Link href="/tecnico/saude" className="text-xs font-normal text-brand-700 hover:underline">
                 Ver fichas →
               </Link>

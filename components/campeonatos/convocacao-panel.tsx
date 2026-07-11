@@ -41,11 +41,11 @@ export function ConvocacaoPanel({
       <CardContent className="space-y-3">
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div className="rounded-lg bg-success-50 px-2 py-2">
-            <p className="text-lg font-bold text-success-700">{confirmados}</p>
+            <p className="text-lg font-bold text-success-600">{confirmados}</p>
             <p className="text-success-600">Confirmados</p>
           </div>
           <div className="rounded-lg bg-danger-50 px-2 py-2">
-            <p className="text-lg font-bold text-danger-700">{ausentes}</p>
+            <p className="text-lg font-bold text-danger-600">{ausentes}</p>
             <p className="text-danger-600">Ausentes</p>
           </div>
           <div className="rounded-lg bg-muted px-2 py-2">

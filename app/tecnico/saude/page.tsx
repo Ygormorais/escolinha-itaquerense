@@ -56,9 +56,9 @@ export default async function TecnicoSaudePage() {
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total</p>
           <p className="mt-1 text-2xl font-extrabold">{alunos.length}</p>
         </div>
-        <div className="rounded-xl border bg-warning-50 border-warning-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-warning-700">Com Alerta</p>
-          <p className="mt-1 text-2xl font-extrabold text-warning-800">{comAlerta.length}</p>
+        <div className="rounded-xl border bg-warning-50 border-warning-600/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-warning-600">Com Alerta</p>
+          <p className="mt-1 text-2xl font-extrabold text-warning-600">{comAlerta.length}</p>
         </div>
         <div className="rounded-xl border bg-muted/50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sem Ficha</p>
@@ -73,7 +73,7 @@ export default async function TecnicoSaudePage() {
         <Card key={turma}>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Heart className="size-4 text-danger-500" />
+              <Heart className="size-4 text-danger-600" />
               {turma}
               <Badge variant="secondary" className="ml-auto">{lista.length} alunos</Badge>
             </CardTitle>
@@ -84,18 +84,18 @@ export default async function TecnicoSaudePage() {
                 const temAlerta = a.alergias || a.condicaoSaude
                 const semInfo = !a.tipoSanguineo && !a.alergias && !a.condicaoSaude && !a.contatoEmergenciaNome
                 return (
-                  <div key={a.id} className={`px-6 py-4 ${temAlerta ? "bg-warning-50/40" : ""}`}>
+                  <div key={a.id} className={`px-6 py-4 transition-colors hover:bg-muted/30 ${temAlerta ? "bg-warning-50/40" : ""}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <Link href={`/alunos/${a.id}`} className="font-medium hover:underline text-sm">
                           {a.nome}
                         </Link>
                         {a.tipoSanguineo && (
-                          <span className="rounded-full bg-danger-50 px-2 py-0.5 text-[10px] font-bold text-danger-700">
+                          <span className="rounded-full bg-danger-50 px-2 py-0.5 text-[10px] font-bold text-danger-600">
                             {a.tipoSanguineo}
                           </span>
                         )}
-                        {temAlerta && <AlertTriangle className="size-3.5 text-warning-500" />}
+                        {temAlerta && <AlertTriangle className="size-3.5 text-warning-600" />}
                         {semInfo && <span className="text-[10px] text-muted-foreground italic">sem ficha</span>}
                       </div>
 
@@ -120,7 +120,7 @@ export default async function TecnicoSaudePage() {
                     {a.alergias && (
                       <div className="mt-2 flex items-start gap-1.5">
                         <AlertTriangle className="size-3 shrink-0 text-warning-600 mt-0.5" />
-                        <p className="text-xs text-warning-800">
+                        <p className="text-xs text-warning-600">
                           <strong>Alergias:</strong> {a.alergias}
                         </p>
                       </div>

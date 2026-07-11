@@ -120,8 +120,8 @@ function PartidaCard({ partida: p, passado }: { partida: Partida; passado?: bool
           </div>
           <Badge
             className={completa
-              ? "bg-success-100 text-success-700"
-              : "bg-warning-100 text-warning-700"}
+              ? "bg-success-50 text-success-600 border border-success-600/20"
+              : "bg-warning-50 text-warning-600 border border-warning-600/20"}
           >
             {totalTitulares}/5
           </Badge>
