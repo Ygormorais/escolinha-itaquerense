@@ -113,17 +113,17 @@ export default async function RelatorioTurmasPage() {
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Alunos</p>
           <p className="mt-1 text-2xl font-extrabold">{totalGeral.alunos}</p>
         </div>
-        <div className="rounded-xl border bg-success-50 border-success-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-success-700">Pagos</p>
-          <p className="mt-1 text-2xl font-extrabold text-success-800">{totalGeral.pagos}</p>
+        <div className="rounded-xl border bg-success-50 border-success-600/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-success-600">Pagos</p>
+          <p className="mt-1 text-2xl font-extrabold text-success-600">{totalGeral.pagos}</p>
         </div>
-        <div className={`rounded-xl border p-4 ${totalGeral.inadimplentes > 0 ? "bg-danger-50 border-danger-200" : "bg-card"}`}>
-          <p className={`text-xs font-semibold uppercase tracking-wider ${totalGeral.inadimplentes > 0 ? "text-danger-700" : "text-muted-foreground"}`}>Inadimplentes</p>
-          <p className={`mt-1 text-2xl font-extrabold ${totalGeral.inadimplentes > 0 ? "text-danger-800" : ""}`}>{totalGeral.inadimplentes}</p>
+        <div className={`rounded-xl border p-4 ${totalGeral.inadimplentes > 0 ? "bg-danger-50 border-danger-600/20" : "bg-card"}`}>
+          <p className={`text-xs font-semibold uppercase tracking-wider ${totalGeral.inadimplentes > 0 ? "text-danger-600" : "text-muted-foreground"}`}>Inadimplentes</p>
+          <p className={`mt-1 text-2xl font-extrabold ${totalGeral.inadimplentes > 0 ? "text-danger-600" : ""}`}>{totalGeral.inadimplentes}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Realizado</p>
-          <p className="mt-1 text-2xl font-extrabold text-brand-700">
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">
             {(totalGeral.receitaRealizada ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
           <p className="text-xs text-muted-foreground">de {(totalGeral.receitaPrevista ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
@@ -133,13 +133,13 @@ export default async function RelatorioTurmasPage() {
       {/* Por turma */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {turmaStats.map((t) => (
-          <Card key={t.turma} className={t.inadimplentes > t.total * 0.3 ? "border-warning-300" : undefined}>
+          <Card key={t.turma} className={t.inadimplentes > t.total * 0.3 ? "border-warning-600/30" : undefined}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center justify-between text-base">
                 {t.turma}
                 <div className="flex gap-1">
                   {t.inadimplentes > 0 && (
-                    <Badge className="bg-danger-50 text-danger-700 text-[10px]">
+                    <Badge className="bg-danger-50 text-danger-600 text-[10px]">
                       <AlertTriangle className="size-2.5 mr-0.5" />{t.inadimplentes} pend.
                     </Badge>
                   )}

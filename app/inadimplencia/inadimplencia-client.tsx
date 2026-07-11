@@ -382,7 +382,14 @@ export function InadimplenciaClient({
               const valorAberto = a.mensalidade * a.pagamentos.length
 
               return (
-                <TableRow key={a.alunoId} className={selecionados.has(a.alunoId) ? "bg-brand-50" : ""}>
+                <TableRow
+                  key={a.alunoId}
+                  className={
+                    selecionados.has(a.alunoId)
+                      ? "bg-brand-50 dark:bg-brand-950/30"
+                      : "hover:bg-muted/40 transition-colors"
+                  }
+                >
                   <TableCell>
                     <button onClick={() => toggleSelecionado(a.alunoId)} aria-label={`Selecionar ${a.nome}`} className="flex items-center justify-center">
                       {selecionados.has(a.alunoId)

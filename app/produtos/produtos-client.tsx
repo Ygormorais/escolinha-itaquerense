@@ -110,7 +110,7 @@ function AjustarEstoqueDialog({ produto, onDone }: { produto: Produto; onDone: (
                 <button
                   type="button"
                   onClick={() => setTipo("entrada")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${tipo === "entrada" ? "border-success-600 bg-success-50 text-success-700" : "border-border text-muted-foreground"}`}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors ${tipo === "entrada" ? "border-success-600 bg-success-50 text-success-600" : "border-border text-muted-foreground"}`}
                 >
                   <TrendingUp className="size-4" /> Entrada
                 </button>

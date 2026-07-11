@@ -134,7 +134,7 @@ export function TurmasClient({
               ) : (
                 <div className="divide-y divide-muted">
                   {membros.map((a) => (
-                    <div key={a.id} className="flex items-center justify-between px-6 py-2.5">
+                    <div key={a.id} className="flex items-center justify-between px-6 py-2.5 transition-colors hover:bg-muted/40">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <Link
@@ -161,7 +161,7 @@ export function TurmasClient({
                         )}
                         {a.telefone && (
                           <a
-                            href={`https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${a.responsavel?.split(" ")[0] ?? ""}! 👋`)}`}
+                            href={`https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${a.responsavel?.split(" ")[0] ?? ""}!`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center size-6 rounded text-success-600 hover:bg-success-50 transition-colors"

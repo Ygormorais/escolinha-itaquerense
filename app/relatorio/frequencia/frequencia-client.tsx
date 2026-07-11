@@ -169,7 +169,7 @@ export function RelatorioFrequenciaClient({
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média</p>
-          <p className={`mt-1 text-2xl font-extrabold ${mediaFiltrada >= 75 ? "text-success-700" : mediaFiltrada >= 50 ? "text-warning-600" : "text-danger-600"}`}>
+          <p className={`mt-1 text-2xl font-extrabold ${mediaFiltrada >= 75 ? "text-success-600" : mediaFiltrada >= 50 ? "text-warning-600" : "text-danger-600"}`}>
             {mediaFiltrada}%
           </p>
         </div>

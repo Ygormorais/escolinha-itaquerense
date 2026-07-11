@@ -70,9 +70,9 @@ export function EstatisticasFrequencia() {
       {loaded && (
         <>
           {baixaFrequencia.length > 0 && (
-            <Card className="border-warning-300 bg-warning-50">
+            <Card className="border-warning-600/30 bg-warning-50">
               <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-warning-700 text-sm">
+                <CardTitle className="flex items-center gap-2 text-warning-600 text-sm">
                   <TrendingDown className="size-4" />
                   {plural(baixaFrequencia.length, "aluno", "alunos", "nenhum")} com frequência abaixo de 70%
                 </CardTitle>
@@ -83,7 +83,7 @@ export function EstatisticasFrequencia() {
                     <a
                       key={a.id}
                       href={`/alunos/${a.id}`}
-                      className="rounded-full bg-warning-100 px-3 py-1 text-xs font-medium text-warning-800 hover:bg-warning-200 transition-colors"
+                      className="rounded-full bg-warning-50 border border-warning-600/25 px-3 py-1 text-xs font-medium text-warning-600 hover:bg-warning-50/80 transition-colors"
                     >
                       {a.nome} ({a.pct}%)
                     </a>

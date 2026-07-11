@@ -127,7 +127,7 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pagamentos</p>
-          <p className="mt-1 text-2xl font-extrabold text-success-700">
+          <p className="mt-1 text-2xl font-extrabold text-success-600">
             {filtrados.filter((l) => l.tipo.startsWith("pagamento")).length}
           </p>
         </div>

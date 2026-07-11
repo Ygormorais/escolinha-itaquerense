@@ -160,15 +160,15 @@ export function ResumoFrequenciaClient() {
             </div>
             <div className="rounded-xl border bg-card p-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Presença</p>
-              <p className={`mt-1 text-2xl font-extrabold ${media >= 75 ? "text-success-700" : media >= 50 ? "text-warning-600" : "text-danger-600"}`}>{media.toFixed(0)}%</p>
+              <p className={`mt-1 text-2xl font-extrabold ${media >= 75 ? "text-success-600" : media >= 50 ? "text-warning-600" : "text-danger-600"}`}>{media.toFixed(0)}%</p>
             </div>
             <div className="rounded-xl border bg-card p-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Em Risco &lt;75%</p>
-              <p className={`mt-1 text-2xl font-extrabold ${emRisco > 0 ? "text-warning-600" : "text-success-700"}`}>{emRisco}</p>
+              <p className={`mt-1 text-2xl font-extrabold ${emRisco > 0 ? "text-warning-600" : "text-success-600"}`}>{emRisco}</p>
             </div>
             <div className="rounded-xl border bg-card p-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Presença Perfeita</p>
-              <p className="mt-1 text-2xl font-extrabold text-success-700">{perfeitos}</p>
+              <p className="mt-1 text-2xl font-extrabold text-success-600">{perfeitos}</p>
             </div>
           </div>
         )

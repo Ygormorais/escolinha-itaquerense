@@ -181,7 +181,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                   size="sm"
                   variant="ghost"
                   onClick={() => marcarTodos("Presente")}
-                  className="h-7 rounded-full bg-success-100 px-2.5 text-xs font-medium text-success-700 hover:bg-success-200 border-0"
+                  className="h-7 rounded-full bg-success-50 px-2.5 text-xs font-medium text-success-600 hover:bg-success-50/80 border border-success-600/20"
                 >
                   Todos presentes
                 </Button>
@@ -190,7 +190,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                   size="sm"
                   variant="ghost"
                   onClick={() => marcarTodos("Ausente")}
-                  className="h-7 rounded-full bg-danger-100 px-2.5 text-xs font-medium text-danger-700 hover:bg-danger-200 border-0"
+                  className="h-7 rounded-full bg-danger-50 px-2.5 text-xs font-medium text-danger-600 hover:bg-danger-50/80 border border-danger-600/20"
                 >
                   Todos ausentes
                 </Button>
@@ -240,7 +240,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                   </TableRow>
                 )}
                 {alunos.map((aluno) => (
-                  <TableRow key={aluno.id}>
+                  <TableRow key={aluno.id} className="hover:bg-muted/40 transition-colors">
                     <TableCell className="font-medium">
                       <Link href={`/alunos/${aluno.id}`} className="hover:underline text-brand-800">{aluno.nome}</Link>
                     </TableCell>

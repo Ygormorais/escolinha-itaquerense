@@ -421,7 +421,7 @@ export default async function DashboardPage({
       {riscoEvasao.length > 0 && (
         <Card className="border-danger-200">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-danger-700">
+            <CardTitle className="flex items-center gap-2 text-danger-600">
               <UserX className="size-4" />
               Alunos em Risco de Evasão ({riscoEvasao.length})
             </CardTitle>
@@ -436,14 +436,14 @@ export default async function DashboardPage({
                   </div>
                   <div className="flex items-center gap-2">
                     {a.pctFreq !== null && (
-                      <Badge className={`text-[10px] ${a.pctFreq < 40 ? "bg-danger-50 text-danger-700" : "bg-warning-50 text-warning-700"}`}>
+                      <Badge className={`text-[10px] ${a.pctFreq < 40 ? "bg-danger-50 text-danger-600" : "bg-warning-50 text-warning-600"}`}>
                         {a.pctFreq}% presença
                       </Badge>
                     )}
                     {a.pctFreq === null && (
                       <Badge className="text-[10px] bg-muted text-muted-foreground">sem chamada</Badge>
                     )}
-                    <Badge className="text-[10px] bg-danger-50 text-danger-700">
+                    <Badge className="text-[10px] bg-danger-50 text-danger-600">
                       {a.mesesAtraso} {a.mesesAtraso === 1 ? "mês" : "meses"} atraso
                     </Badge>
                   </div>
