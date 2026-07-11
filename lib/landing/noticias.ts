@@ -266,9 +266,11 @@ export async function getNoticiasPorCategoria(
       items: ordered.map((p) => {
         const card = toCard(p)
         const resolved = escudoPorNome.get(p.adversario)
-        const foraEscudos = resolved
-          ? [resolved, ...card.foraEscudos.filter((u) => u !== resolved)]
-          : card.foraEscudos
+        const foraEscudos = (
+          resolved
+            ? [resolved, ...card.foraEscudos.filter((u) => u !== resolved)]
+            : card.foraEscudos
+        ).slice(0, 3)
         return { ...card, badge: cat, foraEscudos }
       }),
     })

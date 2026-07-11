@@ -345,8 +345,12 @@ export function candidatosEscudoAdversario(
     if (!out.includes(url)) out.push(url)
   }
   const fpfs = normalizeEscudoUrl(fpfsUrl ?? null)
-  if (fpfs && !out.includes(fpfs)) out.push(fpfs)
-  return out
+  // Cap 3: manter FPFS como último fallback (UI tenta em ordem)
+  if (fpfs && !out.includes(fpfs)) {
+    if (out.length >= 3) return [...out.slice(0, 2), fpfs]
+    out.push(fpfs)
+  }
+  return out.slice(0, 3)
 }
 
 /** Local (`/…`) serve direto; externo passa pelo proxy. */

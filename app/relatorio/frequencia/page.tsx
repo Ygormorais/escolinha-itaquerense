@@ -20,24 +20,24 @@ export default async function RelatorioFrequenciaPage({
   const inicioMes = startOfMonth(dataRef)
   const fimMes = endOfMonth(dataRef)
 
+  // Uma query com relation filter (evita 2º round-trip + filter O(n²) em JS)
   const alunos = await db.aluno.findMany({
     where: { status: "Ativo" },
-    select: { id: true, nome: true, turma: true },
+    select: {
+      id: true,
+      nome: true,
+      turma: true,
+      frequencias: {
+        where: { data: { gte: inicioMes, lte: fimMes } },
+        select: { presenca: true },
+      },
+    },
     orderBy: { nome: "asc" },
   })
 
-  const frequencias = await db.frequencia.findMany({
-    where: {
-      data: { gte: inicioMes, lte: fimMes },
-      alunoId: { in: alunos.map((a) => a.id) },
-    },
-    select: { alunoId: true, presenca: true },
-  })
-
-  const stats = alunos.map((aluno) => {
-    const freqs = frequencias.filter((f) => f.alunoId === aluno.id)
-    const totalAulas = freqs.length
-    const totalPresencas = freqs.filter((f) => f.presenca === "Presente").length
+  const stats = alunos.map(({ frequencias, ...aluno }) => {
+    const totalAulas = frequencias.length
+    const totalPresencas = frequencias.filter((f) => f.presenca === "Presente").length
     const percentual = totalAulas > 0 ? Math.round((totalPresencas / totalAulas) * 100) : 0
     return { ...aluno, totalAulas, totalPresencas, percentual }
   })

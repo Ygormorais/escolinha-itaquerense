@@ -62,7 +62,8 @@ export default async function ResultadosPage() {
   const inicioTemporada = new Date(ano - 1, 0, 1)
 
   const [grupos, campeonatos] = await Promise.all([
-    getNoticiasPorCategoria(new Date(), { porCategoria: 60 }),
+    // 24 por Sub cobre temporada sem serializar centenas de cards no HTML
+    getNoticiasPorCategoria(new Date(), { porCategoria: 24 }),
     db.campeonato.findMany({
       where: {
         status: { not: "encerrado" },
@@ -80,28 +81,56 @@ export default async function ResultadosPage() {
     }),
   ])
 
-  const classificacoes: ClassifCamp[] = campeonatos.map((c) => ({
-    id: c.id,
-    nome: c.nome,
-    categoria: categoriaCurta(c.nome),
-    status: c.status,
-    fpfsEventoId: c.fpfsEventoId,
-    fpfsSyncEm: c.fpfsSyncEm ? c.fpfsSyncEm.toISOString() : null,
-    linhas: c.classificacaoFpfs.map((l) => ({
-      id: l.id,
-      posicao: l.posicao,
-      timeNome: l.timeNome,
-      pontos: l.pontos,
-      jogos: l.jogos,
-      vitorias: l.vitorias,
-      empates: l.empates,
-      derrotas: l.derrotas,
-      golsPro: l.golsPro,
-      golsContra: l.golsContra,
-      saldo: l.saldo,
-      ehNosso: l.ehNosso,
-    })),
-  }))
+  /** Fases “JOGO 12” vêm do parser FPFS e não são tabela — excluídas do público. */
+  const isFaseTabela = (fase: string) => !/^jogo\s*\d+/i.test(fase.trim())
+
+  const classificacoesRaw: ClassifCamp[] = campeonatos.map((c) => {
+    const uteis = c.classificacaoFpfs.filter((l) => isFaseTabela(l.fase))
+    // Preferir a fase “Classificação” (visão geral) quando existir — HTML bem menor
+    const geral = uteis.filter((l) => /^classifica/i.test(l.fase.trim()))
+    const escolhidas = geral.length > 0 ? geral : uteis
+    return {
+      id: c.id,
+      nome: c.nome,
+      categoria: categoriaCurta(c.nome),
+      status: c.status,
+      fpfsEventoId: c.fpfsEventoId,
+      fpfsSyncEm: c.fpfsSyncEm ? c.fpfsSyncEm.toISOString() : null,
+      linhas: escolhidas.map((l) => ({
+        id: l.id,
+        posicao: l.posicao,
+        timeNome: l.timeNome,
+        pontos: l.pontos,
+        jogos: l.jogos,
+        vitorias: l.vitorias,
+        empates: l.empates,
+        derrotas: l.derrotas,
+        golsPro: l.golsPro,
+        golsContra: l.golsContra,
+        saldo: l.saldo,
+        ehNosso: l.ehNosso,
+      })),
+    }
+  })
+
+  // Uma tabela por categoria (campeonato mais recente com linhas) — HTML leve
+  const classificacoes: ClassifCamp[] = (() => {
+    const best = new Map<string, ClassifCamp>()
+    for (const c of classificacoesRaw) {
+      if (c.linhas.length === 0) continue
+      const prev = best.get(c.categoria)
+      if (!prev) {
+        best.set(c.categoria, c)
+        continue
+      }
+      const tPrev = prev.fpfsSyncEm ?? ""
+      const tCur = c.fpfsSyncEm ?? ""
+      if (tCur > tPrev || (tCur === tPrev && c.id > prev.id)) {
+        best.set(c.categoria, c)
+      }
+    }
+    return [...best.values()]
+  })()
 
   // Categorias só de classificação (sem jogos no carrossel) ainda entram nas abas
   const catsFromClassif = new Set(
