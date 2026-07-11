@@ -119,7 +119,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
               <Badge className="border-white/20 bg-white/15 text-white">{aluno.turma}</Badge>
               {aluno.horario && <span>{aluno.horario}</span>}
               {aluno.posicao && (
-                <Badge className="border-yellow-300/40 bg-yellow-400/20 text-yellow-200">
+                <Badge className="border-warning-50/40 bg-warning-50/20 text-warning-50">
                   {aluno.posicao === "GOLEIRO" ? "Goleiro" : aluno.posicao === "FIXO" ? "Fixo" : aluno.posicao === "ALA_ESQ" ? "Ala Esq." : aluno.posicao === "ALA_DIR" ? "Ala Dir." : aluno.posicao === "PIVO" ? "Pivô" : aluno.posicao}
                 </Badge>
               )}

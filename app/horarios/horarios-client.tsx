@@ -179,7 +179,7 @@ const css = `
   .hc .btn-white-red{color:var(--red)}
   .hc .btn-white-dark{color:var(--red-deep)}
   .hc .btn-white:hover{background:rgba(255,255,255,.9);transform:translateY(-2px);
-    box-shadow:0 8px 24px rgba(0,0,0,.2)}
+    box-shadow:0 8px 24px rgba(74,11,11,.18)}
   .hc .btn-wa{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;
     font-weight:700;font-size:14px;letter-spacing:.02em;
     padding:14px 28px;border-radius:100px;border:2px solid rgba(255,255,255,.2);

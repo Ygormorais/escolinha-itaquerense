@@ -200,7 +200,7 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
                   {j ? (
                     <PlacedCard placed={j} onRemove={() => remover(j.alunoId)} onNumero={(n) => setNumero(j.alunoId, n)} />
                   ) : (
-                    <div className={`flex h-24 w-20 flex-col items-center justify-center rounded-lg border-2 border-dashed text-center text-[10px] font-semibold uppercase transition-colors ${draggingPosicao === pos ? "border-yellow-300 bg-yellow-300/20 text-yellow-200" : "border-white/50 text-white/80"}`}>
+                    <div className={`flex h-24 w-20 flex-col items-center justify-center rounded-lg border-2 border-dashed text-center text-[10px] font-semibold uppercase transition-colors ${draggingPosicao === pos ? "border-warning-50 bg-warning-50/25 text-warning-50" : "border-white/50 text-white/80"}`}>
                       {LABEL_POSICAO[pos]}
                       <span className="mt-1 text-[9px] font-normal opacity-70">a definir</span>
                     </div>
