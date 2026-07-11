@@ -18,6 +18,23 @@ import Link from "next/link"
 
 export const metadata = { title: "Classificação — Escolinha Itaquerense" }
 
+type Linha = {
+  id: number
+  fase: string
+  grupo: string | null
+  posicao: number
+  timeNome: string
+  pontos: number
+  jogos: number
+  vitorias: number
+  empates: number
+  derrotas: number
+  golsPro: number
+  golsContra: number
+  saldo: number
+  ehNosso: boolean
+}
+
 function sortCat(a: string, b: string) {
   const na = Number(a.match(/Sub-(\d+)/i)?.[1])
   const nb = Number(b.match(/Sub-(\d+)/i)?.[1])
@@ -25,10 +42,25 @@ function sortCat(a: string, b: string) {
   return a.localeCompare(b, "pt-BR")
 }
 
+/** Preferir fase “Classificação” / Geral; depois grupos; evita poluir com chaves extras. */
+function sortFase(a: string, b: string) {
+  const score = (f: string) => {
+    if (/^classifica/i.test(f)) return 0
+    if (/geral/i.test(f)) return 1
+    if (/fase/i.test(f)) return 2
+    if (/grupo/i.test(f)) return 3
+    if (/chave/i.test(f)) return 4
+    return 5
+  }
+  const d = score(a) - score(b)
+  return d !== 0 ? d : a.localeCompare(b, "pt-BR")
+}
+
 const classifSelect = {
   id: true,
   nome: true,
   fpfsSyncEm: true,
+  dataInicio: true,
   classificacaoFpfs: {
     orderBy: [{ fase: "asc" as const }, { grupo: "asc" as const }, { posicao: "asc" as const }],
     select: {
@@ -48,6 +80,99 @@ const classifSelect = {
       ehNosso: true,
     },
   },
+}
+
+function linhasValidas(linhas: Linha[]): Linha[] {
+  return linhas.filter((l) => isFaseTabelaClassificacao(l.fase))
+}
+
+/** Uma tabela por categoria: campeonato mais recente com linhas válidas. */
+function preferCampPorCategoria<T extends { nome: string; fpfsSyncEm: Date | null; dataInicio: Date; classificacaoFpfs: Linha[] }>(
+  camps: T[],
+): T[] {
+  const best = new Map<string, T>()
+  for (const c of camps) {
+    if (linhasValidas(c.classificacaoFpfs).length === 0) continue
+    const cat = categoriaCurta(c.nome)
+    const prev = best.get(cat)
+    if (!prev) {
+      best.set(cat, c)
+      continue
+    }
+    const tPrev = prev.fpfsSyncEm?.getTime() ?? prev.dataInicio.getTime()
+    const tCur = c.fpfsSyncEm?.getTime() ?? c.dataInicio.getTime()
+    if (tCur >= tPrev) best.set(cat, c)
+  }
+  return [...best.values()]
+}
+
+function StandingsTable({ linhas }: { linhas: Linha[] }) {
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-[var(--color-paper-100)] text-[10px] font-bold uppercase tracking-wider text-muted-foreground dark:bg-muted">
+            <th className="px-3 py-3 text-center">#</th>
+            <th className="px-4 py-3 text-left">Time</th>
+            <th className="px-3 py-3 text-center">Pts</th>
+            <th className="px-3 py-3 text-center">J</th>
+            <th className="px-3 py-3 text-center">V</th>
+            <th className="px-3 py-3 text-center">E</th>
+            <th className="px-3 py-3 text-center">D</th>
+            <th className="px-3 py-3 text-center">GP</th>
+            <th className="px-3 py-3 text-center">GC</th>
+            <th className="px-3 py-3 text-center">SG</th>
+          </tr>
+        </thead>
+        <tbody>
+          {linhas.map((l) => (
+            <tr
+              key={l.id}
+              className={cn(
+                "border-t border-border transition-colors",
+                l.ehNosso
+                  ? "bg-brand-50 font-semibold text-brand-900 dark:bg-brand-950/30 dark:text-brand-100"
+                  : "hover:bg-muted/40",
+              )}
+            >
+              <td className="px-3 py-2.5 text-center">
+                <span
+                  className={cn(
+                    "inline-flex size-7 items-center justify-center rounded-lg text-xs font-bold",
+                    l.ehNosso
+                      ? "bg-brand-600 text-white"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {l.posicao}
+                </span>
+              </td>
+              <td className="px-4 py-2.5">
+                <span className="inline-flex items-center gap-2">
+                  {l.ehNosso && (
+                    <span className="text-brand-600" aria-label="Nosso time">
+                      ★
+                    </span>
+                  )}
+                  {l.timeNome}
+                </span>
+              </td>
+              <td className="px-3 py-2.5 text-center font-extrabold tabular-nums">{l.pontos}</td>
+              <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">{l.jogos}</td>
+              <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">{l.vitorias}</td>
+              <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">{l.empates}</td>
+              <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">{l.derrotas}</td>
+              <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">{l.golsPro}</td>
+              <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">{l.golsContra}</td>
+              <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
+                {l.saldo > 0 ? `+${l.saldo}` : l.saldo}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 export default async function ClassificacaoPage() {
@@ -82,24 +207,24 @@ export default async function ClassificacaoPage() {
     })
   }
 
-  // Preferir categorias dos filhos quando o fallback trouxe tudo
   const campsFiltrados =
     turmas.size > 0
       ? campeonatos.filter((c) => turmas.has(categoriaCurta(c.nome)))
       : campeonatos
 
-  const camps = campsFiltrados.length > 0 ? campsFiltrados : campeonatos
+  const campsRaw = campsFiltrados.length > 0 ? campsFiltrados : campeonatos
+  const camps = preferCampPorCategoria(campsRaw)
 
-  // Agrupa por categoria Sub
-  const byCat = new Map<string, typeof camps>()
+  const byCat = new Map<string, (typeof camps)[number]>()
   for (const c of camps) {
-    const cat = categoriaCurta(c.nome)
-    if (!byCat.has(cat)) byCat.set(cat, [])
-    byCat.get(cat)!.push(c)
+    byCat.set(categoriaCurta(c.nome), c)
   }
   const categorias = [...byCat.keys()].sort(sortCat)
 
-  const totalLinhas = camps.reduce((acc, c) => acc + c.classificacaoFpfs.length, 0)
+  let totalLinhas = 0
+  for (const c of camps) {
+    totalLinhas += linhasValidas(c.classificacaoFpfs).length
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -125,126 +250,70 @@ export default async function ClassificacaoPage() {
         />
       ) : (
         <div className="space-y-10">
-          {categorias.map((cat) => (
-            <section key={cat} className="space-y-5">
-              <h2 className="font-heading text-xl font-extrabold tracking-tight text-brand-600 border-b border-border pb-2">
-                {cat}
-              </h2>
-              {byCat.get(cat)!.map((camp) => {
-                const grupos = new Map<string, typeof camp.classificacaoFpfs>()
-                for (const l of camp.classificacaoFpfs) {
-                  // Mata-mata “JOGO N” não é tabela (parser antigo)
-                  if (!isFaseTabelaClassificacao(l.fase)) continue
-                  const chave = l.grupo ? `${l.fase} — ${l.grupo}` : l.fase
-                  if (!grupos.has(chave)) grupos.set(chave, [])
-                  grupos.get(chave)!.push(l)
-                }
-                if (grupos.size === 0) return null
+          {categorias.map((cat) => {
+            const camp = byCat.get(cat)!
+            const validas = linhasValidas(camp.classificacaoFpfs)
+            if (validas.length === 0) return null
 
-                return (
-                  <div key={camp.id} className="space-y-3">
-                    <div>
-                      <h3 className="text-sm font-semibold text-foreground">{camp.nome}</h3>
-                      {camp.fpfsSyncEm && (
-                        <p className="text-xs text-muted-foreground">
-                          Atualizado{" "}
-                          {format(new Date(camp.fpfsSyncEm), "dd/MM/yyyy 'às' HH:mm", {
-                            locale: ptBR,
-                          })}
-                        </p>
-                      )}
-                    </div>
+            // Hierarquia: fase → grupo → linhas
+            const porFase = new Map<string, Map<string | null, Linha[]>>()
+            for (const l of validas) {
+              if (!porFase.has(l.fase)) porFase.set(l.fase, new Map())
+              const porGrupo = porFase.get(l.fase)!
+              const g = l.grupo
+              if (!porGrupo.has(g)) porGrupo.set(g, [])
+              porGrupo.get(g)!.push(l)
+            }
+            const fases = [...porFase.keys()].sort(sortFase)
 
-                    {Array.from(grupos.entries()).map(([chave, linhas]) => (
-                      <div key={chave}>
-                        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                          {chave}
-                        </p>
-                        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="bg-[var(--color-paper-100)] text-[10px] font-bold uppercase tracking-wider text-muted-foreground dark:bg-muted">
-                                <th className="px-3 py-3 text-center">#</th>
-                                <th className="px-4 py-3 text-left">Time</th>
-                                <th className="px-3 py-3 text-center">Pts</th>
-                                <th className="px-3 py-3 text-center">J</th>
-                                <th className="px-3 py-3 text-center">V</th>
-                                <th className="px-3 py-3 text-center">E</th>
-                                <th className="px-3 py-3 text-center">D</th>
-                                <th className="px-3 py-3 text-center">GP</th>
-                                <th className="px-3 py-3 text-center">GC</th>
-                                <th className="px-3 py-3 text-center">SG</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {linhas.map((l) => (
-                                <tr
-                                  key={l.id}
-                                  className={cn(
-                                    "border-t border-border transition-colors",
-                                    l.ehNosso
-                                      ? "bg-brand-50 font-semibold text-brand-900 dark:bg-brand-950/30 dark:text-brand-100"
-                                      : "hover:bg-muted/40",
-                                  )}
-                                >
-                                  <td className="px-3 py-2.5 text-center">
-                                    <span
-                                      className={cn(
-                                        "inline-flex size-7 items-center justify-center rounded-lg text-xs font-bold",
-                                        l.ehNosso
-                                          ? "bg-brand-600 text-white"
-                                          : "bg-muted text-muted-foreground",
-                                      )}
-                                    >
-                                      {l.posicao}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-2.5">
-                                    <span className="inline-flex items-center gap-2">
-                                      {l.ehNosso && (
-                                        <span className="text-brand-600" aria-label="Nosso time">
-                                          ★
-                                        </span>
-                                      )}
-                                      {l.timeNome}
-                                    </span>
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center font-extrabold tabular-nums">
-                                    {l.pontos}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
-                                    {l.jogos}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
-                                    {l.vitorias}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
-                                    {l.empates}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
-                                    {l.derrotas}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
-                                    {l.golsPro}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
-                                    {l.golsContra}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
-                                    {l.saldo > 0 ? `+${l.saldo}` : l.saldo}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+            return (
+              <section key={cat} className="space-y-5">
+                <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border pb-2">
+                  <h2 className="font-heading text-xl font-extrabold tracking-tight text-brand-600">
+                    {cat}
+                  </h2>
+                  {camp.fpfsSyncEm && (
+                    <p className="text-xs text-muted-foreground">
+                      Atualizado{" "}
+                      {format(new Date(camp.fpfsSyncEm), "dd/MM/yyyy 'às' HH:mm", {
+                        locale: ptBR,
+                      })}
+                    </p>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">{camp.nome}</p>
+
+                <div className="space-y-6">
+                  {fases.map((fase) => {
+                    const grupos = porFase.get(fase)!
+                    const chaves = [...grupos.keys()].sort((a, b) =>
+                      (a ?? "").localeCompare(b ?? "", "pt-BR"),
+                    )
+                    return (
+                      <div key={fase} className="space-y-3">
+                        <h3 className="text-sm font-bold tracking-tight text-foreground">
+                          {fase}
+                        </h3>
+                        {chaves.map((g) => {
+                          const linhas = grupos.get(g)!
+                          return (
+                            <div key={`${fase}-${g ?? "_"}`} className="space-y-2">
+                              {g && (
+                                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                                  {g}
+                                </p>
+                              )}
+                              <StandingsTable linhas={linhas} />
+                            </div>
+                          )
+                        })}
                       </div>
-                    ))}
-                  </div>
-                )
-              })}
-            </section>
-          ))}
+                    )
+                  })}
+                </div>
+              </section>
+            )
+          })}
         </div>
       )}
 

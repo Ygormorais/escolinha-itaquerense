@@ -93,6 +93,8 @@ async function main() {
   })
 
   const existing = JSON.parse(fs.readFileSync(JSON_PATH, "utf8")) as EscudoManual[]
+  // Preserva entradas pattern/equals (o script só gerencia `contains`)
+  const preserved = existing.filter((e) => !e.contains)
   const byContains = new Map(
     existing
       .filter((e) => e.contains)
@@ -128,15 +130,18 @@ async function main() {
     if (!url) {
       console.log(`NO  x${count}  ${nome}`)
       falhas++
-      // garante entrada no JSON para o usuário preencher depois
-      const key = containsKey(nome)
-      if (!byContains.has(key)) {
-        const file = `${slugFile(nome)}.png`
-        byContains.set(key, {
-          contains: key,
-          src: `/landing/escudos/${file}`,
-          nota: `TODO: adicionar ${file} (adversário: ${nome})`,
-        })
+      // stub só se ainda não houver match manual (contains/pattern/equals)
+      if (!escudoManual(nome)) {
+        const key = containsKey(nome)
+        // evita chaves genéricas demais (GREMIO, SAO, CLUBE…) que casam errado
+        if (key.length >= 5 && !byContains.has(key)) {
+          const file = `${slugFile(nome)}.png`
+          byContains.set(key, {
+            contains: key,
+            src: `/landing/escudos/${file}`,
+            nota: `TODO: adicionar ${file} (adversário: ${nome})`,
+          })
+        }
       }
       continue
     }
@@ -144,36 +149,43 @@ async function main() {
     resolvidos++
 
     // baixa externos para pasta local (estável offline)
+    // Só grava contains se o match não for genérico demais
     if (url.startsWith("http")) {
       const file = `${slugFile(nome)}.png`
       const dest = path.join(OUT_DIR, file)
+      const key = containsKey(nome)
+      const keySafe = key.length >= 5
       const ok = await download(url, dest)
-      if (ok) {
+      if (ok && keySafe) {
         baixados++
-        const key = containsKey(nome)
         byContains.set(key, {
           contains: key,
           src: `/landing/escudos/${file}`,
           nota: `auto: ${nome}`,
         })
         console.log(`OK  x${count}  [baixado]  ${nome} ← ${url.slice(0, 60)}`)
-      } else {
-        // mantém URL externa no JSON
-        const key = containsKey(nome)
+      } else if (ok) {
+        baixados++
+        console.log(`OK  x${count}  [baixado-sem-json]  ${nome} (chave genérica: ${key})`)
+      } else if (keySafe) {
         byContains.set(key, {
           contains: key,
           src: url,
           nota: `auto-url: ${nome}`,
         })
         console.log(`OK  x${count}  [url]      ${nome}`)
+      } else {
+        console.log(`OK  x${count}  [url-sem-json] ${nome}`)
       }
     } else {
       console.log(`OK  x${count}  [local]    ${nome}`)
     }
   }
 
-  const next = [...byContains.values()].sort((a, b) =>
-    (a.contains || a.equals || "").localeCompare(b.contains || b.equals || ""),
+  const next = [...preserved, ...byContains.values()].sort((a, b) =>
+    (a.contains || a.equals || a.pattern || "").localeCompare(
+      b.contains || b.equals || b.pattern || "",
+    ),
   )
   fs.writeFileSync(JSON_PATH, JSON.stringify(next, null, 2) + "\n", "utf8")
 
