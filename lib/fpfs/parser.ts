@@ -121,23 +121,53 @@ export function isFaseTabelaClassificacao(fase: string): boolean {
 export function parseClassificacao(html: string): LinhaClassificacao[] {
   const $ = cheerio.load(html)
   const linhas: LinhaClassificacao[] = []
+
+  // Abas da FPFS: "1ª FASE CLASSIFICAÇÃO", "Geral", etc.
+  const fasePorPane = new Map<string, string>()
+  $('a[href^="#pills-fase"]').each((_, a) => {
+    const href = $(a).attr("href")?.replace(/^#/, "")?.trim()
+    const label = $(a).text().replace(/\s+/g, " ").trim()
+    if (href && label) fasePorPane.set(href, label)
+  })
+
   $("table.classification_table").each((_, table) => {
-    $(table).find("tbody tr").each((i, el) => {
+    const $table = $(table)
+    const paneId = $table.closest(".tab-pane").attr("id") ?? ""
+    // Painéis "-chave" herdam o label da fase pai
+    const paneLabel =
+      fasePorPane.get(paneId) ??
+      fasePorPane.get(paneId.replace(/-chave$/i, "")) ??
+      null
+    const fasePane =
+      paneLabel && /^geral$/i.test(paneLabel) ? "Classificação" : paneLabel
+
+    $table.find("tbody tr").each((i, el) => {
       const tds = $(el).children("td")
       if (tds.length < 11) return
       const grupoTxt = $(tds[0]).text().trim()
-      const fase = grupoTxt || "Classificação"
+      // 1ª coluna = chave/grupo; se for JOGO N ou data, a linha não é standings
+      if (grupoTxt && !isFaseTabelaClassificacao(grupoTxt)) return
+
+      const fase =
+        fasePane ||
+        (grupoTxt && isFaseTabelaClassificacao(grupoTxt) ? grupoTxt : null) ||
+        "Classificação"
       if (!isFaseTabelaClassificacao(fase)) return
-      const timeNome = ($(tds[2]).find(".nome_clube").text().trim() || $(tds[2]).text().trim())
+
+      const timeNome =
+        $(tds[2]).find(".nome_clube").text().trim() || $(tds[2]).text().trim()
       if (!timeNome) return
       // Posição deve ser número de tabela (não placar solto / lixo)
       const posicao = num($(tds[1]).text()) || i + 1
       if (posicao < 1 || posicao > 64) return
       const golsPro = num($(tds[8]).text())
       const golsContra = num($(tds[9]).text())
+      // Grupo: 1ª coluna quando é chave/grupo (não a fase "Classificação" genérica)
+      const grupo =
+        grupoTxt && !/^classifica/i.test(grupoTxt) ? grupoTxt : null
       linhas.push({
         fase,
-        grupo: grupoTxt || null,
+        grupo,
         posicao,
         timeNome,
         pontos: num($(tds[3]).text()),

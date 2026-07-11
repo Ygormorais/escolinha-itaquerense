@@ -38,6 +38,17 @@ describe("parseClassificacao", () => {
   it("toda linha tem uma fase associada", () => {
     for (const l of linhas) expect(l.fase.length).toBeGreaterThan(0)
   })
+  it("usa o titulo da aba da FPFS como fase (nao so a 1a coluna)", () => {
+    // Fixture evento 920: abas "1ª FASE…" / "Geral"
+    const fases = new Set(linhas.map((l) => l.fase))
+    expect([...fases].some((f) => /fase|classifica|geral/i.test(f))).toBe(true)
+    // Grupo A/B deve ir em `grupo`, não como única identidade da linha
+    const comGrupo = linhas.filter((l) => l.grupo && /^grupo/i.test(l.grupo))
+    expect(comGrupo.length).toBeGreaterThan(0)
+    for (const l of comGrupo) {
+      expect(l.fase.toLowerCase()).not.toBe(l.grupo!.toLowerCase())
+    }
+  })
   it("ignora tabelas de mata-mata rotuladas JOGO N", () => {
     const lixo = `
       <table class="classification_table"><tbody>
