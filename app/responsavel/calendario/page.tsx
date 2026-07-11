@@ -2,7 +2,15 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  CircleDot,
+  Megaphone,
+  Trophy,
+  Users,
+  type LucideIcon,
+} from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
@@ -11,11 +19,23 @@ import { ConvocacaoCard } from "@/components/responsavel/convocacao-card"
 
 export const metadata = { title: "Calendário — Portal do Responsável" }
 
-const ICONE: Record<ItemAgenda["tipo"], string> = {
-  treino: "⚽",
-  jogo: "🏆",
-  evento: "📣",
-  reuniao: "📣",
+const ICONE: Record<ItemAgenda["tipo"], LucideIcon> = {
+  treino: CircleDot,
+  jogo: Trophy,
+  evento: Megaphone,
+  reuniao: Users,
+}
+
+function AgendaTipoIcon({ tipo }: { tipo: ItemAgenda["tipo"] }) {
+  const Icon = ICONE[tipo] ?? Megaphone
+  return (
+    <span
+      className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-200"
+      aria-hidden
+    >
+      <Icon className="size-4" strokeWidth={2.25} />
+    </span>
+  )
 }
 
 function resolverMes(mes: string | undefined): { ano: number; mesNum: number } {
@@ -143,7 +163,7 @@ export default async function CalendarioPage({
                   />
                 ) : (
                   <div key={`e-${i}`} className="flex items-start gap-3 rounded-xl border border-black/5 bg-card px-4 py-3">
-                    <span className="text-xl leading-none">{ICONE[item.tipo]}</span>
+                    <AgendaTipoIcon tipo={item.tipo} />
                     <div className="min-w-0">
                       <p className="font-semibold text-[var(--color-ink-900)]">
                         {item.hora ? `${item.hora} · ` : ""}{item.titulo}

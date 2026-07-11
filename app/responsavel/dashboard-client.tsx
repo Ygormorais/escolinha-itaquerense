@@ -4,6 +4,7 @@ import Link from "next/link"
 import {
   User, CreditCard,
   CalendarCheck, Shirt, MessageSquare, Phone, ArrowRight, CircleCheck, Clock3, CalendarDays, Trophy,
+  Megaphone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -250,14 +251,25 @@ export function ResponsavelDashboardClient({
           <CardContent className="space-y-2">
             {proximosEventos.map((item) => (
               <div key={`${item.tipo}-${item.data}-${item.titulo}`} className="flex items-start gap-3 rounded-xl border border-border p-3">
-                <span className="text-xl leading-none">{item.tipo === "jogo" ? "🏆" : "📣"}</span>
+                <span
+                  className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-200"
+                  aria-hidden
+                >
+                  {item.tipo === "jogo" ? (
+                    <Trophy className="size-4" strokeWidth={2.25} />
+                  ) : (
+                    <Megaphone className="size-4" strokeWidth={2.25} />
+                  )}
+                </span>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">{item.titulo}</p>
                   {item.alunoNome && (
                     <p className="text-xs text-muted-foreground">{item.alunoNome}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(item.data), "dd/MM/yyyy", { locale: ptBR })}
+                    {item.tipo === "jogo"
+                      ? format(new Date(item.data), "dd/MM/yyyy · HH'h'mm", { locale: ptBR })
+                      : format(new Date(item.data), "dd/MM/yyyy", { locale: ptBR })}
                   </p>
                 </div>
                 {item.tipo === "jogo" && item.confirmacao === null && (
