@@ -407,7 +407,7 @@
   border-radius: 14px;
   border: 1px solid var(--border, #e8e2da);
   background: #fff;
-  box-shadow: 0 1px 4px rgba(26, 26, 46, 0.04);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(74, 11, 11, 0.06));
 }
 
 .res .rm-tbl {

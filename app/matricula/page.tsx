@@ -36,16 +36,16 @@ const css = `
 
   /* ── BODY ── */
   .mat-body{max-width:740px;margin:0 auto;padding:40px 24px 80px}
-  .mat-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:48px;box-shadow:0 4px 6px rgba(0,0,0,.03),0 20px 60px rgba(26,26,46,.09)}
+  .mat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg,20px);padding:48px;box-shadow:var(--shadow-md)}
 
   /* ── FORM HEADER ── */
-  .mat-form-hdr{margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid #F0EAE2}
+  .mat-form-hdr{margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--border)}
   .mat-form-title{font-family:var(--font-heading),Georgia,serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
   .mat-form-sub{font-size:13px;color:var(--text-muted)}
 
   /* ── SECTION HEADERS ── */
   .mat-sec{margin-bottom:28px}
-  .mat-sec + .mat-sec{margin-top:36px;padding-top:36px;border-top:1px solid #F0EAE2}
+  .mat-sec + .mat-sec{margin-top:36px;padding-top:36px;border-top:1px solid var(--border)}
   .mat-sec-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
   .mat-sec-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#C62828,#9F1D1D);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(198,40,40,.3)}
   .mat-sec-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -54,7 +54,7 @@ const css = `
 
   /* ── FIELD GROUP ── */
   .mat-field{display:flex;flex-direction:column;gap:6px}
-  .mat-field label{font-size:13px;font-weight:600;color:#444;letter-spacing:.2px}
+  .mat-field label{font-size:13px;font-weight:600;color:var(--text-muted);letter-spacing:.2px}
   .mat-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .mat-fields{display:flex;flex-direction:column;gap:18px}
 

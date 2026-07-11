@@ -70,29 +70,40 @@
   .lp .shield{width:46px;height:46px;object-fit:contain;flex-shrink:0}
   .lp #noticias,.lp #materias,.lp #sobre,.lp #galeria,.lp #voz,.lp #matricule-se{scroll-margin-top:90px}
 
-  /* Marcos reais do clube (faixa editorial, não KPI de alunos) */
+  /* Marcos: faixa em papel (evita 3ª banda vermelha full-bleed) */
   .lp .marcos{
-    background:linear-gradient(180deg,var(--red-deep) 0%,var(--red) 100%);
-    color:#fff;border-bottom:1px solid rgba(255,255,255,.08)
+    background:var(--bg-elevated);
+    color:var(--text);
+    border-bottom:1px solid var(--border);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6)
   }
+  html.dark .lp .marcos{box-shadow:none}
   .lp .marcos-grid{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:8px 16px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px 20px;
     padding:clamp(28px,4vw,40px) clamp(16px,4vw,28px)
   }
   .lp .marcos-item{
-    text-align:center;padding:8px 6px;min-width:0
+    text-align:center;padding:12px 10px;min-width:0;
+    border-radius:var(--radius-md);
+    border:1px solid transparent;
+    transition:var(--transition)
+  }
+  .lp .marcos-item:hover{
+    border-color:var(--border);
+    background:var(--bg-card);
+    box-shadow:var(--shadow-sm)
   }
   .lp .marcos-item strong{
     display:block;font-family:var(--font-heading),Georgia,serif;
     font-size:clamp(22px,3vw,30px);font-weight:800;letter-spacing:-.02em;
-    line-height:1.1;margin-bottom:6px
+    line-height:1.1;margin-bottom:6px;color:var(--red)
   }
   .lp .marcos-item span{
     display:block;font-size:12px;font-weight:600;letter-spacing:.04em;
-    text-transform:uppercase;opacity:.88;line-height:1.35
+    text-transform:uppercase;color:var(--text-muted);line-height:1.35
   }
   @media(max-width:700px){
-    .lp .marcos-grid{grid-template-columns:repeat(2,1fr);gap:18px 12px;padding:28px 16px}
+    .lp .marcos-grid{grid-template-columns:repeat(2,1fr);gap:12px;padding:24px 16px}
   }
   @keyframes wa-pulse{0%,100%{box-shadow:0 4px 16px rgba(37,211,102,.4)}50%{box-shadow:0 4px 24px rgba(37,211,102,.7),0 0 0 8px rgba(37,211,102,.12)}}
   .lp header.site{position:sticky;top:0;z-index:1000;background:var(--hdr-bg);backdrop-filter:blur(10px);box-shadow:0 1px 0 var(--border), var(--shadow-sm)}
@@ -197,16 +208,37 @@
   .lp .lb-prev{left:-8px}
   .lp .lb-next{right:-8px}
 
-  .lp .depo .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  .lp .depo .depo-grid-single{grid-template-columns:1fr;max-width:720px}
-  .lp .depo .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);margin:0}
+  .lp .depo{background:var(--bg)}
+  .lp .depo .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));
+    gap:24px;
+    max-width:1100px
+  }
+  .lp .depo .depo-grid-single{grid-template-columns:1fr;max-width:720px;margin-inline:auto}
+  .lp .depo .card{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:28px;box-shadow:var(--shadow-sm);margin:0;transition:var(--transition);
+    display:flex;flex-direction:column;height:100%
+  }
+  .lp .depo .card:hover{
+    transform:translateY(-3px);box-shadow:var(--shadow-hover);
+    border-color:rgba(198,40,40,.22)
+  }
   .lp .depo .quote{font-family:var(--font-heading),Georgia,serif;color:var(--red);font-size:40px;line-height:1;margin-bottom:8px}
-  .lp .depo .texto{color:var(--text);line-height:1.7;margin-bottom:18px;font-size:clamp(16px,2vw,18px)}
-  .lp .depo .autor{display:flex;flex-direction:column;gap:4px}
+  .lp .depo .texto{
+    color:var(--text);line-height:1.7;margin-bottom:18px;
+    font-size:clamp(15px,1.8vw,17px);flex:1;
+    font-family:var(--font-heading),Georgia,serif;font-weight:500;letter-spacing:-.01em
+  }
+  .lp .depo .autor{display:flex;flex-direction:column;gap:4px;margin-top:auto;padding-top:4px}
   .lp .depo .autor b{display:block;font-size:14px;font-weight:700}
   .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
   .lp .depo .autor .fonte{font-size:11px;color:var(--text-light);margin-top:6px;text-decoration:none;font-weight:600}
   .lp .depo .autor a.fonte:hover{color:var(--red);text-decoration:underline;text-underline-offset:2px}
+  @media(prefers-reduced-motion:reduce){
+    .lp .depo .card:hover,.lp .marcos-item:hover{transform:none}
+  }
 
   @media(max-width:1180px){
     .lp .btn-access .btn-full{display:none}

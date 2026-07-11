@@ -108,7 +108,20 @@ export const depoimentos: Depoimento[] = [
     categoria: "Coordenador de futsal",
     ...FONTE_FATO_2022,
   },
+  {
+    texto:
+      "Dia desses fui numa agência do Banco do Brasil e o gerente tinha feito a escolinha de futsal do Elite. Fiquei muito emocionado — tinha sido meu aluno. A escolinha forma caráter para a vida, não só para a quadra.",
+    autor: "Moacir Bernardes · “Simão”",
+    categoria: "Coordenador de futsal",
+    ...FONTE_FATO_2022,
+  },
 ]
+
+/**
+ * Depoimentos de pais/alunos: só com consentimento escrito explícito.
+ * Fluxo e modelo em `docs/depoimentos-pais.md`.
+ * Até haver consentimento, a seção usa apenas citações públicas (acima).
+ */
 // =====================
 
 export function temSobre(): boolean {

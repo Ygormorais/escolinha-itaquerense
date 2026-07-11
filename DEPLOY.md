@@ -109,3 +109,17 @@ curl -sS "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SEC
 
 Sem SSH/VPS local: este passo **não** roda na máquina de desenvolvimento —
 só na instância de produção.
+
+### Checklist rápido (produção)
+
+| Passo | Comando / prova |
+|-------|-----------------|
+| 1. App no ar | `curl -sI https://SEU_DOMINIO` → 200 |
+| 2. `CRON_SECRET` no `.env` | `grep CRON_SECRET .env` (não commitar) |
+| 3. Instalar cron | `bash deploy/install-fpfs-cron.sh https://SEU_DOMINIO` |
+| 4. Confirmar crontab | `crontab -l \| grep escolinha-fpfs` |
+| 5. Disparo manual | `curl -sS "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SECRET"` |
+| 6. Log | `tail -n 20 /tmp/escolinha-fpfs-cron.log` |
+
+Se o passo 5 retornar 401: secret errado. Se 500: ver log do PM2 (`pm2 logs escolinha`).
+Se 200 com JSON de sync: OK — o job de 2h já cuida do resto.
