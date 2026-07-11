@@ -371,7 +371,7 @@ export function PagamentosClient({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total Pago</p>
-          <p className="mt-1 text-xl font-extrabold text-success-700">{formatMoney(totalPago)}</p>
+          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(totalPago)}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pendentes</p>
@@ -383,7 +383,7 @@ export function PagamentosClient({
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Adimplência</p>
-          <p className={`mt-1 text-2xl font-extrabold ${taxaAdimplencia >= 80 ? "text-success-700" : taxaAdimplencia >= 60 ? "text-warning-600" : "text-danger-600"}`}>{taxaAdimplencia}%</p>
+          <p className={`mt-1 text-2xl font-extrabold ${taxaAdimplencia >= 80 ? "text-success-600" : taxaAdimplencia >= 60 ? "text-warning-600" : "text-danger-600"}`}>{taxaAdimplencia}%</p>
         </div>
       </div>
 
@@ -570,7 +570,14 @@ export function PagamentosClient({
             {filtered.map((p) => {
               const status = getPagamentoStatus(p)
               return (
-                <TableRow key={p.id} className={selected.has(p.id) ? "bg-brand-50" : undefined}>
+                <TableRow
+                  key={p.id}
+                  className={
+                    selected.has(p.id)
+                      ? "bg-brand-50 dark:bg-brand-950/30"
+                      : "hover:bg-muted/40 transition-colors"
+                  }
+                >
                   <TableCell>
                     {status !== "Pago" && (
                       <input

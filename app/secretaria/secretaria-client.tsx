@@ -41,37 +41,65 @@ type PendenciaDoc = {
 }
 
 const tipoStyles: Record<string, string> = {
-  Treino: "bg-brand-100 text-brand-800",
-  Jogo: "bg-success-50 text-success-700",
-  Evento: "bg-info-50 text-info-700",
-  "Reunião": "bg-warning-50 text-warning-700",
+  Treino: "bg-brand-50 text-brand-800 dark:bg-brand-950/40 dark:text-brand-100",
+  Jogo: "bg-success-50 text-success-600 dark:bg-success-600/15 dark:text-success-50",
+  Evento: "bg-info-50 text-info-600 dark:bg-info-600/15 dark:text-info-50",
+  "Reunião": "bg-warning-50 text-warning-600 dark:bg-warning-600/15 dark:text-warning-50",
 }
 
 function AniversarianteRow({ a }: { a: Aniversariante }) {
-  const anos = new Date().getFullYear() - new Date(a.dataNascimento).getFullYear()
+  const nasc = new Date(a.dataNascimento)
+  const hoje = new Date()
+  const anos = hoje.getFullYear() - nasc.getFullYear()
+  const eHoje = nasc.getDate() === hoje.getDate() && nasc.getMonth() === hoje.getMonth()
   const tel = a.telefone?.replace(/\D/g, "") ?? ""
   function enviarParabens() {
     if (!tel) { toast.error("Aluno sem telefone cadastrado"); return }
-    const msg = `🎉 Parabéns, ${a.nome.split(" ")[0]}! Hoje você completa ${anos} anos! Desejamos muita saúde, alegria e gols pela frente. Abraços da equipe! ⚽`
+    const msg = `Parabéns, ${a.nome.split(" ")[0]}! Hoje você completa ${anos} anos! Desejamos muita saúde, alegria e gols pela frente. Abraços da equipe da Escolinha Itaquerense.`
     const numero = tel.startsWith("55") ? tel : `55${tel}`
     window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer")
   }
   return (
-    <div className="flex items-center justify-between rounded-lg border p-2.5">
+    <div
+      className={cn(
+        "flex items-center justify-between rounded-lg border p-2.5",
+        eHoje && "border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/30",
+      )}
+    >
       <div className="flex items-center gap-2">
-        <div className="flex size-8 items-center justify-center rounded-full bg-brand-100 text-brand-800 text-xs font-bold">
-          {format(new Date(a.dataNascimento), "dd")}
+        <div
+          className={cn(
+            "flex size-8 items-center justify-center rounded-full text-xs font-bold",
+            eHoje
+              ? "bg-brand-600 text-white"
+              : "bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-100",
+          )}
+        >
+          {format(nasc, "dd")}
         </div>
         <div>
-          <p className="text-sm font-medium">{a.nome}</p>
+          <p className="text-sm font-medium">
+            {a.nome}
+            {eHoje && (
+              <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wide text-brand-600">
+                hoje
+              </span>
+            )}
+          </p>
           <p className="text-xs text-muted-foreground">{a.turma}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
         <Badge variant="outline" className="text-[10px]">{anos} anos</Badge>
         {tel && (
-          <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs text-success-600 hover:text-success-600" onClick={enviarParabens}>
-            🎂 Parabéns
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 gap-1 px-2 text-xs text-success-600 hover:text-success-600"
+            onClick={enviarParabens}
+          >
+            <Cake className="size-3.5" />
+            Parabéns
           </Button>
         )}
       </div>
@@ -151,11 +179,26 @@ export function SecretariaClient({
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-extrabold font-heading tracking-tight text-warning-600">{aniversariantes.length}</p>
-            {aniversariantes.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {aniversariantes[0]?.nome.split(" ")[0]} hoje
-              </p>
-            )}
+            {(() => {
+              const hojeNiver = aniversariantes.filter((a) => {
+                const d = new Date(a.dataNascimento)
+                return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth()
+              })
+              if (hojeNiver.length === 0) {
+                return (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    no mês de {format(hoje, "MMMM", { locale: ptBR })}
+                  </p>
+                )
+              }
+              return (
+                <p className="mt-1 text-xs font-medium text-brand-600">
+                  {hojeNiver.length === 1
+                    ? `${hojeNiver[0].nome.split(" ")[0]} faz aniversário hoje`
+                    : `${hojeNiver.length} fazem aniversário hoje`}
+                </p>
+              )
+            })()}
           </CardContent>
         </Card>
       </div>
