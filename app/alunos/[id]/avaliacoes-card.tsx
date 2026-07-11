@@ -18,7 +18,7 @@ type Avaliacao = {
 
 function NotaBadge({ valor }: { valor: number | null }) {
   if (valor === null) return <span className="text-muted-foreground text-xs">—</span>
-  const cls = valor >= 7 ? "bg-success-50 text-success-700" : valor >= 5 ? "bg-warning-50 text-warning-700" : "bg-danger-50 text-danger-700"
+  const cls = valor >= 7 ? "bg-success-50 text-success-600" : valor >= 5 ? "bg-warning-50 text-warning-600" : "bg-danger-50 text-danger-600"
   return <Badge className={`text-xs ${cls}`}>{valor.toFixed(1)}</Badge>
 }
 
@@ -60,7 +60,7 @@ export function AvaliacoesCard({ alunoId: _alunoId, avaliacoes }: { alunoId: num
                 <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
                 {isFreq ? (
                   valor !== null
-                    ? <Badge className={`text-xs ${valor >= 75 ? "bg-success-50 text-success-700" : valor >= 50 ? "bg-warning-50 text-warning-700" : "bg-danger-50 text-danger-700"}`}>{valor.toFixed(0)}%</Badge>
+                    ? <Badge className={`text-xs ${valor >= 75 ? "bg-success-50 text-success-600" : valor >= 50 ? "bg-warning-50 text-warning-600" : "bg-danger-50 text-danger-600"}`}>{valor.toFixed(0)}%</Badge>
                     : <span className="text-muted-foreground text-xs">—</span>
                 ) : (
                   <NotaBadge valor={valor} />

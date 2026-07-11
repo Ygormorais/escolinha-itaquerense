@@ -110,7 +110,7 @@ export default async function RecebimentosPage({
               </TableRow>
             )}
             {pagamentos.map((p) => (
-              <TableRow key={p.id}>
+              <TableRow key={p.id} className="hover:bg-muted/40 transition-colors">
                 <TableCell className="font-medium">
                   <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
                 </TableCell>

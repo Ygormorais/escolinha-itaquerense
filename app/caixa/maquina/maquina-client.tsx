@@ -136,11 +136,11 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</p>
-          <p className="mt-1 text-xl font-extrabold text-success-700">{formatMoney(totalValor)}</p>
+          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(totalValor)}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Reconciliadas</p>
-          <p className="mt-1 text-2xl font-extrabold text-success-700">{reconciliadas}</p>
+          <p className="mt-1 text-2xl font-extrabold text-success-600">{reconciliadas}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pendentes</p>
@@ -208,7 +208,7 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
                 </TableRow>
               )}
               {filtered.map((t) => (
-                <TableRow key={t.id}>
+                <TableRow key={t.id} className="hover:bg-muted/40 transition-colors">
                   <TableCell>{format(new Date(t.dataTransacao), "dd/MM/yyyy")}</TableCell>
                   <TableCell className="font-medium">{formatMoney(t.valor)}</TableCell>
                   <TableCell>{t.bandeira || "—"}</TableCell>

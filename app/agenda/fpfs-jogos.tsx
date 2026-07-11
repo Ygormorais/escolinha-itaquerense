@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Trophy } from "lucide-react"
+import { nomeTime } from "@/lib/landing/times"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -26,7 +27,7 @@ export async function FpfsJogos() {
   const agora = new Date()
 
   const statusClass = (status: string) => {
-    if (status === "aberto") return "border-success-600/20 bg-success-50 text-success-700"
+    if (status === "aberto") return "border-success-600/20 bg-success-50 text-success-600"
     if (status === "andamento") return "border-brand-200 bg-brand-50 text-brand-800"
     if (status === "encerrado") return "border-border bg-muted text-muted-foreground"
     return "border-border bg-muted text-muted-foreground"
@@ -66,7 +67,7 @@ export async function FpfsJogos() {
                   <Badge variant="outline" className={`text-xs ${statusClass(camp.status)}`}>
                     {statusLabel(camp.status)}
                   </Badge>
-                  <span className="inline-flex items-center gap-1 rounded border border-success-200 bg-success-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-success-700">
+                  <span className="inline-flex items-center gap-1 rounded border border-success-600/20 bg-success-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-success-600">
                     FPFS
                   </span>
                   {camp.fpfsSyncEm && (
@@ -104,12 +105,13 @@ export async function FpfsJogos() {
                         <TableRow
                           key={p.id}
                           className={
-                            p.resultado === "Vitoria" ? "bg-success-50/50" :
-                            p.resultado === "Derrota" ? "bg-destructive/5" : ""
+                            (p.resultado === "Vitoria" ? "bg-success-50/50 " :
+                            p.resultado === "Derrota" ? "bg-destructive/5 " : "") +
+                            "hover:bg-muted/40 transition-colors"
                           }
                         >
                           <TableCell className="font-medium">
-                            {p.adversario}
+                            {nomeTime(p.adversario)}
                           </TableCell>
                           <TableCell className="text-center font-bold">
                             {p.golsPro} × {p.golsContra}
@@ -154,8 +156,8 @@ export async function FpfsJogos() {
                     </TableHeader>
                     <TableBody>
                       {proximas.map((p) => (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-medium">{p.adversario}</TableCell>
+                        <TableRow key={p.id} className="hover:bg-muted/40 transition-colors">
+                          <TableCell className="font-medium">{nomeTime(p.adversario)}</TableCell>
                           <TableCell>
                             {format(new Date(p.data), "EEE dd/MM 'às' HH'h'", { locale: ptBR })}
                           </TableCell>

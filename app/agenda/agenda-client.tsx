@@ -22,6 +22,7 @@ import { TURMAS } from "@/lib/constants"
 import { criarEvento, editarEvento, deletarEvento } from "@/app/actions/eventos"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { nomeTime } from "@/lib/landing/times"
 
 type Evento = {
   id: number
@@ -217,17 +218,17 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
 
   function avisarEvento(ev: Evento) {
     const dia = format(new Date(ev.data), "EEEE, dd 'de' MMMM", { locale: ptBR })
-    const hora = ev.horaInicio ? `🕐 ${ev.horaInicio}${ev.horaFim ? ` às ${ev.horaFim}` : ""}\n` : ""
-    const local = ev.local ? `📍 ${ev.local}\n` : ""
-    const turmas = ev.turmas && ev.turmas !== "Todas" ? `👥 ${ev.turmas}\n` : ""
+    const hora = ev.horaInicio ? `${ev.horaInicio}${ev.horaFim ? ` às ${ev.horaFim}` : ""}\n` : ""
+    const local = ev.local ? `${ev.local}\n` : ""
+    const turmas = ev.turmas && ev.turmas !== "Todas" ? `${ev.turmas}\n` : ""
     const desc = ev.descricao ? `\n${ev.descricao}` : ""
-    const msg = `📅 *${ev.titulo}*\n${dia}\n${hora}${local}${turmas}${desc}`
+    const msg = `*${ev.titulo}*\n${dia}\n${hora}${local}${turmas}${desc}`.trim()
     abrirWhatsApp(msg)
   }
   function avisarJogo(j: Jogo) {
     const dia = format(new Date(j.data), "EEEE, dd 'de' MMMM 'às' HH:mm", { locale: ptBR })
     const camp = j.campeonato ? ` (${j.campeonato})` : ""
-    const msg = `⚽ *Jogo vs ${j.adversario}*${camp}\n${dia}\n📍 ${j.local}`
+    const msg = `*Jogo vs ${nomeTime(j.adversario)}*${camp}\n${dia}\n${j.local}`
     abrirWhatsApp(msg)
   }
   function abrirWhatsApp(msg: string) {
@@ -300,7 +301,7 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
                   <div className="space-y-0.5">
                     {dayJogos.slice(0, 2).map((j) => (
                       <div key={`j${j.id}`} className={cn("truncate rounded px-1 py-0.5 text-[10px] font-medium border", tipoStyles.Jogo)}>
-                        ⚽ vs {j.adversario}
+                        vs {nomeTime(j.adversario)}
                       </div>
                     ))}
                     {dayEventos.slice(0, Math.max(0, 2 - dayJogos.length)).map((ev) => (
@@ -344,7 +345,7 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
               <div key={`j${j.id}`} className={cn("rounded-lg border p-3 mb-2", tipoStyles.Jogo)}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm font-semibold">⚽ Jogo vs {j.adversario}</p>
+                    <p className="text-sm font-semibold">Jogo vs {nomeTime(j.adversario)}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {format(new Date(j.data), "HH:mm")} · {j.local}
                       {j.campeonato && ` · ${j.campeonato}`}
