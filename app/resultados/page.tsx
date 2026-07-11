@@ -10,7 +10,7 @@ import {
   categoriaCurta,
   getNoticiasPorCategoria,
 } from "@/lib/landing/noticias"
-import { isFaseTabelaClassificacao } from "@/lib/fpfs/parser"
+import { preferirFaseGeral } from "@/lib/classificacao-view"
 import { db } from "@/lib/db"
 
 /** Sempre dados frescos da FPFS (sem cache estático). */
@@ -83,10 +83,7 @@ export default async function ResultadosPage() {
   ])
 
   const classificacoesRaw: ClassifCamp[] = campeonatos.map((c) => {
-    const uteis = c.classificacaoFpfs.filter((l) => isFaseTabelaClassificacao(l.fase))
-    // Preferir a fase “Classificação” (visão geral) quando existir — HTML bem menor
-    const geral = uteis.filter((l) => /^classifica/i.test(l.fase.trim()))
-    const escolhidas = geral.length > 0 ? geral : uteis
+    const escolhidas = preferirFaseGeral(c.classificacaoFpfs)
     return {
       id: c.id,
       nome: c.nome,

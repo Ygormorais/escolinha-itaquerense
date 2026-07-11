@@ -12,49 +12,16 @@ import { Trophy } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
 import { EmptyState } from "@/components/ui/empty-state"
 import { categoriaCurta } from "@/lib/landing/times"
-import { isFaseTabelaClassificacao } from "@/lib/fpfs/parser"
+import {
+  agruparPorFaseGrupo,
+  preferCampPorCategoria,
+  sortCategoriaSub,
+  type LinhaClassifView,
+} from "@/lib/classificacao-view"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
 export const metadata = { title: "Classificação — Escolinha Itaquerense" }
-
-type Linha = {
-  id: number
-  fase: string
-  grupo: string | null
-  posicao: number
-  timeNome: string
-  pontos: number
-  jogos: number
-  vitorias: number
-  empates: number
-  derrotas: number
-  golsPro: number
-  golsContra: number
-  saldo: number
-  ehNosso: boolean
-}
-
-function sortCat(a: string, b: string) {
-  const na = Number(a.match(/Sub-(\d+)/i)?.[1])
-  const nb = Number(b.match(/Sub-(\d+)/i)?.[1])
-  if (Number.isFinite(na) && Number.isFinite(nb) && na !== nb) return na - nb
-  return a.localeCompare(b, "pt-BR")
-}
-
-/** Preferir fase “Classificação” / Geral; depois grupos; evita poluir com chaves extras. */
-function sortFase(a: string, b: string) {
-  const score = (f: string) => {
-    if (/^classifica/i.test(f)) return 0
-    if (/geral/i.test(f)) return 1
-    if (/fase/i.test(f)) return 2
-    if (/grupo/i.test(f)) return 3
-    if (/chave/i.test(f)) return 4
-    return 5
-  }
-  const d = score(a) - score(b)
-  return d !== 0 ? d : a.localeCompare(b, "pt-BR")
-}
 
 const classifSelect = {
   id: true,
@@ -82,31 +49,7 @@ const classifSelect = {
   },
 }
 
-function linhasValidas(linhas: Linha[]): Linha[] {
-  return linhas.filter((l) => isFaseTabelaClassificacao(l.fase))
-}
-
-/** Uma tabela por categoria: campeonato mais recente com linhas válidas. */
-function preferCampPorCategoria<T extends { nome: string; fpfsSyncEm: Date | null; dataInicio: Date; classificacaoFpfs: Linha[] }>(
-  camps: T[],
-): T[] {
-  const best = new Map<string, T>()
-  for (const c of camps) {
-    if (linhasValidas(c.classificacaoFpfs).length === 0) continue
-    const cat = categoriaCurta(c.nome)
-    const prev = best.get(cat)
-    if (!prev) {
-      best.set(cat, c)
-      continue
-    }
-    const tPrev = prev.fpfsSyncEm?.getTime() ?? prev.dataInicio.getTime()
-    const tCur = c.fpfsSyncEm?.getTime() ?? c.dataInicio.getTime()
-    if (tCur >= tPrev) best.set(cat, c)
-  }
-  return [...best.values()]
-}
-
-function StandingsTable({ linhas }: { linhas: Linha[] }) {
+function StandingsTable({ linhas }: { linhas: LinhaClassifView[] }) {
   return (
     <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
       <table className="w-full text-sm">
@@ -194,7 +137,6 @@ export default async function ClassificacaoPage() {
     take: 24,
   })
 
-  // Fallback: se categorias dos filhos não tiverem tabela, lista enxuta geral
   if (campeonatos.length === 0) {
     campeonatos = await db.campeonato.findMany({
       where: {
@@ -219,11 +161,15 @@ export default async function ClassificacaoPage() {
   for (const c of camps) {
     byCat.set(categoriaCurta(c.nome), c)
   }
-  const categorias = [...byCat.keys()].sort(sortCat)
+  const categorias = [...byCat.keys()].sort(sortCategoriaSub)
 
   let totalLinhas = 0
   for (const c of camps) {
-    totalLinhas += linhasValidas(c.classificacaoFpfs).length
+    // Conta só a fase geral (mesma UI)
+    totalLinhas += agruparPorFaseGrupo(c.classificacaoFpfs, { soFaseGeral: true }).reduce(
+      (acc, f) => acc + f.grupos.reduce((a, g) => a + g.linhas.length, 0),
+      0,
+    )
   }
 
   return (
@@ -252,19 +198,9 @@ export default async function ClassificacaoPage() {
         <div className="space-y-10">
           {categorias.map((cat) => {
             const camp = byCat.get(cat)!
-            const validas = linhasValidas(camp.classificacaoFpfs)
-            if (validas.length === 0) return null
-
-            // Hierarquia: fase → grupo → linhas
-            const porFase = new Map<string, Map<string | null, Linha[]>>()
-            for (const l of validas) {
-              if (!porFase.has(l.fase)) porFase.set(l.fase, new Map())
-              const porGrupo = porFase.get(l.fase)!
-              const g = l.grupo
-              if (!porGrupo.has(g)) porGrupo.set(g, [])
-              porGrupo.get(g)!.push(l)
-            }
-            const fases = [...porFase.keys()].sort(sortFase)
+            // Mesma estratégia do site público: fase Classificação/Geral
+            const blocos = agruparPorFaseGrupo(camp.classificacaoFpfs, { soFaseGeral: true })
+            if (blocos.length === 0) return null
 
             return (
               <section key={cat} className="space-y-5">
@@ -284,32 +220,21 @@ export default async function ClassificacaoPage() {
                 <p className="text-sm text-muted-foreground">{camp.nome}</p>
 
                 <div className="space-y-6">
-                  {fases.map((fase) => {
-                    const grupos = porFase.get(fase)!
-                    const chaves = [...grupos.keys()].sort((a, b) =>
-                      (a ?? "").localeCompare(b ?? "", "pt-BR"),
-                    )
-                    return (
-                      <div key={fase} className="space-y-3">
-                        <h3 className="text-sm font-bold tracking-tight text-foreground">
-                          {fase}
-                        </h3>
-                        {chaves.map((g) => {
-                          const linhas = grupos.get(g)!
-                          return (
-                            <div key={`${fase}-${g ?? "_"}`} className="space-y-2">
-                              {g && (
-                                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                                  {g}
-                                </p>
-                              )}
-                              <StandingsTable linhas={linhas} />
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )
-                  })}
+                  {blocos.map(({ fase, grupos }) => (
+                    <div key={fase} className="space-y-3">
+                      <h3 className="text-sm font-bold tracking-tight text-foreground">{fase}</h3>
+                      {grupos.map(({ grupo, linhas }) => (
+                        <div key={`${fase}-${grupo ?? "_"}`} className="space-y-2">
+                          {grupo && (
+                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                              {grupo}
+                            </p>
+                          )}
+                          <StandingsTable linhas={linhas} />
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               </section>
             )

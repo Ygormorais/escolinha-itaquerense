@@ -1,6 +1,11 @@
 import { db } from "@/lib/db"
 import { fetchHtml, urlJogos, urlClassificacao } from "./client"
-import { extractTemporadaMeta, parseJogos, parseClassificacao } from "./parser"
+import {
+  dataPartidaLocal,
+  extractTemporadaMeta,
+  parseJogos,
+  parseClassificacao,
+} from "./parser"
 
 export interface ResumoSync {
   campeonatoId: number
@@ -72,7 +77,7 @@ export async function syncCampeonato(campeonatoId: number): Promise<ResumoSync> 
     const dados = {
       campeonatoId,
       rodada: j.rodada,
-      data: new Date(`${j.data}T12:00:00`), // meio-dia local evita shift de fuso (UTC-3)
+      data: dataPartidaLocal(j.data, j.hora),
       adversario,
       adversarioEscudoUrl,
       local,

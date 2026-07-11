@@ -13,16 +13,19 @@ vi.mock("@/lib/db", () => {
   }
   return { db }
 })
-vi.mock("@/lib/fpfs/parser", () => ({
-  parseJogos: vi.fn(),
-  parseClassificacao: vi.fn(),
-  extractTemporadaMeta: vi.fn(() => ({
-    temporada: 2026,
-    categoria: "Sub-7",
-    divisao: "A3",
-  })),
-  normalizeEscudoUrl: (src: string | null | undefined) => src ?? null,
-}))
+vi.mock("@/lib/fpfs/parser", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/fpfs/parser")>()
+  return {
+    ...actual,
+    parseJogos: vi.fn(),
+    parseClassificacao: vi.fn(),
+    extractTemporadaMeta: vi.fn(() => ({
+      temporada: 2026,
+      categoria: "Sub-7",
+      divisao: "A3",
+    })),
+  }
+})
 
 import { syncCampeonato } from "@/lib/fpfs/sync"
 import { db } from "@/lib/db"
@@ -165,7 +168,7 @@ describe("syncCampeonato", () => {
     expect(m.partida.update).toHaveBeenCalledTimes(1)
   })
 
-  it("grava a data ao meio-dia local (sem shift de fuso)", async () => {
+  it("grava data com hora da FPFS (nao forca 12:00)", async () => {
     m.partida.findFirst.mockResolvedValue(null)
     await syncCampeonato(1)
     const data: Date = m.partida.create.mock.calls[0][0].data.data
@@ -173,5 +176,31 @@ describe("syncCampeonato", () => {
     expect(data.getFullYear()).toBe(2026)
     expect(data.getMonth()).toBe(3) // abril (0-based)
     expect(data.getDate()).toBe(11)
+    expect(data.getHours()).toBe(17)
+    expect(data.getMinutes()).toBe(0)
+  })
+
+  it("usa 12:00 quando a FPFS nao informa hora", async () => {
+    ;(parseJogos as ReturnType<typeof vi.fn>).mockReturnValueOnce([
+      {
+        fpfsJogoId: "556",
+        rodada: 1,
+        data: "2026-05-01",
+        hora: null,
+        ginasio: null,
+        mandante: "E.C. Itaquerense",
+        visitante: "Vila Real",
+        mandanteEscudo: null,
+        visitanteEscudo: null,
+        golsMandante: null,
+        golsVisitante: null,
+        sumulaUrl: null,
+      },
+    ])
+    m.partida.findFirst.mockResolvedValue(null)
+    await syncCampeonato(1)
+    const data: Date = m.partida.create.mock.calls[0][0].data.data
+    expect(data.getHours()).toBe(12)
+    expect(data.getMinutes()).toBe(0)
   })
 })

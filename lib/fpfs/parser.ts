@@ -33,6 +33,22 @@ function dataIso(dataBr: string, anoTemporada?: number): string {
   return `${yyyy}-${(mes ?? "").padStart(2, "0")}-${(dia ?? "").padStart(2, "0")}`
 }
 
+/**
+ * Data/hora local do jogo (sem Z). Usa hora da FPFS quando existir; senão 12:00
+ * (evita shift de fuso e não inventa horário).
+ */
+export function dataPartidaLocal(dataIsoYmd: string, hora: string | null | undefined): Date {
+  let hh = 12
+  let mm = 0
+  const m = hora?.trim().match(/^(\d{1,2}):(\d{2})/)
+  if (m) {
+    hh = Math.min(23, Math.max(0, Number(m[1])))
+    mm = Math.min(59, Math.max(0, Number(m[2])))
+  }
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return new Date(`${dataIsoYmd}T${pad(hh)}:${pad(mm)}:00`)
+}
+
 function parseGols(texto: string): [number | null, number | null] {
   const m = texto.match(/(\d+)\s*[xX×]\s*(\d+)/)
   return m ? [Number(m[1]), Number(m[2])] : [null, null]
