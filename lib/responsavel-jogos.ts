@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
 import { categoriaCurta } from "@/lib/landing/times"
+import { candidatosEscudoAdversario } from "@/lib/landing/escudo-adversario"
 import { filtroCampeonatoPorCategorias, turmasParaCategorias } from "@/lib/responsavel-alunos"
 
 export type JogoPortal = {
@@ -12,6 +13,8 @@ export type JogoPortal = {
   resultado: string | null
   categoria: string
   campeonato: string
+  /** Candidatas de escudo (manual → conhecido → FPFS), prontas para o UI. */
+  foraEscudos: string[]
 }
 
 /**
@@ -41,6 +44,7 @@ export async function buscarJogosPortal(
     select: {
       id: true,
       adversario: true,
+      adversarioEscudoUrl: true,
       data: true,
       local: true,
       golsPro: true,
@@ -64,6 +68,7 @@ export async function buscarJogosPortal(
     resultado: p.resultado,
     categoria: categoriaCurta(p.campeonato.nome),
     campeonato: p.campeonato.nome,
+    foraEscudos: candidatosEscudoAdversario(p.adversario, p.adversarioEscudoUrl),
   })
 
   const proximos = filtradas

@@ -14,7 +14,8 @@ import { PortalHero } from "@/components/responsavel/portal-hero"
 import { ConvocacaoCard } from "@/components/responsavel/convocacao-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { categoriaCurta, nomeTime } from "@/lib/landing/times"
-import { candidatosEscudoAdversario, viaProxyEscudo } from "@/lib/landing/escudo-adversario"
+import { candidatosEscudoAdversario } from "@/lib/landing/escudo-adversario"
+import { AdvCrest } from "@/components/responsavel/adv-crest"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -259,42 +260,6 @@ export default async function JogosPage() {
         .
       </p>
     </div>
-  )
-}
-
-function AdvCrest({ urls, name }: { urls: string[]; name: string }) {
-  const src = urls[0]
-  const initials =
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() ?? "")
-      .join("") || "ADV"
-  if (!src) {
-    return (
-      <span
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground"
-        aria-hidden
-      >
-        {initials}
-      </span>
-    )
-  }
-  const proxied = viaProxyEscudo(src)
-  return (
-    <span className="relative size-10 shrink-0 overflow-hidden rounded-full border border-border bg-white">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={proxied}
-        alt=""
-        width={40}
-        height={40}
-        className="size-full object-contain p-0.5"
-        loading="lazy"
-        referrerPolicy="no-referrer"
-      />
-    </span>
   )
 }
 

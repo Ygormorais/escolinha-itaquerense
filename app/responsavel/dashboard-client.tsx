@@ -18,6 +18,7 @@ import { PortalHero } from "@/components/responsavel/portal-hero"
 import { EmptyState } from "@/components/ui/empty-state"
 import type { JogoPortal } from "@/lib/responsavel-jogos"
 import { nomeTime } from "@/lib/landing/times"
+import { AdvCrest } from "@/components/responsavel/adv-crest"
 
 type Aluno = {
   id: number
@@ -184,13 +185,16 @@ export function ResponsavelDashboardClient({
                     key={j.id}
                     className="flex items-center justify-between gap-3 rounded-xl border border-border bg-[var(--color-paper-50)] px-3 py-3 dark:bg-muted/40"
                   >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
-                        vs {nomeTime(j.adversario)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {j.categoria} · {format(new Date(j.data), "dd/MM · HH'h'mm", { locale: ptBR })} · {j.local}
-                      </p>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <AdvCrest urls={j.foraEscudos ?? []} name={nomeTime(j.adversario)} size={36} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          vs {nomeTime(j.adversario)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {j.categoria} · {format(new Date(j.data), "dd/MM · HH'h'mm", { locale: ptBR })} · {j.local}
+                        </p>
+                      </div>
                     </div>
                     <Badge variant="outline" className="shrink-0 border-brand-200 text-brand-700">
                       VS
@@ -213,13 +217,16 @@ export function ResponsavelDashboardClient({
                     key={j.id}
                     className="flex items-center justify-between gap-3 rounded-xl border border-border bg-[var(--color-paper-50)] px-3 py-3 dark:bg-muted/40"
                   >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
-                        vs {nomeTime(j.adversario)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {j.categoria} · {format(new Date(j.data), "dd/MM/yyyy", { locale: ptBR })}
-                      </p>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <AdvCrest urls={j.foraEscudos ?? []} name={nomeTime(j.adversario)} size={36} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          vs {nomeTime(j.adversario)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {j.categoria} · {format(new Date(j.data), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
                     </div>
                     <span className="shrink-0 font-heading text-base font-extrabold tabular-nums text-foreground">
                       {placarLabel(j)}

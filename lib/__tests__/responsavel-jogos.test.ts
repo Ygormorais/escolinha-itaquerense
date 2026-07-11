@@ -29,6 +29,7 @@ describe("buscarJogosPortal", () => {
       {
         id: 1,
         adversario: "VILA REAL",
+        adversarioEscudoUrl: "https://admfutsal.com.br/assets/images/foto/escudo/9.png",
         data: new Date("2026-07-05T15:00:00Z"),
         local: "Casa",
         golsPro: 3,
@@ -39,6 +40,7 @@ describe("buscarJogosPortal", () => {
       {
         id: 2,
         adversario: "MOGI",
+        adversarioEscudoUrl: null,
         data: new Date("2026-07-20T15:00:00Z"),
         local: "Fora",
         golsPro: null,
@@ -49,6 +51,7 @@ describe("buscarJogosPortal", () => {
       {
         id: 3,
         adversario: "OUTRO",
+        adversarioEscudoUrl: null,
         data: new Date("2026-07-05T15:00:00Z"),
         local: "Casa",
         golsPro: 1,
@@ -61,6 +64,8 @@ describe("buscarJogosPortal", () => {
     const r = await buscarJogosPortal(["Sub-9"], agora)
     expect(r.recentes).toHaveLength(1)
     expect(r.recentes[0].adversario).toBe("VILA REAL")
+    expect(Array.isArray(r.recentes[0].foraEscudos)).toBe(true)
+    expect(r.recentes[0].foraEscudos.some((u) => u.includes("admfutsal"))).toBe(true)
     expect(r.proximos).toHaveLength(1)
     expect(r.proximos[0].id).toBe(2)
   })
