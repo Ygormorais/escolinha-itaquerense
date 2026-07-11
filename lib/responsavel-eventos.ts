@@ -1,5 +1,6 @@
 // lib/responsavel-eventos.ts
 import { db } from "@/lib/db"
+import { nomeTime } from "@/lib/landing/times"
 
 export type ItemAgendaDashboard = {
   tipo: "jogo" | "evento"
@@ -45,7 +46,7 @@ export async function buscarProximosEventos(
 
   const itensJogo: ItemAgendaDashboard[] = convocacoes.map((c) => ({
     tipo: "jogo",
-    titulo: `Jogo vs ${c.partida.adversario}`,
+    titulo: `Jogo vs ${nomeTime(c.partida.adversario)}`,
     data: c.partida.data.toISOString(),
     alunoNome: c.aluno.nome,
     confirmacao: c.confirmacao,

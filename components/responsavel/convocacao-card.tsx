@@ -7,6 +7,7 @@ import { ptBR } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { responderConvocacao } from "@/app/actions/convocacao"
+import { nomeTime } from "@/lib/landing/times"
 
 export type ConvocacaoPendente = {
   escalacaoId: number
@@ -36,7 +37,7 @@ export function ConvocacaoCard({ convocacao }: { convocacao: ConvocacaoPendente 
           {convocacao.alunoNome} foi convocado(a)
         </CardTitle>
         <p className="text-sm font-semibold text-brand-700">
-          vs {convocacao.adversario}
+          vs {nomeTime(convocacao.adversario)}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
