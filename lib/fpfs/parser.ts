@@ -103,6 +103,21 @@ export function parseJogos(html: string, anoTemporada?: number): JogoFpfs[] {
   return jogos
 }
 
+/**
+ * Fases que são tabela de classificação real.
+ * A FPFS reutiliza `classification_table` em chaves/mata-mata e rotula a
+ * primeira coluna como "JOGO 12", "JOGO 68" etc. — isso não é standings.
+ */
+export function isFaseTabelaClassificacao(fase: string): boolean {
+  const f = fase.trim()
+  if (!f) return false
+  // Mata-mata / chave rotulada por jogo
+  if (/^jogo\s*\d+/i.test(f)) return false
+  // Linha de jogos (dd/mm) que às vezes vaza na mesma classe de tabela
+  if (/^\d{1,2}\/\d{1,2}/.test(f)) return false
+  return true
+}
+
 export function parseClassificacao(html: string): LinhaClassificacao[] {
   const $ = cheerio.load(html)
   const linhas: LinhaClassificacao[] = []
@@ -111,14 +126,19 @@ export function parseClassificacao(html: string): LinhaClassificacao[] {
       const tds = $(el).children("td")
       if (tds.length < 11) return
       const grupoTxt = $(tds[0]).text().trim()
+      const fase = grupoTxt || "Classificação"
+      if (!isFaseTabelaClassificacao(fase)) return
       const timeNome = ($(tds[2]).find(".nome_clube").text().trim() || $(tds[2]).text().trim())
       if (!timeNome) return
+      // Posição deve ser número de tabela (não placar solto / lixo)
+      const posicao = num($(tds[1]).text()) || i + 1
+      if (posicao < 1 || posicao > 64) return
       const golsPro = num($(tds[8]).text())
       const golsContra = num($(tds[9]).text())
       linhas.push({
-        fase: grupoTxt || "Classificação",
+        fase,
         grupo: grupoTxt || null,
-        posicao: num($(tds[1]).text()) || i + 1,
+        posicao,
         timeNome,
         pontos: num($(tds[3]).text()),
         jogos: num($(tds[4]).text()),

@@ -12,6 +12,7 @@ import { Trophy } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
 import { EmptyState } from "@/components/ui/empty-state"
 import { categoriaCurta } from "@/lib/landing/times"
+import { isFaseTabelaClassificacao } from "@/lib/fpfs/parser"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -132,10 +133,13 @@ export default async function ClassificacaoPage() {
               {byCat.get(cat)!.map((camp) => {
                 const grupos = new Map<string, typeof camp.classificacaoFpfs>()
                 for (const l of camp.classificacaoFpfs) {
+                  // Mata-mata “JOGO N” não é tabela (parser antigo)
+                  if (!isFaseTabelaClassificacao(l.fase)) continue
                   const chave = l.grupo ? `${l.fase} — ${l.grupo}` : l.fase
                   if (!grupos.has(chave)) grupos.set(chave, [])
                   grupos.get(chave)!.push(l)
                 }
+                if (grupos.size === 0) return null
 
                 return (
                   <div key={camp.id} className="space-y-3">

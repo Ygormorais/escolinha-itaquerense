@@ -19,6 +19,18 @@ async function housekeeping() {
   const tokenCount = await db.resetToken.deleteMany({ where: { createdAt: { lt: limiteToken } } })
   console.log(`[housekeeping] Tokens expirados removidos: ${tokenCount.count}`)
 
+  // Lixo histórico do parser FPFS (fases de mata-mata gravadas como tabela)
+  const lixoClassif = await db.classificacaoFpfs.deleteMany({
+    where: {
+      OR: [
+        { fase: { startsWith: "JOGO" } },
+        { fase: { startsWith: "jogo" } },
+        { fase: { startsWith: "Jogo" } },
+      ],
+    },
+  })
+  console.log(`[housekeeping] Linhas classificação lixo (JOGO N) removidas: ${lixoClassif.count}`)
+
   const orfaos = await db.solicitacao.findMany({
     where: {
       status: { in: ["pendente", "em_andamento"] },

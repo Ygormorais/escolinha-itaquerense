@@ -10,6 +10,7 @@ import {
   categoriaCurta,
   getNoticiasPorCategoria,
 } from "@/lib/landing/noticias"
+import { isFaseTabelaClassificacao } from "@/lib/fpfs/parser"
 import { db } from "@/lib/db"
 
 /** Sempre dados frescos da FPFS (sem cache estático). */
@@ -81,11 +82,8 @@ export default async function ResultadosPage() {
     }),
   ])
 
-  /** Fases “JOGO 12” vêm do parser FPFS e não são tabela — excluídas do público. */
-  const isFaseTabela = (fase: string) => !/^jogo\s*\d+/i.test(fase.trim())
-
   const classificacoesRaw: ClassifCamp[] = campeonatos.map((c) => {
-    const uteis = c.classificacaoFpfs.filter((l) => isFaseTabela(l.fase))
+    const uteis = c.classificacaoFpfs.filter((l) => isFaseTabelaClassificacao(l.fase))
     // Preferir a fase “Classificação” (visão geral) quando existir — HTML bem menor
     const geral = uteis.filter((l) => /^classifica/i.test(l.fase.trim()))
     const escolhidas = geral.length > 0 ? geral : uteis
