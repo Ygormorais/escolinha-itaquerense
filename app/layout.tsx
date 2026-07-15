@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Playfair_Display } from "next/font/google"
+import Script from "next/script"
 
 import "./globals.css"
 import { Toaster } from "sonner"
@@ -7,7 +8,6 @@ import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
 import { ShellGate } from "@/components/layout/shell-gate"
-import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
 
 /** Canônico: Inter (corpo) + Playfair (títulos) — site, admin e portal. */
@@ -101,7 +101,12 @@ export default async function RootLayout({
   return (
       <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
-        <ThemeScript jsonLd={jsonLd} />
+        <Script id="theme-preload" strategy="beforeInteractive">
+          {"try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark'}}catch(e){ }"}
+        </Script>
+        <Script id="site-jsonld" type="application/ld+json" strategy="beforeInteractive">
+          {JSON.stringify(jsonLd).replace(/</g, "\\u003c")}
+        </Script>
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
