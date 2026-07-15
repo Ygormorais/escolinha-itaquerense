@@ -21,7 +21,7 @@ export type ClubConfig = {
 
 const CONFIG_PATH = path.join(process.cwd(), "club.config.json")
 
-const DEFAULT: ClubConfig = {
+export const DEFAULT: ClubConfig = {
   nome: "E.C. Itaquerense",
   endereco: "R. Augusto Carlos Baumann, 588",
   telefone: "",

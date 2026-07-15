@@ -108,9 +108,8 @@ export function NoticiasCarrossel({
     [gruposSafe, catSegura],
   )
 
-  // Ao trocar de categoria, volta ao 1º jogo e centra a aba ativa
+  // Ao trocar de categoria, centra a aba ativa
   useEffect(() => {
-    setAtivo(0)
     const root = tabsRef.current
     if (!root) return
     const active = root.querySelector<HTMLElement>(".nc-tab.active")
@@ -270,7 +269,10 @@ export function NoticiasCarrossel({
                   aria-selected={i === catSegura}
                   aria-controls="nc-panel"
                   className={"nc-tab" + (i === catSegura ? " active" : "")}
-                  onClick={() => setCatIdx(i)}
+                  onClick={() => {
+                    setCatIdx(i)
+                    setAtivo(0)
+                  }}
                 >
                   {g.categoria}
                 </button>

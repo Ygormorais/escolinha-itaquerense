@@ -2,7 +2,7 @@
  * Varre IDs de eventos FPFS em busca de jogos do time Elite/Itaquerense.
  * Uso: npx tsx scripts/find-fpfs-events.ts [fromId] [toId]
  */
-import { fetchHtml, urlJogos, urlClassificacao } from "../lib/fpfs/client"
+import { fetchHtml, urlJogos } from "../lib/fpfs/client"
 import { parseJogos } from "../lib/fpfs/parser"
 
 function isNosso(nome: string): boolean {

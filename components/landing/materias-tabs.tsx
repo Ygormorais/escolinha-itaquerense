@@ -116,11 +116,13 @@ export function MateriasTabs({
 
   const [aba, setAba] = useState<MateriaAbaId>("destaques")
   const tabsRef = useRef<HTMLDivElement>(null)
+  const abaAtiva =
+    aba === "publicacoes" && publicacoes.length === 0 ? "destaques" : aba
 
   const items = useMemo(() => {
-    if (aba === "publicacoes") return null
-    return materiasPorAba(aba)
-  }, [aba])
+    if (abaAtiva === "publicacoes") return null
+    return materiasPorAba(abaAtiva)
+  }, [abaAtiva])
 
   useEffect(() => {
     const root = tabsRef.current
@@ -133,12 +135,7 @@ export function MateriasTabs({
       block: "nearest",
       behavior: reduce ? "auto" : "smooth",
     })
-  }, [aba])
-
-  // Se publicações sumirem e a aba estiver nela, volta para destaques
-  useEffect(() => {
-    if (aba === "publicacoes" && publicacoes.length === 0) setAba("destaques")
-  }, [aba, publicacoes.length])
+  }, [abaAtiva])
 
   return (
     <section className="mt" id="materias" aria-labelledby="mt-heading">
@@ -166,9 +163,9 @@ export function MateriasTabs({
                 type="button"
                 role="tab"
                 id={`mt-tab-${t.id}`}
-                aria-selected={aba === t.id}
+                aria-selected={abaAtiva === t.id}
                 aria-controls="mt-panel"
-                className={"mt-tab" + (aba === t.id ? " active" : "")}
+                className={"mt-tab" + (abaAtiva === t.id ? " active" : "")}
                 onClick={() => setAba(t.id)}
               >
                 {t.label}
@@ -180,10 +177,10 @@ export function MateriasTabs({
         <div
           id="mt-panel"
           role="tabpanel"
-          aria-labelledby={`mt-tab-${aba}`}
+          aria-labelledby={`mt-tab-${abaAtiva}`}
           className="mt-panel"
         >
-          {aba === "publicacoes" ? (
+          {abaAtiva === "publicacoes" ? (
             publicacoes.length > 0 ? (
               <div className="mt-grid">
                 {publicacoes.map((n) => (

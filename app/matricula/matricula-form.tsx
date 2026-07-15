@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -111,12 +112,12 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
               Falar no WhatsApp
             </a>
           )}
-          <a href="/horarios" className="mat-success-secondary">
+          <Link href="/horarios" className="mat-success-secondary">
             Ver turmas
-          </a>
-          <a href="/" className="mat-success-secondary">
+          </Link>
+          <Link href="/" className="mat-success-secondary">
             Voltar ao site
-          </a>
+          </Link>
         </div>
       </div>
     )

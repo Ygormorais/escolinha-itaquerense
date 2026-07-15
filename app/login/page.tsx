@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { LoginForm } from "./login-form"
 import { SessionGate } from "./session-gate"
 import { AuthShell } from "@/components/auth/auth-shell"
@@ -31,12 +32,12 @@ export default async function LoginPage({
       accentValue="Somente equipe autorizada do clube"
       footer={
         <div className="space-y-2">
-          <a href="/responsavel" className="block font-medium text-brand-800 underline-offset-4 hover:underline">
+          <Link href="/responsavel" className="block font-medium text-brand-800 underline-offset-4 hover:underline">
             É responsável? Portal da família →
-          </a>
-          <a href="/" className="block text-xs text-muted-foreground underline-offset-4 hover:underline">
+          </Link>
+          <Link href="/" className="block text-xs text-muted-foreground underline-offset-4 hover:underline">
             Voltar ao site público
-          </a>
+          </Link>
         </div>
       }
     >

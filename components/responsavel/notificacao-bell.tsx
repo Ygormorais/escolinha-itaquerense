@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react"
 import { Bell, BellDot, X, MessageSquare } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -16,7 +16,11 @@ const BTN_CLASS =
   "relative flex size-9 items-center justify-center rounded-md transition-colors hover:bg-muted"
 
 export function NotificacaoBell() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
   const [open, setOpen] = useState(false)
   const [naoLidas, setNaoLidas] = useState(0)
   const [ultimas, setUltimas] = useState<Notificacao[]>([])
@@ -26,11 +30,14 @@ export function NotificacaoBell() {
       const res = await fetch("/api/responsavel/notificacoes")
       if (!res.ok) return
       const data = await res.json()
-      setNaoLidas(data.naoLidas ?? 0)
+      const totalNaoLidas = data.naoLidas ?? 0
+      setNaoLidas(totalNaoLidas)
       setUltimas(data.ultimas ?? [])
+      return totalNaoLidas
     } catch {
       // silently fail
     }
+    return 0
   }, [])
 
   const marcarLidas = useCallback(async () => {
@@ -41,11 +48,6 @@ export function NotificacaoBell() {
     } catch {
       // silently fail
     }
-  }, [])
-
-  // Marca montagem no client — SSR e 1º paint do client ficam idênticos.
-  useEffect(() => {
-    setMounted(true)
   }, [])
 
   // Contagem leve após idle (não compete com a hidratação da página)
@@ -77,12 +79,6 @@ export function NotificacaoBell() {
     }
   }, [mounted, fetchNotificacoes])
 
-  useEffect(() => {
-    if (mounted && open && naoLidas > 0) {
-      void marcarLidas()
-    }
-  }, [mounted, open, naoLidas, marcarLidas])
-
   // SSR + 1ª hidratação: sempre o mesmo markup (sino sem badge).
   const showBadge = mounted && naoLidas > 0
 
@@ -91,8 +87,11 @@ export function NotificacaoBell() {
       <button
         type="button"
         onClick={() => {
-          setOpen((v) => !v)
-          void fetchNotificacoes()
+          const nextOpen = !open
+          setOpen(nextOpen)
+          void fetchNotificacoes().then((totalNaoLidas) => {
+            if (nextOpen && totalNaoLidas > 0) void marcarLidas()
+          })
         }}
         className={BTN_CLASS}
         aria-label="Notificações"

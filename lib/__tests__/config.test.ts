@@ -1,32 +1,36 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from "vitest"
 import fs from "fs"
 import path from "path"
-import { getConfig, saveConfig, resetConfigCache, type ClubConfig } from "../config"
+import { DEFAULT, getConfig, saveConfig, resetConfigCache } from "../config"
 
 const TEST_CONFIG_PATH = path.join(process.cwd(), "club.config.json")
-const DEFAULT: ClubConfig = {
-  nome: "E.C. Itaquerense",
-  endereco: "R. Augusto Carlos Baumann, 588",
-  telefone: "",
-  cidade: "Itaquera — São Paulo/SP",
-  metaMensal: 0,
-  capacidadeTurma: 20,
-  chavePix: "ygorcamisa1@gmail.com",
-  whatsapp: "5511999999999",
-  googleCalendarId: "",
-  diaVencimento: 10,
-  intervaloDiasLembreteInadimplencia: 7,
-  templateCobranca: "Olá {responsavel}!\n\nLembrete: mensalidades de *{aluno}* em atraso:\n\n{meses}\n\nTotal: *{total}*\n{pix}\n\nQualquer dúvida, entre em contato.",
-  templateLembreteVencimento: "Olá {responsavel}! Lembrete: a mensalidade de *{aluno}* vence em *{data}*.\n\nValor: *{valor}*{pix}\n\nObrigado!",
-  templateFalta: "Olá {responsavel}! Registramos a *falta* de *{aluno}* no treino do dia {data}.\n\nQualquer dúvida, entre em contato.",
-}
+let originalConfig: string | null = null
 
 describe("lib/config", () => {
+  beforeAll(() => {
+    originalConfig = fs.existsSync(TEST_CONFIG_PATH)
+      ? fs.readFileSync(TEST_CONFIG_PATH, "utf-8")
+      : null
+  })
+
   beforeEach(() => {
     resetConfigCache()
     if (fs.existsSync(TEST_CONFIG_PATH)) {
       fs.unlinkSync(TEST_CONFIG_PATH)
     }
+  })
+
+  afterAll(() => {
+    resetConfigCache()
+
+    if (originalConfig === null) {
+      if (fs.existsSync(TEST_CONFIG_PATH)) {
+        fs.unlinkSync(TEST_CONFIG_PATH)
+      }
+      return
+    }
+
+    fs.writeFileSync(TEST_CONFIG_PATH, originalConfig, "utf-8")
   })
 
   afterEach(() => {
