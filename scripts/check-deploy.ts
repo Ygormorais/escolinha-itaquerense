@@ -22,6 +22,12 @@ function ok(label: string)  { console.log(`${GREEN}✓${RESET}  ${label}`) }
 function fail(label: string) { console.log(`${RED}✗${RESET}  ${label}`); failures++ }
 function warn(label: string) { console.log(`${YELLOW}⚠${RESET}  ${label}`); warnings++ }
 function section(title: string) { console.log(`\n${title}`) }
+function hasPlaceholder(value: string): boolean {
+  const normalized = value.toLowerCase()
+  return ["mude-esta", "troque-para", "sua-", "seu-", "seu_dominio"].some((token) =>
+    normalized.includes(token)
+  )
+}
 
 // ── Variáveis obrigatórias ────────────────────────────────────────────────────
 
@@ -40,7 +46,7 @@ for (const { key, hint } of REQUIRED) {
   const val = process.env[key]
   if (!val) {
     fail(`${key} não definida${hint ? ` — ${hint}` : ""}`)
-  } else if (val.includes("mude-esta") || val.includes("troque-para") || val.includes("sua-")) {
+  } else if (hasPlaceholder(val)) {
     fail(`${key} ainda tem valor de placeholder — troque antes de fazer deploy`)
   } else {
     ok(key)
@@ -58,17 +64,24 @@ const OPTIONAL: { key: string; feature: string }[] = [
   { key: "SMTP_HOST",                  feature: "e-mail (lembretes inadimplência)" },
   { key: "ANTHROPIC_API_KEY",          feature: "chatbot WhatsApp (Claude)" },
   { key: "VAPID_PUBLIC_KEY",           feature: "push notifications (PWA)" },
+  { key: "NEXT_PUBLIC_VAPID_PUBLIC_KEY", feature: "push notifications no navegador (PWA)" },
   { key: "VAPID_PRIVATE_KEY",          feature: "push notifications (PWA)" },
   { key: "GOOGLE_SERVICE_ACCOUNT_EMAIL", feature: "sincronização Google Calendar" },
 ]
 
 for (const { key, feature } of OPTIONAL) {
   const val = process.env[key]
-  if (!val || val.includes("sua-") || val.includes("seu-")) {
+  if (!val || hasPlaceholder(val)) {
     warn(`${key} ausente — desabilita: ${feature}`)
   } else {
     ok(`${key} (${feature})`)
   }
+}
+
+const vapidPublic = process.env.VAPID_PUBLIC_KEY
+const vapidPublicClient = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+if (vapidPublic && vapidPublicClient && vapidPublic !== vapidPublicClient) {
+  warn("VAPID_PUBLIC_KEY e NEXT_PUBLIC_VAPID_PUBLIC_KEY devem ter o mesmo valor")
 }
 
 // ── SESSION_SECRET tem entropia suficiente? ────────────────────────────────────

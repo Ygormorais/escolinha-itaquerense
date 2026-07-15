@@ -17,6 +17,17 @@ const TIPOS = [
 
 type Prefs = Record<string, boolean>
 
+function urlBase64ToArrayBuffer(value: string): ArrayBuffer {
+  const padding = "=".repeat((4 - (value.length % 4)) % 4)
+  const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/")
+  const raw = window.atob(base64)
+  const bytes = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i++) {
+    bytes[i] = raw.charCodeAt(i)
+  }
+  return bytes.buffer as ArrayBuffer
+}
+
 export default function NotificacoesPage() {
   const [prefs, setPrefs] = useState<Prefs>({ vencimento: true, pagamentoConfirmado: true, falta: false, convocacao: true, comunicado: true, avaliacao: true })
   const [ativo, setAtivo] = useState(() =>
@@ -34,7 +45,10 @@ export default function NotificacoesPage() {
     const reg = await navigator.serviceWorker.ready
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
     if (!vapidKey) { toast.error("Chave VAPID não configurada"); return }
-    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKey })
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToArrayBuffer(vapidKey),
+    })
     const subJson = sub.toJSON()
     await fetch("/api/push/subscribe", {
       method: "POST",
