@@ -67,4 +67,28 @@ describe("PUT /api/push/preferencias", () => {
     expect(mockDb.notificacaoPreferencia.upsert).toHaveBeenCalledOnce()
     expect(mockDb.notificacaoPreferencia.upsert.mock.calls[0][0].create.responsavelId).toBe(3)
   })
+
+  it("retorna 400 com JSON inválido", async () => {
+    const res = await PUT(new Request("http://localhost", { method: "PUT", body: "{" }))
+    expect(res.status).toBe(400)
+  })
+
+  it("normaliza campos ausentes usando defaults", async () => {
+    const res = await PUT(new Request("http://localhost", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ falta: true }),
+    }))
+
+    expect(res.status).toBe(200)
+    expect(mockDb.notificacaoPreferencia.upsert.mock.calls[0][0].create).toEqual({
+      responsavelId: 3,
+      vencimento: true,
+      pagamentoConfirmado: true,
+      falta: true,
+      convocacao: true,
+      comunicado: true,
+      avaliacao: true,
+    })
+  })
 })

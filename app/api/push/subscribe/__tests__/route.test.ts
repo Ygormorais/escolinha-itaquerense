@@ -49,11 +49,25 @@ describe("POST /api/push/subscribe", () => {
     expect(res.status).toBe(400)
   })
 
+  it("retorna 400 com JSON inválido", async () => {
+    const res = await POST(new Request("http://localhost/api/push/subscribe", {
+      method: "POST",
+      body: "{",
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it("retorna 400 com endpoint não seguro", async () => {
+    const res = await POST(makeRequest({ ...PAYLOAD, endpoint: "http://push.example.com/sub/1" }))
+    expect(res.status).toBe(400)
+  })
+
   it("faz upsert e retorna ok: true", async () => {
     const res = await POST(makeRequest(PAYLOAD))
     expect(res.status).toBe(200)
     expect((await res.json()).ok).toBe(true)
     expect(mockDb.pushSubscription.upsert).toHaveBeenCalledOnce()
     expect(mockDb.pushSubscription.upsert.mock.calls[0][0].create.responsavelId).toBe(7)
+    expect(mockDb.pushSubscription.upsert.mock.calls[0][0].update.responsavelId).toBe(7)
   })
 })
