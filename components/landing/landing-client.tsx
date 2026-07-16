@@ -320,6 +320,10 @@ export function LandingClient({
         <div className="foot-bottom">
           <div className="container">
             <span>© 2026 Sociedade Esportiva Elite Itaquerense. Todos os direitos reservados.</span>
+            <span className="flex items-center gap-3">
+              <a href="/privacidade">Privacidade</a>
+              <a href="/termos">Termos</a>
+            </span>
             <a href="/login" className="foot-staff" title="Acesso restrito à equipe administrativa">
               <Lock size={12} strokeWidth={2} aria-hidden />
               Área da equipe

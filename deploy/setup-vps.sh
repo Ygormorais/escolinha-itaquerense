@@ -56,6 +56,9 @@ if [[ ! -f .env ]]; then
   exit 0
 fi
 
+echo "==> Volumes persistentes"
+sudo install -d -m 750 -o "$USER" -g "$USER" /var/lib/escolinha/uploads /var/lib/escolinha/backups
+
 bash "$APP_DIR/deploy/deploy.sh"
 
 echo "==> PM2 na inicialização do sistema"
@@ -72,6 +75,9 @@ if [[ -f "$APP_DIR/.env" ]] && grep -q '^CRON_SECRET=.' "$APP_DIR/.env" 2>/dev/n
 else
   echo "    Defina CRON_SECRET e rode: bash deploy/install-fpfs-cron.sh https://SEU_DOMINIO"
 fi
+
+echo "==> Backup diário + health check"
+bash "$APP_DIR/deploy/install-backup-cron.sh"
 
 echo "==> Pronto. Se o provedor tiver firewall de nuvem (Hetzner Cloud Firewall /"
 echo "    DO Cloud Firewall / Oracle VCN Security List), libere 80/443 lá também."

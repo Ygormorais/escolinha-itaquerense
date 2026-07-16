@@ -53,7 +53,9 @@ export default async function globalSetup() {
   await page.fill('input[type="email"]', RESP_TESTE.email)
   await page.fill('input[type="password"]', RESP_TESTE.senha)
   await page.click('button[type="submit"]')
-  await page.waitForURL("**/responsavel", { timeout: 15000 })
+  // No primeiro acesso o Next em dev pode compilar o portal do responsável;
+  // 15s tornava a suíte intermitente apesar de o login ter sido aceito.
+  await page.waitForURL("**/responsavel", { timeout: 45_000, waitUntil: "domcontentloaded" })
 
   await context.storageState({ path: path.join(authDir, "responsavel.json") })
   await browser.close()

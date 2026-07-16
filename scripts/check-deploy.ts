@@ -69,10 +69,13 @@ const OPTIONAL: { key: string; feature: string }[] = [
   { key: "GOOGLE_SERVICE_ACCOUNT_EMAIL", feature: "sincronização Google Calendar" },
 ]
 
+const requireIntegrations = process.env.REQUIRE_OPTIONAL_INTEGRATIONS === "true"
+
 for (const { key, feature } of OPTIONAL) {
   const val = process.env[key]
   if (!val || hasPlaceholder(val)) {
-    warn(`${key} ausente — desabilita: ${feature}`)
+    const report = requireIntegrations ? fail : warn
+    report(`${key} ausente — desabilita: ${feature}`)
   } else {
     ok(`${key} (${feature})`)
   }
@@ -132,7 +135,12 @@ try {
 
 section("── Sistema de arquivos ──")
 
-const uploadsDir = process.env.UPLOADS_DIR ?? path.join(process.cwd(), "public", "uploads")
+const uploadsDir = process.env.UPLOADS_DIR ?? path.join(process.cwd(), "uploads")
+const publicDir = path.join(process.cwd(), "public")
+const relativeToPublic = path.relative(publicDir, path.resolve(uploadsDir))
+if (relativeToPublic === "" || (!relativeToPublic.startsWith(`..${path.sep}`) && relativeToPublic !== ".." && !path.isAbsolute(relativeToPublic))) {
+  fail("UPLOADS_DIR não pode ficar dentro de public/ — documentos precisam de autenticação")
+}
 if (fs.existsSync(uploadsDir)) {
   ok(`Diretório de uploads: ${uploadsDir}`)
 } else {

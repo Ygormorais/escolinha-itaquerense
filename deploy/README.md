@@ -1,7 +1,9 @@
 # Deploy — VPS Ubuntu + Node/PM2/Caddy (sem Docker)
 
 O app roda direto com Node 20 + PM2, atrás do Caddy (HTTPS automático).
-O SQLite fica em arquivo no disco da VPS — **instância única, sempre**.
+O SQLite fica em arquivo no disco da VPS — **instância única, sempre**. O setup
+cria volumes persistentes em `/var/lib/escolinha` para uploads e backups, fora do
+repositório e de `public/`.
 
 Alvo de referência: **Hetzner CX22** (~€4/mês, 2 vCPU / 4 GB / 40 GB). Os passos
 servem igual para um droplet do **DigitalOcean** ou qualquer VPS Ubuntu — só muda
@@ -57,6 +59,8 @@ Comece pelo template: `cp .env.production.example .env`, depois
 `FPFS_SYNC_TOKEN`, `ADMIN_PASSWORD` e as chaves VAPID — cole a saída no `.env`.
 
 - [ ] `DATABASE_URL=file:./prisma/prod.db` (caminho relativo ao repo na VPS)
+- [ ] `UPLOADS_DIR=/var/lib/escolinha/uploads` e `BACKUP_DIR=/var/lib/escolinha/backups`
+- [ ] `REQUIRE_OPTIONAL_INTEGRATIONS=true` quando todas as integrações prometidas estiverem configuradas
 - [ ] `TZ=UTC` — obrigatório: datas de nascimento são gravadas à meia-noite UTC e
   comparadas com hora local (aniversariantes/WhatsApp); em TZ negativo o
   aniversário dispararia um dia antes
@@ -116,8 +120,22 @@ sudo systemctl status caddy          # proxy/HTTPS
 sqlite3 prisma/prod.db ".backup backups/prod-$(date +%F).db"   # backup manual
 ```
 
-Backup automático: agendar o comando acima no cron da VPS (diário) e copiar
-para fora da VM de tempos em tempos.
+O `setup-vps.sh` instala um backup atômico diário às 03:15 e consulta
+`/api/health` depois da cópia. Confira a instalação com `crontab -l` e o log em
+`logs/backup.log`. O backup local não protege contra perda total da VPS: copie
+`/var/lib/escolinha/backups/` diariamente para um storage externo (S3/R2,
+Google Drive empresarial ou outro cofre) e execute um teste de restauração ao
+menos uma vez por mês.
+
+### Checklist de entrada em operação
+
+1. Aponte o DNS e habilite HTTPS no Caddy antes de usar credenciais reais de pagamento.
+2. Rode `npm run deploy:check` e corrija todos os erros; configure SMTP, Evolution e
+   Google Calendar apenas se essas funções forem oferecidas ao cliente.
+3. Configure webhook do Mercado Pago para `https://SEU_DOMINIO/api/webhooks/mercadopago`.
+4. Monitore `https://SEU_DOMINIO/api/health` por um serviço externo e alerte em falha.
+5. Execute `npm run test:e2e` na versão candidata e restaure um backup em ambiente de teste.
+6. Revise as páginas `/privacidade` e `/termos` com assessoria jurídica antes do lançamento.
 
 ### Cron FPFS (sync a cada 2 horas)
 

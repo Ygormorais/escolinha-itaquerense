@@ -5,6 +5,8 @@ describe("isPublicRoute", () => {
   it("rotas exatas públicas", () => {
     expect(isPublicRoute("/")).toBe(true)
     expect(isPublicRoute("/login")).toBe(true)
+    expect(isPublicRoute("/privacidade")).toBe(true)
+    expect(isPublicRoute("/termos")).toBe(true)
     expect(isPublicRoute("/horarios")).toBe(true)
     expect(isPublicRoute("/resultados")).toBe(true)
     expect(isPublicRoute("/frequencia/scanner")).toBe(true)

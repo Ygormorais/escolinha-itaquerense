@@ -250,12 +250,12 @@ test.describe("Portal autenticado — classificacao", () => {
 
   test("exibe heading Classificação", async ({ page }) => {
     await page.goto("/responsavel/classificacao")
-    await expect(page.getByRole("heading", { name: /Classificação/i })).toBeVisible()
+    await expect(page.locator("h1")).toHaveText("Classificação")
   })
 
-  test("exibe contador de campeonatos no header", async ({ page }) => {
+  test("exibe resumo de tabelas no hero", async ({ page }) => {
     await page.goto("/responsavel/classificacao")
-    await expect(page.getByText(/Campeonatos/i).first()).toBeVisible()
+    await expect(page.getByText("Tabelas", { exact: true })).toBeVisible()
   })
 })
 
@@ -274,8 +274,8 @@ test.describe("Portal autenticado — jogos", () => {
 
   test("exibe estado de jogos (com ou sem dados)", async ({ page }) => {
     await page.goto("/responsavel/jogos")
-    const temJogos = page.locator('[data-slot="card"]').first()
-    const semJogos = page.getByText(/Nenhum jogo cadastrado/i)
+    const temJogos = page.locator("article").first()
+    const semJogos = page.getByText(/Nenhum jogo no momento|Sem partidas nesta categoria/i)
     await expect(temJogos.or(semJogos)).toBeVisible({ timeout: 8000 })
   })
 })
