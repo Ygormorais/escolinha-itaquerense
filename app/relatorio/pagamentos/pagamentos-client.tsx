@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Download, Printer, Search, X, SearchX } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
@@ -47,6 +48,7 @@ function calcStatus(p: Pagamento): "Pago" | "Atrasado" | "Pendente" {
 }
 
 export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pagamento[]; ano: number }) {
+  const router = useRouter()
   const [filtroStatus, setFiltroStatus] = useState("todos")
   const [filtroTurma, setFiltroTurma]   = useState("todas")
   const [filtroCanal, setFiltroCanal]   = useState<PaymentChannel | "todos">("todos")
@@ -148,6 +150,18 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
         description={`${filtrados.length} de ${pagamentos.length} registros — ${ano}`}
         action={
           <div className="flex gap-2">
+            <Input
+              type="number"
+              min={2020}
+              max={2099}
+              value={ano}
+              aria-label="Ano do relatório"
+              className="h-9 w-24"
+              onChange={(e) => {
+                const value = e.target.value
+                if (/^\d{4}$/.test(value)) router.push(`/relatorio/pagamentos?ano=${value}`)
+              }}
+            />
             <Button size="sm" variant="outline" onClick={imprimirPDF}>
               <Printer className="size-4" /> Imprimir PDF
             </Button>

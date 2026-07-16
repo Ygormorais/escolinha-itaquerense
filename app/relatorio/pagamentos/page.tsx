@@ -13,13 +13,22 @@ type PagamentoRow = {
   aluno: { id: number; nome: string; turma: string; mensalidade: number }
 }
 
-export default async function RelatorioPagamentosPage() {
+export default async function RelatorioPagamentosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ano?: string }>
+}) {
   const now = new Date()
   const currentYear = now.getFullYear()
+  const params = await searchParams
+  const requestedYear = Number(params.ano)
+  const ano = Number.isInteger(requestedYear) && requestedYear >= 2020 && requestedYear <= 2099
+    ? requestedYear
+    : currentYear
 
   const pagamentos: PagamentoRow[] = await db.pagamento.findMany({
     where: {
-      mesReferencia: { startsWith: String(currentYear) },
+      mesReferencia: { startsWith: String(ano) },
     },
     include: {
       aluno: { select: { id: true, nome: true, turma: true, mensalidade: true } },
@@ -27,5 +36,5 @@ export default async function RelatorioPagamentosPage() {
     orderBy: [{ dataVencimento: "desc" }],
   })
 
-  return <RelatorioPagamentosClient pagamentos={pagamentos} ano={currentYear} />
+  return <RelatorioPagamentosClient pagamentos={pagamentos} ano={ano} />
 }
