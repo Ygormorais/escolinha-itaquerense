@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -35,12 +35,14 @@ const links = [...linksPrincipais, ...linksSecundarios]
 
 export function NavResponsavel() {
   const pathname = usePathname()
+  const router = useRouter()
 
   async function handleLogout() {
     try {
       await fetch("/api/responsavel/logout", { method: "POST" })
     } finally {
-      window.location.href = "/responsavel/login"
+      router.replace("/responsavel/login")
+      router.refresh()
     }
   }
 

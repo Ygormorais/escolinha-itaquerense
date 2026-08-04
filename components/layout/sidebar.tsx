@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import {
   LayoutDashboard,
@@ -37,9 +37,12 @@ import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { OnboardingRestart } from "@/components/onboarding/onboarding-restart"
 
 function LogoutButton() {
+  const router = useRouter()
+
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" })
-    window.location.href = "/login"
+    router.replace("/login")
+    router.refresh()
   }
   return (
     <button
