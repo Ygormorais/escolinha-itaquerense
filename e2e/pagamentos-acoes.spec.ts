@@ -15,8 +15,10 @@
 
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetPagamentosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetPagamentosE2E()
   await loginAsAdmin(page)
 })
 
@@ -29,11 +31,7 @@ test.describe("Pagamentos — registro manual completo", () => {
 
     // Precisa de uma linha de pagamento pendente
     const btnRegistrar = page.getByRole("button", { name: /Registrar/i }).first()
-    if (!(await btnRegistrar.isVisible({ timeout: 5000 }).catch(() => false))) {
-      // Nenhum pagamento pendente — passa silenciosamente
-      return
-    }
-
+    await expect(btnRegistrar).toBeVisible()
     await btnRegistrar.click()
     const dialog = page.getByRole("dialog")
     await expect(dialog).toBeVisible()
@@ -50,9 +48,8 @@ test.describe("Pagamentos — registro manual completo", () => {
     const selectTrigger = dialog.locator('[role="combobox"]').first()
     await selectTrigger.click()
     const opcaoDinheiro = page.getByRole("option", { name: "Dinheiro" })
-    if (await opcaoDinheiro.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await opcaoDinheiro.click()
-    }
+    await expect(opcaoDinheiro).toBeVisible()
+    await opcaoDinheiro.click()
 
     // Confirma pagamento
     const btnConfirmar = dialog.getByRole("button", { name: /Confirmar/i })
@@ -68,8 +65,7 @@ test.describe("Pagamentos — registro manual completo", () => {
     await page.waitForLoadState("networkidle")
 
     const btnRegistrar = page.getByRole("button", { name: /Registrar/i }).first()
-    if (!(await btnRegistrar.isVisible({ timeout: 5000 }).catch(() => false))) return
-
+    await expect(btnRegistrar).toBeVisible()
     await btnRegistrar.click()
     const dialog = page.getByRole("dialog")
     await expect(dialog).toBeVisible()
@@ -77,10 +73,9 @@ test.describe("Pagamentos — registro manual completo", () => {
     await dialog.getByRole("button", { name: /Confirmar/i }).click()
 
     const btnImprimir = dialog.getByRole("link", { name: /Imprimir PDF/i })
-    if (await btnImprimir.isVisible({ timeout: 8000 }).catch(() => false)) {
-      const href = await btnImprimir.getAttribute("href")
-      expect(href).toMatch(/\/recibos/)
-    }
+    await expect(btnImprimir).toBeVisible({ timeout: 10000 })
+    const href = await btnImprimir.getAttribute("href")
+    expect(href).toMatch(/\/recibos/)
   })
 })
 
@@ -92,10 +87,8 @@ test.describe("Pagamentos — PIX direto", () => {
     await page.waitForLoadState("networkidle")
 
     const btnPix = page.getByRole("button", { name: /PIX direto/i }).first()
-    if (!(await btnPix.isVisible({ timeout: 5000 }).catch(() => false))) {
-      // Chave PIX não configurada — funcionalidade desabilitada, passa
-      return
-    }
+    const pixConfigurado = await btnPix.isVisible({ timeout: 5000 }).catch(() => false)
+    test.skip(!pixConfigurado, "PIX direto requer chave PIX configurada no ambiente")
 
     await btnPix.click()
     const modal = page.getByRole("dialog")
@@ -118,7 +111,8 @@ test.describe("Pagamentos — PIX direto", () => {
     await page.waitForLoadState("networkidle")
 
     const btnPix = page.getByRole("button", { name: /PIX direto/i }).first()
-    if (!(await btnPix.isVisible({ timeout: 5000 }).catch(() => false))) return
+    const pixConfigurado = await btnPix.isVisible({ timeout: 5000 }).catch(() => false)
+    test.skip(!pixConfigurado, "PIX direto requer chave PIX configurada no ambiente")
 
     await btnPix.click()
     const modal = page.getByRole("dialog")
@@ -142,8 +136,7 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
 
     // O botão "Gerar" aparece na coluna "Cobrança" para pagamentos sem externalId
     const btnGerar = page.getByRole("button", { name: /^Gerar$/i }).first()
-    if (!(await btnGerar.isVisible({ timeout: 5000 }).catch(() => false))) return
-
+    await expect(btnGerar).toBeVisible()
     await btnGerar.click()
     const dialog = page.getByRole("dialog")
     await expect(dialog).toBeVisible()
@@ -165,8 +158,7 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
     await page.waitForLoadState("networkidle")
 
     const btnGerar = page.getByRole("button", { name: /^Gerar$/i }).first()
-    if (!(await btnGerar.isVisible({ timeout: 5000 }).catch(() => false))) return
-
+    await expect(btnGerar).toBeVisible()
     await btnGerar.click()
     const dialog = page.getByRole("dialog")
     await expect(dialog).toBeVisible()
@@ -175,10 +167,9 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
     const selectTrigger = dialog.locator('[role="combobox"]').first()
     await selectTrigger.click()
     const opcaoBoleto = page.getByRole("option", { name: /Boleto/i })
-    if (await opcaoBoleto.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await opcaoBoleto.click()
-      await expect(selectTrigger).toContainText(/Boleto/)
-    }
+    await expect(opcaoBoleto).toBeVisible()
+    await opcaoBoleto.click()
+    await expect(selectTrigger).toContainText(/Boleto/)
 
     await dialog.getByRole("button", { name: /Fechar/i }).click()
   })
@@ -194,7 +185,8 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
       .filter({ hasText: /Aguardando|Pago MP/ })
       .first()
 
-    if (!(await badgeCobranca.isVisible({ timeout: 3000 }).catch(() => false))) return
+    const cobrancaEmitida = await badgeCobranca.isVisible({ timeout: 3000 }).catch(() => false)
+    test.skip(!cobrancaEmitida, "Cenário requer cobrança previamente emitida no Mercado Pago")
 
     await badgeCobranca.click()
     const dialog = page.getByRole("dialog")
@@ -265,7 +257,7 @@ test.describe("Pagamentos — registro em lote", () => {
     // Pega o primeiro checkbox de uma linha pendente (coluna de seleção)
     const checkboxes = page.locator("table tbody tr input[type='checkbox']")
     const count = await checkboxes.count()
-    if (count === 0) return
+    expect(count).toBeGreaterThan(0)
 
     await checkboxes.first().check()
 
@@ -280,7 +272,7 @@ test.describe("Pagamentos — registro em lote", () => {
 
     const checkboxes = page.locator("table tbody tr input[type='checkbox']")
     const count = await checkboxes.count()
-    if (count < 2) return
+    expect(count).toBeGreaterThanOrEqual(2)
 
     // Seleciona os dois primeiros
     await checkboxes.nth(0).check()
@@ -306,28 +298,23 @@ test.describe("Pagamentos — registro em lote", () => {
     await page.waitForLoadState("networkidle")
 
     const checkboxAll = page.locator("table thead input[type='checkbox']")
-    if (!(await checkboxAll.isVisible({ timeout: 3000 }).catch(() => false))) return
-
-    // Sem linhas pendentes, marcar o "todos" não seleciona nada e o checkbox
-    // do header permanece desmarcado — nada a verificar neste ambiente.
+    await expect(checkboxAll).toBeVisible()
     const pendentesCheckboxes = page.locator("table tbody tr input[type='checkbox']")
-    if ((await pendentesCheckboxes.count()) === 0) return
+    expect(await pendentesCheckboxes.count()).toBeGreaterThan(0)
 
     await checkboxAll.check()
 
     // A barra de lote deve mostrar contagem > 0
     const contagem = page.getByText(/\d+\s+selecionado/i)
-    if (await contagem.isVisible({ timeout: 3000 }).catch(() => false)) {
-      const texto = await contagem.textContent()
-      const num = parseInt(texto?.match(/\d+/)?.[0] ?? "0")
-      expect(num).toBeGreaterThan(0)
-    }
+    await expect(contagem).toBeVisible()
+    const texto = await contagem.textContent()
+    const num = parseInt(texto?.match(/\d+/)?.[0] ?? "0")
+    expect(num).toBeGreaterThan(0)
 
     // Limpa seleção
     const btnLimpar = page.getByRole("button", { name: /Limpar/i })
-    if (await btnLimpar.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await btnLimpar.click()
-    }
+    await expect(btnLimpar).toBeVisible()
+    await btnLimpar.click()
   })
 })
 
@@ -342,18 +329,17 @@ test.describe("Pagamentos — filtros de status e turma", () => {
     const selects = page.locator('[role="combobox"]')
     const statusSelect = selects.nth(0)
 
-    if (!(await statusSelect.isVisible({ timeout: 3000 }).catch(() => false))) return
+    await expect(statusSelect).toBeVisible()
     await statusSelect.click()
     const opcaoPago = page.getByRole("option", { name: /^Pago$/i })
-    if (await opcaoPago.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await opcaoPago.click()
-      // Todos os status badges visíveis nas células devem ser "Pago"
-      // (contar só células — há elementos ocultos do select com esses textos)
-      const badgesPendente = page.getByRole("cell").filter({ hasText: /^Pendente$/ })
-      const badgesVencido = page.getByRole("cell").filter({ hasText: /^Vencido$/ })
-      expect(await badgesPendente.count()).toBe(0)
-      expect(await badgesVencido.count()).toBe(0)
-    }
+    await expect(opcaoPago).toBeVisible()
+    await opcaoPago.click()
+    // Todos os status badges visíveis nas células devem ser "Pago"
+    // (contar só células — há elementos ocultos do select com esses textos)
+    const badgesPendente = page.getByRole("cell").filter({ hasText: /^Pendente$/ })
+    const badgesVencido = page.getByRole("cell").filter({ hasText: /^Vencido$/ })
+    expect(await badgesPendente.count()).toBe(0)
+    expect(await badgesVencido.count()).toBe(0)
   })
 
   test("filtro 'Pendente' esconde linhas com pagamento já efetuado", async ({ page }) => {
@@ -362,15 +348,13 @@ test.describe("Pagamentos — filtros de status e turma", () => {
 
     const selects = page.locator('[role="combobox"]')
     const statusSelect = selects.nth(0)
-    if (!(await statusSelect.isVisible({ timeout: 3000 }).catch(() => false))) return
-
+    await expect(statusSelect).toBeVisible()
     await statusSelect.click()
     const opcaoPendente = page.getByRole("option", { name: /^Pendente$/i })
-    if (await opcaoPendente.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await opcaoPendente.click()
-      const badgesPago = page.getByRole("cell").filter({ hasText: /^Pago$/ })
-      expect(await badgesPago.count()).toBe(0)
-    }
+    await expect(opcaoPendente).toBeVisible()
+    await opcaoPendente.click()
+    const badgesPago = page.getByRole("cell").filter({ hasText: /^Pago$/ })
+    expect(await badgesPago.count()).toBe(0)
   })
 
   test("filtro por turma restringe resultados à turma selecionada", async ({ page }) => {
@@ -379,26 +363,17 @@ test.describe("Pagamentos — filtros de status e turma", () => {
 
     // O select de turma é o terceiro [role="combobox"] na página
     const turmaSelect = page.locator('[role="combobox"]').nth(1)
-    if (!(await turmaSelect.isVisible({ timeout: 3000 }).catch(() => false))) return
-
+    await expect(turmaSelect).toBeVisible()
     await turmaSelect.click()
-    // Pega a primeira opção de turma real (não "Todas")
-    const opcoes = page.getByRole("option")
-    const totalOpcoes = await opcoes.count()
-    if (totalOpcoes < 2) return
+    const opcaoTurmaE2E = page.getByRole("option", { name: "E2E Testes", exact: true })
+    await expect(opcaoTurmaE2E).toBeVisible()
+    await opcaoTurmaE2E.click()
 
-    const primeiraOpcao = opcoes.nth(1) // índice 0 = "Todas"
-    const nomeTurma = await primeiraOpcao.textContent()
-    await primeiraOpcao.click()
-
-    if (nomeTurma) {
-      // Todas as linhas visíveis devem ser da turma selecionada ou a tabela vazia
-      const linhas = page.locator("table tbody tr")
-      const totalLinhas = await linhas.count()
-      if (totalLinhas > 0) {
-        const primeiraLinha = linhas.first()
-        await expect(primeiraLinha).toContainText(nomeTurma.trim())
-      }
+    // Todos os dados controlados pelo fixture pertencem à turma selecionada.
+    const linhas = page.locator("table tbody tr")
+    expect(await linhas.count()).toBeGreaterThan(0)
+    for (const linha of await linhas.all()) {
+      await expect(linha).toContainText("E2E Testes")
     }
   })
 })
@@ -412,16 +387,14 @@ test.describe("Pagamentos — recibo inline", () => {
 
     // Filtra por "Pago" para encontrar pagamentos com recibo disponível
     const statusSelect = page.locator('[role="combobox"]').nth(0)
-    if (!(await statusSelect.isVisible({ timeout: 3000 }).catch(() => false))) return
-
+    await expect(statusSelect).toBeVisible()
     await statusSelect.click()
     const opcaoPago = page.getByRole("option", { name: /^Pago$/i })
-    if (!(await opcaoPago.isVisible({ timeout: 2000 }).catch(() => false))) return
+    await expect(opcaoPago).toBeVisible()
     await opcaoPago.click()
 
     const linkRecibo = page.getByRole("link", { name: /Recibo/i }).first()
-    if (!(await linkRecibo.isVisible({ timeout: 5000 }).catch(() => false))) return
-
+    await expect(linkRecibo).toBeVisible()
     const href = await linkRecibo.getAttribute("href")
     expect(href).toMatch(/\/recibos/)
     // O link deve abrir numa nova aba (_blank) — não navegamos por aqui

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetPreMatriculaPendenteE2E } from "./fixtures"
 
 test.describe("Pré-Matrícula Pública", () => {
   test("página pública carrega sem autenticação", async ({ page }) => {
@@ -40,6 +41,7 @@ test.describe("Pré-Matrícula Pública", () => {
 
 test.describe("Admin - Pré-Matrículas", () => {
   test.beforeEach(async ({ page }) => {
+    await resetPreMatriculaPendenteE2E()
     await loginAsAdmin(page)
   })
 
@@ -51,9 +53,7 @@ test.describe("Admin - Pré-Matrículas", () => {
   test("botão Aprovar abre diálogo com campo de mensalidade", async ({ page }) => {
     await page.goto("/configuracoes/matriculas")
     const btnAprovar = page.getByRole("button", { name: /Aprovar/i }).first()
-    const hasPendente = await btnAprovar.isVisible().catch(() => false)
-    if (!hasPendente) return // nenhuma pré-matrícula pendente no seed — passa
-
+    await expect(btnAprovar).toBeVisible()
     await btnAprovar.click()
     await expect(page.getByRole("dialog")).toBeVisible()
     await expect(page.getByRole("spinbutton", { name: /Mensalidade/i })).toBeVisible()

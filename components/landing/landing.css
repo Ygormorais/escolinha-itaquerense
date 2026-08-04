@@ -267,6 +267,11 @@
     .lp .membership .btn-row .btn{width:100%;text-align:center}
   }
   @media(max-width:600px){
+    .lp .header-row{height:64px;gap:8px}
+    .lp .brand .name{display:none}
+    .lp .access .btn-access.primary{min-height:44px;padding:8px 14px;font-size:13px}
+    .lp .btn-theme,.lp .btn-staff{width:44px;height:44px}
+    .lp .burger{flex:0 0 44px;padding:0}
     .lp .foot-grid{grid-template-columns:1fr}
     .lp .foot-bottom .container{flex-direction:column;text-align:center}
     .lp .galeria .grid{grid-template-columns:1fr}
@@ -278,7 +283,6 @@
     .lp .lb-prev{left:0}
     .lp .lb-next{right:0}
     .lp .lb-close{top:max(0px,env(safe-area-inset-top,0px));right:max(0px,env(safe-area-inset-right,0px))}
-    .lp .header-row{height:64px}
     .lp nav.main{top:64px}
     .lp .hero .container{padding-top:clamp(48px,12vw,72px);padding-bottom:clamp(48px,12vw,72px)}
     .lp section{padding:clamp(40px,10vw,64px) 0}
@@ -287,11 +291,9 @@
   }
   @media(max-width:380px){
     .lp .btn-access.primary{padding:8px 12px;font-size:12px}
-    .lp .brand .name b{font-size:15px;max-width:42vw}
   }
   @media(max-width:320px){
     .lp .btn{padding:12px 22px;font-size:13px}
     .lp .container{padding:0 14px}
   }
-
 
