@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetAlunosFluxosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetAlunosFluxosE2E()
   await loginAsAdmin(page)
 })
 
@@ -60,16 +62,13 @@ test.describe("Avaliações — criar nova avaliação", () => {
     // Clica em Cadastrar sem selecionar aluno
     await dialog.getByRole("button", { name: /Cadastrar/i }).click()
 
-    // Deve exibir mensagem de validação ou o dialog deve permanecer aberto
-    await page.waitForTimeout(500)
-    const dialogAindaAberto = await dialog.isVisible()
-    expect(dialogAindaAberto).toBe(true)
+    await expect(dialog.locator("p").filter({ hasText: /^Selecione um aluno$/ })).toBeVisible()
 
     // Fechar dialog
     const btnFechar = dialog.getByRole("button", { name: /Cancelar|Fechar|Close/i }).first()
-    if (await btnFechar.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await btnFechar.click()
-    }
+    await expect(btnFechar).toBeVisible()
+    await btnFechar.click()
+    await expect(dialog).not.toBeVisible()
   })
 
   test("fechar dialog descarta o formulário", async ({ page }) => {
@@ -89,29 +88,21 @@ test.describe("Avaliações — criar nova avaliação", () => {
 })
 
 test.describe("Avaliações — tabela com dados", () => {
-  test("quando não há avaliações, exibe estado vazio com ícone", async ({ page }) => {
+  test("fixture de avaliação aparece na tabela", async ({ page }) => {
     await page.goto("/avaliacoes")
-    await page.waitForLoadState("networkidle")
-
-    const hasRows = await page.locator("table tbody tr td:not([colspan])").first().isVisible({ timeout: 2000 }).catch(() => false)
-    const hasEmptyState = await page.getByText(/Nenhuma avalia[cç][aã]o registrada ainda/i).isVisible({ timeout: 2000 }).catch(() => false)
-
-    // Um dos dois estados deve existir
-    expect(hasRows || hasEmptyState).toBe(true)
+    const aluno = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    await expect(linha).toBeVisible()
+    await expect(linha.getByRole("cell", { name: "2026-1S", exact: true })).toBeVisible()
   })
 
-  test("quando há avaliações, badges de nota são exibidos", async ({ page }) => {
+  test("avaliação controlada exibe badges de nota", async ({ page }) => {
     await page.goto("/avaliacoes")
-    await page.waitForLoadState("networkidle")
-
-    // Só linhas de dados — o empty state é uma tr com td[colspan]
-    const rows = page.locator("table tbody tr").filter({ has: page.locator("td:not([colspan])") })
-    const count = await rows.count()
-    if (count > 0) {
-      // Primeira linha deve ter badges
-      const firstRow = rows.first()
-      expect(await firstRow.locator("span, [data-testid='badge'], .badge").count()).toBeGreaterThan(0)
-    }
+    const aluno = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    await expect(linha).toBeVisible()
+    await expect(linha.getByText("8.0", { exact: true })).toBeVisible()
+    await expect(linha.getByText("88%", { exact: true })).toBeVisible()
   })
 })
 
@@ -120,13 +111,14 @@ test.describe("Avaliações — ações na tabela", () => {
     await page.goto("/avaliacoes")
     await page.waitForLoadState("networkidle")
 
-    const btnEditar = page.locator('button[aria-label="Editar avaliação"]').first()
-    if (await btnEditar.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await btnEditar.click()
-      const dialog = page.getByRole("dialog")
-      await expect(dialog).toBeVisible()
-      await expect(dialog.getByRole("heading", { name: /Editar Avalia[cç][aã]o/i })).toBeVisible()
-      await dialog.getByRole("button", { name: /Cancelar|Fechar|Close/i }).first().click()
-    }
+    const aluno = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    const btnEditar = linha.getByRole("button", { name: "Editar avaliação", exact: true })
+    await expect(btnEditar).toBeVisible()
+    await btnEditar.click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog.getByRole("heading", { name: /Editar Avalia[cç][aã]o/i })).toBeVisible()
+    await dialog.getByRole("button", { name: /Cancelar|Fechar|Close/i }).first().click()
+    await expect(dialog).not.toBeVisible()
   })
 })

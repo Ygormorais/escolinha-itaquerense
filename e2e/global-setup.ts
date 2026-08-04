@@ -24,9 +24,32 @@ export default async function globalSetup() {
   // Remove responsável de execuções anteriores para evitar conflito de email único
   await db.responsavel.deleteMany({ where: { email: RESP_TESTE.email } })
 
-  // Vincula ao primeiro aluno ativo para que as páginas de frequência/boletim
-  // tenham dados reais e não mostrem apenas "Nenhum aluno vinculado"
-  const aluno = await db.aluno.findFirst({ where: { status: "Ativo" } })
+  // Usa um aluno exclusivo para que o portal não dependa dos dados reais do banco.
+  await db.aluno.deleteMany({ where: { nome: "E2E Aluno Responsável" } })
+  const aluno = await db.aluno.create({
+    data: {
+      nome: "E2E Aluno Responsável",
+      dataNascimento: new Date(2015, 5, 15, 12),
+      turma: "E2E Testes",
+      horario: "Seg/Qua 08h",
+      responsavel: RESP_TESTE.nome,
+      telefone: "11999999999",
+      email: RESP_TESTE.email,
+      dataMatricula: new Date(),
+      mensalidade: 150,
+      status: "Ativo",
+      avaliacoes: {
+        create: {
+          periodo: "E2E-1S",
+          notaTecnica: 8,
+          notaFisica: 7.5,
+          notaComportamento: 9,
+          frequencia: 90,
+          observacoes: "Avaliação do portal E2E",
+        },
+      },
+    },
+  })
 
   await db.responsavel.create({
     data: {
@@ -35,7 +58,7 @@ export default async function globalSetup() {
       senha: bcryptjs.hashSync(RESP_TESTE.senha, 10),
       telefone: "11999999999",
       ativo: true,
-      alunos: aluno ? { connect: { id: aluno.id } } : undefined,
+      alunos: { connect: { id: aluno.id } },
     },
   })
 

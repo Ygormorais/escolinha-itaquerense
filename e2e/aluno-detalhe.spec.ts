@@ -1,20 +1,17 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetAlunosFluxosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetAlunosFluxosE2E()
   await loginAsAdmin(page)
 })
 
 test.describe("Detalhe do Aluno", () => {
   test("página do primeiro aluno carrega sem erro", async ({ page }) => {
-    // navega pela lista de alunos para pegar um id real
     await page.goto("/alunos")
-    await page.waitForLoadState("networkidle")
-    const primeiroAluno = page.locator("table tbody tr, .divide-y > div").first()
-    if (!(await primeiroAluno.isVisible({ timeout: 5000 }).catch(() => false))) return
-
-    const link = primeiroAluno.getByRole("link").first()
-    if (!(await link.isVisible({ timeout: 2000 }).catch(() => false))) return
+    const link = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    await expect(link).toBeVisible()
     await link.click()
 
     await expect(page).toHaveURL(/\/alunos\/\d+/)
@@ -31,9 +28,8 @@ test.describe("Detalhe do Aluno", () => {
 
   test("seções de financeiro e adimplência estão presentes", async ({ page }) => {
     await page.goto("/alunos")
-    await page.waitForLoadState("networkidle")
-    const link = page.locator("table tbody tr a, .divide-y > div a").first()
-    if (!(await link.isVisible({ timeout: 5000 }).catch(() => false))) return
+    const link = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    await expect(link).toBeVisible()
     await link.click()
 
     // a página de detalhe é scroll único com seções (sem tabs desde o redesign)

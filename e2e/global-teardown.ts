@@ -28,6 +28,7 @@ export default async function globalTeardown() {
       OR: [
         { descricao: { contains: "Custo E2E" } },
         { descricao: { contains: "E2E Recibo" } },
+        { descricao: { contains: "E2E Aluno" } },
       ],
     },
   })

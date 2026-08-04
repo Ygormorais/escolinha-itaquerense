@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetAlunosFluxosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetAlunosFluxosE2E()
   await loginAsAdmin(page)
 })
 
@@ -56,15 +58,11 @@ test.describe("Uniformes — filtros", () => {
     await page.goto("/uniformes")
     await page.waitForLoadState("networkidle")
 
-    const selectTurma = page.locator('select').first()
-    const options = await selectTurma.locator("option").allTextContents()
-    // Se há mais de uma opção além de "Todas", seleciona a segunda
-    if (options.length > 1) {
-      const segundaTurma = options[1]
-      await selectTurma.selectOption(segundaTurma)
-      // Tabela deve permanecer visível
-      await expect(page.locator("table")).toBeVisible()
-    }
+    const selectTurma = page.getByRole("combobox", { name: /Filtrar por turma/i })
+    await selectTurma.click()
+    await page.getByRole("option", { name: "E2E Testes", exact: true }).click()
+    await expect(page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })).toBeVisible()
+    await expect(page.getByRole("link", { name: "E2E Aluno Fluxos Sem Itens", exact: true })).toBeVisible()
   })
 })
 
@@ -73,66 +71,47 @@ test.describe("Uniformes — gerenciar itens de um aluno", () => {
     await page.goto("/uniformes")
     await page.waitForLoadState("networkidle")
 
-    const primeiraLinha = page.locator("table tbody tr").first()
-    const hasPrimeiraLinha = await primeiraLinha.isVisible({ timeout: 3000 }).catch(() => false)
-    if (hasPrimeiraLinha) {
-      // Botão com DialogTrigger (Plus icon)
-      const btnPlus = primeiraLinha.getByRole("button", { name: /Adicionar item de uniforme/i })
-      await btnPlus.click()
-      const dialog = page.getByRole("dialog")
-      await expect(dialog).toBeVisible()
-      // Título deve conter "Uniformes —"
-      await expect(dialog.getByRole("heading", { name: /Uniformes\s*—/i })).toBeVisible()
-    }
+    const aluno = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    const btnPlus = linha.getByRole("button", { name: /Adicionar item de uniforme/i })
+    await btnPlus.click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog.getByRole("heading", { name: /Uniformes\s*— E2E Aluno Fluxos Com Dados/i })).toBeVisible()
   })
 
   test("dialog de uniformes contém seletor de item e campo de tamanho", async ({ page }) => {
     await page.goto("/uniformes")
     await page.waitForLoadState("networkidle")
 
-    const primeiraLinha = page.locator("table tbody tr").first()
-    const hasPrimeiraLinha = await primeiraLinha.isVisible({ timeout: 3000 }).catch(() => false)
-    if (hasPrimeiraLinha) {
-      const btnPlus = primeiraLinha.getByRole("button", { name: /Adicionar item de uniforme/i })
-      await btnPlus.click()
-      const dialog = page.getByRole("dialog")
-      await expect(dialog).toBeVisible()
+    const aluno = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    await linha.getByRole("button", { name: /Adicionar item de uniforme/i }).click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog).toBeVisible()
 
-      // Select com itens padrão (Camisa, Short, etc.)
-      const selectItem = dialog.getByRole("combobox")
-      await expect(selectItem).toBeVisible()
-      // Campo tamanho
-      const inputTamanho = dialog.locator('input[placeholder="Tamanho"]')
-      await expect(inputTamanho).toBeVisible()
-      // Botão de adicionar
-      const btnAdicionar = dialog.getByRole("button", { name: /Adicionar item/i })
-      await expect(btnAdicionar).toBeVisible()
-    }
+    const selectItem = dialog.getByRole("combobox")
+    await expect(selectItem).toBeVisible()
+    await expect(dialog.locator('input[placeholder="Tamanho"]')).toBeVisible()
+    await expect(dialog.getByRole("button", { name: /Adicionar item/i })).toBeVisible()
   })
 
   test("seletor de item lista os itens padrão esperados", async ({ page }) => {
     await page.goto("/uniformes")
     await page.waitForLoadState("networkidle")
 
-    const primeiraLinha = page.locator("table tbody tr").first()
-    const hasPrimeiraLinha = await primeiraLinha.isVisible({ timeout: 3000 }).catch(() => false)
-    if (hasPrimeiraLinha) {
-      const btnPlus = primeiraLinha.getByRole("button", { name: /Adicionar item de uniforme/i })
-      await btnPlus.click()
-      const dialog = page.getByRole("dialog")
-      await expect(dialog).toBeVisible()
-
-      const selectItem = dialog.getByRole("combobox")
-      await selectItem.click()
-      // espera o popover montar antes de coletar (allTextContents não espera)
-      await expect(page.locator('[role="option"]').first()).toBeVisible()
-      const opcoes = await page.locator('[role="option"]').allTextContents()
-      const itensEsperados = ["Camisa", "Short", "Meião", "Agasalho", "Chuteira"]
-      for (const item of itensEsperados) {
-        expect(opcoes.some((o) => o.includes(item))).toBe(true)
-      }
-      await page.keyboard.press("Escape")
+    const aluno = page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    await linha.getByRole("button", { name: /Adicionar item de uniforme/i }).click()
+    const dialog = page.getByRole("dialog")
+    const selectItem = dialog.getByRole("combobox")
+    await selectItem.click()
+    await expect(page.locator('[role="option"]').first()).toBeVisible()
+    const opcoes = await page.locator('[role="option"]').allTextContents()
+    const itensEsperados = ["Camisa", "Short", "Meião", "Agasalho", "Chuteira"]
+    for (const item of itensEsperados) {
+      expect(opcoes.some((o) => o.includes(item))).toBe(true)
     }
+    await page.keyboard.press("Escape")
   })
 })
 
@@ -140,13 +119,9 @@ test.describe("Uniformes — edge cases", () => {
   test("aluno sem itens exibe texto 'Nenhum item' na coluna Itens", async ({ page }) => {
     await page.goto("/uniformes")
     await page.waitForLoadState("networkidle")
-    // Se algum aluno não tem uniformes, deve aparecer "Nenhum item"
-    const cellNenhumItem = page.getByText(/Nenhum item/i)
-    const hasCells = await cellNenhumItem.isVisible({ timeout: 2000 }).catch(() => false)
-    // Aceitável não ter — só verifica se aparece não gera erro
-    if (hasCells) {
-      await expect(cellNenhumItem.first()).toBeVisible()
-    }
+    const aluno = page.getByRole("link", { name: "E2E Aluno Fluxos Sem Itens", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    await expect(linha.getByText("Nenhum item", { exact: true })).toBeVisible()
   })
 
   test("stat card 'Alunos com uniforme' conta só alunos que têm itens", async ({ page }) => {
@@ -157,6 +132,7 @@ test.describe("Uniformes — edge cases", () => {
     const statCard = page.locator('[data-slot="card"]').filter({ hasText: /Alunos com uniforme/i })
     const statText = await statCard.locator('[data-slot="card-content"] p').textContent()
     const statNum = parseInt((statText ?? "").trim(), 10)
+    expect(statNum).toBeGreaterThanOrEqual(1)
     // nunca pode exceder o total de alunos listados; com "Nenhum item" em todas as linhas deve ser 0
     expect(statNum).toBeLessThanOrEqual(count)
     const semItens = await rows.filter({ hasText: "Nenhum item" }).count()

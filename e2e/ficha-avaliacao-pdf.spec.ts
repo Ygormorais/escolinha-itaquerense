@@ -6,18 +6,7 @@ test.describe("Ficha de avaliação PDF — portal responsável", () => {
   test("boletim exibe link Imprimir ficha quando há avaliações", async ({ page }) => {
     await page.goto("/responsavel/boletim")
 
-    const link = page.getByRole("link", { name: /Imprimir ficha/i }).first()
-    const semAvaliacao = page.getByText(/Nenhuma avaliação publicada ainda/i)
-
-    // Se não houver avaliações, pula o teste graciosamente
-    const contemAvaliacao = await link.isVisible({ timeout: 5000 }).catch(() => false)
-    const contemVazio = await semAvaliacao.isVisible({ timeout: 500 }).catch(() => false)
-
-    if (contemVazio || !contemAvaliacao) {
-      test.skip()
-      return
-    }
-
+    const link = page.locator('a[href*="periodo=E2E-1S"]')
     await expect(link).toBeVisible()
     // O link aponta para /responsavel/boletim/pdf com alunoId e periodo
     const href = await link.getAttribute("href")
@@ -27,18 +16,10 @@ test.describe("Ficha de avaliação PDF — portal responsável", () => {
   test("página da ficha exibe PrintButton e nome do aluno", async ({ page }) => {
     await page.goto("/responsavel/boletim")
 
-    const link = page.getByRole("link", { name: /Imprimir ficha/i }).first()
-    const semAvaliacao = page.getByText(/Nenhuma avaliação publicada ainda/i)
-
-    const contemAvaliacao = await link.isVisible({ timeout: 5000 }).catch(() => false)
-    const contemVazio = await semAvaliacao.isVisible({ timeout: 500 }).catch(() => false)
-
-    if (contemVazio || !contemAvaliacao) {
-      test.skip()
-      return
-    }
-
+    const link = page.locator('a[href*="periodo=E2E-1S"]')
+    await expect(link).toBeVisible()
     const href = await link.getAttribute("href")
+    expect(href).not.toBeNull()
     await page.goto(href!)
 
     await expect(page.getByRole("button", { name: /Imprimir PDF/i })).toBeVisible({ timeout: 8000 })

@@ -5,6 +5,8 @@ const PRE_MATRICULA_NOME = "Teste E2E Admin Pendente"
 const CUSTO_PREFIX = "Custo E2E"
 const RECIBO_PREFIX = "E2E Recibo"
 const MAQUINA_ARQUIVO = "e2e-maquina.csv"
+const ALUNO_FLUXOS_PREFIX = "E2E Aluno Fluxos "
+const ALUNO_CRIADO_PREFIX = "E2E Aluno Criado "
 
 function mesAtual() {
   const now = new Date()
@@ -129,6 +131,57 @@ export async function resetCaixaE2E() {
       nomeNoCartao: "E2E MAQUINA",
       arquivo: MAQUINA_ARQUIVO,
       status: "pendente",
+    },
+  })
+}
+
+export async function resetAlunosFluxosE2E() {
+  await db.aluno.deleteMany({
+    where: {
+      OR: [
+        { nome: { startsWith: ALUNO_FLUXOS_PREFIX } },
+        { nome: { startsWith: ALUNO_CRIADO_PREFIX } },
+      ],
+    },
+  })
+
+  const dadosBase = {
+    dataNascimento: new Date(2015, 5, 15, 12),
+    turma: "E2E Testes",
+    horario: "Seg/Qua 08h",
+    responsavel: "Responsável E2E",
+    telefone: "11999998888",
+    dataMatricula: new Date(),
+    mensalidade: 180,
+    status: "Ativo",
+  }
+
+  await db.aluno.create({
+    data: {
+      ...dadosBase,
+      nome: `${ALUNO_FLUXOS_PREFIX}Com Dados`,
+      email: "fluxos.dados@e2e.test",
+      avaliacoes: {
+        create: {
+          periodo: "2026-1S",
+          notaTecnica: 8,
+          notaFisica: 7.5,
+          notaComportamento: 9,
+          frequencia: 88,
+          observacoes: "Avaliação E2E",
+        },
+      },
+      uniformes: {
+        create: { item: "Camisa", tamanho: "M", entregue: false },
+      },
+    },
+  })
+
+  await db.aluno.create({
+    data: {
+      ...dadosBase,
+      nome: `${ALUNO_FLUXOS_PREFIX}Sem Itens`,
+      email: "fluxos.sem-itens@e2e.test",
     },
   })
 }
