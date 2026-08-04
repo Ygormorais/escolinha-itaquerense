@@ -24,10 +24,9 @@ test.describe("Frequência", () => {
   test("aba Resumo Mensal carrega", async ({ page }) => {
     await page.goto("/frequencia")
     const abaResumo = page.getByRole("tab", { name: /Resumo/i })
-    if (await abaResumo.isVisible()) {
-      await abaResumo.click()
-      await page.waitForLoadState("networkidle")
-    }
+    await expect(abaResumo).toBeVisible()
+    await abaResumo.click()
+    await expect(abaResumo).toHaveAttribute("aria-selected", "true")
     await expect(page).toHaveURL(/frequencia/)
   })
 

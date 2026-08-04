@@ -29,6 +29,9 @@ export default async function globalTeardown() {
         { descricao: { contains: "Custo E2E" } },
         { descricao: { contains: "E2E Recibo" } },
         { descricao: { contains: "E2E Aluno" } },
+        { descricao: { contains: "E2E Produto" } },
+        { descricao: { contains: "E2E Aprovacao" } },
+        { descricao: { contains: "E2E Histórico" } },
       ],
     },
   })
@@ -37,6 +40,12 @@ export default async function globalTeardown() {
   await db.preMatricula.deleteMany({
     where: { OR: [{ nomeAluno: { startsWith: "Teste E2E" } }, { nomeAluno: { startsWith: "E2E Aprovacao " } }] },
   })
+
+  // Remove catálogo e competições controlados pelos testes.
+  await db.produto.deleteMany({ where: { nome: { startsWith: "E2E Produto " } } })
+  await db.campeonato.deleteMany({ where: { nome: { startsWith: "E2E Campeonato " } } })
+
+  await db.solicitacao.deleteMany({ where: { descricao: { startsWith: "E2E Solicitação " } } })
 
   // Remove responsável de teste criado pelo globalSetup e os criados pelos specs (resp.<ts>@e2e.test)
   await db.responsavel.deleteMany({ where: { email: RESP_TESTE.email } })

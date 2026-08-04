@@ -1,8 +1,15 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetCampeonatoE2E } from "./fixtures"
+
+let campeonatoId: number
+let partidaId: number
 
 test.describe("Escalações Admin", () => {
   test.beforeEach(async ({ page }) => {
+    const fixture = await resetCampeonatoE2E()
+    campeonatoId = fixture.campeonatoId
+    partidaId = fixture.partidaId
     await loginAsAdmin(page)
   })
 
@@ -26,16 +33,18 @@ test.describe("Escalações Admin", () => {
 
 test.describe("Escalação de Partida (board)", () => {
   test.beforeEach(async ({ page }) => {
+    const fixture = await resetCampeonatoE2E()
+    campeonatoId = fixture.campeonatoId
+    partidaId = fixture.partidaId
     await loginAsAdmin(page)
   })
 
-  test("botão Convocação existe na lista de partidas quando campeonato tem partidas", async ({ page }) => {
-    await page.goto("/campeonatos/1")
-    const btn = page.getByRole("link", { name: /Convoca/i }).first()
-    const hasPartidas = await btn.isVisible().catch(() => false)
-    if (hasPartidas) {
-      await expect(btn).toBeVisible()
-    }
-    await expect(page).toHaveURL(/campeonatos/)
+  test("botão Convocação da partida controlada abre o board", async ({ page }) => {
+    await page.goto(`/campeonatos/${campeonatoId}`)
+    const href = `/campeonatos/${campeonatoId}/partidas/${partidaId}/escalacao`
+    const btn = page.locator(`a[href="${href}"]`).first()
+    await expect(btn).toBeVisible()
+    await btn.click()
+    await expect(page).toHaveURL(href)
   })
 })

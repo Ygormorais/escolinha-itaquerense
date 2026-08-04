@@ -19,17 +19,16 @@ test.describe("Dashboard melhorias — autenticado", () => {
     await expect(pills).toHaveCount(6, { timeout: 8000 })
   })
 
-  test("card de próximos eventos ou mensagem vazia aparece", async ({ page }) => {
+  test("dashboard exibe um estado válido da agenda", async ({ page }) => {
     await page.goto("/responsavel")
-    const eventos = page.getByText("Próximos eventos")
-    const vazio = page.getByText(/Nenhum evento nos próximos/i)
-    await expect(eventos.or(vazio)).toBeVisible({ timeout: 8000 })
+    const eventos = page.getByText("Próximos eventos", { exact: true })
+    const vazio = page.getByRole("heading", { name: "Nada na agenda agora", exact: true })
+    const jogos = page.getByRole("link", { name: /Jogos Ver partidas/i })
+    await expect(eventos.or(vazio).or(jogos).first()).toBeVisible({ timeout: 8000 })
   })
 
-  test("link 'Ver calendário completo' aparece ou fallback para nenhum evento", async ({ page }) => {
+  test("aba Calendário permanece acessível no dashboard", async ({ page }) => {
     await page.goto("/responsavel")
-    const link = page.getByRole("link", { name: /calendário completo/i })
-    const vazio = page.getByText(/Nenhum evento nos próximos/i)
-    await expect(link.or(vazio)).toBeVisible({ timeout: 8000 })
+    await expect(page.getByRole("tab", { name: "Calendário", exact: true })).toBeVisible({ timeout: 8000 })
   })
 })

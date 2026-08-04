@@ -1,7 +1,10 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetCampeonatoE2E, resetOperacionalE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetOperacionalE2E()
+  await resetCampeonatoE2E()
   await loginAsAdmin(page)
 })
 
@@ -12,12 +15,11 @@ test.describe("Painel do Técnico", () => {
     await expect(page.locator("body")).not.toContainText("Application error")
   })
 
-  test("exibe treinos ou mensagem vazia", async ({ page }) => {
+  test("exibe a próxima partida controlada", async ({ page }) => {
     await page.goto("/tecnico")
-    await page.waitForLoadState("networkidle")
-    const temTreinos = await page.locator("table, .divide-y > div").first().isVisible({ timeout: 3000 }).catch(() => false)
-    const temVazio = await page.getByText(/Nenhum|sem treino|não há/i).first().isVisible({ timeout: 3000 }).catch(() => false)
-    expect(temTreinos || temVazio).toBe(true)
+    const partida = page.getByRole("link").filter({ hasText: "vs E2E Adversário" })
+    await expect(partida).toBeVisible()
+    await expect(partida).toContainText("E2E Campeonato Fluxos")
   })
 })
 
@@ -28,21 +30,20 @@ test.describe("Fichas de Saúde (Técnico)", () => {
     await expect(page.locator("body")).not.toContainText("Application error")
   })
 
-  test("filtro por turma funciona", async ({ page }) => {
+  test("exibe ficha médica do aluno controlado", async ({ page }) => {
     await page.goto("/tecnico/saude")
-    await page.waitForLoadState("networkidle")
-    const filtro = page.locator("select, [role='combobox']").first()
-    if (await filtro.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await expect(filtro).toBeVisible()
-    }
+    const aluno = page.getByRole("link", { name: "E2E Aluno Operacional", exact: true })
+    const ficha = page.locator(".divide-y > div").filter({ has: aluno })
+    await expect(ficha).toBeVisible()
+    await expect(ficha).toContainText("Amendoim")
+    await expect(ficha).toContainText("O+")
   })
 
   test("link voltar para o painel técnico", async ({ page }) => {
     await page.goto("/tecnico/saude")
-    const btnVoltar = page.getByRole("link", { name: /Voltar|Painel/i }).first()
-    if (await btnVoltar.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await btnVoltar.click()
-      await expect(page).toHaveURL("/tecnico")
-    }
+    const btnVoltar = page.getByRole("link", { name: "Painel do Técnico", exact: true })
+    await expect(btnVoltar).toBeVisible()
+    await btnVoltar.click()
+    await expect(page).toHaveURL("/tecnico")
   })
 })

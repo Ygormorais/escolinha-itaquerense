@@ -22,6 +22,11 @@ test.beforeEach(async ({ page }) => {
   await loginAsAdmin(page)
 })
 
+function linhaPagamento(page: Parameters<typeof loginAsAdmin>[0], nomeAluno: string) {
+  const aluno = page.getByRole("link", { name: nomeAluno, exact: true })
+  return page.getByRole("row").filter({ has: aluno })
+}
+
 // ── Registro manual de pagamento ──────────────────────────────────────────
 
 test.describe("Pagamentos — registro manual completo", () => {
@@ -86,9 +91,8 @@ test.describe("Pagamentos — PIX direto", () => {
     await page.goto("/pagamentos")
     await page.waitForLoadState("networkidle")
 
-    const btnPix = page.getByRole("button", { name: /PIX direto/i }).first()
-    const pixConfigurado = await btnPix.isVisible({ timeout: 5000 }).catch(() => false)
-    test.skip(!pixConfigurado, "PIX direto requer chave PIX configurada no ambiente")
+    const btnPix = linhaPagamento(page, "E2E Aluno Pagamentos 1").getByRole("button", { name: /PIX direto/i })
+    await expect(btnPix).toBeVisible()
 
     await btnPix.click()
     const modal = page.getByRole("dialog")
@@ -110,9 +114,8 @@ test.describe("Pagamentos — PIX direto", () => {
     await page.goto("/pagamentos")
     await page.waitForLoadState("networkidle")
 
-    const btnPix = page.getByRole("button", { name: /PIX direto/i }).first()
-    const pixConfigurado = await btnPix.isVisible({ timeout: 5000 }).catch(() => false)
-    test.skip(!pixConfigurado, "PIX direto requer chave PIX configurada no ambiente")
+    const btnPix = linhaPagamento(page, "E2E Aluno Pagamentos 1").getByRole("button", { name: /PIX direto/i })
+    await expect(btnPix).toBeVisible()
 
     await btnPix.click()
     const modal = page.getByRole("dialog")
@@ -178,15 +181,9 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
     await page.goto("/pagamentos")
     await page.waitForLoadState("networkidle")
 
-    // Badges de status de cobrança existente — só os rótulos exclusivos do
-    // CobrancaBadge ("Vencido"/"Cancelado" colidem com o status do pagamento)
-    const badgeCobranca = page
-      .locator("span")
-      .filter({ hasText: /Aguardando|Pago MP/ })
-      .first()
-
-    const cobrancaEmitida = await badgeCobranca.isVisible({ timeout: 3000 }).catch(() => false)
-    test.skip(!cobrancaEmitida, "Cenário requer cobrança previamente emitida no Mercado Pago")
+    const linha = linhaPagamento(page, "E2E Aluno Pagamentos 3")
+    const badgeCobranca = linha.getByText("Aguardando", { exact: true })
+    await expect(badgeCobranca).toBeVisible()
 
     await badgeCobranca.click()
     const dialog = page.getByRole("dialog")
@@ -424,21 +421,14 @@ test.describe("Caixa — página PIX", () => {
     await tabRecebidos.click()
     await expect(tabRecebidos).toHaveAttribute("aria-selected", "true")
 
-    // Deve mostrar tabela ou mensagem de vazio
-    const tabela = page.locator("table")
-    const semDados = page.getByText(/Nenhum recebimento via PIX/i)
-    const hasTabela = await tabela.isVisible({ timeout: 3000 }).catch(() => false)
-    const hasSemDados = await semDados.isVisible({ timeout: 1000 }).catch(() => false)
-    expect(hasTabela || hasSemDados).toBe(true)
+    await expect(page.locator("table")).toBeVisible()
+    await expect(page.getByRole("link", { name: "E2E Aluno Pagamentos Pago", exact: true })).toBeVisible()
   })
 
-  test("aba 'Emitidos' exibe tabela ou mensagem de vazio", async ({ page }) => {
+  test("aba 'Emitidos' exibe a cobrança PIX controlada", async ({ page }) => {
     await page.goto("/caixa/pix")
-    const tabela = page.locator("table")
-    const semDados = page.getByText(/Nenhuma cobrança PIX/i)
-    const hasTabela = await tabela.isVisible({ timeout: 3000 }).catch(() => false)
-    const hasSemDados = await semDados.isVisible({ timeout: 1000 }).catch(() => false)
-    expect(hasTabela || hasSemDados).toBe(true)
+    await expect(page.locator("table")).toBeVisible()
+    await expect(page.getByRole("link", { name: "E2E Aluno Pagamentos 3", exact: true })).toBeVisible()
   })
 
   test("description do header exibe contagem e valor total", async ({ page }) => {

@@ -18,15 +18,10 @@ test.describe("Notícias (admin)", () => {
     const btnNova = page.getByRole("button", { name: /Nova notícia|Nova|Publicar/i }).first()
     await expect(btnNova).toBeVisible()
     await btnNova.click()
-    // pode ser dialog ou navegação para outra página
     const dialog = page.getByRole("dialog")
-    const hasDialog = await dialog.isVisible({ timeout: 3000 }).catch(() => false)
-    if (hasDialog) {
-      await page.getByRole("button", { name: /Cancelar/i }).click()
-    } else {
-      // navegou para uma página de criação
-      await expect(page).not.toHaveURL("/noticias")
-    }
+    await expect(dialog.getByRole("heading", { name: "Nova Notícia", exact: true })).toBeVisible()
+    await dialog.getByRole("button", { name: "Cancelar", exact: true }).click()
+    await expect(dialog).not.toBeVisible()
   })
 
   test("página pública de notícias carrega sem autenticação", async ({ page }) => {

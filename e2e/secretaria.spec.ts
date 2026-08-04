@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetOperacionalE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetOperacionalE2E()
   await loginAsAdmin(page)
 })
 
@@ -13,16 +15,15 @@ test.describe("Secretaria", () => {
 
   test("exibe contagem de alunos ativos", async ({ page }) => {
     await page.goto("/secretaria")
-    // stat cards com números
-    const stats = page.locator("[data-slot='stat-card'], [class*='stat']")
-    if (await stats.first().isVisible({ timeout: 3000 }).catch(() => false)) {
-      await expect(stats.first()).toBeVisible()
-    }
+    const card = page.locator('[data-slot="card"]').filter({ hasText: "Alunos Ativos" })
+    await expect(card).toBeVisible()
+    await expect(card.locator('[data-slot="card-content"] p').first()).toHaveText(/\d+/)
   })
 
-  test("lista aniversariantes se existirem", async ({ page }) => {
+  test("lista o aniversariante controlado do dia", async ({ page }) => {
     await page.goto("/secretaria")
-    await expect(page.locator("body")).toBeVisible()
+    const card = page.locator('[data-slot="card"]').filter({ hasText: "Aniversariantes do Mês" })
+    await expect(card).toContainText("E2E faz aniversário hoje")
   })
 })
 
@@ -34,8 +35,9 @@ test.describe("Turmas", () => {
 
   test("exibe alunos agrupados por turma", async ({ page }) => {
     await page.goto("/turmas")
-    // deve haver pelo menos uma seção de turma
-    await expect(page.locator("body")).toBeVisible()
+    const aluno = page.getByRole("link", { name: "E2E Aluno Operacional", exact: true })
+    const turma = page.locator('[data-slot="card"]').filter({ has: aluno })
+    await expect(turma).toContainText("Sub-11")
   })
 })
 
@@ -47,12 +49,14 @@ test.describe("Agenda", () => {
 
   test("botão novo evento abre dialog", async ({ page }) => {
     await page.goto("/agenda")
-    const btn = page.getByRole("button", { name: /Novo|Adicionar evento/i }).first()
-    if (await btn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await btn.click()
-      await expect(page.getByRole("dialog")).toBeVisible()
-      await page.getByRole("button", { name: /Cancelar/i }).click()
-    }
+    await page.getByRole("button", { name: "Hoje", exact: true }).click()
+    const btn = page.getByRole("button", { name: "Novo", exact: true })
+    await expect(btn).toBeVisible()
+    await btn.click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog.getByRole("heading", { name: "Novo Evento", exact: true })).toBeVisible()
+    await dialog.getByRole("button", { name: /Close|Fechar/i }).first().click()
+    await expect(dialog).not.toBeVisible()
   })
 })
 
@@ -64,10 +68,7 @@ test.describe("Comunicados", () => {
 
   test("campo de mensagem está visível", async ({ page }) => {
     await page.goto("/comunicados")
-    const textarea = page.locator("textarea").first()
-    if (await textarea.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await expect(textarea).toBeVisible()
-    }
+    await expect(page.getByLabel("Mensagem", { exact: true })).toBeVisible()
   })
 })
 

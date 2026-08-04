@@ -1,7 +1,14 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetCampeonatoE2E } from "./fixtures"
+
+let campeonatoId: number
+let partidaId: number
 
 test.beforeEach(async ({ page }) => {
+  const fixture = await resetCampeonatoE2E()
+  campeonatoId = fixture.campeonatoId
+  partidaId = fixture.partidaId
   await loginAsAdmin(page)
 })
 
@@ -17,27 +24,18 @@ test.describe("Campeonatos", () => {
     await expect(page.getByRole("dialog")).toBeVisible()
   })
 
-  test("detalhe do campeonato carrega quando existe", async ({ page }) => {
-    await page.goto("/campeonatos/1")
-    const is404 = page.getByText(/não encontrado|not found/i)
-    const isDetail = page.getByRole("heading").filter({ hasNotText: "Campeonatos" })
-    // passa se chegou no detalhe ou se 404 (campeonato pode não existir no seed)
-    await Promise.race([
-      isDetail.waitFor({ timeout: 5000 }),
-      is404.waitFor({ timeout: 5000 }),
-    ]).catch(() => {})
-    await expect(page).toHaveURL(/campeonatos/)
+  test("detalhe do campeonato controlado carrega", async ({ page }) => {
+    await page.goto(`/campeonatos/${campeonatoId}`)
+    await expect(page).toHaveURL(`/campeonatos/${campeonatoId}`)
+    await expect(page.getByRole("heading", { name: "E2E Campeonato Fluxos", exact: true })).toBeVisible()
+    await expect(page.getByText("E2E Adversário", { exact: true }).first()).toBeVisible()
   })
 
-  test("botão Convocação em partida existe quando campeonato tem partidas", async ({ page }) => {
-    await page.goto("/campeonatos/1")
-    // se a página carregou com partidas, o botão Convocação deve aparecer
-    const convocacaoLink = page.getByRole("link", { name: /Convoca/i }).first()
-    const hasPartidas = await convocacaoLink.isVisible().catch(() => false)
-    if (hasPartidas) {
-      await expect(convocacaoLink).toBeVisible()
-    }
-    // se não tem partidas, o teste passa (estrutura ok)
-    await expect(page).toHaveURL(/campeonatos/)
+  test("partida controlada exibe link de Convocação", async ({ page }) => {
+    await page.goto(`/campeonatos/${campeonatoId}`)
+    const href = `/campeonatos/${campeonatoId}/partidas/${partidaId}/escalacao`
+    const convocacaoLink = page.locator(`a[href="${href}"]`).first()
+    await expect(convocacaoLink).toBeVisible()
+    await expect(convocacaoLink).toContainText("Convocação")
   })
 })

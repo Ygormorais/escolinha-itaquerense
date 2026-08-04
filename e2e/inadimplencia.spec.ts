@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetInadimplenciaE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetInadimplenciaE2E()
   await loginAsAdmin(page)
 })
 
@@ -26,19 +28,13 @@ test.describe("Inadimplência — smoke e carregamento", () => {
 })
 
 test.describe("Inadimplência — lista calculada", () => {
-  test("quando há inadimplentes, a tabela ou lista de cards é visível", async ({ page }) => {
+  test("inadimplente controlado aparece na tabela", async ({ page }) => {
     await page.goto("/inadimplencia")
-    // Aguarda estabilizar
-    await page.waitForLoadState("networkidle")
-
-    const hasTable = await page.locator("table").isVisible({ timeout: 3000 }).catch(() => false)
-    const hasCards = await page.locator('[data-testid="inadimplente-card"], .aluno-inadimplente').isVisible({ timeout: 1000 }).catch(() => false)
-    const hasEmptyMsg = await page.getByText(/Nenhum.*inadimplente|nenhum aluno|sem atrasos/i).isVisible({ timeout: 1000 }).catch(() => false)
-
-    // Pelo menos um dos estados deve ser verdadeiro
-    expect(hasTable || hasCards || hasEmptyMsg || true).toBe(true)
-    // Página não deve ter erro 500
-    await expect(page.locator("body")).not.toContainText("Internal Server Error")
+    const aluno = page.getByRole("link", { name: "E2E Aluno Inadimplente", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    await expect(linha).toBeVisible()
+    await expect(linha).toContainText("Sub-11")
+    await expect(linha).toContainText("R$ 175,00")
   })
 
   test("stat card 'Total Inadimplentes' exibe um número", async ({ page }) => {
@@ -58,15 +54,14 @@ test.describe("Inadimplência — lista calculada", () => {
 })
 
 test.describe("Inadimplência — edge cases", () => {
-  test("quando lista está vazia, não há erro na página", async ({ page }) => {
-    // Filtra por estado impossível ou só verifica a carga com DB vazio
-    await page.goto("/inadimplencia")
-    await page.waitForLoadState("networkidle")
+  test("lista carregada não gera erro de runtime", async ({ page }) => {
     // Sem erros JS
     const errors: string[] = []
     page.on("console", (msg) => {
       if (msg.type() === "error") errors.push(msg.text())
     })
+    await page.goto("/inadimplencia")
+    await page.waitForLoadState("networkidle")
     await page.waitForTimeout(500)
     // Aceita erros de rede mas não erros de runtime do React
     const criticalErrors = errors.filter((e) =>

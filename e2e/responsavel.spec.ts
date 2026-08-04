@@ -48,18 +48,6 @@ test.describe("Portal do Responsável — página de recuperação de senha", ()
 // ── Testes com responsável criado via admin ────────────────────────────────
 
 test.describe("Portal do Responsável — login com usuário real", () => {
-  test.beforeAll(async ({ request }) => {
-    // Login como admin
-    const loginRes = await request.post("/api/auth/login", {
-      data: { username: "admin", password: "escolinha123" },
-    })
-    if (!loginRes.ok()) return
-
-    // Cria responsável via endpoint interno (usa server action pelo formulário)
-    // Como não há endpoint REST direto, verificamos apenas o fluxo de login com
-    // credenciais de um responsável que possa existir no banco (seed)
-  })
-
   test("responsável do seed não consegue logar com senha placeholder", async ({ page }) => {
     await page.goto("/responsavel/login")
     await page.fill('input[type="email"]', "resp.aluno1@teste.com")

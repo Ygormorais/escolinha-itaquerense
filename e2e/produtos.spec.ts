@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetProdutosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetProdutosE2E()
   await loginAsAdmin(page)
 })
 
@@ -25,13 +27,11 @@ test.describe("Produtos", () => {
     await expect(dialog).not.toBeVisible()
   })
 
-  test("busca de produto por nome funciona", async ({ page }) => {
+  test("produto controlado aparece na listagem", async ({ page }) => {
     await page.goto("/produtos")
-    await page.waitForLoadState("networkidle")
-    const input = page.locator('input[placeholder*="Buscar"], input[placeholder*="buscar"]').first()
-    if (!(await input.isVisible({ timeout: 3000 }).catch(() => false))) return
-    await input.fill("zzz_nao_existe_e2e")
-    await expect(page.getByText(/Nenhum produto/i)).toBeVisible({ timeout: 5000 })
+    const linha = page.getByRole("row").filter({ hasText: "E2E Produto Fixture" })
+    await expect(linha.getByRole("cell", { name: "E2E Produto Fixture", exact: true })).toBeVisible()
+    await expect(linha.getByRole("cell", { name: "R$ 49,90", exact: true })).toBeVisible()
   })
 
   test("cadastro e remoção de produto funciona", async ({ page }) => {
@@ -43,19 +43,21 @@ test.describe("Produtos", () => {
     const dialog = page.getByRole("dialog")
     await expect(dialog).toBeVisible()
 
-    // preenche nome e preço
-    const inputNome = dialog.locator('input').first()
-    await inputNome.fill(nomeProduto)
-    const inputPreco = dialog.locator('input[type="number"]').first()
-    if (await inputPreco.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await inputPreco.fill("50")
-    }
+    await dialog.getByLabel("Nome").fill(nomeProduto)
+    await dialog.getByLabel("Preço (R$)").fill("50")
 
-    const btnSalvar = dialog.getByRole("button", { name: /Salvar|Criar|Adicionar/i }).first()
-    if (await btnSalvar.isEnabled({ timeout: 2000 }).catch(() => false)) {
-      await btnSalvar.click()
-      await expect(dialog).not.toBeVisible({ timeout: 8000 })
-      await expect(page.getByText(nomeProduto)).toBeVisible({ timeout: 8000 })
-    }
+    const btnSalvar = dialog.getByRole("button", { name: "Criar", exact: true })
+    await expect(btnSalvar).toBeEnabled()
+    await btnSalvar.click()
+    await expect(dialog).not.toBeVisible({ timeout: 8000 })
+
+    const linha = page.getByRole("row").filter({ hasText: nomeProduto })
+    await expect(linha).toBeVisible({ timeout: 8000 })
+    await linha.getByRole("button", { name: "Remover produto" }).click()
+
+    const confirmacao = page.getByRole("alertdialog")
+    await expect(confirmacao).toBeVisible()
+    await confirmacao.getByRole("button", { name: "Remover", exact: true }).click()
+    await expect(page.getByText(nomeProduto, { exact: true })).not.toBeVisible({ timeout: 8000 })
   })
 })

@@ -14,7 +14,7 @@ test.describe("Uniformes — autenticado", () => {
 
   test("link 'Uniforme' aparece no menu de navegação", async ({ page }) => {
     await page.goto("/responsavel")
-    await expect(page.getByRole("link", { name: "Uniforme" }).first()).toBeVisible({ timeout: 8000 })
+    await expect(page.getByRole("tab", { name: "Uniforme", exact: true })).toBeVisible({ timeout: 8000 })
   })
 
   test("página /responsavel/uniformes carrega com título", async ({ page }) => {
@@ -22,14 +22,12 @@ test.describe("Uniformes — autenticado", () => {
     await expect(page.getByRole("heading", { name: "Uniformes" })).toBeVisible({ timeout: 8000 })
   })
 
-  test("exibe card por aluno ou mensagem de nenhum aluno", async ({ page }) => {
+  test("exibe uniforme do aluno controlado", async ({ page }) => {
     await page.goto("/responsavel/uniformes")
-    const temAluno = await page.locator('[data-slot="card"]').count()
-    if (temAluno > 0) {
-      await expect(page.locator('[data-slot="card"]').first()).toBeVisible()
-    } else {
-      await expect(page.getByText(/Nenhum aluno/i)).toBeVisible()
-    }
+    const card = page.locator('[data-slot="card"]').filter({ hasText: "E2E Aluno Responsável" })
+    await expect(card).toBeVisible()
+    await expect(card).toContainText("Camisa")
+    await expect(card).toContainText("Pendente")
   })
 
   test("link 'Voltar ao portal' navega para /responsavel", async ({ page }) => {

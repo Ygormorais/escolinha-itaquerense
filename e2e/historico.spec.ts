@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetHistoricoE2E } from "./fixtures"
 
 test.describe("Histórico de atividade — admin", () => {
   test.beforeEach(async ({ page }) => {
+    await resetHistoricoE2E()
     await loginAsAdmin(page)
   })
 
@@ -21,20 +23,14 @@ test.describe("Histórico de atividade — admin", () => {
 
   test("busca por tipo não quebra a página", async ({ page }) => {
     await page.goto("/historico")
-    const combo = page.locator('[role="combobox"]').first()
+    const combo = page.getByRole("combobox", { name: "Filtrar por tipo" })
     await combo.click()
-    const primeiraOpcao = page.locator('[role="option"]').nth(1)
-    if (await primeiraOpcao.count() > 0) {
-      await primeiraOpcao.click()
-    }
-    await expect(page.locator("body")).not.toContainText("Application error")
+    await page.getByRole("option", { name: "e2e_historico", exact: true }).click()
+    await expect(page.getByText("E2E Histórico Fixture", { exact: true })).toBeVisible()
   })
 
-  test("registros de log aparecem ou estado vazio é exibido", async ({ page }) => {
+  test("registro controlado aparece no histórico", async ({ page }) => {
     await page.goto("/historico")
-    const temRegistros = (await page.locator(".space-y-6 > div, .divide-y > div").count()) > 0
-    const temEmpty = (await page.locator("text=Nenhuma atividade").count()) > 0
-    // um dos dois deve ser verdadeiro
-    expect(temRegistros || temEmpty).toBe(true)
+    await expect(page.getByText("E2E Histórico Fixture", { exact: true })).toBeVisible()
   })
 })

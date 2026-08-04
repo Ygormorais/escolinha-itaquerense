@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetSolicitacaoE2E } from "./fixtures"
 
 test.describe("Solicitações — painel admin", () => {
   test.beforeEach(async ({ page }) => {
+    await resetSolicitacaoE2E()
     await loginAsAdmin(page)
   })
 
@@ -23,11 +25,8 @@ test.describe("Solicitações — painel admin", () => {
     await page.goto("/configuracoes/solicitacoes")
     const filtro = page.locator('[role="combobox"]').first()
     await filtro.click()
-    const opcaoPendente = page.locator('[role="option"]').filter({ hasText: "Pendente" })
-    if (await opcaoPendente.count() > 0) {
-      await opcaoPendente.click()
-    }
-    await expect(page.locator("body")).not.toContainText("500")
+    await page.getByRole("option", { name: "Pendentes", exact: true }).click()
+    await expect(page.getByText("E2E Solicitação Pendente", { exact: true })).toBeVisible()
   })
 
   test("estado vazio aparece quando não há solicitações no filtro", async ({ page }) => {
@@ -35,12 +34,7 @@ test.describe("Solicitações — painel admin", () => {
     // busca por algo que não existe
     const busca = page.locator('input[placeholder*="uscar"]')
     await busca.fill("zzz_nao_existe_xyx")
-    // deve mostrar estado vazio, não erro
-    await expect(page.locator("body")).not.toContainText("500")
-    const empty = page.locator("text=Nenhuma solicitação encontrada")
-    if (await empty.count() > 0) {
-      await expect(empty).toBeVisible()
-    }
+    await expect(page.getByText("Nenhuma solicitação encontrada.", { exact: true })).toBeVisible()
   })
 
   test("link de solicitações existe na sidebar ou nav de configurações", async ({ page }) => {
@@ -52,19 +46,15 @@ test.describe("Solicitações — painel admin", () => {
 
 test.describe("Solicitações — fluxo completo (responsável cria → admin responde)", () => {
   test("admin vê solicitações existentes e pode responder", async ({ page }) => {
+    await resetSolicitacaoE2E()
     await loginAsAdmin(page)
     await page.goto("/configuracoes/solicitacoes")
 
-    // Se houver alguma solicitação pendente, testa o botão de responder
-    const btnResponder = page.locator('button:has-text("Responder")').first()
-    if (await btnResponder.count() > 0) {
-      await btnResponder.click()
-      // deve aparecer textarea e botões de ação
-      await expect(page.locator("textarea").first()).toBeVisible()
-      await expect(page.locator('button:has-text("Resolver"), button:has-text("Recusar")')).not.toHaveCount(0)
-    } else {
-      // sem solicitações — estado vazio visível
-      await expect(page.locator("body")).not.toContainText("500")
-    }
+    const solicitacao = page.locator(".divide-y > div").filter({ hasText: "E2E Solicitação Pendente" })
+    await expect(solicitacao).toBeVisible()
+    await solicitacao.getByRole("button", { name: "Responder", exact: true }).click()
+    await expect(solicitacao.getByPlaceholder("Escreva sua resposta...")).toBeVisible()
+    await expect(solicitacao.getByRole("button", { name: "Resolver", exact: true })).toBeVisible()
+    await expect(solicitacao.getByRole("button", { name: "Recusar", exact: true })).toBeVisible()
   })
 })

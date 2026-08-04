@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetPagamentosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetPagamentosE2E()
   await loginAsAdmin(page)
 })
 
@@ -12,25 +14,25 @@ test.describe("Pagamentos — listagem e filtros", () => {
     await expect(page.locator("table")).toBeVisible()
   })
 
-  test("filtro de mês muda a URL ou recarrega os dados", async ({ page }) => {
+  test("seletor de mês atualiza a URL e os dados", async ({ page }) => {
     await page.goto("/pagamentos")
-    // botões de navegação de mês (anterior/próximo)
-    const btnAnterior = page.getByRole("button", { name: /anterior|◀|←/i })
-    if (await btnAnterior.isVisible()) {
-      await btnAnterior.click()
-      await page.waitForLoadState("networkidle")
-      await expect(page.locator("table")).toBeVisible()
-    }
+    const anoAlvo = new Date().getFullYear() + 1
+    await page.locator("#pag-mes").click()
+    await page.getByRole("button", { name: "Próximo ano" }).click()
+    await expect(page.getByText(String(anoAlvo), { exact: true })).toBeVisible()
+    await page.getByRole("button", { name: "jan", exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(`mes=${anoAlvo}-01`))
+    await expect(page.locator("table")).toBeVisible()
   })
 
   test("busca por nome funciona na listagem", async ({ page }) => {
     await page.goto("/pagamentos")
-    const search = page.locator('input[placeholder*="Buscar"], input[type="search"]').first()
-    if (await search.isVisible()) {
-      await search.fill("zzz_nao_existe_e2e")
-      await expect(page.getByText(/Nenhum|nenhum|0 resultado/i)).toBeVisible()
-      await search.clear()
-    }
+    const search = page.getByPlaceholder("Buscar aluno...")
+    await expect(search).toBeVisible()
+    await search.fill("zzz_nao_existe_e2e")
+    await expect(page.getByText("Nenhum pagamento para os filtros aplicados", { exact: true })).toBeVisible()
+    await search.clear()
+    await expect(page.getByRole("link", { name: "E2E Aluno Pagamentos 1", exact: true })).toBeVisible()
   })
 })
 
@@ -39,16 +41,15 @@ test.describe("Pagamentos — registro manual", () => {
     await page.goto("/pagamentos")
     await expect(page.locator("table tbody tr").first()).toBeVisible()
 
-    // procura um pagamento pendente (sem data)
-    const btnPagar = page.locator("table tbody tr").first().getByRole("button", { name: /Registrar/i })
-    if (await btnPagar.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await btnPagar.click()
-      const dialog = page.getByRole("dialog")
-      await expect(dialog).toBeVisible()
-      // cancela sem confirmar (dialog pode ter só o X "Close")
-      await dialog.getByRole("button", { name: /Cancelar|Close|Fechar/i }).first().click()
-      await expect(dialog).not.toBeVisible()
-    }
+    const aluno = page.getByRole("link", { name: "E2E Aluno Pagamentos 1", exact: true })
+    const linha = page.getByRole("row").filter({ has: aluno })
+    const btnPagar = linha.getByRole("button", { name: /Registrar/i })
+    await expect(btnPagar).toBeVisible()
+    await btnPagar.click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog).toBeVisible()
+    await dialog.getByRole("button", { name: /Close|Fechar/i }).first().click()
+    await expect(dialog).not.toBeVisible()
   })
 })
 

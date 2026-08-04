@@ -8,6 +8,9 @@
 
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetPreMatriculaPendenteE2E } from "./fixtures"
+
+const PRE_MATRICULA_FIXTURE = "Teste E2E Admin Pendente"
 
 // ── Helpers locais ─────────────────────────────────────────────────────────
 
@@ -40,6 +43,7 @@ function linhaPreMatricula(page: Parameters<typeof loginAsAdmin>[0], nomeAluno: 
 
 test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
   test.beforeEach(async ({ page }) => {
+    await resetPreMatriculaPendenteE2E()
     await loginAsAdmin(page)
   })
 
@@ -53,29 +57,28 @@ test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
   test("campo de busca filtra pré-matrículas por nome", async ({ page }) => {
     await page.goto("/configuracoes/matriculas")
     const input = page.locator('input[placeholder*="Buscar"]').first()
-    if (await input.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await input.fill("zzz_nao_existe_e2e_busca")
-      await expect(page.getByText(/Nenhuma pré-matrícula/i)).toBeVisible({ timeout: 5000 })
-      await input.clear()
-    }
+    await expect(input).toBeVisible()
+    await input.fill("zzz_nao_existe_e2e_busca")
+    await expect(page.getByText(/Nenhuma pré-matrícula/i)).toBeVisible({ timeout: 5000 })
+    await input.clear()
+    await expect(page.getByText(PRE_MATRICULA_FIXTURE, { exact: true })).toBeVisible()
   })
 
   test("filtro de status 'Pendentes' exibe apenas registros pendentes", async ({ page }) => {
     await page.goto("/configuracoes/matriculas")
-    const filtroSelect = page.locator("select").first()
-    if (await filtroSelect.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await filtroSelect.selectOption("pendente")
-      // Não deve mostrar badges "Aprovada" nem "Recusada" na lista
-      const badgesAprovada = page.locator("span").filter({ hasText: /^Aprovada$/ })
-      const count = await badgesAprovada.count()
-      expect(count).toBe(0)
-    }
+    const filtroSelect = page.getByRole("combobox", { name: "Filtrar por status" })
+    await filtroSelect.click()
+    await page.getByRole("option", { name: "Pendentes", exact: true }).click()
+    await expect(linhaPreMatricula(page, PRE_MATRICULA_FIXTURE)).toBeVisible()
+    await expect(page.locator("span").filter({ hasText: /^Aprovada$/ })).toHaveCount(0)
+    await expect(page.locator("span").filter({ hasText: /^Recusada$/ })).toHaveCount(0)
   })
 
   test("dialog de aprovação exibe campos de mensalidade, desconto e meses", async ({ page }) => {
     await page.goto("/configuracoes/matriculas")
-    const btnAprovar = page.getByRole("button", { name: /Aprovar/i }).first()
-    if (!(await btnAprovar.isVisible({ timeout: 3000 }).catch(() => false))) return
+    const linha = linhaPreMatricula(page, PRE_MATRICULA_FIXTURE)
+    await expect(linha).toBeVisible()
+    const btnAprovar = linha.getByRole("button", { name: /Aprovar/i })
 
     await btnAprovar.click()
     const dialog = page.getByRole("dialog")
@@ -176,11 +179,10 @@ test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
 
     // Cancela — não remove
     const btnCancelar = confirmDialog.getByRole("button", { name: /Cancelar/i })
-    if (await btnCancelar.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await btnCancelar.click()
-      await expect(confirmDialog).not.toBeVisible()
-      // O aluno ainda deve estar na lista
-      await expect(page.getByText(nomeAluno)).toBeVisible()
-    }
+    await expect(btnCancelar).toBeVisible()
+    await btnCancelar.click()
+    await expect(confirmDialog).not.toBeVisible()
+    // O aluno ainda deve estar na lista
+    await expect(page.getByText(nomeAluno)).toBeVisible()
   })
 })

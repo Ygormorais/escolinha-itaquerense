@@ -48,6 +48,9 @@ export default async function globalSetup() {
           observacoes: "Avaliação do portal E2E",
         },
       },
+      uniformes: {
+        create: { item: "Camisa", tamanho: "M", entregue: false },
+      },
     },
   })
 
