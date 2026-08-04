@@ -4,6 +4,12 @@ const BASE_URL = process.env.EVOLUTION_API_URL ?? "http://localhost:8080"
 const API_KEY = process.env.EVOLUTION_API_KEY ?? ""
 const INSTANCE = process.env.EVOLUTION_INSTANCE ?? "escolinha"
 
+function assertConfigured() {
+  if (!BASE_URL || !API_KEY) {
+    throw new Error("Evolution API não configurada")
+  }
+}
+
 function headers() {
   return {
     "Content-Type": "application/json",
@@ -13,6 +19,7 @@ function headers() {
 
 export class EvolutionProvider implements WhatsAppProvider {
   async sendText({ telefone, mensagem }: SendTextParams) {
+    assertConfigured()
     const res = await fetch(`${BASE_URL}/message/sendText/${INSTANCE}`, {
       method: "POST",
       headers: headers(),
@@ -32,6 +39,7 @@ export class EvolutionProvider implements WhatsAppProvider {
   }
 
   async sendTemplate({ telefone, template, params }: SendTemplateParams) {
+    assertConfigured()
     const res = await fetch(`${BASE_URL}/message/sendTemplate/${INSTANCE}`, {
       method: "POST",
       headers: headers(),
@@ -52,6 +60,10 @@ export class EvolutionProvider implements WhatsAppProvider {
   }
 
   async getStatus() {
+    if (!BASE_URL || !API_KEY) {
+      return { connected: false, instance: INSTANCE }
+    }
+
     const res = await fetch(`${BASE_URL}/instance/connectionState/${INSTANCE}`, {
       headers: headers(),
     })
