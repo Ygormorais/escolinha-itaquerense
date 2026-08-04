@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetRecibosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetRecibosE2E()
   await loginAsAdmin(page)
 })
 
@@ -73,30 +75,20 @@ test.describe("Recibos — histórico de recibos emitidos", () => {
     await expect(page.getByRole("heading", { name: /Recibos Emitidos/i })).toBeVisible()
   })
 
-  test("quando não há recibos, exibe mensagem de vazio", async ({ page }) => {
+  test("histórico exibe o recibo controlado pelo fixture", async ({ page }) => {
     await page.goto("/recibos")
-    const nenhum = page.getByText(/Nenhum recibo emitido ainda/i)
-    const tabela = page.locator("table")
-    // Um dos dois deve estar presente
-    const hasNenhum = await nenhum.isVisible({ timeout: 3000 }).catch(() => false)
-    const hasTabela = await tabela.isVisible({ timeout: 1000 }).catch(() => false)
-    expect(hasNenhum || hasTabela).toBe(true)
+    await expect(page.locator("table")).toBeVisible()
+    await expect(page.getByRole("cell", { name: "E2E Recibo Fixture", exact: true })).toBeVisible()
   })
 
   test("busca no histórico de recibos filtra por nome do aluno", async ({ page }) => {
     await page.goto("/recibos")
-    const tabelaPresente = await page.locator("table").isVisible({ timeout: 3000 }).catch(() => false)
-    if (tabelaPresente) {
-      const inputBusca = page.locator('input[placeholder*="Buscar por aluno"]')
-      if (await inputBusca.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await inputBusca.fill("zzz_nao_existe_e2e_recibo")
-        // a tabela deve ficar sem linhas de dados
-        const rows = page.locator("table tbody tr")
-        const count = await rows.count()
-        expect(count).toBe(0)
-        await inputBusca.clear()
-      }
-    }
+    await expect(page.getByRole("cell", { name: "E2E Recibo Fixture", exact: true })).toBeVisible()
+    const inputBusca = page.locator('input[placeholder*="Buscar por aluno"]')
+    await expect(inputBusca).toBeVisible()
+    await inputBusca.fill("zzz_nao_existe_e2e_recibo")
+    await expect(page.locator("table tbody tr")).toHaveCount(0)
+    await inputBusca.clear()
   })
 })
 

@@ -2,6 +2,9 @@ import { db } from "@/lib/db"
 
 const PAGAMENTO_PREFIX = "E2E Aluno Pagamentos "
 const PRE_MATRICULA_NOME = "Teste E2E Admin Pendente"
+const CUSTO_PREFIX = "Custo E2E"
+const RECIBO_PREFIX = "E2E Recibo"
+const MAQUINA_ARQUIVO = "e2e-maquina.csv"
 
 function mesAtual() {
   const now = new Date()
@@ -79,6 +82,52 @@ export async function resetPreMatriculaPendenteE2E() {
       nomeResponsavel: "Responsável E2E",
       telefone: "11999998888",
       email: "matricula.admin@e2e.test",
+      status: "pendente",
+    },
+  })
+}
+
+export async function resetCustosE2E() {
+  await db.custo.deleteMany({ where: { descricao: { startsWith: CUSTO_PREFIX } } })
+  await db.custo.create({
+    data: {
+      data: new Date(),
+      categoria: "Outros",
+      descricao: `${CUSTO_PREFIX} Fixture`,
+      fornecedor: "Fornecedor E2E",
+      valor: 125,
+      formaPagamento: "PIX",
+    },
+  })
+}
+
+export async function resetRecibosE2E() {
+  await db.recibo.deleteMany({ where: { alunoNome: { startsWith: RECIBO_PREFIX } } })
+  await db.recibo.create({
+    data: {
+      numero: `E2E-${Date.now()}`,
+      alunoNome: `${RECIBO_PREFIX} Fixture`,
+      responsavel: "Responsável E2E",
+      mesReferencia: mesAtual(),
+      valor: 150,
+      formaPagamento: "PIX",
+      dataPagamento: new Date(),
+    },
+  })
+}
+
+export async function resetCaixaE2E() {
+  await db.transacaoMaquina.deleteMany({ where: { arquivo: MAQUINA_ARQUIVO } })
+  await resetPagamentosE2E()
+  await db.transacaoMaquina.create({
+    data: {
+      dataTransacao: new Date(),
+      valor: 123.45,
+      parcelas: 1,
+      bandeira: "Visa",
+      tipo: "debito",
+      nomeNoCartao: "E2E MAQUINA",
+      arquivo: MAQUINA_ARQUIVO,
       status: "pendente",
     },
   })

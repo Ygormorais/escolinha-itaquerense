@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetCustosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetCustosE2E()
   await loginAsAdmin(page)
 })
 
@@ -92,49 +94,39 @@ test.describe("Custos — criar novo custo", () => {
 
     // Descrição (obrigatória — o locator antigo falhava em silêncio e criava custos vazios)
     await dialog.getByLabel("Descrição").fill("Custo E2E Automático")
+    await dialog.getByLabel("Fornecedor").fill("Fornecedor E2E")
 
     // Valor
     await dialog.locator('input[type="number"]').fill("150.00")
 
     await dialog.getByRole("button", { name: /Registrar|Salvar/i }).click()
-    await page.waitForTimeout(1500)
-    // dialog deve ter fechado OU exibido erro de validação
-    const dialogAberto = await dialog.isVisible()
-    if (!dialogAberto) {
-      // sucesso — lista recarregada
-      await expect(page.locator("table")).toBeVisible()
-    }
+    await expect(dialog).not.toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole("cell", { name: "Custo E2E Automático", exact: true })).toBeVisible()
   })
 })
 
 test.describe("Custos — busca na lista de lançamentos", () => {
   test("busca por texto inexistente mostra mensagem de ausência", async ({ page }) => {
     await page.goto("/custos")
-    // só aparece se há custos no mês atual; se tabela tiver dados
-    const tbody = page.locator("table tbody tr")
-    const firstRow = tbody.first()
-    const hasCustos = await firstRow.isVisible({ timeout: 3000 }).catch(() => false)
-    if (hasCustos) {
-      const inputBusca = page.locator('input[placeholder*="Buscar"]').first()
-      if (await inputBusca.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await inputBusca.fill("zzz_nao_existe_e2e_custo")
-        await expect(page.getByText(/Nenhum custo encontrado/i)).toBeVisible()
-        await inputBusca.clear()
-      }
-    }
+    await expect(page.getByRole("cell", { name: "Custo E2E Fixture", exact: true })).toBeVisible()
+    const inputBusca = page.locator('input[placeholder*="Buscar"]').first()
+    await expect(inputBusca).toBeVisible()
+    await inputBusca.fill("zzz_nao_existe_e2e_custo")
+    await expect(page.getByText(/Nenhum custo encontrado/i)).toBeVisible()
+    await inputBusca.clear()
   })
 })
 
 test.describe("Custos — aba Recorrentes CRUD", () => {
-  test("botão 'Novo Recorrente' abre dialog de criação", async ({ page }) => {
+  test("botão 'Novo Modelo' abre dialog de custo recorrente", async ({ page }) => {
     await page.goto("/custos")
     await page.getByRole("tab", { name: /Recorrentes/i }).click()
-    const btnNovo = page.getByRole("button", { name: /Novo Recorrente/i })
-    if (await btnNovo.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await btnNovo.click()
-      const dialog = page.getByRole("dialog")
-      await expect(dialog).toBeVisible()
-      await dialog.getByRole("button", { name: /Cancelar|Fechar|Close/i }).first().click()
-    }
+    const btnNovo = page.getByRole("button", { name: "Novo Modelo", exact: true })
+    await expect(btnNovo).toBeVisible()
+    await btnNovo.click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog.getByRole("heading", { name: "Novo Custo Recorrente" })).toBeVisible()
+    await dialog.getByRole("button", { name: /Cancelar|Fechar|Close/i }).first().click()
+    await expect(dialog).not.toBeVisible()
   })
 })

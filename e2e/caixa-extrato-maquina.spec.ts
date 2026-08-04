@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
+import { resetCaixaE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
+  await resetCaixaE2E()
   await loginAsAdmin(page)
 })
 
@@ -42,12 +44,16 @@ test.describe("Caixa — Maquininha", () => {
     expect(count).toBeGreaterThanOrEqual(1)
   })
 
-  test("botão de novo lançamento abre dialog", async ({ page }) => {
+  test("transação pendente abre o diálogo de reconciliação", async ({ page }) => {
     await page.goto("/caixa/maquina")
-    const btnNovo = page.getByRole("button", { name: /Novo|Lançamento|Registrar/i }).first()
-    if (!(await btnNovo.isVisible({ timeout: 3000 }).catch(() => false))) return
-    await btnNovo.click()
-    await expect(page.getByRole("dialog")).toBeVisible()
-    await page.getByRole("button", { name: /Cancelar/i }).click()
+    const nomeTransacao = page.getByRole("cell", { name: "E2E MAQUINA", exact: true })
+    const linha = page.getByRole("row").filter({ has: nomeTransacao })
+    await expect(linha).toBeVisible()
+    const btnReconciliar = linha.getByRole("button", { name: "Reconciliar transação", exact: true })
+    await expect(btnReconciliar).toBeVisible()
+    await btnReconciliar.click()
+    await expect(page.getByRole("dialog").getByRole("heading", { name: "Reconciliar Transação" })).toBeVisible()
+    await page.keyboard.press("Escape")
+    await expect(page.getByRole("dialog")).not.toBeVisible()
   })
 })
