@@ -40,13 +40,15 @@ export async function POST(request: Request) {
 
   if (aluno!.foto) {
     const oldFilename = path.basename(aluno!.foto)
-    await unlink(path.join(uploadDir, oldFilename)).catch(() => {})
+    await unlink(path.join(/* turbopackIgnore: true */ uploadDir, oldFilename)).catch(() => {})
     // legado: fotos antigas viviam em public/uploads/fotos/
-    await unlink(path.join(process.cwd(), "public", "uploads", "fotos", oldFilename)).catch(() => {})
+    await unlink(
+      path.join(/* turbopackIgnore: true */ process.cwd(), "public", "uploads", "fotos", oldFilename),
+    ).catch(() => {})
   }
 
   await mkdir(uploadDir, { recursive: true })
-  await writeFile(path.join(uploadDir, filename), Buffer.from(bytes))
+  await writeFile(path.join(/* turbopackIgnore: true */ uploadDir, filename), Buffer.from(bytes))
 
   const fotoUrl = `/uploads/fotos/${filename}`
   await db.aluno.update({ where: { id: alunoId }, data: { foto: fotoUrl } })
@@ -66,8 +68,10 @@ export async function DELETE(request: Request) {
   if (aluno?.foto) {
     const oldFilename = path.basename(aluno.foto)
     const uploadDir = resolveUploadsDir("fotos")
-    await unlink(path.join(uploadDir, oldFilename)).catch(() => {})
-    await unlink(path.join(process.cwd(), "public", "uploads", "fotos", oldFilename)).catch(() => {})
+    await unlink(path.join(/* turbopackIgnore: true */ uploadDir, oldFilename)).catch(() => {})
+    await unlink(
+      path.join(/* turbopackIgnore: true */ process.cwd(), "public", "uploads", "fotos", oldFilename),
+    ).catch(() => {})
   }
 
   await db.aluno.update({ where: { id: alunoId }, data: { foto: null } })
