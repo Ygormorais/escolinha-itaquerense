@@ -34,7 +34,7 @@ function hasPlaceholder(value: string): boolean {
 section("── Variáveis de ambiente (obrigatórias) ──")
 
 const REQUIRED: { key: string; hint?: string }[] = [
-  { key: "DATABASE_URL",    hint: "ex: file:/app/prisma/prod.db" },
+  { key: "DATABASE_URL",    hint: "ex: file:/var/lib/escolinha/prod.db" },
   { key: "SESSION_SECRET",  hint: "min 32 chars — node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"" },
   { key: "CRON_SECRET",     hint: "token Bearer para /api/cron/lembretes" },
   { key: "ADMIN_USERNAME",  hint: "nome de login do admin padrão" },

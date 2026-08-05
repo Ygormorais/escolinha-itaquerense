@@ -1,5 +1,7 @@
 import { defineConfig } from "@playwright/test"
 
+const isCI = process.env.CI === "true"
+
 export default defineConfig({
   testDir: "./e2e",
   globalSetup: "./e2e/global-setup",
@@ -15,10 +17,14 @@ export default defineConfig({
     permissions: ["clipboard-read", "clipboard-write"],
   },
   webServer: {
-    command: "npm run dev",
+    // O runner compartilhado do GitHub não consegue compilar dezenas de rotas
+    // sob demanda dentro do timeout de cada teste. No CI usamos o build de
+    // produção preparado pelo workflow; no desenvolvimento mantemos o servidor
+    // com hot reload.
+    command: isCI ? "npm run start" : "npm run dev",
     port: 3000,
-    timeout: 120_000,
-    reuseExistingServer: true,
+    timeout: 180_000,
+    reuseExistingServer: !isCI,
   },
   projects: [
     { name: "chromium", use: { browserName: "chromium" } },

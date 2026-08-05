@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test"
-import { loginAsAdmin } from "./helpers"
+import { loginAsAdminViaForm } from "./helpers"
 
 test.describe("Autenticação", () => {
   test("login com sucesso redireciona para dashboard", async ({ page }) => {
-    await loginAsAdmin(page)
+    await loginAsAdminViaForm(page)
     await expect(page).toHaveURL("/dashboard")
   })
 
@@ -11,9 +11,12 @@ test.describe("Autenticação", () => {
     // não usa loginAsAdmin: o helper aguarda sair de /login (sucesso); aqui o
     // login falha de propósito e a página permanece em /login.
     await page.goto("/login")
+    await page.waitForLoadState("networkidle")
     await page.locator("#login-usuario").fill("admin")
     await page.locator("#login-senha").fill("senhaerrada")
-    await page.click('button[type="submit"]')
+    const submit = page.locator('button[type="submit"]')
+    await expect(submit).toBeEnabled()
+    await submit.click()
     await expect(page.getByText("incorretos")).toBeVisible()
   })
 
@@ -24,7 +27,7 @@ test.describe("Autenticação", () => {
   })
 
   test("logout limpa sessão", async ({ page }) => {
-    await loginAsAdmin(page)
+    await loginAsAdminViaForm(page)
     await expect(page).toHaveURL("/dashboard")
 
     const logoutBtn = page.locator('button[aria-label="Sair do sistema"]')
@@ -35,7 +38,7 @@ test.describe("Autenticação", () => {
   test("já autenticado em /login mostra sessão ativa (não pula o gate)", async ({ page }) => {
     // Autentica via formulário e volta em /login: deve permanecer no gate,
     // nunca pular o formulário/sessão em silêncio para o painel.
-    await loginAsAdmin(page)
+    await loginAsAdminViaForm(page)
     await expect(page).toHaveURL("/dashboard")
 
     await page.goto("/login")

@@ -46,10 +46,16 @@ next-env.d.ts
 /uploads/
 /public/uploads/
 
-# database
-prisma/dev.db
-prisma/dev.db.backup-*
-prisma/*.db-journal
+# database (nunca versionar SQLite local, restaurações ou produção)
+*.db
+*.db-*
+*.db.*
+*.sqlite
+*.sqlite-*
+*.sqlite.*
+*.sqlite3
+*.sqlite3-*
+*.sqlite3.*
 .prisma/
 
 # IDE backup files
@@ -68,7 +74,7 @@ DESIGN_SYSTEM.md
 audit-*.png
 audit.mjs
 
-# backup database files (tracked via backups branch)
+# backup database files
 backups/*.db
 supabase/.temp/
 

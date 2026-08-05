@@ -1,5 +1,10 @@
 import { defineConfig } from "prisma/config"
 import { resolveDbPath } from "./lib/db-path"
+import { loadEnv } from "./scripts/load-env"
+
+// O Prisma 7 não carrega .env automaticamente ao usar prisma.config.ts.
+// CLI, deploy e scripts precisam resolver o mesmo arquivo que a aplicação.
+loadEnv()
 
 export default defineConfig({
   schema: "./prisma/schema.prisma",

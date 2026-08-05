@@ -16,22 +16,13 @@ Hetzner CX22). SQLite em arquivo no disco — **instância única, sempre**.
 
 ## Sequência de deploy (resumo)
 
-Os passos detalhados estão em `deploy/README.md`. O essencial:
+Os passos detalhados estão em `deploy/README.md`. O script oficial cria o
+snapshot pré-migração, para os dois processos, instala dependências, compila,
+migra e recarrega o ecosystem PM2:
 
 ```bash
 # Na VPS, dentro de ~/escolinha-itaquerense
-git pull
-npm ci
-npx prisma generate
-
-# ⚠️ ANTES de migrar: garantir que não há mensalidades duplicadas
-#    (o migrate cria UNIQUE INDEX em Pagamento(alunoId, mesReferencia) e falha se houver)
-npx tsx scripts/check-pagamentos-duplicados.ts          # dry run
-npx tsx scripts/check-pagamentos-duplicados.ts --fix    # só se o dry run acusar duplicatas
-
-npx prisma migrate deploy
-npm run build
-pm2 reload escolinha
+bash deploy/deploy.sh
 ```
 
 ---
@@ -55,17 +46,22 @@ Gerar segredos: `bash deploy/gen-secrets.sh`.
 
 ### Backup automático (GitHub Actions)
 
-O workflow `.github/workflows/backups.yml` baixa o banco da VPS por SSH diariamente e
-salva na branch `backups`. Configurar em **Settings → Secrets and variables → Actions**:
+O workflow `.github/workflows/backups.yml` cria um snapshot consistente na VPS,
+criptografa com `age` e envia somente o arquivo cifrado para um bucket R2 privado.
+Configure o environment `production` com as variables `R2_ENDPOINT`, `R2_BUCKET`,
+`R2_REGION` e `BACKUP_AGE_RECIPIENT`, além dos secrets `SSH_HOST`, `SSH_USER`,
+`SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `SSH_DB_PATH`, `R2_ACCESS_KEY_ID` e
+`R2_SECRET_ACCESS_KEY`.
 
-- `SSH_HOST` — IP/hostname da VPS
-- `SSH_USER` — usuário SSH (`root` no Hetzner/DigitalOcean)
-- `SSH_KEY` — chave SSH privada com acesso à VPS
+Valide primeiro com `workflow_dispatch`; só então defina a repository variable
+`BACKUP_ENABLED=true`. A identidade privada do `age` deve permanecer offline.
+Nunca salve o banco, mesmo compactado, em uma branch Git. O procedimento completo
+de backup e restauração está em [`deploy/README.md`](deploy/README.md).
 
 ### Rate limit (login e recuperação de senha)
 
-O limite (5 req/min por IP) usa memória do processo Node — suficiente para a instância
-única atual (PM2, um worker). Múltiplas réplicas exigiriam um backend compartilhado
+O limite (5 req/min por IP) é persistido no mesmo SQLite da aplicação, adequado à
+instância única atual. Múltiplas réplicas exigiriam um backend compartilhado
 (Redis/Upstash); não é o caso hoje.
 
 ---
@@ -74,10 +70,10 @@ O limite (5 req/min por IP) usa memória do processo Node — suficiente para a 
 
 ```bash
 # Backup manual seguro (na VPS)
-sqlite3 prisma/prod.db ".backup backups/prod-$(date +%F).db"
+npm run db:backup
 
 # Atualizar para nova versão
-git pull && npm ci && npx prisma generate && npx prisma migrate deploy && npm run build && pm2 reload escolinha
+bash deploy/deploy.sh
 ```
 
 Rollback de deploy: ver `deploy/rollback.sh` e a seção correspondente em `deploy/README.md`.

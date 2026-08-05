@@ -3,6 +3,9 @@ import path from "path"
 
 /** Carrega .env e .env.local no process.env (sem dependência extra). */
 export function loadEnv(cwd = process.cwd()) {
+  // Variáveis herdadas do processo têm prioridade sobre qualquer arquivo;
+  // .env.local pode sobrescrever apenas valores carregados de .env.
+  const inherited = new Set(Object.keys(process.env))
   for (const name of [".env", ".env.local"]) {
     const p = path.join(cwd, name)
     if (!fs.existsSync(p)) continue
@@ -20,7 +23,7 @@ export function loadEnv(cwd = process.cwd()) {
       ) {
         val = val.slice(1, -1)
       }
-      if (process.env[key] === undefined) process.env[key] = val
+      if (!inherited.has(key)) process.env[key] = val
     }
   }
 }

@@ -1,58 +1,108 @@
 name: Backup Diário do Banco
 
-# Faz download do banco SQLite da VPS (Node/PM2) via SSH e salva na branch backups.
-# Pré-requisitos (configurar em Settings > Secrets and variables > Actions):
-#   SSH_HOST     — IP ou hostname do servidor
-#   SSH_USER     — usuário SSH (root no Hetzner/DigitalOcean)
-#   SSH_KEY      — chave SSH privada (conteúdo do ~/.ssh/id_rsa)
-
 on:
   schedule:
-    - cron: "0 3 * * *"   # 03h UTC = 00h Brasília
+    - cron: "0 3 * * *" # 03h UTC = 00h Brasília
+  workflow_dispatch:
 
-  workflow_dispatch:       # Permite disparo manual
+# O repositório é público: nenhum banco, mesmo compactado, pode ser salvo no Git.
+# O job só agenda backups depois que a repository variable BACKUP_ENABLED=true
+# for configurada. Dispatch manual sempre executa para validar o setup.
+permissions: {}
 
-permissions:
-  contents: write
+concurrency:
+  group: production-sqlite-backup
+  cancel-in-progress: false
 
 jobs:
   backup:
+    if: github.event_name == 'workflow_dispatch' || vars.BACKUP_ENABLED == 'true'
+    environment: production
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      SSH_DB_PATH: ${{ secrets.SSH_DB_PATH }}
+      R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
+      R2_BUCKET: ${{ vars.R2_BUCKET }}
+      BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.R2_REGION || 'auto' }}
+      AWS_EC2_METADATA_DISABLED: "true"
+
     steps:
-      - uses: actions/checkout@v5
-        with:
-          ref: backups
-
-      - name: Configurar SSH
+      - name: Instalar ferramentas de validação e criptografia
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          set -Eeuo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes age sqlite3
+          command -v aws >/dev/null
 
-      - name: Baixar banco da VPS de produção
+      - name: Criar, validar, criptografar e enviar backup
+        shell: bash
         run: |
-          TIMESTAMP=$(date -u +%Y-%m-%d-%H%M%S)
-          mkdir -p backups
+          set -Eeuo pipefail
+          umask 077
 
-          # Backup consistente via sqlite3 .backup (não pega estado parcial de escrita), depois baixa por stdout
-          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "sqlite3 ~/escolinha-itaquerense/prisma/prod.db \".backup '/tmp/prod-backup.db'\" && cat /tmp/prod-backup.db && rm -f /tmp/prod-backup.db" \
-            > "backups/prod-${TIMESTAMP}.db"
+          for name in SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS SSH_DB_PATH R2_ENDPOINT R2_BUCKET BACKUP_AGE_RECIPIENT AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+            [[ -n "${!name:-}" ]] || { echo "::error::Configuração ausente: ${name}"; exit 1; }
+          done
+          [[ "$R2_ENDPOINT" == https://* ]] || { echo "::error::R2_ENDPOINT deve usar HTTPS"; exit 1; }
+          [[ "$BACKUP_AGE_RECIPIENT" == age1* ]] || { echo "::error::Recipient AGE inválido"; exit 1; }
 
-          echo "Backup criado: prod-${TIMESTAMP}.db ($(du -sh backups/prod-${TIMESTAMP}.db | cut -f1))"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/backup_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/backup_key" "$HOME/.ssh/known_hosts"
 
-      - name: Rotacionar backups (manter últimos 30)
-        run: |
-          cd backups
-          ls -1t prod-*.db 2>/dev/null | tail -n +31 | xargs -r rm -f
-          echo "Backups mantidos: $(ls -1 prod-*.db 2>/dev/null | wc -l)"
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          raw="$workdir/prod.db"
+          encrypted="$workdir/prod.db.gz.age"
+          verify="$workdir/verify.db.gz.age"
 
-      - name: Commit e push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add backups/
-          TIMESTAMP=$(date -u +%Y-%m-%d)
-          git diff --staged --quiet || git commit -m "backup: ${TIMESTAMP}"
-          git push
+          printf -v quoted_db '%q' "$SSH_DB_PATH"
+          ssh \
+            -i "$HOME/.ssh/backup_key" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            "$SSH_USER@$SSH_HOST" \
+            "bash -s -- $quoted_db" <<'REMOTE' > "$raw"
+          set -Eeuo pipefail
+          db_path="$1"
+          tmp="$(mktemp /tmp/escolinha-backup.XXXXXX.db)"
+          trap 'rm -f "$tmp"' EXIT
+          sqlite3 "$db_path" ".backup '$tmp'"
+          [[ "$(sqlite3 "$tmp" 'PRAGMA quick_check;')" == "ok" ]]
+          cat "$tmp"
+          REMOTE
+
+          [[ -s "$raw" ]] || { echo "::error::Backup remoto vazio"; exit 1; }
+          [[ "$(sqlite3 "$raw" 'PRAGMA quick_check;')" == "ok" ]] || { echo "::error::SQLite inválido"; exit 1; }
+
+          gzip -9 -c "$raw" | age --recipient "$BACKUP_AGE_RECIPIENT" --output "$encrypted"
+          sha="$(sha256sum "$encrypted" | awk '{print $1}')"
+          timestamp="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+          key="sqlite/daily/prod-${timestamp}.db.gz.age"
+
+          aws s3 cp "$encrypted" "s3://$R2_BUCKET/$key" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --only-show-errors \
+            --metadata "sha256=$sha"
+
+          printf '%s  %s\n' "$sha" "$(basename "$key")" > "$encrypted.sha256"
+          aws s3 cp "$encrypted.sha256" "s3://$R2_BUCKET/$key.sha256" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --only-show-errors
+
+          aws s3 cp "s3://$R2_BUCKET/$key" "$verify" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --only-show-errors
+          [[ "$(sha256sum "$verify" | awk '{print $1}')" == "$sha" ]] || { echo "::error::Hash pós-upload divergente"; exit 1; }
+
+          printf 'Backup verificado: `%s`\nSHA-256: `%s`\n' "$key" "$sha" >> "$GITHUB_STEP_SUMMARY"

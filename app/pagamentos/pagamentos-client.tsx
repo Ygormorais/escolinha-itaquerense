@@ -94,6 +94,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
   })
 
   function handleOpenChange(isOpen: boolean) {
+    if (!isOpen && done) router.refresh()
     if (isOpen) setDone(false)
     setOpen(isOpen)
   }
@@ -120,7 +121,6 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
         })
         setReciboUrl(`/recibos?${params.toString()}`)
         setDone(true)
-        router.refresh()
       } catch {
         toast.error("Erro ao registrar pagamento")
       }
@@ -149,7 +149,7 @@ function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
                 <Printer className="size-4" />
                 Imprimir PDF
               </a>
-              <Button variant="outline" onClick={() => { setOpen(false); setDone(false) }}>
+              <Button variant="outline" onClick={() => handleOpenChange(false)}>
                 Fechar
               </Button>
             </div>

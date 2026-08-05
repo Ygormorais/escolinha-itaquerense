@@ -3,26 +3,45 @@
  * Seguro para rodar em produção: não apaga nada, usa upsert.
  *
  * Uso:
- *   SENHA_ADMIN=minhasenha npx tsx prisma/seed-prod.ts
+ *   npm run db:seed-prod
  *
- * Se SENHA_ADMIN não for definida, usa "escolinha123" como fallback
- * (mude imediatamente após o primeiro login).
+ * ADMIN_USERNAME e ADMIN_PASSWORD são carregados do .env e são obrigatórios.
  */
 
 import { PrismaClient } from "@prisma/client"
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
 import { hashSync } from "bcryptjs"
+import { resolveDbPath } from "../lib/db-path"
+import { loadEnv } from "../scripts/load-env"
 
-const db = new PrismaClient()
+loadEnv()
+
+const db = new PrismaClient({
+  adapter: new PrismaBetterSqlite3({ url: resolveDbPath() }),
+})
 
 async function main() {
-  const senhaRaw = process.env.SENHA_ADMIN ?? "escolinha123"
-  const senhaHash = hashSync(senhaRaw, 12)
+  const username = process.env.ADMIN_USERNAME?.trim()
+  const senhaRaw = process.env.ADMIN_PASSWORD?.trim()
+  if (!username) throw new Error("ADMIN_USERNAME não definido no .env")
+  if (!senhaRaw) throw new Error("ADMIN_PASSWORD não definido no .env")
+  if (senhaRaw.length < 12 || senhaRaw === "escolinha123") {
+    throw new Error("ADMIN_PASSWORD deve ter ao menos 12 caracteres e não pode usar a senha padrão")
+  }
 
-  const admin = await db.usuario.upsert({
-    where: { username: "admin" },
-    update: {},
+  const senhaHash = hashSync(senhaRaw, 12)
+  const existente = await db.usuario.findUnique({ where: { username } })
+
+  await db.usuario.upsert({
+    where: { username },
+    update: {
+      nome: "Administrador",
+      senha: senhaHash,
+      role: "admin",
+      ativo: true,
+    },
     create: {
-      username: "admin",
+      username,
       nome: "Administrador",
       senha: senhaHash,
       role: "admin",
@@ -30,21 +49,9 @@ async function main() {
     },
   })
 
-  const jaExistia = admin.createdAt < new Date(Date.now() - 5000)
+  console.log(existente ? "✓ Usuário admin atualizado." : "✓ Usuário admin criado.")
+  console.log(`  Username: ${username}`)
 
-  if (jaExistia) {
-    console.log("✓ Usuário admin já existia — nenhuma alteração.")
-  } else {
-    console.log("✓ Usuário admin criado.")
-    console.log(`  Username : admin`)
-    console.log(`  Senha    : ${senhaRaw}`)
-    console.log("")
-    if (senhaRaw === "escolinha123") {
-      console.log("⚠️  ATENÇÃO: troque a senha após o primeiro login!")
-    }
-  }
-
-  // Verifica se há outros admins além do recém-criado
   const totalAdmins = await db.usuario.count({ where: { role: "admin", ativo: true } })
   console.log(`\nTotal de admins ativos: ${totalAdmins}`)
 }

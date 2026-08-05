@@ -40,14 +40,8 @@ export async function registrarPagamento(
     })
     const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
     await registrarLog("pagamento", `Pagamento registrado — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: data.valorRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), forma: data.formaPagamento })
-    revalidatePath("/pagamentos")
-    revalidatePath("/inadimplencia")
-    revalidatePath("/caixa")
-    revalidatePath("/caixa/recebimentos")
-    revalidatePath("/caixa/dinheiro")
-    revalidatePath("/caixa/pix")
-    revalidatePath("/caixa/boleto")
-    revalidatePath("/dashboard")
+    // Os clientes atualizam a rota depois de concluir o próprio fluxo.
+    // Revalidar dentro da action desmonta o diálogo antes de exibir o recibo.
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
