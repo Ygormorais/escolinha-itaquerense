@@ -9,6 +9,9 @@ export default defineConfig({
   timeout: 30_000,
   retries: 1,
   workers: 1,
+  // Uma sessão inválida afetaria quase toda a suíte. No CI, falhar no primeiro
+  // cenário preserva o erro original e evita dezenas de retries de 30 segundos.
+  maxFailures: isCI ? 1 : 0,
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",

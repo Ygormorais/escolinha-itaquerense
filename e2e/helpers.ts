@@ -13,8 +13,10 @@ export async function loginAsAdmin(page: Page) {
   const storageState = JSON.parse(await readFile(ADMIN_STORAGE, "utf8"))
   await page.context().addCookies(storageState.cookies)
 
-  await page.goto("/dashboard")
-  await page.waitForURL("**/dashboard")
+  await page.goto("/dashboard", { waitUntil: "domcontentloaded" })
+  if (new URL(page.url()).pathname !== "/dashboard") {
+    throw new Error(`Sessão administrativa E2E inválida; destino: ${page.url()}`)
+  }
 }
 
 /** Exercita o formulário real; reservado aos cenários de autenticação. */

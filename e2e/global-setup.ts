@@ -3,19 +3,16 @@ import path from "path"
 import fs from "fs"
 import { RESP_TESTE, ADMIN_TESTE } from "./test-credentials"
 import { db } from "@/lib/db"
-import { createSession, cookieMaxAge, cookieName } from "@/lib/session"
 import { loadEnv } from "@/scripts/load-env"
 import { resolveDbPath } from "@/lib/db-path"
 import bcryptjs from "bcryptjs"
 import Database from "better-sqlite3"
 
 // O runner do Playwright não passa pelo carregador de ambiente do Next.
-// A assinatura criada aqui precisa usar exatamente o segredo do servidor.
+// O setup e o servidor precisam apontar para o mesmo banco e ambiente.
 loadEnv()
 
-export default async function globalSetup() {
-  // O rate limit de produção usa o próprio SQLite e sobrevive entre execuções
-  // locais. Cada suíte começa isolada, sem herdar tentativas da rodada anterior.
+function clearRateLimits() {
   const rateLimitDb = new Database(resolveDbPath())
   try {
     rateLimitDb.exec(`
@@ -29,6 +26,12 @@ export default async function globalSetup() {
   } finally {
     rateLimitDb.close()
   }
+}
+
+export default async function globalSetup() {
+  // O rate limit de produção usa o próprio SQLite e sobrevive entre execuções
+  // locais. Cada suíte começa isolada, sem herdar tentativas da rodada anterior.
+  clearRateLimits()
 
   // ── 1. Cria admin de teste com senha conhecida ────────────────────────────
   // Garante que os testes E2E não dependem da senha do admin real no dev.db
@@ -91,26 +94,33 @@ export default async function globalSetup() {
 
   await db.$disconnect()
 
-  // ── 2. Login pelo formulário e grava storageState ─────────────────────────
+  // ── 3. Faz login real e grava os storage states ───────────────────────────
   const authDir = path.join(process.cwd(), "e2e", ".auth")
   fs.mkdirSync(authDir, { recursive: true })
 
   const browser = await chromium.launch()
 
-  // A suíte administrativa reutiliza uma sessão assinada. Isso mantém os
-  // testes focados nas páginas protegidas sem disparar centenas de logins e
-  // sem desativar o rate limit real do build de produção usado no CI.
+  // A suíte administrativa reutiliza uma única sessão criada pelo servidor.
+  // Obter o cookie pelo fluxo real evita diferenças de serialização/segurança
+  // entre cookies injetados pelo Playwright e o Chromium do runner Linux.
   const adminContext = await browser.newContext()
-  await adminContext.addCookies([
-    {
-      name: cookieName(),
-      value: await createSession(ADMIN_TESTE.username, ADMIN_TESTE.role),
-      url: "http://localhost:3000",
-      httpOnly: true,
-      sameSite: "Lax",
-      expires: Math.floor(Date.now() / 1000) + cookieMaxAge(),
-    },
+  const adminPage = await adminContext.newPage()
+  await adminPage.goto("http://localhost:3000/login")
+  await adminPage.locator("#login-usuario").fill(ADMIN_TESTE.username)
+  await adminPage.locator("#login-senha").fill(ADMIN_TESTE.senha)
+  const [loginResponse] = await Promise.all([
+    adminPage.waitForResponse((response) =>
+      response.url().endsWith("/api/auth/login") && response.request().method() === "POST"
+    ),
+    adminPage.locator('button[type="submit"]').click(),
   ])
+  if (!loginResponse.ok()) {
+    throw new Error(`Login administrativo E2E falhou com HTTP ${loginResponse.status()}`)
+  }
+  await adminPage.waitForURL("**/dashboard", {
+    timeout: 45_000,
+    waitUntil: "domcontentloaded",
+  })
   await adminContext.storageState({ path: path.join(authDir, "admin.json") })
   await adminContext.close()
 
@@ -128,4 +138,8 @@ export default async function globalSetup() {
   await context.storageState({ path: path.join(authDir, "responsavel.json") })
   await context.close()
   await browser.close()
+
+  // Os logins de preparação não devem consumir a cota dos cenários que
+  // exercitam deliberadamente sucesso, falha e logout no build de produção.
+  clearRateLimits()
 }
