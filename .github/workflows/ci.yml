@@ -27,6 +27,11 @@ jobs:
         env:
           PRISMA_CONFIG_PATH: prisma.config.ts
 
+      - name: Migration drift check
+        run: npx prisma migrate diff --exit-code --from-migrations prisma/migrations --to-schema prisma/schema.prisma
+        env:
+          PRISMA_CONFIG_PATH: prisma.config.ts
+
       - run: npx tsc --noEmit
         name: TypeScript check
 
