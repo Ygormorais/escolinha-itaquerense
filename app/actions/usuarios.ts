@@ -5,9 +5,10 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { requireAuth, ROLES } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
+import { BCRYPT_COST, isBcryptHash, needsBcryptRehash } from "@/lib/password-hash"
 
 function hashSenha(senha: string): string {
-  return bcrypt.hashSync(senha, 12)
+  return bcrypt.hashSync(senha, BCRYPT_COST)
 }
 
 export async function getUsuarios() {
@@ -69,9 +70,15 @@ export async function deletarUsuario(id: number) {
 export async function checkDbCredentials(username: string, senha: string): Promise<{ ok: boolean; nome?: string; role?: string }> {
   const user = await db.usuario.findUnique({ where: { username } })
   if (!user || !user.ativo) return { ok: false }
+  if (!isBcryptHash(user.senha)) return { ok: false }
 
   const match = await bcrypt.compare(senha, user.senha)
-  if (match) return { ok: true, nome: user.nome, role: user.role }
+  if (match) {
+    if (needsBcryptRehash(user.senha)) {
+      await db.usuario.update({ where: { id: user.id }, data: { senha: hashSenha(senha) } })
+    }
+    return { ok: true, nome: user.nome, role: user.role }
+  }
 
   return { ok: false }
 }

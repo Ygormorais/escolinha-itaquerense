@@ -39,6 +39,19 @@ O container aplica as migrations no volume e executa o seed administrativo de
 forma idempotente. Um admin já existente mantém sua senha; uma rotação deliberada
 exige `ADMIN_SEED_FORCE_UPDATE=true` somente durante um reinício.
 
+### Importação de banco antigo
+
+O login aceita somente hashes bcrypt. Antes de importar um SQLite antigo, redefina
+pela instalação atual toda senha de usuário ainda armazenada no formato HMAC. O
+seed bloqueia a inicialização e informa os usernames pendentes, evitando descobrir
+contas inacessíveis depois da publicação.
+
+Se o único usuário legado for exatamente o `ADMIN_USERNAME`, defina
+`ADMIN_SEED_FORCE_UPDATE=true` por **um único reinício**: o seed substituirá a senha
+pela `ADMIN_PASSWORD` em bcrypt. Remova a variável (ou volte-a para `false`) assim
+que o serviço ficar saudável. Outros usuários devem ter a senha redefinida antes
+da importação; não existe conversão segura sem conhecer a senha original.
+
 ## GitHub
 
 Ative o autodeploy da `master` com **Wait for CI**, para publicar somente depois

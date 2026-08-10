@@ -20,6 +20,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 vi.mock("bcryptjs", () => ({
   default: { hashSync: vi.fn(() => "bcrypt-hash"), compare: vi.fn() },
+  getRounds: vi.fn((hash: string) => Number(hash.slice(4, 6))),
 }))
 
 import {
@@ -120,16 +121,33 @@ describe("checkDbCredentials", () => {
   })
 
   it("autentica com bcrypt e retorna nome/role", async () => {
-    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "bcrypt-hash", nome: "Admin", role: "admin" })
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "$2b$12$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nome: "Admin", role: "admin" })
     compare.mockResolvedValue(true)
     expect(await checkDbCredentials("admin", "senha")).toEqual({ ok: true, nome: "Admin", role: "admin" })
     expect(m.usuario.update).not.toHaveBeenCalled()
   })
 
   it("falha quando o bcrypt não corresponde", async () => {
-    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "algo-diferente", nome: "N", role: "admin" })
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "$2b$12$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nome: "N", role: "admin" })
     compare.mockResolvedValue(false)
     expect(await checkDbCredentials("x", "errada")).toEqual({ ok: false })
     expect(m.usuario.update).not.toHaveBeenCalled()
+  })
+
+  it("rejeita hash legado sem executar comparação fraca", async () => {
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "a".repeat(64), nome: "N", role: "admin" })
+
+    expect(await checkDbCredentials("legado", "senha")).toEqual({ ok: false })
+    expect(compare).not.toHaveBeenCalled()
+    expect(m.usuario.update).not.toHaveBeenCalled()
+  })
+
+  it("atualiza bcrypt de custo 10 após autenticação válida", async () => {
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "$2b$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nome: "Admin", role: "admin" })
+    compare.mockResolvedValue(true)
+
+    expect(await checkDbCredentials("admin", "senha")).toEqual({ ok: true, nome: "Admin", role: "admin" })
+    expect(hashSync).toHaveBeenCalledWith("senha", 12)
+    expect(m.usuario.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { senha: "bcrypt-hash" } })
   })
 })
