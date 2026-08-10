@@ -1,6 +1,6 @@
 # Deploy — VPS Ubuntu + Node/PM2/Caddy (sem Docker)
 
-O app roda direto com Node 20 + PM2, atrás do Caddy (HTTPS automático).
+O app roda direto com Node 22 + PM2, atrás do Caddy (HTTPS automático).
 O SQLite fica em `/var/lib/escolinha/prod.db` — **instância única, sempre**. O
 setup mantém banco, uploads e snapshots locais em `/var/lib/escolinha`, fora do
 checkout Git e de `public/`.
@@ -87,14 +87,16 @@ ssh root@IP_DA_VM "bash escolinha-itaquerense/deploy/deploy.sh"   # Oracle: ubun
 ```
 
 O `deploy.sh` faz: `git checkout master` + `git pull` → snapshot validado em
-`$BACKUP_DIR/pre-deploy-*.db` → para app e daemon → `npm ci` → `build` →
+`$BACKUP_DIR/pre-deploy-*.db` → para o app → `npm ci` → `build` →
 `prisma migrate deploy` → recarrega o ecosystem PM2 → tag `deploy-*` (fazer
 merge develop → master antes). A manutenção inclui install/build/migração; se
-qualquer etapa falhar, os processos permanecem parados para não servir
+qualquer etapa falhar, o serviço permanece parado para não servir
 artefatos misturados nem código incompatível com o schema.
 
-Ao atualizar uma VPS criada antes do wrapper seguro do cron FPFS, o deploy
-remove a entrada antiga que continha o Bearer e instala a chamada ao wrapper.
+Ao atualizar uma VPS antiga, o deploy remove do PM2 o daemon
+`escolinha-fpfs`, remove a entrada de crontab que continha o Bearer e instala a
+chamada ao wrapper seguro. Assim, existe um único agendamento automático: o
+cron HTTP autenticado.
 Depois desse primeiro deploy, rotacione `CRON_SECRET` no `.env`, reinicie o
 ecosystem PM2 e rode `bash deploy/install-fpfs-cron.sh` mais uma vez. O wrapper
 passa a ler o secret do `.env` em tempo de execução, sem gravá-lo no crontab.
@@ -111,13 +113,17 @@ Sem argumento, volta para a tag `deploy-*` anterior à atual e rebuilda
 (~2–3 min). Para um destino específico: `bash deploy/rollback.sh <tag|commit>`.
 Liste as tags com `git tag -l 'deploy-*'`.
 
+Mesmo ao voltar para uma tag cujo ecosystem ainda declare o daemon FPFS antigo,
+o script remove `escolinha-fpfs` antes de salvar o estado do PM2. A sincronização
+automática continua exclusivamente pelo cron.
+
 **Banco:** as migrations não são revertidas. Se a versão antiga não abrir por
 causa do schema novo, restaure o backup feito automaticamente no deploy:
 
 ```bash
-pm2 stop escolinha escolinha-fpfs
-install -m 600 /var/lib/escolinha/backups/pre-deploy-<timestamp>.db /var/lib/escolinha/prod.db
-pm2 startOrReload deploy/ecosystem.config.cjs
+pm2 stop escolinha
+npm run db:restore -- --confirm-stopped /var/lib/escolinha/backups/pre-deploy-<timestamp>.db
+pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
 pm2 save
 ```
 
@@ -178,9 +184,9 @@ restore_candidate="$(mktemp /var/lib/escolinha/restore-candidate.XXXXXX.db)"
 trap 'rm -f "$restore_candidate"' EXIT
 age --decrypt -i "$HOME/.config/escolinha/age-key.txt" prod-AAAA-MM-DD.db.gz.age | gzip -d > "$restore_candidate"
 sqlite3 "$restore_candidate" 'PRAGMA quick_check;'
-pm2 stop escolinha escolinha-fpfs
+pm2 stop escolinha
 npm run db:restore -- --confirm-stopped "$restore_candidate"
-pm2 startOrReload deploy/ecosystem.config.cjs
+pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
 pm2 save
 rm -f "$restore_candidate"
 trap - EXIT

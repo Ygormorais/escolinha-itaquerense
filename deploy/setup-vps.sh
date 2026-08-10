@@ -11,10 +11,15 @@ echo "==> Pacotes base"
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends git curl build-essential python3 ca-certificates sqlite3
 
-echo "==> Node 20 (NodeSource)"
-if ! command -v node >/dev/null || [[ "$(node -v)" != v20* ]]; then
-  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+echo "==> Node 22 (NodeSource)"
+if ! command -v node >/dev/null || [[ "$(node -v)" != v22.* ]]; then
+  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
   sudo apt-get install -y nodejs
+fi
+if ! command -v node >/dev/null || [[ "$(node -v)" != v22.* ]]; then
+  INSTALLED_NODE=$(node -v 2>/dev/null || echo "não encontrado")
+  echo "Erro: Node 22 era esperado, mas ${INSTALLED_NODE} está instalado." >&2
+  exit 1
 fi
 
 echo "==> PM2"
@@ -59,6 +64,12 @@ chmod 600 .env
 
 echo "==> Volumes persistentes"
 sudo install -d -m 750 -o "$USER" -g "$USER" /var/lib/escolinha/uploads /var/lib/escolinha/backups
+
+echo "==> Remover daemon FPFS legado do PM2"
+if pm2 describe escolinha-fpfs >/dev/null 2>&1; then
+  pm2 delete escolinha-fpfs
+  pm2 save
+fi
 
 bash "$APP_DIR/deploy/deploy.sh"
 

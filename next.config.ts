@@ -61,6 +61,14 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // A regra vem depois da política global para liberar a câmera somente
+        // no scanner, mantendo microfone e geolocalização bloqueados.
+        source: "/frequencia/scanner",
+        headers: [
+          { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
+        ],
+      },
+      {
         source: "/logo.png",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },

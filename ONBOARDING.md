@@ -10,7 +10,10 @@ O sistema é uma aplicação web de gestão completa para a escolinha de futebol
 
 Há dois perfis de acesso: o **painel admin** (gestores, secretaria, técnicos) e o **portal do responsável** (pais consultam mensalidades, frequência, boletim, jogos e recebem notificações push). O sistema também expõe uma página pública de **pré-matrícula** e um endpoint de **webhook** para receber mensagens do WhatsApp.
 
-A stack é Next.js 15 (App Router) + Tailwind CSS v4 + Prisma 7. O banco em desenvolvimento é SQLite (`prisma/dev.db`); em produção, o mesmo arquivo SQLite pode ser mantido num volume Docker, ou pode-se migrar para PostgreSQL (veja `DEPLOY.md`).
+A stack é Next.js 16.3 (App Router) + Tailwind CSS v4 + Prisma 7. O banco é
+SQLite tanto no desenvolvimento (`prisma/dev.db`) quanto na VPS de produção,
+onde fica fora do checkout em `/var/lib/escolinha/prod.db`. O deploy oficial é
+de instância única com Node/PM2/Caddy; veja `DEPLOY.md`.
 
 ---
 
@@ -18,7 +21,7 @@ A stack é Next.js 15 (App Router) + Tailwind CSS v4 + Prisma 7. O banco em dese
 
 ### Pré-requisitos
 
-- **Node.js 20+** (verifique com `node -v`)
+- **Node.js 22.x** (verifique com `node -v`; é a mesma versão da CI e da VPS)
 - **npm 9+** (vem junto com o Node)
 - SQLite não precisa de instalação separada — o driver `better-sqlite3` é instalado pelo npm
 
@@ -68,7 +71,8 @@ npx playwright test  # terminal 2
 
 ## 3. Variáveis de Ambiente
 
-Copie `.env.example` para `.env.local` (desenvolvimento) ou `.env` (produção com Docker).
+Copie `.env.example` para `.env.local` no desenvolvimento. Na VPS, use
+`.env.production.example` como base para o `.env` de produção com modo `600`.
 
 | Variável | Obrigatória | Descrição | Exemplo |
 |---|---|---|---|
@@ -98,29 +102,19 @@ Copie `.env.example` para `.env.local` (desenvolvimento) ou `.env` (produção c
 
 ---
 
-## 4. Deploy com Docker
+## 4. Deploy oficial na VPS
 
-Para instruções completas de deploy (Docker, VPS manual, Vercel/PostgreSQL e checklist de segurança), veja **`DEPLOY.md`**.
+Para as instruções do deploy oficial em VPS com Node/PM2/Caddy e o checklist de segurança, veja **`DEPLOY.md`**.
 
-Resumo rápido:
+Resumo da primeira instalação:
 
 ```bash
-# 1. Configure as variáveis de produção
-cp .env.example .env
-# Edite .env: SESSION_SECRET forte, ADMIN_PASSWORD segura, MERCADOPAGO real, etc.
-
-# 2. Build da imagem
-docker build -t escolinha-itaquerense .
-
-# 3. Suba o container com volume persistente para o banco
-docker run -d -p 3000:3000 \
-  -v escolinha-data:/app/prisma \
-  --env-file .env \
-  --name escolinha \
-  escolinha-itaquerense
-
-# As migrations são aplicadas automaticamente no CMD do container
-# (npx prisma migrate deploy && npm run start)
+# Na VPS Ubuntu, após clonar o repositório:
+bash deploy/setup-vps.sh   # cria o .env e para para configuração
+bash deploy/gen-secrets.sh # gere e copie os segredos para o .env
+nano .env                  # configure domínio, banco e integrações
+bash deploy/setup-vps.sh   # instala/builda/migra e inicia PM2 + Caddy
+npm run db:seed-prod       # somente na primeira instalação
 ```
 
 ### Checklist pós-deploy obrigatório
@@ -130,7 +124,8 @@ docker run -d -p 3000:3000 \
 - [ ] `CRON_SECRET` definido
 - [ ] `EVOLUTION_API_KEY` definida (se usar WhatsApp)
 - [ ] `MERCADOPAGO_ACCESS_TOKEN` trocado para token de produção (`APP_USR-...`)
-- [ ] Volume Docker montado em `/app/prisma` (garante persistência do banco)
+- [ ] `DATABASE_URL=file:/var/lib/escolinha/prod.db`
+- [ ] `UPLOADS_DIR` e `BACKUP_DIR` apontando para `/var/lib/escolinha`
 - [ ] `NEXT_PUBLIC_APP_URL` apontando para o domínio real
 
 ---
@@ -218,24 +213,23 @@ await criarUsuario({
 # Cria backups/dev-YYYY-MM-DDTHH-MM-SS.db (mantém os 30 mais recentes)
 npm run db:backup
 
-# Em produção com Docker
-docker exec escolinha npm run db:backup
+# Na VPS de produção
+npm run db:backup
 ```
 
-Para automatizar, configure um cron no servidor:
+O `setup-vps.sh` instala o cron de snapshot local. Confirme a entrada e o log:
 
 ```bash
-0 3 * * * docker exec escolinha npm run db:backup
+crontab -l
+tail -n 50 logs/backup.log
 ```
 
 ### Ver os logs
 
 ```bash
-# Docker
-docker logs escolinha --tail 100 -f
-
-# PM2 (VPS manual)
+# Aplicação na VPS
 pm2 logs escolinha
+sudo journalctl -u caddy -n 100 -f
 ```
 
 ### Restaurar um backup
@@ -244,13 +238,14 @@ pm2 logs escolinha
 # Lista os backups disponíveis
 ls backups/
 
-# Restaura um backup específico
-npm run db:restore -- backups/dev-2026-06-01T03-00-00.db
+# Desenvolvimento, com o servidor parado
+npm run db:restore -- --confirm-stopped backups/dev-2026-06-01T03-00-00.db
 
-# Em produção com Docker (pare o container primeiro para evitar corrupção)
-docker stop escolinha
-docker cp backups/dev-2026-06-01T03-00-00.db escolinha:/app/prisma/dev.db
-docker start escolinha
+# VPS, sempre dentro de uma janela de manutenção
+pm2 stop escolinha
+npm run db:restore -- --confirm-stopped /var/lib/escolinha/backups/prod-AAAA-MM-DD.db
+pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
+pm2 save
 ```
 
 ### Resetar senha de um responsável
@@ -268,12 +263,8 @@ npm run db:studio
 ### Aplicar novas migrations após atualizar o código
 
 ```bash
-git pull
-npm install
-npx prisma generate
-npx prisma migrate deploy   # aplica apenas migrations pendentes, sem resetar dados
-npm run build
-# Reinicie o servidor (Docker restart ou pm2 restart escolinha)
+# Na VPS, o script cria snapshot, para o app, instala, builda, migra e reinicia.
+bash deploy/deploy.sh
 ```
 
 ### Limpar dados antigos

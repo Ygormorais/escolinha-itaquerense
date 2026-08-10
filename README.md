@@ -14,7 +14,7 @@ Sistema de gestão para escolinha de futebol E.C. Itaquerense — cadastro de al
 
 ## Pré-requisitos
 
-- Node.js 20+
+- Node.js 22.x
 - npm 9+
 
 ## Setup
@@ -40,7 +40,7 @@ Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definid
 | `npm test` | Testes unitários (vitest) |
 | `npm run test:e2e` | Testes E2E (Playwright) |
 | `npm run db:backup` | Backup do banco |
-| `npm run db:restore -- --confirm-stopped <backup>` | Valida e restaura backup com os processos parados |
+| `npm run db:restore -- --confirm-stopped <backup>` | Valida e restaura backup com o serviço PM2 parado |
 | `npm run db:migrate` | Aplica migrations |
 | `npm run db:studio` | Prisma Studio |
 | `npm run housekeeping` | Limpeza de dados antigos |
@@ -92,8 +92,6 @@ públicas e do responsável leem do banco (nunca da FPFS ao vivo). Disparo:
   ```bash
   curl -s "https://SEU_DOMINIO/api/cron/fpfs" -H "Authorization: Bearer $CRON_SECRET"
   ```
-
-  **Vercel:** `vercel.json` já agenda `15 */2 * * *` (exige `CRON_SECRET` no projeto).
 
   Um único campeonato: `?campeonatoId=N` na URL.
 

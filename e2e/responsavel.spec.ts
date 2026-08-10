@@ -243,7 +243,9 @@ test.describe("Portal autenticado — classificacao", () => {
 
   test("exibe resumo de tabelas no hero", async ({ page }) => {
     await page.goto("/responsavel/classificacao")
-    await expect(page.getByText("Tabelas", { exact: true })).toBeVisible()
+    await expect(
+      page.getByText("Tabelas", { exact: true }).filter({ visible: true }),
+    ).toBeVisible()
   })
 })
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Rollback: volta o código para uma tag/commit, rebuilda e recarrega o PM2.
-# Os dois processos permanecem parados se checkout/install/build falharem.
+# O serviço permanece parado se checkout/install/build falharem.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -39,7 +39,7 @@ MAINTENANCE_STARTED=false
 report_failure() {
   status=$?
   if [[ "$status" -ne 0 && "$MAINTENANCE_STARTED" == true ]]; then
-    echo "ERRO: rollback falhou; os processos permanecem parados para evitar artefatos misturados." >&2
+    echo "ERRO: rollback falhou; o serviço permanece parado para evitar artefatos misturados." >&2
     echo "Corrija a falha e repita: bash deploy/rollback.sh $REF" >&2
   fi
   exit "$status"
@@ -47,17 +47,21 @@ report_failure() {
 trap report_failure EXIT
 
 MAINTENANCE_STARTED=true
-for service in escolinha escolinha-fpfs; do
-  if pm2 describe "$service" >/dev/null 2>&1; then
-    pm2 stop "$service"
-  fi
-done
+if pm2 describe escolinha >/dev/null 2>&1; then
+  pm2 stop escolinha
+fi
+if pm2 describe escolinha-fpfs >/dev/null 2>&1; then
+  pm2 delete escolinha-fpfs
+fi
 
 echo "Voltando o código para: $REF"
 git checkout --detach "$REF"
 npm ci
 npm run build
-pm2 startOrReload deploy/ecosystem.config.cjs
+pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
+if pm2 describe escolinha-fpfs >/dev/null 2>&1; then
+  pm2 delete escolinha-fpfs
+fi
 MAINTENANCE_STARTED=false
 pm2 save
 trap - EXIT

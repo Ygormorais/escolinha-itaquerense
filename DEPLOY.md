@@ -1,6 +1,6 @@
 # Deploy — Escolinha Itaquerense
 
-O deploy oficial é **Node 20 + PM2 atrás do Caddy**, numa VPS Ubuntu (referência:
+O deploy oficial é **Node 22 + PM2 atrás do Caddy**, numa VPS Ubuntu (referência:
 Hetzner CX22). SQLite em arquivo no disco — **instância única, sempre**.
 
 ➡️ **Guia passo a passo (criar a VPS, setup, deploy, domínio, backup):
@@ -17,7 +17,7 @@ Hetzner CX22). SQLite em arquivo no disco — **instância única, sempre**.
 ## Sequência de deploy (resumo)
 
 Os passos detalhados estão em `deploy/README.md`. O script oficial cria o
-snapshot pré-migração, para os dois processos, instala dependências, compila,
+snapshot pré-migração, para o serviço da aplicação, instala dependências, compila,
 migra e recarrega o ecosystem PM2:
 
 ```bash

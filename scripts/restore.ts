@@ -10,7 +10,7 @@ loadEnv()
 const DB_PATH = resolveDbPath()
 const DB_PREFIX = path.basename(DB_PATH, ".db")
 const BACKUP_DIR = process.env.BACKUP_DIR ?? path.join(process.cwd(), "backups")
-const REQUIRED_PM2_SERVICES = new Set(["escolinha", "escolinha-fpfs"])
+const REQUIRED_PM2_SERVICES = new Set(["escolinha"])
 
 function validarSqlite(file: string) {
   const db = new Database(file, { readonly: true, fileMustExist: true })
@@ -41,7 +41,7 @@ function exigirServicosParados() {
     .map((app) => `${app.name} (${app.pm2_env?.status ?? "status desconhecido"})`)
 
   if (ativos.length > 0) {
-    throw new Error(`Pare os processos antes da restauração: ${ativos.join(", ")}`)
+    throw new Error(`Pare o serviço antes da restauração: ${ativos.join(", ")}`)
   }
 }
 
@@ -84,7 +84,7 @@ async function main() {
 
   if (!confirmouParada || posicionais.length !== 1) {
     console.error("Uso: npm run db:restore -- --confirm-stopped <arquivo-backup>")
-    console.error("Antes, pare os dois processos: pm2 stop escolinha escolinha-fpfs")
+    console.error("Antes, pare o serviço: pm2 stop escolinha")
     console.error("")
     listarBackups()
     process.exit(1)
@@ -133,7 +133,7 @@ async function main() {
 
   const sizeKB = (fs.statSync(DB_PATH).size / 1024).toFixed(1)
   console.log(`✅ Banco restaurado de: ${backupFile} (${sizeKB} KB)`)
-  console.log("Inicie novamente com: pm2 startOrReload deploy/ecosystem.config.cjs && pm2 save")
+  console.log("Inicie novamente com: pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha && pm2 save")
 }
 
 main().catch((error) => {

@@ -56,17 +56,25 @@ report_failure() {
 trap report_failure EXIT
 
 MAINTENANCE_STARTED=true
-for service in escolinha escolinha-fpfs; do
-  if pm2 describe "$service" >/dev/null 2>&1; then
-    pm2 stop "$service"
-  fi
-done
+if pm2 describe escolinha >/dev/null 2>&1; then
+  pm2 stop escolinha
+fi
+
+# Migração idempotente de VPS antigas: o sync automático agora é feito
+# exclusivamente pelo cron HTTP autenticado, fora do ecosystem do PM2.
+if pm2 describe escolinha-fpfs >/dev/null 2>&1; then
+  pm2 delete escolinha-fpfs
+  pm2 save
+fi
 
 npm ci
 npm run build
 npx prisma migrate deploy
 [[ ! -f "$DB_FILE" ]] || chmod 600 "$DB_FILE"
-pm2 startOrReload deploy/ecosystem.config.cjs
+pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
+if pm2 describe escolinha-fpfs >/dev/null 2>&1; then
+  pm2 delete escolinha-fpfs
+fi
 MAINTENANCE_STARTED=false
 pm2 save
 trap - EXIT

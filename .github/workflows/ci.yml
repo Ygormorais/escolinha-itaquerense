@@ -32,6 +32,11 @@ jobs:
         env:
           PRISMA_CONFIG_PATH: prisma.config.ts
 
+      - name: Deploy scripts check
+        run: |
+          for script in deploy/*.sh; do bash -n "$script"; done
+          node -e "const { apps } = require('./deploy/ecosystem.config.cjs'); if (apps.length !== 1 || apps[0].name !== 'escolinha') process.exit(1)"
+
       - run: npx tsc --noEmit
         name: TypeScript check
 
