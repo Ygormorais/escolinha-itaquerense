@@ -21,7 +21,11 @@ RUN npx prisma generate && npm run build
 FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-ENV DATABASE_URL=file:/app/prisma/dev.db
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL=file:/app/data/prod.db
+ENV UPLOADS_DIR=/app/data/uploads
+ENV BACKUP_DIR=/app/data/backups
+ENV CLUB_CONFIG_PATH=/app/data/config/club.config.json
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openssl && \
@@ -32,17 +36,22 @@ RUN groupadd --system --gid 1001 nodejs && \
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/lib/db-path.ts ./lib/db-path.ts
+COPY --from=builder /app/scripts/load-env.ts ./scripts/load-env.ts
+COPY --from=builder /app/deploy/railway-start.sh ./deploy/railway-start.sh
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
 # Garante permissões para o banco (prisma) e engines nativas
-RUN mkdir -p /app/prisma && \
-    chown -R nextjs:nodejs /app/prisma && \
+RUN mkdir -p /app/prisma /app/data/uploads /app/data/backups /app/data/config && \
+    chown -R nextjs:nodejs /app/prisma /app/data && \
     chown -R nextjs:nodejs /app/node_modules/@prisma
 
 USER nextjs
 EXPOSE 3000
 
-# Aplica migrations pendentes e inicia o servidor
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+# O entrypoint aplica migrations no volume, cria o admin apenas quando necessário
+# e então inicia o Next. No Railway, o volume /data é montado em runtime.
+CMD ["sh", "deploy/railway-start.sh"]

@@ -1,16 +1,16 @@
 # Deploy — Escolinha Itaquerense
 
-O deploy oficial é **Node 22 + PM2 atrás do Caddy**, numa VPS Ubuntu (referência:
-Hetzner CX22). SQLite em arquivo no disco — **instância única, sempre**.
+O deploy definitivo é **Node 22 + PM2 atrás do Caddy**, numa VPS Ubuntu
+(referência: Oracle Always Free ou Hetzner). SQLite em arquivo no disco —
+**instância única, sempre**.
 
 ➡️ **Guia passo a passo (criar a VPS, setup, deploy, domínio, backup):
 [`deploy/README.md`](deploy/README.md).**
 
-> **Docker / Railway / Vercel não são usados.** SQLite + better-sqlite3 exige um
-> disco persistente e processo único, o que não combina com o filesystem efêmero
-> do Vercel nem com múltiplas réplicas. Docker foi descartado para manter a
-> operação simples (um processo Node sob PM2). Se algum dia for preciso escalar
-> horizontalmente, trocar SQLite por Postgres é o pré-requisito.
+> Para um piloto gratuito, o Railway é suportado com container único e volume
+> persistente em `/data`; veja [`deploy/RAILWAY.md`](deploy/RAILWAY.md). Vercel e
+> Render Free continuam incompatíveis porque apagam o SQLite/arquivos locais.
+> Para escalar horizontalmente, trocar SQLite por Postgres é o pré-requisito.
 
 ---
 

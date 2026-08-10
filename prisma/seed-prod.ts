@@ -1,6 +1,7 @@
 /**
  * Seed de produção — cria somente o usuário admin inicial.
- * Seguro para rodar em produção: não apaga nada, usa upsert.
+ * Seguro para rodar em produção: não apaga dados e não redefine a senha de um
+ * admin existente, salvo quando ADMIN_SEED_FORCE_UPDATE=true for explícito.
  *
  * Uso:
  *   npm run db:seed-prod
@@ -29,8 +30,16 @@ async function main() {
     throw new Error("ADMIN_PASSWORD deve ter ao menos 12 caracteres e não pode usar a senha padrão")
   }
 
-  const senhaHash = hashSync(senhaRaw, 12)
   const existente = await db.usuario.findUnique({ where: { username } })
+  const forceUpdate = process.env.ADMIN_SEED_FORCE_UPDATE === "true"
+
+  if (existente && !forceUpdate) {
+    console.log("✓ Usuário admin já existe; credenciais preservadas.")
+    console.log(`  Username: ${username}`)
+    return
+  }
+
+  const senhaHash = hashSync(senhaRaw, 12)
 
   await db.usuario.upsert({
     where: { username },
@@ -49,7 +58,7 @@ async function main() {
     },
   })
 
-  console.log(existente ? "✓ Usuário admin atualizado." : "✓ Usuário admin criado.")
+  console.log(existente ? "✓ Usuário admin atualizado explicitamente." : "✓ Usuário admin criado.")
   console.log(`  Username: ${username}`)
 
   const totalAdmins = await db.usuario.count({ where: { role: "admin", ativo: true } })

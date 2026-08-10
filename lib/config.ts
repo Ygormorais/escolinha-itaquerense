@@ -19,7 +19,12 @@ export type ClubConfig = {
   templateFalta: string
 }
 
-const CONFIG_PATH = path.join(process.cwd(), "club.config.json")
+export function resolveClubConfigPath(): string {
+  const configuredPath = process.env.CLUB_CONFIG_PATH?.trim()
+  return configuredPath
+    ? path.resolve(configuredPath)
+    : path.join(process.cwd(), "club.config.json")
+}
 
 export const DEFAULT: ClubConfig = {
   nome: "E.C. Itaquerense",
@@ -48,7 +53,7 @@ export function resetConfigCache() {
 export function getConfig(): ClubConfig {
   if (cachedConfig) return cachedConfig
   try {
-    const raw = fs.readFileSync(CONFIG_PATH, "utf-8")
+    const raw = fs.readFileSync(resolveClubConfigPath(), "utf-8")
     cachedConfig = { ...DEFAULT, ...JSON.parse(raw) }
     return cachedConfig as ClubConfig
   } catch {
@@ -57,6 +62,8 @@ export function getConfig(): ClubConfig {
 }
 
 export function saveConfig(config: ClubConfig) {
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf-8")
+  const configPath = resolveClubConfigPath()
+  fs.mkdirSync(path.dirname(configPath), { recursive: true })
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8")
   cachedConfig = config
 }

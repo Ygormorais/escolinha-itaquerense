@@ -63,7 +63,10 @@ fi
 chmod 600 .env
 
 echo "==> Volumes persistentes"
-sudo install -d -m 750 -o "$USER" -g "$USER" /var/lib/escolinha/uploads /var/lib/escolinha/backups
+sudo install -d -m 750 -o "$USER" -g "$USER" \
+  /var/lib/escolinha/uploads \
+  /var/lib/escolinha/backups \
+  /var/lib/escolinha/config
 
 echo "==> Remover daemon FPFS legado do PM2"
 if pm2 describe escolinha-fpfs >/dev/null 2>&1; then

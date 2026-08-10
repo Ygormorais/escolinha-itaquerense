@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from "vitest"
 import fs from "fs"
+import os from "os"
 import path from "path"
-import { DEFAULT, getConfig, saveConfig, resetConfigCache } from "../config"
+import {
+  DEFAULT,
+  getConfig,
+  saveConfig,
+  resetConfigCache,
+  resolveClubConfigPath,
+} from "../config"
 
 const TEST_CONFIG_PATH = path.join(process.cwd(), "club.config.json")
 let originalConfig: string | null = null
@@ -62,5 +69,25 @@ describe("lib/config", () => {
     expect(config.nome).toBe("Custom")
     expect(config.whatsapp).toBe(DEFAULT.whatsapp)
     expect(config.capacidadeTurma).toBe(DEFAULT.capacidadeTurma)
+  })
+
+  it("persists config in the path selected for the hosting volume", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "escolinha-config-"))
+    const configuredPath = path.join(tempDir, "settings", "club.config.json")
+    const previousPath = process.env.CLUB_CONFIG_PATH
+
+    try {
+      process.env.CLUB_CONFIG_PATH = configuredPath
+      resetConfigCache()
+      saveConfig({ ...DEFAULT, nome: "Config persistente" })
+
+      expect(resolveClubConfigPath()).toBe(configuredPath)
+      expect(JSON.parse(fs.readFileSync(configuredPath, "utf-8")).nome).toBe("Config persistente")
+    } finally {
+      if (previousPath === undefined) delete process.env.CLUB_CONFIG_PATH
+      else process.env.CLUB_CONFIG_PATH = previousPath
+      resetConfigCache()
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
   })
 })
