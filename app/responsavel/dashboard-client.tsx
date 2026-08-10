@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import type { JogoPortal } from "@/lib/responsavel-jogos"
 import { nomeTime } from "@/lib/landing/times"
 import { AdvCrest } from "@/components/responsavel/adv-crest"
+import { buildWhatsAppHref } from "@/lib/browser-safety"
 
 type Aluno = {
   id: number
@@ -58,7 +59,7 @@ export function ResponsavelDashboardClient({
   jogos?: { proximos: JogoPortal[]; recentes: JogoPortal[] }
   whatsapp?: string
 }) {
-  const whatsappNumber = whatsapp || "5511999999999"
+  const whatsappHref = buildWhatsAppHref(whatsapp)
 
   function statusPagamento(aluno: Aluno): { label: string; variant: "default" | "secondary" | "outline" | "destructive" } {
     const mesAtual = format(new Date(), "yyyy-MM")
@@ -425,7 +426,7 @@ export function ResponsavelDashboardClient({
             Entre em contato com a escolinha pelo WhatsApp:
           </p>
           <a
-            href={`https://wa.me/${whatsappNumber}`}
+            href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-11 items-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white shadow-md transition-colors hover:bg-brand-700"

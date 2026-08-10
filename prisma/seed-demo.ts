@@ -102,7 +102,7 @@ async function main() {
     data: {
       username: "admin",
       nome: "Administrador",
-      senha: hashSync("demo123", 10),
+      senha: hashSync("demo123", 12),
       role: "admin",
       ativo: true,
     },

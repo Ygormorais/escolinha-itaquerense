@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Token inválido ou expirado" }, { status: 400 })
   }
 
-  const senhaHash = bcrypt.hashSync(senha, 10)
+  const senhaHash = bcrypt.hashSync(senha, 12)
 
   await db.$transaction([
     db.responsavel.update({

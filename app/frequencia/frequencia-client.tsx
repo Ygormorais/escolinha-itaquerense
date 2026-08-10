@@ -17,11 +17,22 @@ import { salvarFrequencia, getFrequenciaPorTurmaData } from "@/app/actions/frequ
 import { Label } from "@/components/ui/label"
 import { TURMAS } from "@/lib/constants"
 import { sanitizeCSVCell } from "@/lib/utils"
+import { appendPrintElement, buildInternalHref, openPrintDocument } from "@/lib/browser-safety"
 
 type AlunoFrequencia = { id: number; nome: string; presenca: string | null }
 type PresencaValue = "Presente" | "Ausente" | "Justificado"
 
 const OPCOES: PresencaValue[] = ["Presente", "Ausente", "Justificado"]
+
+const FREQUENCIA_PRINT_STYLES = `
+  body { font-family: sans-serif; padding: 24px; }
+  h2 { margin-bottom: 4px; }
+  p { margin: 0 0 16px; color: #666; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+  th { background: #f1f5f9; font-size: 12px; text-transform: uppercase; }
+  th:not(:first-child), td:not(:first-child) { width: 80px; }
+`
 
 export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
   const today = format(new Date(), "yyyy-MM-dd")
@@ -73,6 +84,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
   }
 
   const presentes = Object.values(presencas).filter((v) => v === "Presente").length
+  const scannerHref = buildInternalHref("/frequencia/scanner", { data })
 
   function marcarTodos(opcao: PresencaValue) {
     const todos: Record<number, PresencaValue> = {}
@@ -82,24 +94,30 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
 
   function handleImprimir() {
     const dataFormatada = new Date(data + "T12:00:00").toLocaleDateString("pt-BR")
-    const linhas = alunos.map((a) => `<tr><td>${a.nome}</td><td style="width:80px"></td><td style="width:80px"></td><td style="width:80px"></td></tr>`).join("")
-    const html = `<html><head><style>
-      body{font-family:sans-serif;padding:24px}
-      h2{margin-bottom:4px}p{margin:0 0 16px;color:#666}
-      table{width:100%;border-collapse:collapse}
-      th,td{border:1px solid #ccc;padding:8px 12px;text-align:left}
-      th{background:#f1f5f9;font-size:12px;text-transform:uppercase}
-    </style></head><body>
-      <h2>Lista de Presença — ${turma}</h2>
-      <p>Data: ${dataFormatada}</p>
-      <table><thead><tr><th>Aluno</th><th>Presente</th><th>Ausente</th><th>Justificado</th></tr></thead>
-      <tbody>${linhas}</tbody></table>
-    </body></html>`
-    const win = window.open("", "_blank")
-    if (!win) return
-    win.document.write(html)
-    win.document.close()
-    win.print()
+
+    openPrintDocument({
+      title: `Lista de Presença — ${turma}`,
+      styles: FREQUENCIA_PRINT_STYLES,
+      render(document, body) {
+        appendPrintElement(document, body, "h2", { text: `Lista de Presença — ${turma}` })
+        appendPrintElement(document, body, "p", { text: `Data: ${dataFormatada}` })
+
+        const table = appendPrintElement(document, body, "table")
+        const header = appendPrintElement(document, appendPrintElement(document, table, "thead"), "tr")
+        for (const label of ["Aluno", "Presente", "Ausente", "Justificado"]) {
+          appendPrintElement(document, header, "th", { text: label })
+        }
+
+        const tableBody = appendPrintElement(document, table, "tbody")
+        for (const aluno of alunos) {
+          const row = appendPrintElement(document, tableBody, "tr")
+          appendPrintElement(document, row, "td", { text: aluno.nome })
+          appendPrintElement(document, row, "td")
+          appendPrintElement(document, row, "td")
+          appendPrintElement(document, row, "td")
+        }
+      },
+    })
   }
 
   function exportarCSV() {
@@ -149,7 +167,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
         <Button onClick={handleLoad} disabled={loading} variant="outline" className="h-12" title="Recarregar">
           {loading ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
         </Button>
-        <Link href={`/frequencia/scanner?data=${data}`}>
+        <Link href={scannerHref}>
           <Button variant="outline" className="h-12 gap-2"><QrCode className="size-4" /> Scanner QR</Button>
         </Link>
       </div>

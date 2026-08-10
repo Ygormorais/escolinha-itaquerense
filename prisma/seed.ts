@@ -75,7 +75,7 @@ async function main() {
 
   // ── Responsáveis ─────────────────────────────────────────────────────────
   // Senha padrão para testes: "escolinha123"
-  const senhaHash = hashSync("escolinha123", 10)
+  const senhaHash = hashSync("escolinha123", 12)
 
   for (const aluno of alunos) {
     const resp = await db.responsavel.create({
