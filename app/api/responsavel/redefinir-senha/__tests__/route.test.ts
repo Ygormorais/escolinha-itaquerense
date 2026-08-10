@@ -25,6 +25,7 @@ vi.mock("@/lib/rate-limit-response", () => ({
 import { POST } from "../route"
 import { db } from "@/lib/db"
 import { checkRateLimit } from "@/lib/rate-limit"
+import bcrypt from "bcryptjs"
 
 const mockDb = db as unknown as {
   resetToken: { findUnique: ReturnType<typeof vi.fn> }
@@ -61,6 +62,7 @@ describe("POST /api/responsavel/redefinir-senha", () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.message).toMatch(/sucesso/i)
+    expect(bcrypt.hashSync).toHaveBeenCalledWith("novaSenha123", 12)
     expect(mockDb.$transaction).toHaveBeenCalledOnce()
   })
 

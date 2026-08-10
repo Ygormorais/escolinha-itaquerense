@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/utils"
 import { PortalHero } from "@/components/responsavel/portal-hero"
 import { EmptyState } from "@/components/ui/empty-state"
 import { getConfig } from "@/lib/config"
+import { buildWhatsAppHref } from "@/lib/browser-safety"
 
 function ProdutoIcon({ categoria }: { categoria: string }) {
   if (categoria === "uniforme") return <Shirt className="size-7" />
@@ -39,7 +40,10 @@ export default async function LojinhaPage() {
     }),
     Promise.resolve(getConfig()),
   ])
-  const whatsapp = config.whatsapp || "5511999999999"
+  const whatsappHref = buildWhatsAppHref(
+    config.whatsapp,
+    "Olá! Tenho interesse nos produtos da lojinha.",
+  )
 
   return (
     <div className="flex flex-col gap-8">
@@ -116,7 +120,7 @@ export default async function LojinhaPage() {
             Consulte disponibilidade de tamanhos, formas de pagamento e retirada.
           </p>
           <a
-            href={`https://wa.me/${whatsapp}?text=Olá! Tenho interesse nos produtos da lojinha.`}
+            href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-brand-700 shadow-sm transition-colors hover:bg-white/90"

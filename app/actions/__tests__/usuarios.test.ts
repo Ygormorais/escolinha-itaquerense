@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { createHmac } from "crypto"
 
 vi.mock("@/lib/db", () => {
   const db = {
@@ -19,10 +18,9 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
-vi.mock("@/lib/env", () => ({ getSessionSecret: () => "test-secret" }))
-
 vi.mock("bcryptjs", () => ({
   default: { hashSync: vi.fn(() => "bcrypt-hash"), compare: vi.fn() },
+  getRounds: vi.fn((hash: string) => Number(hash.slice(4, 6))),
 }))
 
 import {
@@ -47,6 +45,7 @@ const m = db as unknown as {
   }
 }
 const compare = bcrypt.compare as unknown as ReturnType<typeof vi.fn>
+const hashSync = bcrypt.hashSync as unknown as ReturnType<typeof vi.fn>
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -106,6 +105,7 @@ describe("criarUsuario", () => {
       role: "secretaria",
       senha: "bcrypt-hash",
     })
+    expect(hashSync).toHaveBeenCalledWith(input.senha, 12)
   })
 })
 
@@ -121,28 +121,33 @@ describe("checkDbCredentials", () => {
   })
 
   it("autentica com bcrypt e retorna nome/role", async () => {
-    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "bcrypt-hash", nome: "Admin", role: "admin" })
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "$2b$12$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nome: "Admin", role: "admin" })
     compare.mockResolvedValue(true)
     expect(await checkDbCredentials("admin", "senha")).toEqual({ ok: true, nome: "Admin", role: "admin" })
     expect(m.usuario.update).not.toHaveBeenCalled()
   })
 
-  it("aceita hash legado (HMAC) e migra para bcrypt", async () => {
-    const senha = "senha-antiga"
-    const legacy = createHmac("sha256", "test-secret").update(senha).digest("hex")
-    m.usuario.findUnique.mockResolvedValue({ id: 7, ativo: true, senha: legacy, nome: "Velho", role: "secretaria" })
-    compare.mockResolvedValue(false) // não bate como bcrypt
-
-    const res = await checkDbCredentials("velho", senha)
-    expect(res).toEqual({ ok: true, nome: "Velho", role: "secretaria" })
-    // re-hash gravado
-    expect(m.usuario.update).toHaveBeenCalledWith({ where: { id: 7 }, data: { senha: "bcrypt-hash" } })
-  })
-
-  it("falha quando nem bcrypt nem legado batem", async () => {
-    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "algo-diferente", nome: "N", role: "admin" })
+  it("falha quando o bcrypt não corresponde", async () => {
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "$2b$12$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nome: "N", role: "admin" })
     compare.mockResolvedValue(false)
     expect(await checkDbCredentials("x", "errada")).toEqual({ ok: false })
     expect(m.usuario.update).not.toHaveBeenCalled()
+  })
+
+  it("rejeita hash legado sem executar comparação fraca", async () => {
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "a".repeat(64), nome: "N", role: "admin" })
+
+    expect(await checkDbCredentials("legado", "senha")).toEqual({ ok: false })
+    expect(compare).not.toHaveBeenCalled()
+    expect(m.usuario.update).not.toHaveBeenCalled()
+  })
+
+  it("atualiza bcrypt de custo 10 após autenticação válida", async () => {
+    m.usuario.findUnique.mockResolvedValue({ id: 1, ativo: true, senha: "$2b$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nome: "Admin", role: "admin" })
+    compare.mockResolvedValue(true)
+
+    expect(await checkDbCredentials("admin", "senha")).toEqual({ ok: true, nome: "Admin", role: "admin" })
+    expect(hashSync).toHaveBeenCalledWith("senha", 12)
+    expect(m.usuario.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { senha: "bcrypt-hash" } })
   })
 })

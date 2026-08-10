@@ -37,11 +37,11 @@ export default async function globalSetup() {
   // Garante que os testes E2E não dependem da senha do admin real no dev.db
   await db.usuario.upsert({
     where: { username: ADMIN_TESTE.username },
-    update: { senha: bcryptjs.hashSync(ADMIN_TESTE.senha, 10), ativo: true },
+    update: { senha: bcryptjs.hashSync(ADMIN_TESTE.senha, 12), ativo: true },
     create: {
       username: ADMIN_TESTE.username,
       nome: ADMIN_TESTE.nome,
-      senha: bcryptjs.hashSync(ADMIN_TESTE.senha, 10),
+      senha: bcryptjs.hashSync(ADMIN_TESTE.senha, 12),
       role: ADMIN_TESTE.role,
       ativo: true,
     },
@@ -85,7 +85,7 @@ export default async function globalSetup() {
     data: {
       nome: RESP_TESTE.nome,
       email: RESP_TESTE.email,
-      senha: bcryptjs.hashSync(RESP_TESTE.senha, 10),
+      senha: bcryptjs.hashSync(RESP_TESTE.senha, 12),
       telefone: "11999999999",
       ativo: true,
       alunos: { connect: { id: aluno.id } },

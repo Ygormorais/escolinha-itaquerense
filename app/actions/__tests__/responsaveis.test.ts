@@ -25,6 +25,7 @@ vi.mock("bcryptjs", () => ({ default: { hashSync: vi.fn(() => "hashed-senha") } 
 
 import { criarResponsavel, editarResponsavel } from "@/app/actions/responsaveis"
 import { db } from "@/lib/db"
+import bcrypt from "bcryptjs"
 
 const m = db as unknown as {
   responsavel: {
@@ -58,6 +59,7 @@ describe("criarResponsavel", () => {
     expect(res).toEqual({ success: true, id: 10 })
     const data = m.responsavel.create.mock.calls[0][0].data
     expect(data.senha).toBe("hashed-senha")
+    expect(bcrypt.hashSync).toHaveBeenCalledWith(input.senha, 12)
     expect(data.alunos).toEqual({ connect: [{ id: 1 }, { id: 2 }] })
   })
 
