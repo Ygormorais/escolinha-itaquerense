@@ -111,7 +111,22 @@ TZ=UTC
 Substitua o IP de exemplo pelo IP real. Não publique o `.env` nem envie esses
 segredos por mensagem.
 
-Edite `deploy/Caddyfile` e troque o bloco `:80` pelo hostname real:
+Finalize a instalação e crie o admin:
+
+```bash
+bash deploy/setup-vps.sh
+npm run db:seed-prod
+```
+
+Depois, configure o hostname somente no arquivo local do sistema. Não edite
+`deploy/Caddyfile`, pois ele pertence ao Git e um checkout sujo bloqueia o
+rollback seguro:
+
+```bash
+sudo nano /etc/caddy/Caddyfile
+```
+
+Substitua o conteúdo por:
 
 ```caddyfile
 203-0-113-10.sslip.io {
@@ -121,13 +136,17 @@ Edite `deploy/Caddyfile` e troque o bloco `:80` pelo hostname real:
 }
 ```
 
-Finalize:
+Valide, recarregue e teste:
 
 ```bash
-bash deploy/setup-vps.sh
-npm run db:seed-prod
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
 curl -fsS https://203-0-113-10.sslip.io/api/health
 ```
+
+As atualizações normais usam `deploy/deploy.sh` e preservam esse arquivo local.
+Se você executar `setup-vps.sh` novamente, reaplique o bloco acima, pois o setup
+reinstala a configuração padrão do Caddy.
 
 O health check deve retornar `status: ok` e `db: ok`. Depois, abra a URL e faça
 login com `ADMIN_USERNAME` e `ADMIN_PASSWORD`.
