@@ -7,8 +7,12 @@ O deploy definitivo é **Node 22 + PM2 atrás do Caddy**, numa VPS Ubuntu
 ➡️ **Guia passo a passo (criar a VPS, setup, deploy, domínio, backup):
 [`deploy/README.md`](deploy/README.md).**
 
-> Para um piloto gratuito, o Railway é suportado com container único e volume
-> persistente em `/data`; veja [`deploy/RAILWAY.md`](deploy/RAILWAY.md). Vercel e
+Para publicar provisoriamente sem mensalidade, use o guia atualizado do
+[Oracle OCI Always Free](deploy/ORACLE_FREE.md).
+
+> O Railway continua tecnicamente suportado com container único e volume em
+> `/data`, mas o plano atual depende de crédito ou assinatura e não é a opção de
+> custo recorrente zero; veja [`deploy/RAILWAY.md`](deploy/RAILWAY.md). Vercel e
 > Render Free continuam incompatíveis porque apagam o SQLite/arquivos locais.
 > Para escalar horizontalmente, trocar SQLite por Postgres é o pré-requisito.
 

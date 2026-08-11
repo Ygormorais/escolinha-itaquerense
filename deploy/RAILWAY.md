@@ -1,9 +1,11 @@
-# Piloto gratuito no Railway
+# Piloto no Railway
 
-O Railway Free é o caminho mais curto para publicar o aplicativo completo sem
-trocar o SQLite. Ele deve ser tratado como **piloto**: o plano não oferece SLA e
-o serviço pode parar ao consumir o crédito mensal. Para operação definitiva, a
-VPS descrita em `deploy/README.md` continua sendo a referência.
+O Railway é o caminho PaaS mais curto para publicar o aplicativo completo sem
+trocar o SQLite, mas sua oferta atual depende de crédito ou assinatura e não
+garante custo recorrente zero. Ele deve ser tratado como **piloto**: o plano não
+oferece SLA e o serviço pode parar ao consumir o crédito. Para um piloto sem
+mensalidade, use o [Oracle OCI Always Free](ORACLE_FREE.md); para operação
+definitiva, a VPS descrita em `deploy/README.md` continua sendo a referência.
 
 ## Recursos obrigatórios
 

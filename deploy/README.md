@@ -5,6 +5,9 @@ O SQLite fica em `/var/lib/escolinha/prod.db` — **instância única, sempre**.
 setup mantém banco, uploads e snapshots locais em `/var/lib/escolinha`, fora do
 checkout Git e de `public/`.
 
+Para um piloto sem mensalidade, siga o guia dedicado do
+[Oracle OCI Always Free](ORACLE_FREE.md).
+
 Alvo de referência: **Hetzner CX22** (~€4/mês, 2 vCPU / 4 GB / 40 GB). Os passos
 servem igual para um droplet do **DigitalOcean** ou qualquer VPS Ubuntu — só muda
 o painel. Para Oracle Cloud Always Free, veja a nota no fim desta seção.
@@ -30,10 +33,11 @@ o painel. Para Oracle Cloud Always Free, veja a nota no fim desta seção.
    ou superior, região mais próxima, SSH key adicionada.
 3. (Opcional) **Cloud Firewall**: liberar Inbound TCP 22, 80, 443.
 
-> **Oracle Cloud Always Free** (se voltar a ser opção): Compute → Create Instance,
-> Ubuntu 24.04, shape **VM.Standard.A1.Flex** (Always Free até 4 OCPU / 24 GB).
-> O usuário SSH é `ubuntu`. Liberar 80/443 na **Security List da VCN** além do
-> firewall do SO. "Out of capacity" → tentar outra Availability Domain/horário.
+> **Oracle Cloud Always Free:** Compute → Create Instance, Ubuntu 24.04, shape
+> **VM.Standard.A1.Flex**. A cota atual equivale a até **2 OCPU / 12 GB** no
+> total da tenancy gratuita. O usuário SSH é `ubuntu`. Liberar 80/443 na
+> **Security List da VCN** além do firewall do SO. "Out of capacity" → tentar
+> outra Availability Domain/horário. Veja o [passo a passo completo](ORACLE_FREE.md).
 
 ## 2. Setup da VPS (uma vez)
 
