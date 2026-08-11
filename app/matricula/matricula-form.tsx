@@ -19,6 +19,7 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
   const [telefone, setTelefone] = useState("")
   const [email, setEmail] = useState("")
   const [observacoes, setObservacoes] = useState("")
+  const [consentimento, setConsentimento] = useState(false)
   const [documentos, setDocumentos] = useState<{ url: string; name: string }[]>([])
   const [uploading, startUploading] = useTransition()
   const [pending, startTransition] = useTransition()
@@ -60,6 +61,7 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
     const anoAtual = new Date().getFullYear()
     if (anoAtual - a < 3 || anoAtual - a > 20) return "Data de nascimento fora do intervalo esperado (3–20 anos)."
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return "E-mail inválido."
+    if (!consentimento) return "Autorize o tratamento dos dados para enviar a pré-matrícula."
     return null
   }
 
@@ -80,6 +82,7 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
         email,
         documentos: documentos.map((d) => d.url),
         observacoes,
+        consentimento,
       })
       if ("error" in result) {
         toast.error(result.error)
@@ -332,6 +335,22 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
             rows={3}
           />
         </div>
+      </div>
+
+      <div className="mat-sec">
+        <label className="flex items-start gap-3 text-sm leading-6">
+          <input
+            type="checkbox"
+            checked={consentimento}
+            onChange={(event) => setConsentimento(event.target.checked)}
+            required
+            className="mt-1 size-4 shrink-0"
+          />
+          <span>
+            Autorizo o tratamento dos dados informados para análise da pré-matrícula e contato da
+            escolinha, conforme a <Link href="/privacidade" className="underline">Política de Privacidade</Link>. *
+          </span>
+        </label>
       </div>
 
       <button type="submit" disabled={pending} className="mat-submit">

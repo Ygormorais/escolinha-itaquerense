@@ -141,10 +141,10 @@ incompleta.
 ```bash
 pm2 status / pm2 logs escolinha      # processo e logs
 sudo systemctl status caddy          # proxy/HTTPS
-npm run db:backup                    # snapshot local manual, consistente e validado
+npm run db:backup                    # pacote local: SQLite, uploads e configuração
 ```
 
-O `setup-vps.sh` instala um snapshot SQLite diário às 03:15 e consulta
+O `setup-vps.sh` instala um backup completo diário às 03:15 e consulta
 `/api/health` depois da cópia. Confira a instalação com `crontab -l` e o log em
 `logs/backup.log`. O snapshot local não protege contra perda total da VPS; o
 workflow `backups.yml` fornece a cópia externa criptografada descrita abaixo.
@@ -166,7 +166,8 @@ do upload. Configure no environment:
 - Variables do environment: `R2_ENDPOINT`, `R2_BUCKET`, `R2_REGION=auto` e
   `BACKUP_AGE_RECIPIENT`.
 - Secrets: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`,
-  `SSH_DB_PATH=/var/lib/escolinha/prod.db`, `R2_ACCESS_KEY_ID` e
+  `SSH_APP_DIR=/var/www/escolinha`,
+  `SSH_BACKUP_DIR=/var/lib/escolinha/backups`, `R2_ACCESS_KEY_ID` e
   `R2_SECRET_ACCESS_KEY`.
 
 Depois do dispatch manual, crie a repository variable `BACKUP_ENABLED=true` em
@@ -178,21 +179,25 @@ leitura e escrita no bucket. Fixe em `SSH_KNOWN_HOSTS` a chave SSH conferida por
 um canal confiável; o workflow não usa `ssh-keyscan` durante a conexão.
 
 Configure no R2 uma regra de lifecycle de 35 dias para o prefixo
-`sqlite/daily/`. Faça um dispatch manual de **Backup Diário do Banco**, confirme
-o objeto `.db.gz.age` privado e teste mensalmente a restauração. Durante o teste,
+`full/daily/`. Faça um dispatch manual de **Backup Diário Completo**, confirme
+o objeto `.backup.tar.gz.age` privado e teste mensalmente a restauração. Durante o teste,
 disponibilize a identidade offline temporariamente em
 `$HOME/.config/escolinha/age-key.txt` com modo `600` e remova-a ao terminar:
 
 ```bash
-restore_candidate="$(mktemp /var/lib/escolinha/restore-candidate.XXXXXX.db)"
-trap 'rm -f "$restore_candidate"' EXIT
-age --decrypt -i "$HOME/.config/escolinha/age-key.txt" prod-AAAA-MM-DD.db.gz.age | gzip -d > "$restore_candidate"
-sqlite3 "$restore_candidate" 'PRAGMA quick_check;'
+restore_root="$(mktemp -d /var/lib/escolinha/restore-candidate.XXXXXX)"
+restore_candidate="$restore_root/prod.backup"
+trap 'rm -rf "$restore_root"' EXIT
+mkdir -m 700 "$restore_candidate"
+age --decrypt -i "$HOME/.config/escolinha/age-key.txt" \
+  -o "$restore_root/prod.backup.tar.gz" prod-AAAA-MM-DD.backup.tar.gz.age
+tar -xzf "$restore_root/prod.backup.tar.gz" -C "$restore_candidate" --no-same-owner
+sqlite3 "$restore_candidate/database.db" 'PRAGMA quick_check;'
 pm2 stop escolinha
 npm run db:restore -- --confirm-stopped "$restore_candidate"
 pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
 pm2 save
-rm -f "$restore_candidate"
+rm -rf "$restore_root"
 trap - EXIT
 ```
 

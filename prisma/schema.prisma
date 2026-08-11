@@ -407,10 +407,14 @@ model PreMatricula {
   documentos      String? // JSON array of file paths
   observacoes     String?
   status          String   @default("pendente") // pendente, aprovada, recusada
+  consentimentoEm DateTime?
+  consentimentoVersao String?
+  decididoEm      DateTime?
   createdAt       DateTime @default(now())
 
   @@index([status])
   @@index([createdAt])
+  @@index([decididoEm])
 }
 
 model Produto {

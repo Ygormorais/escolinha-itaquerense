@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
+import { chmod, writeFile, mkdir } from "fs/promises"
+import { randomUUID } from "crypto"
 import path from "path"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
@@ -47,13 +48,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Formato não permitido (PDF, JPEG, PNG)" }, { status: 400 })
   }
 
-  const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}${extReal}`
+  const safeName = `${randomUUID()}${extReal}`
   // Fora de public/: documentos pessoais não podem ser servidos estaticamente
   // sem auth. A URL /uploads/matriculas/* é atendida por um route handler
   // protegido pelo middleware (app/uploads/matriculas/[file]/route.ts).
   const uploadDir = resolveUploadsDir("matriculas")
-  await mkdir(uploadDir, { recursive: true })
-  await writeFile(path.join(uploadDir, safeName), Buffer.from(bytes))
+  await mkdir(uploadDir, { recursive: true, mode: 0o700 })
+  await chmod(uploadDir, 0o700)
+  await writeFile(path.join(uploadDir, safeName), Buffer.from(bytes), { mode: 0o600, flag: "wx" })
 
   return NextResponse.json({ url: `/uploads/matriculas/${safeName}`, name: file.name })
 }
