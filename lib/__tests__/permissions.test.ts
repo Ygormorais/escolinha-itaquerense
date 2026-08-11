@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
 import { can, roleLabel, ROLES } from "@/lib/auth"
+import { canAccessStaffPath } from "@/lib/permissions"
 
 describe("permissions", () => {
   describe("can()", () => {
@@ -48,5 +49,29 @@ describe("permissions", () => {
       expect(values).toContain("secretaria")
       expect(values).toContain("tecnico")
     })
+  })
+})
+
+describe("canAccessStaffPath", () => {
+  it("permite todas as áreas ao administrador", () => {
+    expect(canAccessStaffPath("/custos", "admin")).toBe(true)
+    expect(canAccessStaffPath("/tecnico/saude", "admin")).toBe(true)
+  })
+
+  it("bloqueia áreas financeiras para técnico", () => {
+    expect(canAccessStaffPath("/caixa/extrato", "tecnico")).toBe(false)
+    expect(canAccessStaffPath("/pagamentos", "tecnico")).toBe(false)
+    expect(canAccessStaffPath("/frequencia", "tecnico")).toBe(true)
+  })
+
+  it("bloqueia caixa, custos e saúde para secretaria", () => {
+    expect(canAccessStaffPath("/caixa", "secretaria")).toBe(false)
+    expect(canAccessStaffPath("/custos/recorrentes", "secretaria")).toBe(false)
+    expect(canAccessStaffPath("/tecnico/saude", "secretaria")).toBe(false)
+    expect(canAccessStaffPath("/pagamentos", "secretaria")).toBe(true)
+  })
+
+  it("não confunde prefixos de rotas semelhantes", () => {
+    expect(canAccessStaffPath("/caixa-forte", "secretaria")).toBe(true)
   })
 })

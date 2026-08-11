@@ -13,7 +13,7 @@ export default async function EscalacaoPage({
 }: {
   params: Promise<{ id: string; partidaId: string }>
 }) {
-  await requireAuth(["admin", "secretaria"])
+  await requireAuth(["admin", "tecnico"])
   const { id, partidaId } = await params
   const pid = Number(partidaId)
 

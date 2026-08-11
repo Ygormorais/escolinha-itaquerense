@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { validarHmacQr } from "@/lib/qr"
+import { createCheckinToken } from "@/lib/checkin-token"
 
 type QrResult = { ok: true; alunoNome: string; jaRegistrado: boolean } | { ok: false; erro: string }
 
@@ -11,6 +12,15 @@ const RATE_LIMIT_MS = 5_000
 
 /** Exported only for test isolation — do not use in production code */
 export async function _testResetScans() { recentScans.clear() }
+
+export async function gerarTokenCheckin(turma: string, data: string) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
+  try {
+    return { ok: true as const, token: createCheckinToken(turma, data) }
+  } catch (error) {
+    return { ok: false as const, erro: error instanceof Error ? error.message : "Não foi possível gerar o QR Code" }
+  }
+}
 
 export async function registrarPresencaQr(alunoIdStr: string, h: string, dataStr?: string): Promise<QrResult> {
   await requireAuth(["admin", "secretaria", "tecnico"])

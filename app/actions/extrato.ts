@@ -44,6 +44,7 @@ export async function getLancamentos(filtros?: {
   status?: string
   mes?: string
 }) {
+  await requireAuth(["admin", "secretaria"])
   const where: Record<string, unknown> = {}
 
   if (filtros?.tipo && filtros.tipo !== "todos") {
@@ -64,6 +65,7 @@ export async function getLancamentos(filtros?: {
 }
 
 export async function getResumoExtrato(mes?: string) {
+  await requireAuth(["admin", "secretaria"])
   const where: Record<string, unknown> = {}
   if (mes) {
     const [ano, mesNum] = mes.split("-").map(Number)

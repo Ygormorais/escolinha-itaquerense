@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/layout/page-header"
 export const metadata = { title: "Fichas de Saúde — Painel do Técnico" }
 
 export default async function TecnicoSaudePage() {
-  await requireAuth()
+  await requireAuth(["admin", "tecnico"])
 
   const alunos = await db.aluno.findMany({
     where: { status: "Ativo" },

@@ -2,13 +2,14 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getSessionSecret } from "@/lib/env"
 import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
+import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
 
 const COOKIE_NAME = SESSION_COOKIE
 
-async function verifyHmac(signed: string, prefix: string): Promise<boolean> {
+async function verifyHmac(signed: string, prefix: string): Promise<string | null> {
   const secret = getSessionSecret()
   const lastDot = signed.lastIndexOf(".")
-  if (lastDot === -1) return false
+  if (lastDot === -1) return null
 
   const value = signed.slice(0, lastDot)
   const providedHex = signed.slice(lastDot + 1)
@@ -26,16 +27,16 @@ async function verifyHmac(signed: string, prefix: string): Promise<boolean> {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("")
 
-  if (expectedHex.length !== providedHex.length) return false
+  if (expectedHex.length !== providedHex.length) return null
 
   // timing-safe comparison
   let diff = 0
   for (let i = 0; i < expectedHex.length; i++) {
     diff |= expectedHex.charCodeAt(i) ^ providedHex.charCodeAt(i)
   }
-  if (diff !== 0) return false
+  if (diff !== 0) return null
 
-  return value.startsWith(prefix)
+  return value.startsWith(prefix) ? value : null
 }
 
 const verify = (signed: string) => verifyHmac(signed, SESSION_PREFIX)
@@ -76,8 +77,6 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/qr/") ||
     hasPrefix(pathname, "/checkin") ||
     pathname.startsWith("/api/checkin") ||
-    hasPrefix(pathname, "/frequencia/scanner") ||
-    hasPrefix(pathname, "/frequencia/qrcode") ||
     hasPrefix(pathname, "/resultados") ||
     hasPrefix(pathname, "/horarios") ||
     hasPrefix(pathname, "/noticias/publico") ||
@@ -140,10 +139,26 @@ export async function proxy(request: NextRequest) {
   }
 
   const token = request.cookies.get(COOKIE_NAME)?.value
-  if (!token || !(await verify(token))) {
+  const sessionValue = token ? await verify(token) : null
+  if (!sessionValue) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     url.searchParams.set("next", pathname)
+    return NextResponse.redirect(url)
+  }
+
+  const [, role] = sessionValue.slice(SESSION_PREFIX.length).split(":")
+  if (!isStaffRole(role)) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/login"
+    url.search = ""
+    return NextResponse.redirect(url)
+  }
+  if (!canAccessStaffPath(pathname, role)) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/dashboard"
+    url.search = ""
+    url.searchParams.set("erro", "acesso-negado")
     return NextResponse.redirect(url)
   }
 

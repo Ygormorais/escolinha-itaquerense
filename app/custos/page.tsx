@@ -4,6 +4,7 @@ import { CustosClient } from "./custos-client"
 import { RecorrentesClient } from "./recorrentes-client"
 import { startOfMonth, endOfMonth } from "date-fns"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Custos — Escolinha Itaquerense" }
 
@@ -12,6 +13,7 @@ export default async function CustosPage({
 }: {
   searchParams: Promise<{ mes?: string }>
 }) {
+  await requireAuth(["admin"])
   const params = await searchParams
   const now = new Date()
   const mes = params.mes ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`

@@ -1,51 +1,59 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { verifyCheckinToken } from "@/lib/checkin-token"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
 
-// GET /api/checkin?token=<token>&alunoId=<id>
-// Token é TURMA:DATA (ex: "Sub-13:2026-06-20") — sem segredo criptográfico, apenas comodidade
-export async function GET(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown"
-  const limit = checkRateLimit(`checkin:${ip}`, 30)
-  if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
+function redirectToCheckin(req: NextRequest, token: string, result: "ok" | "ja" | "erro") {
+  const url = new URL("/checkin", req.url)
+  url.searchParams.set("token", token)
+  url.searchParams.set(result === "erro" ? "erro" : "ok", result === "erro" ? "credenciais" : "1")
+  if (result === "ja") url.searchParams.set("ja", "1")
+  return NextResponse.redirect(url, 303)
+}
 
-  const { searchParams } = new URL(req.url)
-  const token = searchParams.get("token")
-  const alunoIdRaw = searchParams.get("alunoId")
+// POST /api/checkin — o QR identifica turma/data; matrícula + nascimento identificam o aluno.
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+  const globalLimit = checkRateLimit(`checkin:${ip}`, 60, 10 * 60_000)
+  if (!globalLimit.ok) return rateLimitResponse(globalLimit.retryAfterMs)
 
-  if (!token) {
-    return NextResponse.json({ error: "Token inválido" }, { status: 400 })
+  const form = await req.formData()
+  const token = String(form.get("token") ?? "")
+  const matricula = String(form.get("matricula") ?? "").trim()
+  const dataNascimento = String(form.get("dataNascimento") ?? "").trim()
+  const claims = verifyCheckinToken(token)
+
+  if (!claims) {
+    return NextResponse.json({ error: "Link de check-in inválido ou expirado" }, { status: 400 })
   }
 
-  const [turma, data] = token.split(":")
-  if (!turma || !data || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-    return NextResponse.json({ error: "Token malformado" }, { status: 400 })
+  const alunoId = Number(matricula)
+  if (!Number.isInteger(alunoId) || alunoId <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) {
+    return redirectToCheckin(req, token, "erro")
   }
 
-  // Se alunoId informado, registra presença diretamente
-  if (alunoIdRaw) {
-    const alunoId = Number(alunoIdRaw)
-    const aluno = await db.aluno.findFirst({
-      where: { id: alunoId, turma, status: "Ativo" },
-      select: { id: true, nome: true },
-    })
-    if (!aluno) {
-      return NextResponse.redirect(new URL(`/checkin?token=${token}&erro=aluno`, req.url))
-    }
+  const identityLimit = checkRateLimit(`checkin:${ip}:${alunoId}`, 5, 10 * 60_000)
+  if (!identityLimit.ok) return rateLimitResponse(identityLimit.retryAfterMs)
 
-    const dataObj = new Date(data + "T12:00:00.000Z")
-    const jaRegistrado = await db.frequencia.findFirst({
-      where: { alunoId, data: dataObj },
-    })
-    if (jaRegistrado) {
-      return NextResponse.redirect(new URL(`/checkin?token=${token}&ok=1&nome=${encodeURIComponent(aluno.nome)}&ja=1`, req.url))
-    }
-
-    await db.frequencia.create({ data: { alunoId, data: dataObj, presenca: "Presente" } })
-    return NextResponse.redirect(new URL(`/checkin?token=${token}&ok=1&nome=${encodeURIComponent(aluno.nome)}`, req.url))
+  const aluno = await db.aluno.findFirst({
+    where: { id: alunoId, turma: claims.turma, status: "Ativo" },
+    select: { id: true, dataNascimento: true },
+  })
+  if (!aluno || aluno.dataNascimento.toISOString().slice(0, 10) !== dataNascimento) {
+    return redirectToCheckin(req, token, "erro")
   }
 
-  // Sem alunoId: redireciona para a página de seleção
-  return NextResponse.redirect(new URL(`/checkin?token=${token}`, req.url))
+  const data = new Date(`${claims.data}T12:00:00.000Z`)
+  const existente = await db.frequencia.findUnique({
+    where: { alunoId_data: { alunoId, data } },
+    select: { id: true },
+  })
+  await db.frequencia.upsert({
+    where: { alunoId_data: { alunoId, data } },
+    create: { alunoId, data, presenca: "Presente" },
+    update: { presenca: "Presente" },
+  })
+
+  return redirectToCheckin(req, token, existente ? "ja" : "ok")
 }

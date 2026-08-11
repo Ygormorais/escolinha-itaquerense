@@ -176,6 +176,7 @@ export async function registrarComunicadoWhatsApp(
 }
 
 export async function getHistoricoWhatsApp(alunoId: number) {
+  await requireAuth(["admin", "secretaria"])
   return db.whatsAppMensagem.findMany({
     where: { alunoId },
     orderBy: { createdAt: "desc" },
@@ -184,6 +185,7 @@ export async function getHistoricoWhatsApp(alunoId: number) {
 }
 
 export async function getMensagensNaoLidas() {
+  await requireAuth(["admin", "secretaria"])
   return db.whatsAppMensagem.count({
     where: { direcao: "incoming", lida: false },
   })

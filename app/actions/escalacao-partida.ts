@@ -11,7 +11,7 @@ export async function salvarEscalacao(
   partidaId: number,
   jogadores: JogadorEscalado[]
 ): Promise<ActionResult> {
-  await requireAuth(["admin", "secretaria"])
+  await requireAuth(["admin", "tecnico"])
 
   const v = validarEscalacao(jogadores)
   if (!v.ok) return { error: v.erro }
@@ -47,6 +47,7 @@ export async function salvarEscalacao(
 }
 
 export async function getEscalacao(partidaId: number) {
+  await requireAuth(["admin", "tecnico"])
   return db.escalacaoJogador.findMany({
     where: { partidaId },
     include: { aluno: { select: { id: true, nome: true, turma: true } } },

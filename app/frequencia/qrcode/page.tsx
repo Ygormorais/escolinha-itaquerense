@@ -6,7 +6,7 @@ import { QrCodeClient } from "./qrcode-client"
 export const metadata = { title: "QR Code de Presença — Escolinha Itaquerense" }
 
 export default async function QrCodePage() {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const comAlunos = await db.aluno.findMany({
     where: { status: "Ativo" },
     select: { turma: true },

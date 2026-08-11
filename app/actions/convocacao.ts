@@ -13,7 +13,7 @@ type ActionResult = { success: true } | { error: string }
 
 /** Admin: convoca a escalação da partida e notifica os responsáveis. */
 export async function convocarEscalacao(partidaId: number): Promise<ActionResult> {
-  await requireAuth(["admin", "secretaria"])
+  await requireAuth(["admin", "tecnico"])
 
   const partida = await db.partida.findUnique({
     where: { id: partidaId },

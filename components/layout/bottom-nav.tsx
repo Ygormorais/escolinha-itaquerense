@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, CreditCard, Settings, Wallet } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { canAccessStaffPath, type StaffRole } from "@/lib/permissions"
 
 const items = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -13,7 +14,7 @@ const items = [
   { href: "/configuracoes", label: "Config", icon: Settings },
 ]
 
-export function BottomNav() {
+export function BottomNav({ role }: { role: StaffRole }) {
   const pathname = usePathname()
 
   if (pathname.startsWith("/responsavel") || pathname === "/login") return null
@@ -24,7 +25,7 @@ export function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       aria-label="Navegação rápida"
     >
-      {items.map(({ href, label, icon: Icon }) => {
+      {items.filter((item) => canAccessStaffPath(item.href, role)).map(({ href, label, icon: Icon }) => {
         const isActive = pathname.startsWith(href)
         return (
           <Link

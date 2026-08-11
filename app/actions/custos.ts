@@ -90,6 +90,7 @@ export async function deleteCusto(id: number): Promise<ActionResult> {
 }
 
 export async function getCustosRecorrentes() {
+  await requireAuth(["admin"])
   return db.custoRecorrente.findMany({ orderBy: { descricao: "asc" } })
 }
 
@@ -142,6 +143,7 @@ export async function deleteCustoRecorrente(id: number): Promise<ActionResult> {
 }
 
 export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: number } | { error: string }> {
+  await requireAuth(["admin"])
   try {
     const [ano, mesNum] = mes.split("-").map(Number)
     const dataRef = new Date(ano, mesNum - 1, 1)

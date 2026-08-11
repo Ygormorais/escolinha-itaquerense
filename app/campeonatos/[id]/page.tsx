@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
 import { CampeonatoDetailClient } from "./campeonato-detail-client"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Campeonato — Escolinha Itaquerense" }
 
@@ -10,6 +11,7 @@ export default async function CampeonatoDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  await requireAuth(["admin", "tecnico"])
   const { id } = await params
   const campeonato = await db.campeonato.findUnique({
     where: { id: Number(id) },
