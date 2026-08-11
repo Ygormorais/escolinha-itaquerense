@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { OnboardingRestart } from "@/components/onboarding/onboarding-restart"
+import { canAccessStaffPath, type StaffRole } from "@/lib/permissions"
 
 function LogoutButton() {
   const router = useRouter()
@@ -66,31 +67,11 @@ type NavGroup = {
   items: NavItem[]
 }
 
-type SidebarRole = "admin" | "secretaria" | "tecnico"
-
-function filterByRole(items: NavItem[], role: SidebarRole): NavItem[] {
-  const canAccess = (href: string): boolean => {
-    const restrictedTecnico = [
-      "/pagamentos", "/uniformes", "/custos", "/comunicados",
-      "/inadimplencia", "/caixa", "/produtos", "/recibos",
-      "/relatorio/alunos", "/relatorio/pagamentos",
-      "/historico", "/configuracoes/midia",
-      "/configuracoes",
-      "/configuracoes/responsaveis", "/secretaria",
-    ]
-    const restrictedSecretaria = [
-      "/custos", "/caixa", "/produtos", "/campeonatos",
-      "/avaliacoes", "/tecnico",
-    ]
-    if (role === "admin") return true
-    if (role === "tecnico") return !restrictedTecnico.some((r) => href.startsWith(r))
-    if (role === "secretaria") return !restrictedSecretaria.some((r) => href.startsWith(r))
-    return false
-  }
-  return items.filter((i) => canAccess(i.href))
+function filterByRole(items: NavItem[], role: StaffRole): NavItem[] {
+  return items.filter((item) => canAccessStaffPath(item.href, role))
 }
 
-export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0 }: { onClose?: () => void; role?: SidebarRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number }) {
+export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0 }: { onClose?: () => void; role?: StaffRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number }) {
   const pathname = usePathname()
   const [relOpen, setRelOpen] = useState(() => pathname.startsWith("/relatorio"))
 

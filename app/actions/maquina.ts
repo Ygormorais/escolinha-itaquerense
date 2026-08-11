@@ -60,6 +60,7 @@ export async function importarCSV(
 }
 
 export async function getTransacoes(status?: string) {
+  await requireAuth(["admin", "secretaria"])
   const where = status && status !== "todas" ? { status } : {}
   return db.transacaoMaquina.findMany({
     where,
@@ -184,6 +185,7 @@ export async function ignorarTransacao(id: number) {
 }
 
 export async function getResumoMaquina() {
+  await requireAuth(["admin", "secretaria"])
   const [aggTotal, aggPendente, aggReconciliado, totalTransacoes, aggTaxa] = await Promise.all([
     db.transacaoMaquina.aggregate({ where: { status: { not: "ignorado" } }, _sum: { valor: true } }),
     db.transacaoMaquina.aggregate({ where: { status: "pendente" }, _sum: { valor: true }, _count: true }),

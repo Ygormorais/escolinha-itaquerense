@@ -2,10 +2,12 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { CampeonatoClient } from "./campeonato-client"
 import { plural } from "@/lib/utils"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Campeonatos — Escolinha Itaquerense" }
 
 export default async function CampeonatosPage() {
+  await requireAuth(["admin", "tecnico"])
   const campeonatos = await db.campeonato.findMany({
     select: {
       id: true, nome: true, descricao: true, dataInicio: true, dataFim: true,

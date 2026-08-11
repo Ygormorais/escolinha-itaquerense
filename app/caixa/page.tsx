@@ -3,10 +3,12 @@ import { PageHeader } from "@/components/layout/page-header"
 import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
 import { formatMoney, plural } from "@/lib/utils"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Caixa — Escolinha Itaquerense" }
 
 export default async function CaixaPage() {
+  await requireAuth(["admin"])
   const now = new Date()
   const inicio = startOfMonth(now)
   const fim = endOfMonth(now)

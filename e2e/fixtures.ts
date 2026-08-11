@@ -14,6 +14,7 @@ const PRODUTO_PREFIX = "E2E Produto "
 const CAMPEONATO_NOME = "E2E Campeonato Fluxos"
 const SOLICITACAO_DESCRICAO = "E2E Solicitação Pendente"
 const HISTORICO_DESCRICAO = "E2E Histórico Fixture"
+const CHECKIN_ALUNO = "E2E Aluno Check-in Seguro"
 
 function mesAtual() {
   const now = new Date()
@@ -324,5 +325,24 @@ export async function resetSolicitacaoE2E() {
       descricao: SOLICITACAO_DESCRICAO,
       status: "pendente",
     },
+  })
+}
+
+export async function resetCheckinE2E() {
+  await db.aluno.deleteMany({ where: { nome: CHECKIN_ALUNO } })
+  return db.aluno.create({
+    data: {
+      nome: CHECKIN_ALUNO,
+      dataNascimento: new Date(2015, 5, 15, 12),
+      turma: "Sub-11",
+      horario: "Seg/Qua 08h",
+      responsavel: "Responsável Check-in E2E",
+      telefone: "11999994444",
+      email: "checkin@e2e.test",
+      dataMatricula: new Date(),
+      mensalidade: 180,
+      status: "Ativo",
+    },
+    select: { id: true, nome: true },
   })
 }

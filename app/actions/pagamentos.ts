@@ -49,6 +49,7 @@ export async function registrarPagamento(
 }
 
 export async function getPagamentosPendentes(alunoId: number) {
+  await requireAuth(["admin", "secretaria"])
   return db.pagamento.findMany({
     where: { alunoId, dataPagamento: null },
     select: {

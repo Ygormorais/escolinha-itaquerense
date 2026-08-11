@@ -19,8 +19,6 @@ describe("isPublicPath — rotas externas com auth própria", () => {
     "/api/upload/matricula",
     "/api/checkin",
     "/checkin",
-    "/frequencia/scanner",
-    "/frequencia/qrcode",
     "/horarios",
     "/matricula",
     "/resultados",
@@ -40,6 +38,8 @@ describe("isPublicPath — rotas de admin permanecem protegidas", () => {
     "/configuracoes/usuarios",
     "/api/alunos/1/print",
     "/api/upload/foto",
+    "/frequencia/scanner",
+    "/frequencia/qrcode",
   ])("%s NÃO é pública (proxy exige sessão)", (path) => {
     expect(isPublicPath(path)).toBe(false)
   })

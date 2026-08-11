@@ -6,6 +6,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Download, Printer, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { gerarTokenCheckin } from "@/app/actions/frequencia-qr"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
@@ -14,14 +15,35 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
   const [turma, setTurma] = useState(turmas[0] ?? "")
   const [data, setData] = useState(format(new Date(), "yyyy-MM-dd"))
   const [baseUrl, setBaseUrl] = useState("")
+  const [token, setToken] = useState("")
+  const [tokenFor, setTokenFor] = useState("")
+  const [tokenError, setTokenError] = useState("")
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setBaseUrl(window.location.origin)
   }, [])
 
-  const token = `${turma}:${data}`
-  const url = baseUrl ? `${baseUrl}/checkin?token=${encodeURIComponent(token)}` : ""
+  useEffect(() => {
+    let active = true
+    if (!turma || !data) return
+    gerarTokenCheckin(turma, data).then((result) => {
+      if (!active) return
+      if (result.ok) {
+        setToken(result.token)
+        setTokenFor(`${turma}:${data}`)
+        setTokenError("")
+      } else {
+        setToken("")
+        setTokenFor("")
+        setTokenError(result.erro)
+      }
+    })
+    return () => { active = false }
+  }, [turma, data])
+
+  const activeToken = tokenFor === `${turma}:${data}` ? token : ""
+  const url = baseUrl && activeToken ? `${baseUrl}/checkin?token=${encodeURIComponent(activeToken)}` : ""
   const dataLabel = data ? format(new Date(data + "T12:00:00"), "EEEE, dd 'de' MMMM", { locale: ptBR }) : ""
 
   function handlePrint() {
@@ -46,7 +68,7 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
       <div className="w-full max-w-md space-y-4">
         <h1 className="font-heading text-xl font-semibold">QR Code de Presença</h1>
         <p className="text-sm text-muted-foreground">
-          Projete ou imprima o QR Code para que os alunos registrem a própria presença.
+          Projete o QR Code; cada aluno confirma com matrícula e data de nascimento, sem exibir a lista da turma.
         </p>
 
         <div className="grid grid-cols-2 gap-3">
@@ -90,6 +112,18 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
           </div>
         )}
 
+        {!url && !tokenError && (
+          <p role="status" className="rounded-lg bg-muted p-3 text-center text-sm text-muted-foreground">
+            Gerando link seguro…
+          </p>
+        )}
+
+        {tokenError && (
+          <p role="alert" className="rounded-lg bg-danger-50 p-3 text-sm text-danger-700">
+            {tokenError}
+          </p>
+        )}
+
         <div className="flex gap-2 print:hidden">
           <Button variant="outline" onClick={handlePrint} className="flex-1">
             <Printer className="size-4" /> Imprimir
@@ -104,7 +138,8 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
 
         <div className="rounded-lg bg-muted p-3">
           <p className="text-xs font-medium text-muted-foreground">URL gerada:</p>
-          <p className="mt-1 break-all font-mono text-[10px] text-foreground">{url}</p>
+          <p data-testid="checkin-url" className="mt-1 break-all font-mono text-[10px] text-foreground">{url}</p>
+          <p className="mt-2 text-[10px] text-muted-foreground">O link é assinado e expira em 12 horas.</p>
         </div>
       </div>
     </div>

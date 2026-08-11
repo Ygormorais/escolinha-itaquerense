@@ -76,8 +76,10 @@ forma). A aba **Recorrentes** guarda modelos (aluguel, água...) e o botão
 
 **Frequência → Registro**: escolha turma e data, carregue a lista e marque
 presente/ausente/justificado. O **Scanner QR** permite check-in pela carteirinha
-do aluno. As abas **Resumo Mensal** e **Estatísticas** mostram percentuais e o
-ranking de presença — alunos abaixo de 75% ganham destaque.
+do aluno. Em **QR Code de Presença**, a equipe projeta um link seguro da turma,
+válido por 12 horas; cada aluno informa matrícula e data de nascimento, sem que
+a lista da turma fique pública. As abas **Resumo Mensal** e **Estatísticas**
+mostram percentuais e o ranking de presença — alunos abaixo de 75% ganham destaque.
 
 ## 8. Agenda e comunicados
 

@@ -8,6 +8,7 @@ import { revalidateFpfsPublico } from "@/lib/fpfs/revalidate-public"
 import { dataValida } from "@/lib/utils"
 
 export async function listarCampeonatos() {
+  await requireAuth(["admin", "tecnico"])
   return db.campeonato.findMany({
     include: { _count: { select: { inscricoes: true } } },
     orderBy: { dataInicio: "desc" },
@@ -15,6 +16,7 @@ export async function listarCampeonatos() {
 }
 
 export async function getCampeonato(id: number) {
+  await requireAuth(["admin", "tecnico"])
   return db.campeonato.findUnique({
     where: { id },
     include: {

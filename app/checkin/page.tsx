@@ -1,5 +1,5 @@
-import { db } from "@/lib/db"
 import { CheckinClient } from "./checkin-client"
+import { verifyCheckinToken } from "@/lib/checkin-token"
 import { notFound } from "next/navigation"
 
 export const metadata = { title: "Check-in — Escolinha Itaquerense" }
@@ -7,31 +7,20 @@ export const metadata = { title: "Check-in — Escolinha Itaquerense" }
 export default async function CheckinPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; ok?: string; nome?: string; ja?: string; erro?: string }>
+  searchParams: Promise<{ token?: string; ok?: string; ja?: string; erro?: string }>
 }) {
   const params = await searchParams
-  const token = params.token
-
-  if (!token) notFound()
-
-  const [turma, data] = token.split(":")
-  if (!turma || !data) notFound()
-
-  const alunos = await db.aluno.findMany({
-    where: { turma, status: "Ativo" },
-    select: { id: true, nome: true },
-    orderBy: { nome: "asc" },
-  })
+  const token = params.token ?? ""
+  const claims = verifyCheckinToken(token)
+  if (!claims) notFound()
 
   return (
     <CheckinClient
-      turma={turma}
-      data={data}
+      turma={claims.turma}
+      data={claims.data}
       token={token}
-      alunos={alunos}
-      ok={!!params.ok}
-      nomeConfirmado={params.nome ?? null}
-      jaRegistrado={!!params.ja}
+      ok={params.ok === "1"}
+      jaRegistrado={params.ja === "1"}
       erro={params.erro ?? null}
     />
   )

@@ -5,10 +5,11 @@ import { Menu } from "lucide-react"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Sheet } from "@/components/ui/sheet"
 import { BottomNav } from "@/components/layout/bottom-nav"
+import type { StaffRole } from "@/lib/permissions"
 
 interface AdminShellProps {
   children: React.ReactNode
-  role?: "admin" | "secretaria" | "tecnico"
+  role?: StaffRole
   pendingEscalacoes?: number
   pendingMatriculas?: number
   pendingSolicitacoes?: number
@@ -56,7 +57,7 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
         {children}
       </main>
 
-      <BottomNav />
+      <BottomNav role={role} />
     </div>
   )
 }
