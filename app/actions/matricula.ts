@@ -6,9 +6,11 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "./log"
 import { dataValida } from "@/lib/utils"
+import { deleteMatriculaDocuments } from "@/lib/matricula-files"
 
 export type ActionResult = { success: true } | { error: string }
 export type AprovarResult = { success: true; alunoId: number } | { error: string }
+const CONSENTIMENTO_VERSAO = "2026-08-11"
 
 export async function criarPreMatricula(data: {
   nomeAluno: string
@@ -20,6 +22,7 @@ export async function criarPreMatricula(data: {
   email: string
   documentos?: string[]
   observacoes?: string
+  consentimento: boolean
 }): Promise<ActionResult> {
   if (!data.nomeAluno?.trim() || !data.nomeResponsavel?.trim() || !data.telefone?.trim()) {
     return { error: "Preencha os campos obrigatórios" }
@@ -27,6 +30,9 @@ export async function criarPreMatricula(data: {
 
   if (!dataValida(data.dataNascimento)) {
     return { error: "Data de nascimento inválida" }
+  }
+  if (data.consentimento !== true) {
+    return { error: "É necessário autorizar o tratamento dos dados para enviar a pré-matrícula" }
   }
   const dataNasc = new Date(data.dataNascimento)
 
@@ -51,6 +57,8 @@ export async function criarPreMatricula(data: {
         documentos: docsValidos.length > 0 ? JSON.stringify(docsValidos) : null,
         observacoes: data.observacoes?.trim() || null,
         status: "pendente",
+        consentimentoEm: new Date(),
+        consentimentoVersao: CONSENTIMENTO_VERSAO,
       },
     })
     return { success: true }
@@ -109,7 +117,7 @@ export async function aprovarPreMatricula(
           responsavelId,
         },
       })
-      await tx.preMatricula.update({ where: { id }, data: { status: "aprovada" } })
+      await tx.preMatricula.update({ where: { id }, data: { status: "aprovada", decididoEm: new Date() } })
       const qtdMeses = Math.max(0, Math.min(12, Number(opts.meses ?? 0)))
       for (let i = 0; i < qtdMeses; i++) {
         const dataRef = addMonths(new Date(), i)
@@ -139,14 +147,21 @@ export async function aprovarPreMatricula(
 
 export async function recusarPreMatricula(id: number) {
   await requireAuth(["admin", "secretaria"])
-  await db.preMatricula.update({ where: { id }, data: { status: "recusada" } })
+  await db.preMatricula.update({ where: { id }, data: { status: "recusada", decididoEm: new Date() } })
   revalidatePath("/configuracoes/matriculas")
   return { success: true }
 }
 
-export async function deletarPreMatricula(id: number) {
+export async function deletarPreMatricula(id: number): Promise<ActionResult> {
   await requireAuth(["admin", "secretaria"])
-  await db.preMatricula.delete({ where: { id } })
-  revalidatePath("/configuracoes/matriculas")
-  return { success: true }
+  const pre = await db.preMatricula.findUnique({ where: { id }, select: { documentos: true } })
+  if (!pre) return { error: "Pré-matrícula não encontrada" }
+  try {
+    await deleteMatriculaDocuments(pre.documentos)
+    await db.preMatricula.delete({ where: { id } })
+    revalidatePath("/configuracoes/matriculas")
+    return { success: true }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Erro ao excluir a pré-matrícula" }
+  }
 }

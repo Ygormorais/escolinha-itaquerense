@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 vi.mock("fs/promises", () => ({
   writeFile: vi.fn().mockResolvedValue(undefined),
   mkdir: vi.fn().mockResolvedValue(undefined),
+  chmod: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock("@/lib/rate-limit", () => ({
@@ -65,6 +66,7 @@ describe("POST /api/upload/matricula", () => {
     expect(body.url).toMatch(/^\/uploads\/matriculas\//)
     expect(body.name).toBe("doc.jpg")
     expect(mockWriteFile).toHaveBeenCalledOnce()
+    expect(mockWriteFile.mock.calls[0][2]).toEqual({ mode: 0o600, flag: "wx" })
   })
 
   it("aceita PNG válido por magic bytes", async () => {

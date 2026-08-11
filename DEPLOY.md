@@ -50,11 +50,13 @@ Gerar segredos: `bash deploy/gen-secrets.sh`.
 
 ### Backup automático (GitHub Actions)
 
-O workflow `.github/workflows/backups.yml` cria um snapshot consistente na VPS,
-criptografa com `age` e envia somente o arquivo cifrado para um bucket R2 privado.
+O workflow `.github/workflows/backups.yml` cria na VPS um pacote consistente com
+SQLite, uploads e configuração, criptografa com `age` e envia somente o arquivo
+cifrado para um bucket R2 privado.
 Configure o environment `production` com as variables `R2_ENDPOINT`, `R2_BUCKET`,
 `R2_REGION` e `BACKUP_AGE_RECIPIENT`, além dos secrets `SSH_HOST`, `SSH_USER`,
-`SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `SSH_DB_PATH`, `R2_ACCESS_KEY_ID` e
+`SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `SSH_APP_DIR=/var/www/escolinha`,
+`SSH_BACKUP_DIR=/var/lib/escolinha/backups`, `R2_ACCESS_KEY_ID` e
 `R2_SECRET_ACCESS_KEY`.
 
 Valide primeiro com `workflow_dispatch`; só então defina a repository variable

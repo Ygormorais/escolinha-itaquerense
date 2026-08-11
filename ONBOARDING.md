@@ -167,8 +167,8 @@ prisma/
   seed.ts               # Dados de teste (não executar em produção)
 
 scripts/
-  backup.ts             # Copia prisma/dev.db para backups/ (mantém 30 últimos)
-  restore.ts            # Restaura um backup específico
+  backup.ts             # Empacota banco, uploads e configuração (mantém 30 últimos)
+  restore.ts            # Valida e restaura um pacote completo
   housekeeping.ts       # Limpeza de dados antigos
 
 e2e/                   # Testes Playwright (fluxos de ponta a ponta)
@@ -207,10 +207,10 @@ await criarUsuario({
 })
 ```
 
-### Backup do banco
+### Backup completo
 
 ```bash
-# Cria backups/dev-YYYY-MM-DDTHH-MM-SS.db (mantém os 30 mais recentes)
+# Cria backups/dev-AAAA-MM-DDTHH-MM-SS.backup (mantém os 30 mais recentes)
 npm run db:backup
 
 # Na VPS de produção
@@ -239,11 +239,11 @@ sudo journalctl -u caddy -n 100 -f
 ls backups/
 
 # Desenvolvimento, com o servidor parado
-npm run db:restore -- --confirm-stopped backups/dev-2026-06-01T03-00-00.db
+npm run db:restore -- --confirm-stopped backups/dev-2026-06-01T03-00-00.backup
 
 # VPS, sempre dentro de uma janela de manutenção
 pm2 stop escolinha
-npm run db:restore -- --confirm-stopped /var/lib/escolinha/backups/prod-AAAA-MM-DD.db
+npm run db:restore -- --confirm-stopped /var/lib/escolinha/backups/prod-AAAA-MM-DD.backup
 pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
 pm2 save
 ```

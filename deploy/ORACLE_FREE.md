@@ -161,9 +161,9 @@ No Environment `production` do GitHub:
 Execute o workflow de lembretes manualmente. Só depois de validá-lo altere a
 repository variable `LEMBRETES_CRON_ENABLED` para `true`.
 
-O workflow atual de backup remoto exige credenciais SSH e armazenamento externo;
-mantenha `BACKUP_ENABLED=false` até configurá-los. Os snapshots locais ajudam em
-rollback, mas não substituem uma cópia fora da VM.
+O workflow de backup remoto exige credenciais SSH e armazenamento externo;
+mantenha `BACKUP_ENABLED=false` até configurá-los. O backup local inclui SQLite,
+uploads e configuração, mas não substitui uma cópia criptografada fora da VM.
 
 ## Riscos do Always Free
 

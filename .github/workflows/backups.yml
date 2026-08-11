@@ -1,4 +1,4 @@
-name: Backup Diário do Banco
+name: Backup Diário Completo
 
 on:
   schedule:
@@ -11,7 +11,7 @@ on:
 permissions: {}
 
 concurrency:
-  group: production-sqlite-backup
+  group: production-full-backup
   cancel-in-progress: false
 
 jobs:
@@ -25,7 +25,8 @@ jobs:
       SSH_USER: ${{ secrets.SSH_USER }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-      SSH_DB_PATH: ${{ secrets.SSH_DB_PATH }}
+      SSH_APP_DIR: ${{ secrets.SSH_APP_DIR }}
+      SSH_BACKUP_DIR: ${{ secrets.SSH_BACKUP_DIR }}
       R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
       R2_BUCKET: ${{ vars.R2_BUCKET }}
       BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
@@ -39,7 +40,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           sudo apt-get update
-          sudo apt-get install --yes age sqlite3
+          sudo apt-get install --yes age jq sqlite3
           command -v aws >/dev/null
 
       - name: Criar, validar, criptografar e enviar backup
@@ -48,7 +49,7 @@ jobs:
           set -Eeuo pipefail
           umask 077
 
-          for name in SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS SSH_DB_PATH R2_ENDPOINT R2_BUCKET BACKUP_AGE_RECIPIENT AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+          for name in SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS SSH_APP_DIR SSH_BACKUP_DIR R2_ENDPOINT R2_BUCKET BACKUP_AGE_RECIPIENT AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
             [[ -n "${!name:-}" ]] || { echo "::error::Configuração ausente: ${name}"; exit 1; }
           done
           [[ "$R2_ENDPOINT" == https://* ]] || { echo "::error::R2_ENDPOINT deve usar HTTPS"; exit 1; }
@@ -61,34 +62,48 @@ jobs:
 
           workdir="$(mktemp -d)"
           trap 'rm -rf "$workdir"' EXIT
-          raw="$workdir/prod.db"
-          encrypted="$workdir/prod.db.gz.age"
-          verify="$workdir/verify.db.gz.age"
+          raw="$workdir/prod.backup.tar.gz"
+          extracted="$workdir/prod.backup"
+          encrypted="$workdir/prod.backup.tar.gz.age"
+          verify="$workdir/verify.backup.tar.gz.age"
 
-          printf -v quoted_db '%q' "$SSH_DB_PATH"
+          printf -v quoted_app '%q' "$SSH_APP_DIR"
+          printf -v quoted_backup '%q' "$SSH_BACKUP_DIR"
           ssh \
             -i "$HOME/.ssh/backup_key" \
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
             -o ConnectTimeout=15 \
             "$SSH_USER@$SSH_HOST" \
-            "bash -s -- $quoted_db" <<'REMOTE' > "$raw"
+            "bash -s -- $quoted_app $quoted_backup" <<'REMOTE' > "$raw"
           set -Eeuo pipefail
-          db_path="$1"
-          tmp="$(mktemp /tmp/escolinha-backup.XXXXXX.db)"
-          trap 'rm -f "$tmp"' EXIT
-          sqlite3 "$db_path" ".backup '$tmp'"
-          [[ "$(sqlite3 "$tmp" 'PRAGMA quick_check;')" == "ok" ]]
-          cat "$tmp"
+          app_dir="$1"
+          backup_dir="$2"
+          cd "$app_dir"
+          BACKUP_DIR="$backup_dir" npm run db:backup >&2
+          latest="$(find "$backup_dir" -mindepth 1 -maxdepth 1 -type d -name '*.backup' -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)"
+          [[ -n "$latest" && -f "$latest/manifest.json" ]]
+          tar -C "$latest" -czf - .
           REMOTE
 
           [[ -s "$raw" ]] || { echo "::error::Backup remoto vazio"; exit 1; }
-          [[ "$(sqlite3 "$raw" 'PRAGMA quick_check;')" == "ok" ]] || { echo "::error::SQLite inválido"; exit 1; }
+          mkdir -m 700 "$extracted"
+          tar -xzf "$raw" -C "$extracted" --no-same-owner --no-same-permissions
+          jq -e '.version == 1 and (.files | type == "array")' "$extracted/manifest.json" >/dev/null
+          while IFS=$'\t' read -r expected relative; do
+            [[ -n "$relative" && "$relative" != /* && "$relative" != *'..'* && "$relative" != *'\\'* ]] \
+              || { echo "::error::Caminho inválido no manifesto"; exit 1; }
+            [[ -f "$extracted/$relative" ]] || { echo "::error::Arquivo ausente: $relative"; exit 1; }
+            actual="$(sha256sum "$extracted/$relative" | awk '{print $1}')"
+            [[ "$actual" == "$expected" ]] || { echo "::error::Hash divergente: $relative"; exit 1; }
+          done < <(jq -r '.files[] | [.sha256, .path] | @tsv' "$extracted/manifest.json")
+          [[ "$(sqlite3 "$extracted/database.db" 'PRAGMA quick_check;')" == "ok" ]] \
+            || { echo "::error::SQLite inválido"; exit 1; }
 
-          gzip -9 -c "$raw" | age --recipient "$BACKUP_AGE_RECIPIENT" --output "$encrypted"
+          age --recipient "$BACKUP_AGE_RECIPIENT" --output "$encrypted" "$raw"
           sha="$(sha256sum "$encrypted" | awk '{print $1}')"
           timestamp="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
-          key="sqlite/daily/prod-${timestamp}.db.gz.age"
+          key="full/daily/prod-${timestamp}.backup.tar.gz.age"
 
           aws s3 cp "$encrypted" "s3://$R2_BUCKET/$key" \
             --endpoint-url "$R2_ENDPOINT" \

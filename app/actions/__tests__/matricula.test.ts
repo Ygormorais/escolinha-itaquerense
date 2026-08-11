@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
   const db: Record<string, unknown> = {
-    preMatricula: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
+    preMatricula: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn(), delete: vi.fn() },
     aluno: { create: vi.fn() },
     responsavel: { findFirst: vi.fn() },
     log: { create: vi.fn() },
@@ -17,12 +17,14 @@ vi.mock("@/lib/auth", () => ({
 }))
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
+vi.mock("@/lib/matricula-files", () => ({ deleteMatriculaDocuments: vi.fn().mockResolvedValue(0) }))
 
-import { aprovarPreMatricula, criarPreMatricula } from "@/app/actions/matricula"
+import { aprovarPreMatricula, criarPreMatricula, deletarPreMatricula } from "@/app/actions/matricula"
 import { db } from "@/lib/db"
+import { deleteMatriculaDocuments } from "@/lib/matricula-files"
 
 const m = db as unknown as {
-  preMatricula: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> }
+  preMatricula: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> }
   aluno: { create: ReturnType<typeof vi.fn> }
   responsavel: { findFirst: ReturnType<typeof vi.fn> }
 }
@@ -54,7 +56,7 @@ beforeEach(() => {
 describe("criarPreMatricula — sanitização de documentos", () => {
   const base = {
     nomeAluno: "Ana", dataNascimento: "2016-05-01", turma: "Sub-9", horario: "x",
-    nomeResponsavel: "Mãe", telefone: "11999998888", email: "m@e.com",
+    nomeResponsavel: "Mãe", telefone: "11999998888", email: "m@e.com", consentimento: true,
   }
 
   it("mantém só uploads internos e descarta URLs arbitrárias/javascript:", async () => {
@@ -94,7 +96,7 @@ describe("aprovarPreMatricula", () => {
     expect(data.dataMatricula).toBeInstanceOf(Date)
     expect(m.preMatricula.update).toHaveBeenCalledWith({
       where: { id: 1 },
-      data: { status: "aprovada" },
+      data: { status: "aprovada", decididoEm: expect.any(Date) },
     })
   })
 
@@ -176,6 +178,7 @@ describe("criarPreMatricula", () => {
       nomeResponsavel: "Maria",
       telefone: "",
       email: "maria@email.com",
+      consentimento: true,
     })
     expect(res).toEqual({ error: "Preencha os campos obrigatórios" })
   })
@@ -191,7 +194,40 @@ describe("criarPreMatricula", () => {
       nomeResponsavel: "Maria",
       telefone: "(11) 99999-8888",
       email: "maria@email.com",
+      consentimento: true,
     })
     expect(res).toEqual({ success: true })
+    expect(m.preMatricula.create.mock.calls[0][0].data).toMatchObject({
+      consentimentoEm: expect.any(Date),
+      consentimentoVersao: "2026-08-11",
+    })
+  })
+
+  it("rejeita envio sem consentimento explícito", async () => {
+    const res = await criarPreMatricula({
+      nomeAluno: "João", dataNascimento: "2015-04-10", turma: "Sub-11", horario: "10h",
+      nomeResponsavel: "Maria", telefone: "11999998888", email: "", consentimento: false,
+    })
+    expect(res).toEqual({ error: "É necessário autorizar o tratamento dos dados para enviar a pré-matrícula" })
+    expect(m.preMatricula.create).not.toHaveBeenCalled()
+  })
+})
+
+describe("deletarPreMatricula", () => {
+  it("remove os documentos antes do registro", async () => {
+    m.preMatricula.findUnique.mockResolvedValue({ documentos: '["/uploads/matriculas/doc.pdf"]' })
+    m.preMatricula.delete.mockResolvedValue({ id: 1 })
+    await expect(deletarPreMatricula(1)).resolves.toEqual({ success: true })
+    expect(deleteMatriculaDocuments).toHaveBeenCalledWith('["/uploads/matriculas/doc.pdf"]')
+    expect(m.preMatricula.delete).toHaveBeenCalledWith({ where: { id: 1 } })
+    expect((deleteMatriculaDocuments as ReturnType<typeof vi.fn>).mock.invocationCallOrder[0])
+      .toBeLessThan(m.preMatricula.delete.mock.invocationCallOrder[0])
+  })
+
+  it("mantém o registro quando a exclusão física falha", async () => {
+    m.preMatricula.findUnique.mockResolvedValue({ documentos: '["/uploads/matriculas/doc.pdf"]' })
+    ;(deleteMatriculaDocuments as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("EACCES"))
+    await expect(deletarPreMatricula(1)).resolves.toEqual({ error: "EACCES" })
+    expect(m.preMatricula.delete).not.toHaveBeenCalled()
   })
 })

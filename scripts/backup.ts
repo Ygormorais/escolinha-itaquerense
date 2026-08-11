@@ -1,7 +1,9 @@
 import fs from "fs"
 import path from "path"
-import Database from "better-sqlite3"
+import { resolveClubConfigPath } from "../lib/config"
 import { resolveDbPath } from "../lib/db-path"
+import { resolveUploadsBaseDir } from "../lib/uploads-path"
+import { BACKUP_BUNDLE_SUFFIX, createBackupBundle } from "./backup-bundle"
 import { loadEnv } from "./load-env"
 
 loadEnv()
@@ -11,58 +13,32 @@ const DB_PREFIX = path.basename(DB_PATH, ".db")
 const BACKUP_DIR = process.env.BACKUP_DIR ?? path.join(process.cwd(), "backups")
 const MAX_BACKUPS = Number(process.env.BACKUP_RETENTION_COUNT ?? 30)
 
-async function criarBackupConsistente(destino: string) {
-  const origem = new Database(DB_PATH, { readonly: true, fileMustExist: true })
-  try {
-    await origem.backup(destino)
-  } finally {
-    origem.close()
-  }
-
-  const copia = new Database(destino, { readonly: true, fileMustExist: true })
-  try {
-    const resultado = copia.pragma("quick_check", { simple: true })
-    if (resultado !== "ok") throw new Error(`PRAGMA quick_check retornou: ${String(resultado)}`)
-  } finally {
-    copia.close()
-  }
-}
-
 async function main() {
   if (!fs.existsSync(DB_PATH)) {
     console.error("❌ Banco de dados não encontrado:", DB_PATH)
     process.exit(1)
   }
 
-  if (!fs.existsSync(BACKUP_DIR)) {
-    fs.mkdirSync(BACKUP_DIR, { recursive: true })
-  }
+  const backupPath = await createBackupBundle({
+    dbPath: DB_PATH,
+    uploadsDir: resolveUploadsBaseDir(),
+    configPath: resolveClubConfigPath(),
+    backupDir: BACKUP_DIR,
+    prefix: DB_PREFIX,
+  })
+  const backupName = path.basename(backupPath)
+  const manifest = fs.statSync(path.join(backupPath, "manifest.json"))
+  console.log(`✅ Backup completo criado: ${backupName} (SQLite, uploads e configuração; manifesto ${manifest.size} bytes)`)
 
-  const now = new Date()
-  const timestamp = now.toISOString().replace(/[:.]/g, "-").slice(0, 19)
-  const backupName = `${DB_PREFIX}-${timestamp}.db`
-  const backupPath = path.join(BACKUP_DIR, backupName)
-
-  await criarBackupConsistente(backupPath)
-
-  const stats = fs.statSync(backupPath)
-  if (stats.size === 0) {
-    fs.unlinkSync(backupPath)
-    throw new Error("backup gerado vazio")
-  }
-  const sizeKB = (stats.size / 1024).toFixed(1)
-
-  console.log(`✅ Backup criado: ${backupName} (${sizeKB} KB, SQLite online backup validado)`)
-
-  const backups = fs.readdirSync(BACKUP_DIR)
-    .filter((f) => f.startsWith(`${DB_PREFIX}-`) && f.endsWith(".db"))
+  const backups = fs.readdirSync(BACKUP_DIR, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith(`${DB_PREFIX}-`) && entry.name.endsWith(BACKUP_BUNDLE_SUFFIX))
+    .map((entry) => entry.name)
     .sort()
     .reverse()
 
   if (Number.isInteger(MAX_BACKUPS) && MAX_BACKUPS > 0 && backups.length > MAX_BACKUPS) {
-    const toDelete = backups.slice(MAX_BACKUPS)
-    for (const old of toDelete) {
-      fs.unlinkSync(path.join(BACKUP_DIR, old))
+    for (const old of backups.slice(MAX_BACKUPS)) {
+      fs.rmSync(path.join(BACKUP_DIR, old), { recursive: true, force: true })
       console.log(`🗑️  Removido backup antigo: ${old}`)
     }
   }
@@ -70,7 +46,7 @@ async function main() {
   const totalMantido = Number.isInteger(MAX_BACKUPS) && MAX_BACKUPS > 0
     ? Math.min(backups.length, MAX_BACKUPS)
     : backups.length
-  console.log(`📦 Total de backups: ${totalMantido}`)
+  console.log(`📦 Total de backups completos: ${totalMantido}`)
 }
 
 main().catch((error) => {

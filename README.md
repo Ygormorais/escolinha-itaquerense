@@ -39,8 +39,8 @@ Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definid
 | `npm run lint` | ESLint |
 | `npm test` | Testes unitários (vitest) |
 | `npm run test:e2e` | Testes E2E (Playwright) |
-| `npm run db:backup` | Backup do banco |
-| `npm run db:restore -- --confirm-stopped <backup>` | Valida e restaura backup com o serviço PM2 parado |
+| `npm run db:backup` | Backup completo de banco, uploads e configuração |
+| `npm run db:restore -- --confirm-stopped <backup>` | Valida e restaura o pacote completo com o serviço PM2 parado |
 | `npm run db:migrate` | Aplica migrations |
 | `npm run db:studio` | Prisma Studio |
 | `npm run housekeeping` | Limpeza de dados antigos |
@@ -59,8 +59,8 @@ Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definid
 | `EVOLUTION_INSTANCE` | Instância Evolution |
 | `DATABASE_URL` | URL do SQLite (`file:./prisma/dev.db` em desenvolvimento) |
 | `UPLOADS_DIR` | Diretório persistente de fotos e documentos |
-| `BACKUP_DIR` | Diretório dos snapshots SQLite locais |
-| `BACKUP_RETENTION_COUNT` | Quantidade de snapshots locais mantidos |
+| `BACKUP_DIR` | Diretório dos pacotes locais de recuperação |
+| `BACKUP_RETENTION_COUNT` | Quantidade de pacotes completos mantidos |
 | `NEXT_PUBLIC_APP_URL` | URL pública do app |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Service Account Google |
 | `GOOGLE_PRIVATE_KEY` | Chave privada Google |

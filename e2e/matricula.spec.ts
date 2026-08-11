@@ -34,6 +34,7 @@ test.describe("Pré-Matrícula Pública", () => {
     await page.fill('input[id="responsavel"]', "Responsável Teste")
     await page.fill('input[id="telefone"]', "(11) 99999-8888")
     await page.fill('input[id="email"]', "teste@email.com")
+    await page.getByRole("checkbox").check()
     await page.click('button[type="submit"]')
     await expect(page.getByRole("heading", { name: /Pré-matrícula enviada/ })).toBeVisible({ timeout: 10000 })
   })

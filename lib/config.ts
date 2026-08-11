@@ -63,7 +63,10 @@ export function getConfig(): ClubConfig {
 
 export function saveConfig(config: ClubConfig) {
   const configPath = resolveClubConfigPath()
-  fs.mkdirSync(path.dirname(configPath), { recursive: true })
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8")
+  const configDir = path.dirname(configPath)
+  fs.mkdirSync(configDir, { recursive: true, mode: 0o700 })
+  fs.chmodSync(configDir, 0o700)
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), { encoding: "utf-8", mode: 0o600 })
+  fs.chmodSync(configPath, 0o600)
   cachedConfig = config
 }
