@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { TURMAS } from "@/lib/constants"
 import { startOfMonth, endOfMonth, format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -11,6 +12,7 @@ export default async function RelatorioFrequenciaPage({
 }: {
   searchParams: Promise<{ mes?: string }>
 }) {
+  const { role } = await requireAuth(["admin", "secretaria", "tecnico"])
   const params = await searchParams
   const now = new Date()
   const mesSelecionado = params.mes ?? format(now, "yyyy-MM")
@@ -50,6 +52,7 @@ export default async function RelatorioFrequenciaPage({
       turmas={[...TURMAS]}
       mesAtual={mesLabel}
       mesSelecionado={mesSelecionado}
+      role={role as "admin" | "secretaria" | "tecnico"}
     />
   )
 }

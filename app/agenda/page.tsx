@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { PageHeader } from "@/components/layout/page-header"
 import { AgendaClient } from "./agenda-client"
 import { FpfsJogos } from "./fpfs-jogos"
@@ -10,6 +11,7 @@ export default async function AgendaPage({
 }: {
   searchParams: Promise<{ mes?: string }>
 }) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const params = await searchParams
   const now = new Date()
   const valido = /^\d{4}-\d{2}$/.test(params.mes ?? "")

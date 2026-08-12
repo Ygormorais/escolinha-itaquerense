@@ -3,20 +3,21 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import type { StaffRole } from "@/lib/permissions"
 
 const TABS = [
-  { href: "/relatorio", label: "Financeiro" },
-  { href: "/relatorio/alunos", label: "Alunos" },
-  { href: "/relatorio/pagamentos", label: "Pagamentos" },
-  { href: "/relatorio/frequencia", label: "Frequência" },
+  { href: "/relatorio", label: "Financeiro", roles: ["admin"] },
+  { href: "/relatorio/alunos", label: "Alunos", roles: ["admin", "secretaria"] },
+  { href: "/relatorio/pagamentos", label: "Pagamentos", roles: ["admin", "secretaria"] },
+  { href: "/relatorio/frequencia", label: "Frequência", roles: ["admin", "secretaria", "tecnico"] },
 ]
 
-export function RelatorioNav() {
+export function RelatorioNav({ role = "admin" }: { role?: StaffRole }) {
   const pathname = usePathname()
 
   return (
     <div className="flex gap-1 rounded-lg border border-border bg-muted p-1 w-fit">
-      {TABS.map(({ href, label }) => {
+      {TABS.filter((tab) => tab.roles.includes(role)).map(({ href, label }) => {
         const isActive = href === "/relatorio" ? pathname === href : pathname.startsWith(href)
         return (
           <Link

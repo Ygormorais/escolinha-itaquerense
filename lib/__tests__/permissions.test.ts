@@ -62,6 +62,9 @@ describe("canAccessStaffPath", () => {
     expect(canAccessStaffPath("/caixa/extrato", "tecnico")).toBe(false)
     expect(canAccessStaffPath("/pagamentos", "tecnico")).toBe(false)
     expect(canAccessStaffPath("/frequencia", "tecnico")).toBe(true)
+    expect(canAccessStaffPath("/relatorio", "tecnico")).toBe(false)
+    expect(canAccessStaffPath("/relatorio/alunos", "tecnico")).toBe(false)
+    expect(canAccessStaffPath("/relatorio/frequencia", "tecnico")).toBe(true)
   })
 
   it("bloqueia caixa, custos e saúde para secretaria", () => {

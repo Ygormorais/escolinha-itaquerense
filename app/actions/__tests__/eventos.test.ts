@@ -20,6 +20,7 @@ vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn().mockResolvedValue(un
 
 import { getEventosMes, criarEvento, editarEvento, deletarEvento } from "@/app/actions/eventos"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 const m = db as unknown as {
@@ -49,6 +50,7 @@ describe("getEventosMes", () => {
         }),
       })
     )
+    expect(requireAuth).toHaveBeenCalledWith(["admin", "secretaria", "tecnico"])
   })
 })
 

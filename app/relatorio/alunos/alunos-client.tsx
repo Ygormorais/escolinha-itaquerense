@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
 import { printHTML } from "@/lib/print"
+import type { StaffRole } from "@/lib/permissions"
 
 type Aluno = {
   id: number
@@ -62,10 +63,12 @@ export function RelatorioAlunosClient({
   alunos,
   turmas,
   turmaInicial = "todas",
+  role,
 }: {
   alunos: Aluno[]
   turmas: string[]
   turmaInicial?: string
+  role: StaffRole
 }) {
   const [filtroTurma, setFiltroTurma] = useState(turmaInicial)
   const [filtroStatus, setFiltroStatus] = useState("ativos")
@@ -164,7 +167,7 @@ export function RelatorioAlunosClient({
 
   return (
     <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
-      <RelatorioNav />
+      <RelatorioNav role={role} />
       <PageHeader
         title="Relatório de Alunos"
         description={`${filtrados.length} alunos · Receita mensal ${formatMoney(totalMensalidade)}`}

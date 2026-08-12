@@ -18,6 +18,7 @@ import type { RscDate } from "@/lib/rsc-date"
 import { printHTML } from "@/lib/print"
 import { getPaymentChannel, type PaymentChannel } from "@/lib/payment-channel"
 import { TURMAS } from "@/lib/constants"
+import type { StaffRole } from "@/lib/permissions"
 
 type Pagamento = {
   id: number
@@ -47,7 +48,7 @@ function calcStatus(p: Pagamento): "Pago" | "Atrasado" | "Pendente" {
   return new Date(p.dataVencimento) < new Date() ? "Atrasado" : "Pendente"
 }
 
-export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pagamento[]; ano: number }) {
+export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamentos: Pagamento[]; ano: number; role: StaffRole }) {
   const router = useRouter()
   const [filtroStatus, setFiltroStatus] = useState("todos")
   const [filtroTurma, setFiltroTurma]   = useState("todas")
@@ -144,7 +145,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano }: { pagamentos: Pag
 
   return (
     <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
-      <RelatorioNav />
+      <RelatorioNav role={role} />
       <PageHeader
         title="Relatório de Pagamentos"
         description={`${filtrados.length} de ${pagamentos.length} registros — ${ano}`}

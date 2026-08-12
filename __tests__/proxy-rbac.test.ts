@@ -21,6 +21,17 @@ describe("proxy RBAC", () => {
     expect(response.headers.get("location")).toBe("http://localhost/dashboard?erro=acesso-negado")
   })
 
+  it("redireciona técnico que tenta abrir relatório financeiro diretamente", async () => {
+    const response = await requestAs("/relatorio", "tecnico")
+    expect(response.status).toBe(307)
+    expect(response.headers.get("location")).toContain("/dashboard?erro=acesso-negado")
+  })
+
+  it("mantém o relatório de frequência disponível ao técnico", async () => {
+    const response = await requestAs("/relatorio/frequencia", "tecnico")
+    expect(response.status).toBe(200)
+  })
+
   it("redireciona secretaria que tenta abrir área técnica", async () => {
     const response = await requestAs("/tecnico/saude", "secretaria")
     expect(response.status).toBe(307)
