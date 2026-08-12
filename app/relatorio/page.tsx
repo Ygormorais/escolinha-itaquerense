@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
@@ -7,7 +8,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { TrendingUp, TrendingDown, Wallet, AlertCircle, BarChart2 } from "lucide-react"
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
+import { format, startOfYear, endOfYear } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import dynamic from "next/dynamic"
 import { RelatorioHeader, RelatorioPrintStyle } from "./relatorio-client"
@@ -25,6 +26,7 @@ export default async function RelatorioPage({
 }: {
   searchParams: Promise<{ ano?: string }>
 }) {
+  const { role } = await requireAuth(["admin"])
   const params = await searchParams
   const now = new Date()
   const ano = Number(params.ano ?? now.getFullYear())
@@ -48,20 +50,19 @@ export default async function RelatorioPage({
     }).then((rows) => rows.length),
   ])
 
-  // Agrupa por mês
+  const totaisPorMes = Array.from({ length: 12 }, () => ({ receita: 0, custo: 0 }))
+  for (const pagamento of pagamentos) {
+    totaisPorMes[pagamento.dataPagamento!.getMonth()].receita += pagamento.valorRecebido ?? 0
+  }
+  for (const custo of custos) {
+    totaisPorMes[custo.data.getMonth()].custo += custo.valor
+  }
+
+  // Agrupa em uma única passagem pelos dados do ano.
   const meses = Array.from({ length: 12 }, (_, i) => {
     const dataRef = new Date(ano, i, 1)
-    const inicio = startOfMonth(dataRef)
-    const fim = endOfMonth(dataRef)
     const label = format(dataRef, "MMM/yy", { locale: ptBR })
-
-    const receita = pagamentos
-      .filter((p) => p.dataPagamento! >= inicio && p.dataPagamento! <= fim)
-      .reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
-
-    const custo = custos
-      .filter((c) => c.data >= inicio && c.data <= fim)
-      .reduce((s, c) => s + c.valor, 0)
+    const { receita, custo } = totaisPorMes[i]
 
     return { mes: i + 1, label, receita, custo, saldo: receita - custo }
   })
@@ -81,7 +82,7 @@ export default async function RelatorioPage({
   return (
     <div className="relatorio-print flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
       <RelatorioPrintStyle />
-      <RelatorioNav />
+      <RelatorioNav role={role as "admin"} />
       <PageHeader
         title="Relatório Anual"
         description={`Resumo financeiro consolidado — ${ano}`}

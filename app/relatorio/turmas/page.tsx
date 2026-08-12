@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/layout/page-header"
 export const metadata = { title: "Relatório por Turma — Escolinha Itaquerense" }
 
 export default async function RelatorioTurmasPage() {
-  await requireAuth()
+  await requireAuth(["admin", "secretaria"])
 
   const now = new Date()
   const mesAtual = format(now, "yyyy-MM")

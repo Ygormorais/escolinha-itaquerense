@@ -18,6 +18,7 @@ import { sanitizeCSVCell } from "@/lib/utils"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { format, subMonths } from "date-fns"
+import type { StaffRole } from "@/lib/permissions"
 
 type Stat = {
   id: number
@@ -42,11 +43,13 @@ export function RelatorioFrequenciaClient({
   turmas,
   mesAtual,
   mesSelecionado,
+  role,
 }: {
   stats: Stat[]
   turmas: string[]
   mesAtual: string
   mesSelecionado: string
+  role: StaffRole
 }) {
   const router = useRouter()
   const [filtroTurma, setFiltroTurma] = useState("todas")
@@ -138,7 +141,7 @@ export function RelatorioFrequenciaClient({
 
   return (
     <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
-      <RelatorioNav />
+      <RelatorioNav role={role} />
       <PageHeader
         title="Relatório de Frequência"
         description={`${filtrados.length} alunos · Média ${mediaFiltrada}%`}

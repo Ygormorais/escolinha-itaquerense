@@ -7,6 +7,7 @@ import { registrarLog } from "@/app/actions/log"
 import { dataValida } from "@/lib/utils"
 
 export async function getEventosMes(ano: number, mes: number) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const inicio = new Date(ano, mes - 1, 1)
   const fim = new Date(ano, mes, 0, 23, 59, 59)
   return db.evento.findMany({

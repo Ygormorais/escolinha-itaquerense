@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { TURMAS } from "@/lib/constants"
 import { RelatorioAlunosClient } from "./alunos-client"
 
@@ -9,6 +10,7 @@ export default async function RelatorioAlunosPage({
 }: {
   searchParams: Promise<{ turma?: string }>
 }) {
+  const { role } = await requireAuth(["admin", "secretaria"])
   const params = await searchParams
   const turmaInicial = params.turma && (TURMAS as readonly string[]).includes(params.turma) ? params.turma : "todas"
 
@@ -28,5 +30,5 @@ export default async function RelatorioAlunosPage({
     },
   })
 
-  return <RelatorioAlunosClient alunos={alunos} turmas={[...TURMAS]} turmaInicial={turmaInicial} />
+  return <RelatorioAlunosClient alunos={alunos} turmas={[...TURMAS]} turmaInicial={turmaInicial} role={role as "admin" | "secretaria"} />
 }

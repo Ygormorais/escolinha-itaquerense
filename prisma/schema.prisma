@@ -109,6 +109,7 @@ model Frequencia {
   presenca String
 
   @@unique([alunoId, data])
+  @@index([data])
 }
 
 model Uniforme {

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { getClubConfig } from "@/app/actions/config"
+import { requireAuth } from "@/lib/auth"
 import { PageHeader } from "@/components/layout/page-header"
 import { ConfigForm } from "./config-form"
 import { CronTrigger } from "./cron-trigger"
@@ -9,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export const metadata = { title: "Configurações — Escolinha Itaquerense" }
 
 export default async function ConfiguracoesPage() {
+  await requireAuth(["admin"])
   const config = await getClubConfig()
   return (
     <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">

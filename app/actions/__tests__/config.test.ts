@@ -52,12 +52,12 @@ describe("config", () => {
   })
 
   describe("getClubConfig", () => {
-    it("deve retornar o resultado de getConfig() sem exigir autenticação", async () => {
+    it("deve exigir autenticação e retornar o resultado de getConfig()", async () => {
       const result = await getClubConfig()
 
       expect(result).toEqual(mockConfig)
       expect(getConfig).toHaveBeenCalled()
-      expect(requireAuth).not.toHaveBeenCalled()
+      expect(requireAuth).toHaveBeenCalledWith(["admin", "secretaria"])
     })
   })
 

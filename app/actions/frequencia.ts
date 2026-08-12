@@ -38,6 +38,7 @@ export async function salvarFrequencia(
 }
 
 export async function getFrequenciaPorTurmaData(turma: string, data: string) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const alunos = await db.aluno.findMany({
     where: { turma, status: "Ativo" },
     select: {
@@ -59,6 +60,7 @@ export async function getFrequenciaPorTurmaData(turma: string, data: string) {
 }
 
 export async function getPresencaPorTurma(mes: string) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const [ano, mesNum] = mes.split("-").map(Number)
   const inicio = new Date(ano, mesNum - 1, 1)
   const fim = new Date(ano, mesNum, 0, 23, 59, 59)
@@ -81,6 +83,7 @@ export async function getPresencaPorTurma(mes: string) {
 }
 
 export async function getFrequenciaAluno(alunoId: number) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const now = new Date()
   const meses = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1)
@@ -111,6 +114,7 @@ export async function getFrequenciaAluno(alunoId: number) {
 }
 
 export async function getResumoFrequenciaMes(turma: string, mes: string) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const [ano, mesNum] = mes.split("-").map(Number)
   const inicio = new Date(ano, mesNum - 1, 1)
   const fim = new Date(ano, mesNum, 0, 23, 59, 59)
@@ -139,6 +143,7 @@ export async function getResumoFrequenciaMes(turma: string, mes: string) {
 }
 
 export async function getEstatisticasFrequencia(mes: string) {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const [ano, mesNum] = mes.split("-").map(Number)
   const inicio = new Date(ano, mesNum - 1, 1)
   const fim = new Date(ano, mesNum, 0, 23, 59, 59)
@@ -175,6 +180,7 @@ export async function getEstatisticasFrequencia(mes: string) {
 }
 
 export async function getQtdeAlunosEmQueda(mes: string): Promise<number> {
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const { ranking } = await getEstatisticasFrequencia(mes)
   return filtrarEmQueda(ranking).length
 }

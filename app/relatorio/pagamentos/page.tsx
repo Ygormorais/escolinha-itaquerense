@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { RelatorioPagamentosClient } from "./pagamentos-client"
 
 export const metadata = { title: "Relatório de Pagamentos — Escolinha Itaquerense" }
@@ -18,6 +19,7 @@ export default async function RelatorioPagamentosPage({
 }: {
   searchParams: Promise<{ ano?: string }>
 }) {
+  const { role } = await requireAuth(["admin", "secretaria"])
   const now = new Date()
   const currentYear = now.getFullYear()
   const params = await searchParams
@@ -36,5 +38,5 @@ export default async function RelatorioPagamentosPage({
     orderBy: [{ dataVencimento: "desc" }],
   })
 
-  return <RelatorioPagamentosClient pagamentos={pagamentos} ano={ano} />
+  return <RelatorioPagamentosClient pagamentos={pagamentos} ano={ano} role={role as "admin" | "secretaria"} />
 }

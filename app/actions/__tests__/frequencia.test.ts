@@ -25,6 +25,7 @@ import {
   getPresencaPorTurma,
 } from "@/app/actions/frequencia"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 const m = db as unknown as {
   aluno: { findMany: ReturnType<typeof vi.fn> }
@@ -66,6 +67,12 @@ describe("salvarFrequencia", () => {
 })
 
 describe("getResumoFrequenciaMes", () => {
+  it("exige perfil de equipe antes de consultar a frequência", async () => {
+    await getResumoFrequenciaMes("Sub-11", "2026-06")
+
+    expect(requireAuth).toHaveBeenCalledWith(["admin", "secretaria", "tecnico"])
+  })
+
   it("contabiliza presentes/ausentes/justificados e calcula pct", async () => {
     m.aluno.findMany.mockResolvedValue([
       {

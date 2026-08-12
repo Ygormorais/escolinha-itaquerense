@@ -6,6 +6,7 @@ import { getConfig as getFileConfig, saveConfig, type ClubConfig } from "@/lib/c
 import { registrarLog } from "@/app/actions/log"
 
 export async function getClubConfig() {
+  await requireAuth(["admin", "secretaria"])
   return getFileConfig()
 }
 
