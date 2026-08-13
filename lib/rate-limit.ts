@@ -11,14 +11,18 @@ function createDefaultStore(): RateLimitStore {
 }
 
 let activeStore: RateLimitStore = createDefaultStore()
+const PRUNE_INTERVAL_MS = 5 * 60_000
+let nextPruneAt = 0
 
 /** Troca o store (apenas testes). */
 export function setRateLimitStore(store: RateLimitStore): void {
   activeStore = store
+  nextPruneAt = 0
 }
 
 export function resetRateLimitStore(): void {
   activeStore.clear()
+  nextPruneAt = 0
 }
 
 export function checkRateLimit(
@@ -27,17 +31,12 @@ export function checkRateLimit(
   windowMs = 60_000
 ): { ok: boolean; remaining: number; retryAfterMs?: number } {
   const now = Date.now()
-  activeStore.prune(now)
-
-  const entry = activeStore.get(key)
-
-  if (!entry || now > entry.resetAt) {
-    activeStore.set(key, { count: 1, resetAt: now + windowMs })
-    return { ok: true, remaining: maxAttempts - 1 }
+  if (now >= nextPruneAt) {
+    activeStore.prune(now)
+    nextPruneAt = now + PRUNE_INTERVAL_MS
   }
 
-  entry.count++
-  activeStore.set(key, entry)
+  const entry = activeStore.consume(key, now, windowMs)
 
   if (entry.count > maxAttempts) {
     return {
