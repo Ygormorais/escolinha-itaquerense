@@ -31,6 +31,19 @@ describe("createSqliteRateLimitStore", () => {
     expect(store.get("k")?.count).toBe(5)
   })
 
+  it("consume incrementa a mesma chave sem perder contagem", () => {
+    const now = Date.now()
+    expect(store.consume("k", now, 60_000)).toEqual({ count: 1, resetAt: now + 60_000 })
+    expect(store.consume("k", now + 1, 60_000)).toEqual({ count: 2, resetAt: now + 60_000 })
+    expect(store.get("k")).toEqual({ count: 2, resetAt: now + 60_000 })
+  })
+
+  it("consume inicia uma nova janela quando a anterior expira", () => {
+    const now = Date.now()
+    store.set("k", { count: 5, resetAt: now })
+    expect(store.consume("k", now, 60_000)).toEqual({ count: 1, resetAt: now + 60_000 })
+  })
+
   it("prune remove entradas expiradas e preserva válidas", () => {
     const now = Date.now()
     store.set("expirada", { count: 3, resetAt: now - 1 })
