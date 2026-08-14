@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 vi.mock("@/lib/db", () => {
   const db = {
     $transaction: vi.fn(),
-    transacaoMaquina: { findFirst: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn() },
+    transacaoMaquina: { createMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn() },
     pagamento: { create: vi.fn(), upsert: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn() },
   }
@@ -29,8 +29,7 @@ import { parseCSV, parseTransacoes } from "@/lib/maquina-csv"
 const m = db as unknown as {
   $transaction: ReturnType<typeof vi.fn>
   transacaoMaquina: {
-    findFirst: ReturnType<typeof vi.fn>
-    create: ReturnType<typeof vi.fn>
+    createMany: ReturnType<typeof vi.fn>
     findUnique: ReturnType<typeof vi.fn>
     findMany: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
@@ -51,8 +50,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mParseCSV.mockReturnValue({ linhas: [["a"], ["b"]] })
   mParseTransacoes.mockReturnValue([tx()])
-  m.transacaoMaquina.findFirst.mockResolvedValue(null)
-  m.transacaoMaquina.create.mockResolvedValue({})
+  m.transacaoMaquina.createMany.mockImplementation(async ({ data }: { data: unknown[] }) => ({ count: data.length }))
   m.transacaoMaquina.findUnique.mockResolvedValue(tx())
   m.transacaoMaquina.findMany.mockResolvedValue([])
   m.transacaoMaquina.update.mockResolvedValue({})
@@ -77,11 +75,38 @@ describe("importarCSV", () => {
 
   it("importa novas e ignora duplicadas", async () => {
     mParseTransacoes.mockReturnValue([tx({ nomeNoCartao: "A" }), tx({ nomeNoCartao: "B" })])
-    // primeira é nova (null), segunda já existe
-    m.transacaoMaquina.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 1 })
+    m.transacaoMaquina.findMany.mockResolvedValue([
+      { dataTransacao: new Date("2026-06-05"), valor: 200, nomeNoCartao: "B" },
+    ])
     const res = await importarCSV("texto", "extrato.csv")
     expect(res).toMatchObject({ importadas: 1, ignoradas: 1, formato: "Cielo" })
-    expect(m.transacaoMaquina.create).toHaveBeenCalledTimes(1)
+    expect(m.transacaoMaquina.findMany).toHaveBeenCalledTimes(1)
+    expect(m.transacaoMaquina.createMany).toHaveBeenCalledTimes(1)
+    expect(m.transacaoMaquina.createMany.mock.calls[0][0].data).toEqual([
+      expect.objectContaining({ nomeNoCartao: "A", arquivo: "extrato.csv", status: "pendente" }),
+    ])
+  })
+
+  it("ignora linhas duplicadas dentro do próprio arquivo", async () => {
+    mParseTransacoes.mockReturnValue([tx({ nomeNoCartao: "A" }), tx({ nomeNoCartao: "A" })])
+
+    await expect(importarCSV("texto", "duplicado.csv")).resolves.toMatchObject({
+      importadas: 1,
+      ignoradas: 1,
+    })
+    expect(m.transacaoMaquina.createMany.mock.calls[0][0].data).toHaveLength(1)
+  })
+
+  it("não executa inserção quando todas as transações já existem", async () => {
+    m.transacaoMaquina.findMany.mockResolvedValue([
+      { dataTransacao: new Date("2026-06-05"), valor: 200, nomeNoCartao: "MARIA SILVA" },
+    ])
+
+    await expect(importarCSV("texto", "repetido.csv")).resolves.toMatchObject({
+      importadas: 0,
+      ignoradas: 1,
+    })
+    expect(m.transacaoMaquina.createMany).not.toHaveBeenCalled()
   })
 })
 
