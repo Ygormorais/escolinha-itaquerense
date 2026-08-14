@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Download, Printer, Search, X, SearchX } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
@@ -19,6 +19,9 @@ import { printHTML } from "@/lib/print"
 import { getPaymentChannel, type PaymentChannel } from "@/lib/payment-channel"
 import { TURMAS } from "@/lib/constants"
 import type { StaffRole } from "@/lib/permissions"
+import { REPORT_PAGE_SIZE, type PagamentoReportFilters } from "@/lib/report-query"
+import { Pagination } from "@/components/ui/pagination"
+import { getPagamentosRelatorioCompleto } from "@/app/relatorio/export-actions"
 
 type Pagamento = {
   id: number
@@ -48,82 +51,85 @@ function calcStatus(p: Pagamento): "Pago" | "Atrasado" | "Pendente" {
   return new Date(p.dataVencimento) < new Date() ? "Atrasado" : "Pendente"
 }
 
-export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamentos: Pagamento[]; ano: number; role: StaffRole }) {
+type CanalResumo = { canal: PaymentChannel; total: number; quantidade: number; pagos: number }
+
+export function RelatorioPagamentosClient({
+  pagamentos,
+  role,
+  filters,
+  total,
+  totalPages,
+  resumo,
+}: {
+  pagamentos: Pagamento[]
+  role: StaffRole
+  filters: PagamentoReportFilters
+  total: number
+  totalPages: number
+  resumo: {
+    totalRecebido: number
+    totalPendente: number
+    totalAtrasado: number
+    ticketMedio: number
+    taxaRecebimento: number
+    counts: Record<(typeof STATUS_OPTS)[number]["key"], number>
+    canais: CanalResumo[]
+  }
+}) {
   const router = useRouter()
-  const [filtroStatus, setFiltroStatus] = useState("todos")
-  const [filtroTurma, setFiltroTurma]   = useState("todas")
-  const [filtroCanal, setFiltroCanal]   = useState<PaymentChannel | "todos">("todos")
-  const [busca, setBusca]               = useState("")
-
-  const filtrados = useMemo(() => {
-    const q = busca.trim().toLowerCase()
-    return pagamentos.filter((p) => {
-      if (q && !p.aluno.nome.toLowerCase().includes(q)) return false
-      if (filtroTurma !== "todas" && p.aluno.turma !== filtroTurma) return false
-      const st = calcStatus(p)
-      if (filtroStatus === "pagos"     && st !== "Pago")     return false
-      if (filtroStatus === "pendentes" && st !== "Pendente") return false
-      if (filtroStatus === "atrasados" && st !== "Atrasado") return false
-      if (filtroCanal !== "todos" && getPaymentChannel(p.formaPagamento) !== filtroCanal) return false
-      return true
-    })
-  }, [pagamentos, filtroCanal, filtroStatus, filtroTurma, busca])
-
-  const pagamentosConfirmados = pagamentos.filter((p) => p.dataPagamento)
-  const totalRecebido = pagamentosConfirmados.reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
-  const totalPendente = pagamentos.filter((p) => !p.dataPagamento).reduce((s, p) => s + (p.aluno.mensalidade ?? 0), 0)
-  const totalAtrasado = pagamentos.filter((p) => calcStatus(p) === "Atrasado").reduce((s, p) => s + (p.aluno.mensalidade ?? 0), 0)
-  const ticketMedio = pagamentosConfirmados.length > 0
-    ? totalRecebido / pagamentosConfirmados.length
-    : 0
-
-  const canais = useMemo(() => {
-    const base: Array<PaymentChannel | "Sem registro"> = ["PIX", "Boleto", "Maquininha", "Transferência", "Dinheiro", "Outro", "Sem registro"]
-    return base.map((canal) => {
-      const items = pagamentos.filter((p) => getPaymentChannel(p.formaPagamento) === canal)
-      const total = items.reduce((sum, p) => sum + (p.valorRecebido ?? 0), 0)
-      const pagos = items.filter((p) => p.dataPagamento).length
-      return { canal, total, quantidade: items.length, pagos }
-    }).filter((item) => item.quantidade > 0)
-  }, [pagamentos])
-
-  const countPorStatus = useMemo(() => ({
-    todos:     pagamentos.length,
-    pagos:     pagamentos.filter((p) => calcStatus(p) === "Pago").length,
-    pendentes: pagamentos.filter((p) => calcStatus(p) === "Pendente").length,
-    atrasados: pagamentos.filter((p) => calcStatus(p) === "Atrasado").length,
-  }), [pagamentos])
+  const searchParams = useSearchParams()
+  const [busca, setBusca] = useState(filters.q)
+  const [anoInput, setAnoInput] = useState(String(filters.ano))
+  const [exportando, setExportando] = useState(false)
+  const canais = resumo.canais
   const canalLider = canais[0] ?? null
-  const taxaRecebimento = pagamentos.length > 0 ? (countPorStatus.pagos / pagamentos.length) * 100 : 0
+  const filtrosAtivos = filters.status !== "todos" || filters.turma !== "todas" || filters.canal !== "todos" || filters.q
 
-  const filtrosAtivos = filtroStatus !== "todos" || filtroTurma !== "todas" || filtroCanal !== "todos" || busca.trim()
-
-  function limparFiltros() {
-    setFiltroStatus("todos")
-    setFiltroTurma("todas")
-    setFiltroCanal("todos")
-    setBusca("")
+  async function carregarRelatorioCompleto() {
+    setExportando(true)
+    try {
+      return await getPagamentosRelatorioCompleto(filters)
+    } finally {
+      setExportando(false)
+    }
   }
 
-  function imprimirPDF() {
-    const linhas = filtrados.map((p) => {
+  function navegar(changes: Record<string, string | number>) {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [key, value] of Object.entries(changes)) {
+      if (!value || value === "todos" || value === "todas") params.delete(key)
+      else params.set(key, String(value))
+    }
+    if (!("pagina" in changes)) params.delete("pagina")
+    router.push(`/relatorio/pagamentos?${params.toString()}`, { scroll: false })
+  }
+
+  function limparFiltros() {
+    setBusca("")
+    router.push(`/relatorio/pagamentos?ano=${filters.ano}`, { scroll: false })
+  }
+
+  async function imprimirPDF() {
+    const completos = await carregarRelatorioCompleto()
+    const linhas = completos.map((p) => {
       const st = calcStatus(p)
       const canal = getPaymentChannel(p.formaPagamento)
       return `<tr><td>${p.aluno.nome}</td><td>${p.aluno.turma}</td><td>${p.mesReferencia}</td><td>${canal}</td><td>${format(new Date(p.dataVencimento), "dd/MM/yyyy")}</td><td>${p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</td><td>R$ ${(p.valorRecebido ?? 0).toFixed(2)}</td><td>${st}</td></tr>`
     }).join("")
     printHTML(`
-      <h1>Relatório de Pagamentos — ${ano}</h1>
-      <p>${filtrados.length} registros filtrados · Recebido: ${formatMoney(totalRecebido)} · Pendente: ${formatMoney(totalPendente)} · Em atraso: ${formatMoney(totalAtrasado)}</p>
+      <h1>Relatório de Pagamentos — ${filters.ano}</h1>
+      <p>${completos.length} registros filtrados · Recebido: ${formatMoney(resumo.totalRecebido)} · Pendente: ${formatMoney(resumo.totalPendente)} · Em atraso: ${formatMoney(resumo.totalAtrasado)}</p>
       <table>
         <thead><tr><th>Aluno</th><th>Turma</th><th>Mês Ref</th><th>Canal</th><th>Vencimento</th><th>Pagamento</th><th>Valor</th><th>Status</th></tr></thead>
         <tbody>${linhas}</tbody>
       </table>
-    `, `Relatório de Pagamentos ${ano}`)
+    `, `Relatório de Pagamentos ${filters.ano}`)
   }
 
-  function exportarCSV() {
+  async function exportarCSV() {
+    const completos = await carregarRelatorioCompleto()
     const header = "Aluno;Turma;Mês Ref;Canal;Data Vencimento;Data Pagamento;Valor;Status"
-    const rows = filtrados.map((p) => {
+    const rows = completos.map((p) => {
       const st = calcStatus(p)
       const canal = getPaymentChannel(p.formaPagamento)
       return [
@@ -138,7 +144,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `relatorio-pagamentos-${ano}.csv`
+    a.download = `relatorio-pagamentos-${filters.ano}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -148,25 +154,26 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
       <RelatorioNav role={role} />
       <PageHeader
         title="Relatório de Pagamentos"
-        description={`${filtrados.length} de ${pagamentos.length} registros — ${ano}`}
+        description={`${total} registros filtrados — ${filters.ano}`}
         action={
           <div className="flex gap-2">
             <Input
               type="number"
               min={2020}
               max={2099}
-              value={ano}
+              value={anoInput}
               aria-label="Ano do relatório"
               className="h-9 w-24"
               onChange={(e) => {
                 const value = e.target.value
+                setAnoInput(value)
                 if (/^\d{4}$/.test(value)) router.push(`/relatorio/pagamentos?ano=${value}`)
               }}
             />
-            <Button size="sm" variant="outline" onClick={imprimirPDF}>
+            <Button size="sm" variant="outline" onClick={imprimirPDF} disabled={exportando || total === 0}>
               <Printer className="size-4" /> Imprimir PDF
             </Button>
-            <Button size="sm" onClick={exportarCSV}>
+            <Button size="sm" onClick={exportarCSV} disabled={exportando || total === 0}>
               <Download className="size-4 mr-1" /> Exportar CSV
             </Button>
           </div>
@@ -184,23 +191,23 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
           <CardContent className="grid grid-cols-1 gap-4 pt-5 sm:grid-cols-2 xl:grid-cols-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido</p>
-              <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(totalRecebido)}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{countPorStatus.pagos} pagamento(s) confirmados</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(resumo.totalRecebido)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{resumo.counts.pagos} pagamento(s) confirmados</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pendente</p>
-              <p className="mt-1 font-heading text-2xl font-bold text-warning-600">{formatMoney(totalPendente)}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{countPorStatus.pendentes} aguardando baixa</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-warning-600">{formatMoney(resumo.totalPendente)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{resumo.counts.pendentes} aguardando baixa</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Em atraso</p>
-              <p className="mt-1 font-heading text-2xl font-bold text-danger-600">{formatMoney(totalAtrasado)}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{countPorStatus.atrasados} vencido(s)</p>
+              <p className="mt-1 font-heading text-2xl font-bold text-danger-600">{formatMoney(resumo.totalAtrasado)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{resumo.counts.atrasados} vencido(s)</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taxa de recebimento</p>
-              <p className="mt-1 font-heading text-2xl font-bold">{taxaRecebimento.toFixed(1)}%</p>
-              <p className="mt-1 text-xs text-muted-foreground">Ticket medio: {formatMoney(ticketMedio)}</p>
+              <p className="mt-1 font-heading text-2xl font-bold">{resumo.taxaRecebimento.toFixed(1)}%</p>
+              <p className="mt-1 text-xs text-muted-foreground">Ticket médio: {formatMoney(resumo.ticketMedio)}</p>
             </div>
           </CardContent>
         </Card>
@@ -233,18 +240,21 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
       {/* Barra de filtros */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
         {/* Busca */}
-        <div className="relative min-w-[180px] flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar aluno..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            className="pl-9 h-9 text-sm"
-          />
-        </div>
+        <form className="flex min-w-[220px] flex-1 gap-2" onSubmit={(event) => { event.preventDefault(); navegar({ q: busca.trim() }) }}>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar aluno..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="pl-9 h-9 text-sm"
+            />
+          </div>
+          <Button type="submit" size="sm" variant="outline">Buscar</Button>
+        </form>
 
         {/* Turma */}
-        <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
+        <Select value={filters.turma} onValueChange={(v) => navegar({ turma: v ?? "todas" })}>
           <SelectTrigger className="h-9 w-36 text-sm">
             <SelectValue placeholder="Turma" />
           </SelectTrigger>
@@ -255,7 +265,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
         </Select>
 
         {/* Canal */}
-        <Select value={filtroCanal} onValueChange={(v) => setFiltroCanal((v ?? "todos") as PaymentChannel | "todos")}>
+        <Select value={filters.canal} onValueChange={(v) => navegar({ canal: v ?? "todos" })}>
           <SelectTrigger className="h-9 w-40 text-sm">
             <SelectValue placeholder="Canal" />
           </SelectTrigger>
@@ -270,18 +280,18 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
           {STATUS_OPTS.map((s) => (
             <button
               key={s.key}
-              onClick={() => setFiltroStatus(s.key)}
+              onClick={() => navegar({ status: s.key })}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                filtroStatus === s.key
+                filters.status === s.key
                   ? "bg-brand-800 text-white"
                   : "border border-border bg-background text-foreground hover:bg-muted"
               }`}
             >
               {s.label}
               <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                filtroStatus === s.key ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+                filters.status === s.key ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
               }`}>
-                {countPorStatus[s.key]}
+                {resumo.counts[s.key]}
               </span>
             </button>
           ))}
@@ -318,7 +328,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtrados.length === 0 && (
+                {pagamentos.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={8}>
                       <div className="flex flex-col items-center gap-2 py-10 text-center">
@@ -328,7 +338,7 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
                     </TableCell>
                   </TableRow>
                 )}
-                {filtrados.map((p) => {
+                {pagamentos.map((p) => {
                   const st = calcStatus(p)
                   const canal = getPaymentChannel(p.formaPagamento)
                   return (
@@ -363,6 +373,10 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
           </div>
         </CardContent>
       </Card>
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>{total === 0 ? "Nenhum pagamento" : `${(filters.page - 1) * REPORT_PAGE_SIZE + 1}–${Math.min(filters.page * REPORT_PAGE_SIZE, total)} de ${total}`}</span>
+        <Pagination page={filters.page} totalPages={totalPages} onPageChange={(page) => navegar({ pagina: page })} />
+      </div>
 
       {/* Resumo por canal */}
       {canais.length > 0 && (
@@ -378,9 +392,9 @@ export function RelatorioPagamentosClient({ pagamentos, ano, role }: { pagamento
               {canais.map((item) => (
                 <button
                   key={item.canal}
-                  onClick={() => setFiltroCanal(filtroCanal === item.canal ? "todos" : item.canal)}
+                  onClick={() => navegar({ canal: filters.canal === item.canal ? "todos" : item.canal })}
                   className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${
-                    filtroCanal === item.canal
+                    filters.canal === item.canal
                       ? "border-brand-600 bg-brand-50 text-brand-800"
                       : "border-border bg-background hover:bg-muted"
                   }`}

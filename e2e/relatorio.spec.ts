@@ -49,13 +49,15 @@ test.describe("Relatórios — admin", () => {
     // deve haver algum controle de filtro (select, botão, chip)
     const filtro = page.locator('select, [role="combobox"], button:has-text("Ativo"), button:has-text("Status")')
     await expect(filtro.first()).toBeVisible()
+    await page.getByRole("button", { name: "Todos", exact: true }).click()
+    await expect(page).toHaveURL(/status=todos/)
   })
 
-  test("relatório de pagamentos tem seletor de mês", async ({ page }) => {
+  test("relatório de pagamentos mantém busca e ano na URL", async ({ page }) => {
     await page.goto("/relatorio/pagamentos")
-    const mesInput = page.locator('input[type="month"], select, [role="combobox"]')
-    // pode ter month picker ou select de mês
-    const count = await mesInput.count()
-    expect(count).toBeGreaterThan(0)
+    await expect(page.locator('input[type="number"]')).toBeVisible()
+    await page.getByPlaceholder("Buscar aluno...").fill("Teste")
+    await page.getByPlaceholder("Buscar aluno...").press("Enter")
+    await expect(page).toHaveURL(/q=Teste/)
   })
 })

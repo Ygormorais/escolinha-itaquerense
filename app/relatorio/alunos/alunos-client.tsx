@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Users, Download, Printer, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { formatMoney, sanitizeCSVCell } from "@/lib/utils"
 import Link from "next/link"
@@ -19,6 +20,9 @@ import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
 import { printHTML } from "@/lib/print"
 import type { StaffRole } from "@/lib/permissions"
+import { REPORT_PAGE_SIZE, type AlunoReportFilters } from "@/lib/report-query"
+import { Pagination } from "@/components/ui/pagination"
+import { getAlunosRelatorioCompleto } from "@/app/relatorio/export-actions"
 
 type Aluno = {
   id: number
@@ -62,75 +66,62 @@ function SortIcon({ col, current, dir }: { col: SortKey; current: SortKey; dir: 
 export function RelatorioAlunosClient({
   alunos,
   turmas,
-  turmaInicial = "todas",
   role,
+  filters,
+  total,
+  totalPages,
+  resumo,
 }: {
   alunos: Aluno[]
   turmas: string[]
-  turmaInicial?: string
   role: StaffRole
+  filters: AlunoReportFilters
+  total: number
+  totalPages: number
+  resumo: { ativos: number; inativos: number; totalMensalidade: number; mediaMensalidade: number }
 }) {
-  const [filtroTurma, setFiltroTurma] = useState(turmaInicial)
-  const [filtroStatus, setFiltroStatus] = useState("ativos")
-  const [filtroFaixa, setFiltroFaixa] = useState("todas")
-  const [busca, setBusca] = useState("")
-  const [sortKey, setSortKey] = useState<SortKey>("nome")
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [busca, setBusca] = useState(filters.q)
+  const [exportando, setExportando] = useState(false)
+  const sortKey = filters.sort
+  const sortDir = filters.dir
 
-  function handleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
-    } else {
-      setSortKey(key)
-      setSortDir("asc")
+  async function carregarRelatorioCompleto() {
+    setExportando(true)
+    try {
+      return await getAlunosRelatorioCompleto(filters)
+    } finally {
+      setExportando(false)
     }
   }
 
-  const filtrados = useMemo(() => {
-    const q = busca.trim().toLowerCase()
-    const faixa = FAIXAS.find((f) => f.key === filtroFaixa)
+  function navegar(changes: Record<string, string | number>) {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [key, value] of Object.entries(changes)) {
+      if (!value || value === "todas" || (key === "status" && value === "ativos")) params.delete(key)
+      else params.set(key, String(value))
+    }
+    if (!("pagina" in changes)) params.delete("pagina")
+    router.push(`/relatorio/alunos?${params.toString()}`, { scroll: false })
+  }
 
-    let result = alunos.filter((a) => {
-      if (q && !a.nome.toLowerCase().includes(q) && !(a.responsavel ?? "").toLowerCase().includes(q)) return false
-      if (filtroTurma !== "todas" && a.turma !== filtroTurma) return false
-      if (filtroStatus === "ativos" && a.status !== "Ativo") return false
-      if (filtroStatus === "inativos" && a.status === "Ativo") return false
-      if (faixa && faixa.key !== "todas" && faixa.min !== undefined && faixa.max !== undefined) {
-        const idade = calcIdade(a.dataNascimento)
-        if (idade < faixa.min || idade > faixa.max) return false
-      }
-      return true
-    })
+  function handleSort(key: SortKey) {
+    if (sortKey === key) {
+      navegar({ sort: key, dir: sortDir === "asc" ? "desc" : "asc" })
+    } else {
+      navegar({ sort: key, dir: "asc" })
+    }
+  }
 
-    result = [...result].sort((a, b) => {
-      let cmp = 0
-      switch (sortKey) {
-        case "nome": cmp = a.nome.localeCompare(b.nome, "pt-BR"); break
-        case "turma": cmp = a.turma.localeCompare(b.turma, "pt-BR"); break
-        case "horario": cmp = a.horario.localeCompare(b.horario, "pt-BR"); break
-        case "status": cmp = a.status.localeCompare(b.status, "pt-BR"); break
-        case "idade": cmp = calcIdade(a.dataNascimento) - calcIdade(b.dataNascimento); break
-        case "mensalidade": cmp = a.mensalidade - b.mensalidade; break
-        case "dataMatricula": cmp = new Date(a.dataMatricula).getTime() - new Date(b.dataMatricula).getTime(); break
-      }
-      return sortDir === "asc" ? cmp : -cmp
-    })
-
-    return result
-  }, [alunos, filtroTurma, filtroStatus, filtroFaixa, busca, sortKey, sortDir])
-
-  const ativos = filtrados.filter((a) => a.status === "Ativo")
-  const inativos = filtrados.filter((a) => a.status !== "Ativo")
-  const totalMensalidade = ativos.reduce((s, a) => s + a.mensalidade, 0)
-  const mediaMensalidade = ativos.length > 0 ? totalMensalidade / ativos.length : 0
-
-  function imprimirPDF() {
-    const linhas = filtrados.map((a) =>
+  async function imprimirPDF() {
+    const completos = await carregarRelatorioCompleto()
+    const linhas = completos.map((a) =>
       `<tr><td>${a.nome}</td><td>${a.turma}</td><td>${a.horario}</td><td>${a.status}</td><td>${calcIdade(a.dataNascimento)}</td><td>${a.responsavel ?? "—"}</td><td>${a.telefone ?? "—"}</td><td>R$ ${a.mensalidade.toFixed(2)}</td><td>${format(new Date(a.dataMatricula), "dd/MM/yyyy")}</td></tr>`
     ).join("")
     printHTML(`
       <h1>Relatório de Alunos</h1>
-      <p>${filtrados.length} alunos · Receita mensal ${formatMoney(totalMensalidade)}</p>
+      <p>${completos.length} alunos · Receita mensal ${formatMoney(resumo.totalMensalidade)}</p>
       <table>
         <thead><tr><th>Nome</th><th>Turma</th><th>Horário</th><th>Status</th><th>Idade</th><th>Responsável</th><th>Telefone</th><th>Mensalidade</th><th>Matrícula</th></tr></thead>
         <tbody>${linhas}</tbody>
@@ -138,9 +129,10 @@ export function RelatorioAlunosClient({
     `, "Relatório de Alunos")
   }
 
-  function exportarCSV() {
+  async function exportarCSV() {
+    const completos = await carregarRelatorioCompleto()
     const header = "Nome;Turma;Horário;Status;Idade;Responsável;Telefone;Mensalidade;Data Matrícula"
-    const rows = filtrados.map((a) =>
+    const rows = completos.map((a) =>
       [
         a.nome,
         a.turma,
@@ -170,14 +162,14 @@ export function RelatorioAlunosClient({
       <RelatorioNav role={role} />
       <PageHeader
         title="Relatório de Alunos"
-        description={`${filtrados.length} alunos · Receita mensal ${formatMoney(totalMensalidade)}`}
+        description={`${total} alunos · Receita mensal ${formatMoney(resumo.totalMensalidade)}`}
         action={
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={imprimirPDF}>
+            <Button size="sm" variant="outline" onClick={imprimirPDF} disabled={exportando || total === 0}>
               <Printer className="size-4" />
               Imprimir PDF
             </Button>
-            <Button size="sm" onClick={exportarCSV}>
+            <Button size="sm" onClick={exportarCSV} disabled={exportando || total === 0}>
               <Download className="size-4 mr-1" /> Exportar CSV
             </Button>
           </div>
@@ -187,23 +179,29 @@ export function RelatorioAlunosClient({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ativos</p>
-          <p className="mt-1 text-2xl font-extrabold text-brand-800">{ativos.length}</p>
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">{resumo.ativos}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Inativos</p>
-          <p className="mt-1 text-2xl font-extrabold text-muted-foreground">{inativos.length}</p>
+          <p className="mt-1 text-2xl font-extrabold text-muted-foreground">{resumo.inativos}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Receita Mensal</p>
-          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(totalMensalidade)}</p>
+          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(resumo.totalMensalidade)}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Mensalidade</p>
-          <p className="mt-1 text-xl font-extrabold">{formatMoney(mediaMensalidade)}</p>
+          <p className="mt-1 text-xl font-extrabold">{formatMoney(resumo.mediaMensalidade)}</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <form
+        className="flex flex-wrap items-center gap-3"
+        onSubmit={(event) => {
+          event.preventDefault()
+          navegar({ q: busca.trim() })
+        }}
+      >
         <div className="relative min-w-[200px] flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -213,7 +211,8 @@ export function RelatorioAlunosClient({
             className="pl-9 h-9 text-sm"
           />
         </div>
-        <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
+        <Button type="submit" size="sm" variant="outline">Buscar</Button>
+        <Select value={filters.turma} onValueChange={(v) => navegar({ turma: v ?? "todas" })}>
           <SelectTrigger className="h-9 w-36 text-sm" aria-label="Filtrar por turma">
             <SelectValue placeholder="Todas turmas" />
           </SelectTrigger>
@@ -222,7 +221,7 @@ export function RelatorioAlunosClient({
             {turmas.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={filtroFaixa} onValueChange={(v) => setFiltroFaixa(v ?? "todas")}>
+        <Select value={filters.faixa} onValueChange={(v) => navegar({ faixa: v ?? "todas" })}>
           <SelectTrigger className="h-9 w-44 text-sm" aria-label="Filtrar por faixa etária">
             <SelectValue placeholder="Todas idades" />
           </SelectTrigger>
@@ -236,21 +235,21 @@ export function RelatorioAlunosClient({
             { key: "ativos", label: "Ativos" },
             { key: "inativos", label: "Inativos" },
           ].map((s) => (
-            <Button key={s.key} variant={filtroStatus === s.key ? "default" : "outline"} size="sm" onClick={() => setFiltroStatus(s.key)} className="text-xs">
+            <Button type="button" key={s.key} variant={filters.status === s.key ? "default" : "outline"} size="sm" onClick={() => navegar({ status: s.key })} className="text-xs">
               {s.label}
             </Button>
           ))}
         </div>
-      </div>
+      </form>
 
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Users className="size-4" /> Alunos ({filtrados.length})
+            <Users className="size-4" /> Alunos ({total})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {filtrados.length === 0 ? (
+          {alunos.length === 0 ? (
             <EmptyState
               icon={Users}
               title="Nenhum aluno encontrado"
@@ -287,7 +286,7 @@ export function RelatorioAlunosClient({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtrados.map((a) => (
+                  {alunos.map((a) => (
                     <TableRow key={a.id}>
                       <TableCell className="font-medium">
                         <Link href={`/alunos/${a.id}`} className="hover:underline text-brand-800">{a.nome}</Link>
@@ -316,6 +315,10 @@ export function RelatorioAlunosClient({
           )}
         </CardContent>
       </Card>
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>{total === 0 ? "Nenhum aluno" : `${(filters.page - 1) * REPORT_PAGE_SIZE + 1}–${Math.min(filters.page * REPORT_PAGE_SIZE, total)} de ${total}`}</span>
+        <Pagination page={filters.page} totalPages={totalPages} onPageChange={(page) => navegar({ pagina: page })} />
+      </div>
     </div>
   )
 }
