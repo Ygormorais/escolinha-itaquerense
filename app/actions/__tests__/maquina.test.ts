@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
   const db = {
+    $transaction: vi.fn(),
     transacaoMaquina: { findFirst: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn() },
     pagamento: { create: vi.fn(), upsert: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn() },
@@ -26,6 +27,7 @@ import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes } from "@/lib/maquina-csv"
 
 const m = db as unknown as {
+  $transaction: ReturnType<typeof vi.fn>
   transacaoMaquina: {
     findFirst: ReturnType<typeof vi.fn>
     create: ReturnType<typeof vi.fn>
@@ -36,6 +38,7 @@ const m = db as unknown as {
     count: ReturnType<typeof vi.fn>
   }
   pagamento: { create: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn> }
+  aluno: { findMany: ReturnType<typeof vi.fn>; findFirst: ReturnType<typeof vi.fn> }
 }
 const mParseCSV = parseCSV as unknown as ReturnType<typeof vi.fn>
 const mParseTransacoes = parseTransacoes as unknown as ReturnType<typeof vi.fn>
@@ -55,6 +58,8 @@ beforeEach(() => {
   m.transacaoMaquina.update.mockResolvedValue({})
   m.pagamento.create.mockResolvedValue({ id: 99 })
   m.pagamento.upsert.mockResolvedValue({ id: 99 })
+  m.aluno.findMany.mockResolvedValue([])
+  m.$transaction.mockImplementation(async (callback: (client: typeof m) => unknown) => callback(m))
 })
 
 describe("importarCSV", () => {
@@ -123,6 +128,36 @@ describe("reconciliarAuto", () => {
     const res = await reconciliarAuto()
     expect(res).toMatchObject({ invalidos: 1 })
     expect(m.pagamento.create).not.toHaveBeenCalled()
+  })
+
+  it("carrega alunos uma vez e reconcilia nomes sem acento em transação", async () => {
+    m.transacaoMaquina.findMany.mockResolvedValue([
+      tx({ id: 1, nomeNoCartao: "JOAO DA SILVA" }),
+      tx({ id: 2, nomeNoCartao: "MARIA SOUZA" }),
+    ])
+    m.aluno.findMany.mockResolvedValue([
+      { id: 10, nome: "João da Silva", responsavel: "Carlos Silva" },
+      { id: 11, nome: "Ana Souza", responsavel: "Maria Souza" },
+    ])
+
+    await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 2, naoEncontrados: 0, invalidos: 0 })
+    expect(m.aluno.findMany).toHaveBeenCalledTimes(1)
+    expect(m.aluno.findFirst).not.toHaveBeenCalled()
+    expect(m.$transaction).toHaveBeenCalledTimes(2)
+    expect(m.pagamento.upsert.mock.calls[0][0].where).toEqual({
+      alunoId_mesReferencia: { alunoId: 10, mesReferencia: "2026-06" },
+    })
+    expect(m.pagamento.upsert.mock.calls[1][0].where).toEqual({
+      alunoId_mesReferencia: { alunoId: 11, mesReferencia: "2026-06" },
+    })
+  })
+
+  it("contabiliza nome não encontrado sem gravar pagamento", async () => {
+    m.transacaoMaquina.findMany.mockResolvedValue([tx({ nomeNoCartao: "PESSOA INEXISTENTE" })])
+    m.aluno.findMany.mockResolvedValue([{ id: 10, nome: "João Silva", responsavel: "Carlos Silva" }])
+
+    await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 0, naoEncontrados: 1, invalidos: 0 })
+    expect(m.$transaction).not.toHaveBeenCalled()
   })
 })
 

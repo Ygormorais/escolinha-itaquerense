@@ -5,6 +5,32 @@ import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
 import { requireAuth } from "@/lib/auth"
 
+type AlunoConciliacao = { id: number; nomeBusca: string; responsavelBusca: string }
+
+function normalizarNome(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function encontrarAluno(indice: AlunoConciliacao[], nomeNoCartao: string): AlunoConciliacao | undefined {
+  const nome = normalizarNome(nomeNoCartao)
+  if (!nome) return undefined
+
+  const correspondenciaCompleta = indice.find(
+    (aluno) => aluno.nomeBusca.includes(nome) || aluno.responsavelBusca.includes(nome)
+  )
+  if (correspondenciaCompleta) return correspondenciaCompleta
+
+  const partes = nome.split(" ").filter(Boolean)
+  return indice.find((aluno) =>
+    partes.some((parte) => aluno.nomeBusca.includes(parte) || aluno.responsavelBusca.includes(parte))
+  )
+}
+
 export async function importarCSV(
   texto: string,
   nomeArquivo: string
@@ -91,15 +117,17 @@ export async function reconciliarTransacao(
   }
   // upsert na unique (alunoId, mesReferencia): se a mensalidade do mês já existe,
   // marca como paga via cartão (não duplica); senão cria.
-  const pagamento = await db.pagamento.upsert({
-    where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
-    update: dados,
-    create: { alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados },
-  })
+  await db.$transaction(async (tx) => {
+    const pagamento = await tx.pagamento.upsert({
+      where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
+      update: dados,
+      create: { alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados },
+    })
 
-  await db.transacaoMaquina.update({
-    where: { id },
-    data: { status: "reconciliado", alunoId, pagamentoId: pagamento.id },
+    await tx.transacaoMaquina.update({
+      where: { id },
+      data: { status: "reconciliado", alunoId, pagamentoId: pagamento.id },
+    })
   })
 
   revalidatePath("/caixa/maquina")
@@ -109,9 +137,19 @@ export async function reconciliarTransacao(
 
 export async function reconciliarAuto() {
   await requireAuth(["admin", "secretaria"])
-  const pendentes = await db.transacaoMaquina.findMany({
-    where: { status: "pendente" },
-  })
+  const [pendentes, alunosAtivos] = await Promise.all([
+    db.transacaoMaquina.findMany({ where: { status: "pendente" } }),
+    db.aluno.findMany({
+      where: { status: "Ativo" },
+      select: { id: true, nome: true, responsavel: true },
+      orderBy: { id: "asc" },
+    }),
+  ])
+  const indiceAlunos: AlunoConciliacao[] = alunosAtivos.map((aluno) => ({
+    id: aluno.id,
+    nomeBusca: normalizarNome(aluno.nome),
+    responsavelBusca: normalizarNome(aluno.responsavel),
+  }))
 
   let reconciliados = 0
   let naoEncontrados = 0
@@ -119,34 +157,8 @@ export async function reconciliarAuto() {
 
   for (const t of pendentes) {
     if (!Number.isFinite(t.valor) || t.valor <= 0) { invalidos++; continue }
-    const nome = t.nomeNoCartao.toLowerCase().trim()
-    const alunos = await db.aluno.findMany({
-      where: {
-        OR: [
-          { nome: { contains: nome } },
-          { responsavel: { contains: nome } },
-        ],
-        status: "Ativo",
-      },
-      take: 1,
-    })
-
-    if (alunos.length === 0) {
-      const partes = nome.split(" ")
-      const aluno = await db.aluno.findFirst({
-        where: {
-          OR: partes.map((p) => ({
-            OR: [
-              { nome: { contains: p } },
-              { responsavel: { contains: p } },
-            ],
-          })),
-          status: "Ativo",
-        },
-      })
-      if (!aluno) { naoEncontrados++; continue }
-      alunos.push(aluno)
-    }
+    const aluno = encontrarAluno(indiceAlunos, t.nomeNoCartao)
+    if (!aluno) { naoEncontrados++; continue }
 
     const mes = `${t.dataTransacao.getFullYear()}-${String(t.dataTransacao.getMonth() + 1).padStart(2, "0")}`
     const dataVenc = new Date(t.dataTransacao.getFullYear(), t.dataTransacao.getMonth(), 10)
@@ -157,15 +169,17 @@ export async function reconciliarAuto() {
       valorRecebido: t.valor,
       observacoes: `Reconciliado automático - ${t.nomeNoCartao}`,
     }
-    const pag = await db.pagamento.upsert({
-      where: { alunoId_mesReferencia: { alunoId: alunos[0].id, mesReferencia: mes } },
-      update: dadosAuto,
-      create: { alunoId: alunos[0].id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto },
-    })
+    await db.$transaction(async (tx) => {
+      const pagamento = await tx.pagamento.upsert({
+        where: { alunoId_mesReferencia: { alunoId: aluno.id, mesReferencia: mes } },
+        update: dadosAuto,
+        create: { alunoId: aluno.id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto },
+      })
 
-    await db.transacaoMaquina.update({
-      where: { id: t.id },
-      data: { status: "reconciliado", alunoId: alunos[0].id, pagamentoId: pag.id },
+      await tx.transacaoMaquina.update({
+        where: { id: t.id },
+        data: { status: "reconciliado", alunoId: aluno.id, pagamentoId: pagamento.id },
+      })
     })
     reconciliados++
   }
