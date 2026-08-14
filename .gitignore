@@ -74,8 +74,9 @@ DESIGN_SYSTEM.md
 audit-*.png
 audit.mjs
 
-# backup database files
-backups/*.db
+# backups completos podem conter banco, documentos e configuração sensível
+/backups/*
+!/backups/.gitkeep
 supabase/.temp/
 
 # playwright
