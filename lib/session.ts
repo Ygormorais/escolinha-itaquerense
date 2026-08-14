@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 import { checkCredentialsFromEnv, getSessionSecret } from "@/lib/env"
 import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
+import { db } from "@/lib/db"
 
 const COOKIE_NAME = SESSION_COOKIE
 const MAX_AGE = 60 * 60 * 24 * 7 // 7 dias
@@ -37,7 +38,19 @@ export async function getSession(): Promise<SessionInfo> {
   const value = verify(raw)
   if (!value || !value.startsWith(SESSION_PREFIX)) return { authenticated: false }
   const parts = value.slice(SESSION_PREFIX.length).split(":")
-  return { authenticated: true, user: parts[0], role: parts[1] ?? "admin" }
+  const username = parts[0]
+  if (!username) return { authenticated: false }
+
+  // A assinatura protege a integridade do cookie, mas não revoga uma sessão já
+  // emitida. Confirma a conta a cada request para que desativação, exclusão ou
+  // troca de perfil tenham efeito imediato.
+  const usuario = await db.usuario.findUnique({
+    where: { username },
+    select: { ativo: true, role: true },
+  })
+  if (!usuario?.ativo) return { authenticated: false }
+
+  return { authenticated: true, user: username, role: usuario.role }
 }
 
 export async function createSession(username: string, role = "admin"): Promise<string> {

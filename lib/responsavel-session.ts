@@ -2,6 +2,7 @@ import { cache } from "react"
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 import { getSessionSecret } from "@/lib/env"
+import { db } from "@/lib/db"
 
 const COOKIE_NAME = "responsavel_session"
 const MAX_AGE = 60 * 60 * 24 // 1 dia
@@ -35,7 +36,16 @@ export const getResponsavelSession = cache(async (): Promise<{ authenticated: bo
   if (!raw) return { authenticated: false }
   const value = verify(raw)
   if (!value || !value.startsWith("resp:")) return { authenticated: false }
-  return { authenticated: true, responsavelId: Number(value.slice(5)) }
+  const responsavelId = Number(value.slice(5))
+  if (!Number.isSafeInteger(responsavelId) || responsavelId <= 0) return { authenticated: false }
+
+  const responsavel = await db.responsavel.findUnique({
+    where: { id: responsavelId },
+    select: { ativo: true },
+  })
+  if (!responsavel?.ativo) return { authenticated: false }
+
+  return { authenticated: true, responsavelId }
 })
 
 export async function createResponsavelSession(responsavelId: number): Promise<string> {
