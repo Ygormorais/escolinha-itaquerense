@@ -6,6 +6,11 @@ import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
 import { requireAuth } from "@/lib/auth"
 
 type AlunoConciliacao = { id: number; nomeBusca: string; responsavelBusca: string }
+type ChaveTransacao = { dataTransacao: Date; valor: number; nomeNoCartao: string }
+
+function chaveTransacao(transacao: ChaveTransacao): string {
+  return `${transacao.dataTransacao.getTime()}\u0000${transacao.valor}\u0000${transacao.nomeNoCartao}`
+}
 
 function normalizarNome(value: string): string {
   return value
@@ -44,39 +49,59 @@ export async function importarCSV(
     const transacoes = parseTransacoes(linhas)
     if (transacoes.length === 0) return { error: "Não foi possível interpretar as transações. Verifique o formato do CSV." }
 
-    let importadas = 0
-    let ignoradas = 0
+    const { dataInicial, dataFinal } = transacoes.reduce(
+      (intervalo, transacao) => ({
+        dataInicial: transacao.dataTransacao < intervalo.dataInicial
+          ? transacao.dataTransacao
+          : intervalo.dataInicial,
+        dataFinal: transacao.dataTransacao > intervalo.dataFinal
+          ? transacao.dataTransacao
+          : intervalo.dataFinal,
+      }),
+      { dataInicial: transacoes[0].dataTransacao, dataFinal: transacoes[0].dataTransacao }
+    )
 
-    for (const t of transacoes) {
-      const existente = await db.transacaoMaquina.findFirst({
+    const { importadas, ignoradas } = await db.$transaction(async (tx) => {
+      const existentes = await tx.transacaoMaquina.findMany({
         where: {
-          dataTransacao: t.dataTransacao,
-          valor: t.valor,
-          nomeNoCartao: t.nomeNoCartao,
+          dataTransacao: { gte: dataInicial, lte: dataFinal },
         },
+        select: { dataTransacao: true, valor: true, nomeNoCartao: true },
       })
-      if (existente) { ignoradas++; continue }
+      const chavesConhecidas = new Set(existentes.map(chaveTransacao))
 
-      await db.transacaoMaquina.create({
-        data: {
-          dataTransacao: t.dataTransacao,
-          valor: t.valor,
-          parcelas: t.parcelas,
-          bandeira: t.bandeira,
-          tipo: t.tipo,
-          nomeNoCartao: t.nomeNoCartao,
-          parcela: t.parcela || null,
-          autorizacao: t.autorizacao || null,
-          nsu: t.nsu || null,
-          custoTaxa: t.custoTaxa ?? null,
-          valorLiquido: t.valorLiquido ?? null,
-          previsao: t.previsao ?? null,
+      const novas = transacoes.flatMap((transacao) => {
+        const chave = chaveTransacao(transacao)
+        if (chavesConhecidas.has(chave)) return []
+        chavesConhecidas.add(chave)
+
+        return [{
+          dataTransacao: transacao.dataTransacao,
+          valor: transacao.valor,
+          parcelas: transacao.parcelas,
+          bandeira: transacao.bandeira,
+          tipo: transacao.tipo,
+          nomeNoCartao: transacao.nomeNoCartao,
+          parcela: transacao.parcela || null,
+          autorizacao: transacao.autorizacao || null,
+          nsu: transacao.nsu || null,
+          custoTaxa: transacao.custoTaxa ?? null,
+          valorLiquido: transacao.valorLiquido ?? null,
+          previsao: transacao.previsao ?? null,
           arquivo: nomeArquivo,
           status: "pendente",
-        },
+        }]
       })
-      importadas++
-    }
+
+      const resultado = novas.length > 0
+        ? await tx.transacaoMaquina.createMany({ data: novas })
+        : { count: 0 }
+
+      return {
+        importadas: resultado.count,
+        ignoradas: transacoes.length - resultado.count,
+      }
+    })
 
     revalidatePath("/caixa/maquina")
     return { importadas, ignoradas, formato, transacoes }
