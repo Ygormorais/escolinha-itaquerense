@@ -6,17 +6,33 @@ test.describe("Navegação", () => {
     await loginAsAdmin(page)
   })
 
-  test("sidebar desktop mostra todos os links principais", async ({ page }) => {
+  test("sidebar desktop organiza os links por seção", async ({ page }) => {
     const sidebar = page.locator("aside")
     await expect(sidebar.locator('a[href="/dashboard"]')).toBeVisible()
+    await expect(sidebar.locator('a[href="/alunos"]')).not.toBeVisible()
+
+    await sidebar.getByRole("button", { name: "Operação" }).click()
     await expect(sidebar.locator('a[href="/alunos"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/pagamentos"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/frequencia"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/agenda"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/campeonatos"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/caixa"]')).toBeVisible()
+
+    await sidebar.getByRole("button", { name: "Documentos & Config" }).click()
+    await expect(sidebar.locator('a[href="/alunos"]')).not.toBeVisible()
     await expect(sidebar.locator('a[href="/configuracoes"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/configuracoes/escalacoes"]')).toBeVisible()
+  })
+
+  test("abre automaticamente a seção da rota atual", async ({ page }) => {
+    const sidebar = page.locator("aside")
+    await sidebar.getByRole("button", { name: "Operação" }).click()
+    await sidebar.locator('a[href="/alunos"]').click()
+
+    await expect(page).toHaveURL("/alunos")
+    await expect(sidebar.getByRole("button", { name: "Operação" })).toHaveAttribute("aria-expanded", "true")
+    await expect(sidebar.locator('a[href="/alunos"]')).toHaveAttribute("aria-current", "page")
   })
 
   test("sidebar mobile: hamburger abre menu", async ({ page }) => {
@@ -27,6 +43,7 @@ test.describe("Navegação", () => {
     await expect(hamburger).toBeVisible()
     await hamburger.click()
 
+    await page.locator("aside").getByRole("button", { name: "Operação" }).click()
     await expect(page.getByRole("link", { name: "Alunos", exact: true }).first()).toBeVisible()
   })
 
