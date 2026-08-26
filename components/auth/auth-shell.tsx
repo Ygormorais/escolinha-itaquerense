@@ -2,8 +2,6 @@ import type { ReactNode } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
-import { cn } from "@/lib/utils"
-
 type AuthShellProps = {
   badge: string
   title: string
@@ -12,18 +10,13 @@ type AuthShellProps = {
   accentValue: string
   children: ReactNode
   footer?: ReactNode
-  tone?: "admin" | "responsavel"
 }
 
-const toneStyles = {
-  admin: {
-    glow: "from-brand-200/70 via-brand-100/40 to-transparent",
-    panel: "bg-[radial-gradient(circle_at_top,_rgba(127,0,0,0.08),_transparent_55%)]",
-  },
-  responsavel: {
-    glow: "from-warning-50/80 via-brand-100/50 to-transparent",
-    panel: "bg-[radial-gradient(circle_at_top,_rgba(198,40,40,0.08),_transparent_55%)]",
-  },
+type AuthCardProps = {
+  title?: ReactNode
+  description?: ReactNode
+  icon?: ReactNode
+  children: ReactNode
 }
 
 export function AuthShell({
@@ -34,32 +27,15 @@ export function AuthShell({
   accentValue,
   children,
   footer,
-  tone = "admin",
 }: AuthShellProps) {
-  const styles = toneStyles[tone]
-
-  const isPortal = tone === "responsavel"
-
   return (
-    <div
-      className={cn(
-        "relative min-h-screen overflow-hidden",
-        isPortal
-          ? "portal-familia bg-[var(--bg)] text-[var(--text)]"
-          : "bg-[linear-gradient(180deg,_#fbf8f6_0%,_#f6f0ee_100%)] text-foreground",
-      )}
-    >
-      <div className={cn("absolute inset-x-0 top-0 h-72 bg-gradient-to-b blur-3xl", styles.glow)} />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(127,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(127,0,0,0.03)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.55),transparent)]" />
+    <div data-slot="auth-shell" className="auth-experience relative min-h-dvh overflow-hidden bg-[var(--bg)] text-[var(--text)]">
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-warning-50/80 via-brand-100/50 to-transparent blur-3xl" />
+      <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(rgba(127,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(127,0,0,0.03)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.55),transparent)]" />
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:px-8">
-        <div
-          className={cn(
-            "grid w-full overflow-hidden rounded-[28px] border border-white/70 bg-white/88 shadow-[0_24px_80px_rgba(74,11,11,0.14)] backdrop-blur supports-[backdrop-filter]:bg-white/82 lg:grid-cols-[1.05fr_0.95fr]",
-            styles.panel,
-          )}
-        >
-          <section className="flex flex-col justify-between gap-10 border-b border-black/5 px-6 py-8 sm:px-8 sm:py-10 lg:border-b-0 lg:border-r lg:px-10 lg:py-12">
+      <div className="relative mx-auto flex min-h-dvh w-full max-w-6xl items-center px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+        <div data-slot="auth-frame" className="grid w-full overflow-hidden rounded-[28px] border border-white/70 bg-white/88 bg-[radial-gradient(circle_at_top,_rgba(198,40,40,0.08),_transparent_55%)] shadow-[0_24px_80px_rgba(74,11,11,0.14)] backdrop-blur supports-[backdrop-filter]:bg-white/82 lg:grid-cols-[1.05fr_0.95fr]">
+          <section data-slot="auth-brand-panel" className="flex flex-col justify-between gap-10 border-b border-black/5 px-6 py-8 sm:px-8 sm:py-10 lg:border-b-0 lg:border-r lg:px-10 lg:py-12">
             <div className="space-y-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Link
@@ -109,7 +85,7 @@ export function AuthShell({
             </div>
           </section>
 
-          <section className="flex flex-col justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+          <section data-slot="auth-form-panel" className="flex flex-col justify-center px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
             <div className="mx-auto w-full max-w-md space-y-6 font-body">
               {children}
               {footer ? (
@@ -121,6 +97,34 @@ export function AuthShell({
           </section>
         </div>
       </div>
+    </div>
+  )
+}
+
+export function AuthCard({ title, description, icon, children }: AuthCardProps) {
+  const hasHeader = title || description || icon
+
+  return (
+    <div
+      data-slot="auth-card"
+      className="rounded-[22px] border border-black/6 bg-white/90 p-6 shadow-[0_14px_36px_rgba(74,11,11,0.08)] backdrop-blur sm:p-7"
+    >
+      {hasHeader ? (
+        <div className="mb-6 space-y-2">
+          {icon}
+          {title ? (
+            <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
+              {title}
+            </h2>
+          ) : null}
+          {description ? (
+            <div className="text-sm leading-6 text-[var(--color-ink-700)]">
+              {description}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      {children}
     </div>
   )
 }

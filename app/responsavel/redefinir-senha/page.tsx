@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Lock, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
-import { AuthShell } from "@/components/auth/auth-shell"
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
+import { AuthCard, AuthShell } from "@/components/auth/auth-shell"
+import { PasswordField } from "@/components/auth/password-field"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 
 
@@ -27,9 +27,8 @@ export default function RedefinirSenhaPage() {
         description="Solicite um novo link de recuperação para redefinir a senha com segurança."
         accentLabel="Status"
         accentValue="Link inválido ou expirado"
-        tone="responsavel"
       >
-        <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
+        <AuthCard>
           <div className="space-y-5">
             <p className="text-sm leading-6 text-[var(--color-ink-700)]">
               Link inválido. Solicite uma nova recuperação de senha.
@@ -41,7 +40,7 @@ export default function RedefinirSenhaPage() {
               <ArrowLeft className="size-4" /> Solicitar link
             </Link>
           </div>
-        </div>
+        </AuthCard>
       </AuthShell>
     )
   }
@@ -70,9 +69,8 @@ export default function RedefinirSenhaPage() {
         description="Seu acesso foi restaurado. Agora você já pode entrar novamente no portal do responsável."
         accentLabel="Status"
         accentValue="Redefinição concluída"
-        tone="responsavel"
       >
-        <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
+        <AuthCard>
           <div className="space-y-5 text-center">
             <CheckCircle2 className="mx-auto size-12 text-success-600" />
             <p className="text-sm font-semibold text-[var(--color-ink-950)]">
@@ -85,7 +83,7 @@ export default function RedefinirSenhaPage() {
               Fazer login
             </Link>
           </div>
-        </div>
+        </AuthCard>
       </AuthShell>
     )
   }
@@ -97,61 +95,43 @@ export default function RedefinirSenhaPage() {
       description="Defina uma senha nova para concluir a recuperação e restabelecer o acesso da família."
       accentLabel="Segurança"
       accentValue="Atualização protegida de credenciais"
-      tone="responsavel"
       footer={(
         <Link href="/responsavel/login" className="font-medium text-brand-800 underline underline-offset-4 transition-colors hover:text-brand-900">
           Voltar ao login
         </Link>
       )}
     >
-      <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
-        <div className="mb-6 space-y-2">
-          <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
-            Redefinir senha
-          </h2>
-          <p className="text-sm leading-6 text-[var(--color-ink-700)]">
-            Digite sua nova senha.
-          </p>
-        </div>
-
+      <AuthCard title="Redefinir senha" description="Digite sua nova senha.">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label htmlFor="senha" className="text-sm font-semibold text-[var(--color-ink-900)]">
               Nova senha
             </label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
-              <Input
-                id="senha"
-                type="password"
-                className="pl-11"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                autoComplete="new-password"
-              />
-            </div>
+            <PasswordField
+              id="senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder="Digite a nova senha..."
+              autoComplete="new-password"
+            />
           </div>
           <div className="space-y-2">
             <label htmlFor="confirmar" className="text-sm font-semibold text-[var(--color-ink-900)]">
               Confirmar senha
             </label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
-              <Input
-                id="confirmar"
-                type="password"
-                className="pl-11"
-                value={confirmar}
-                onChange={(e) => setConfirmar(e.target.value)}
-                autoComplete="new-password"
-              />
-            </div>
+            <PasswordField
+              id="confirmar"
+              value={confirmar}
+              onChange={(e) => setConfirmar(e.target.value)}
+              placeholder="Repita a nova senha..."
+              autoComplete="new-password"
+            />
           </div>
           <Button type="submit" className="w-full" size="lg" disabled={loading}>
             {loading ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Redefinir senha"}
           </Button>
         </form>
-      </div>
+      </AuthCard>
     </AuthShell>
   )
 }

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, LogOut, ShieldCheck } from "lucide-react"
+import { AuthCard } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 
 /**
@@ -38,15 +39,15 @@ export function SessionGate({
   }
 
   return (
-    <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
-      <div className="mb-6 space-y-2">
+    <AuthCard
+      icon={(
         <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-800">
           <ShieldCheck className="size-6" aria-hidden />
         </div>
-        <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
-          Sessão ativa
-        </h2>
-        <p className="text-sm leading-6 text-[var(--color-ink-700)]">
+      )}
+      title="Sessão ativa"
+      description={(
+        <>
           Você já está autenticado
           {user ? (
             <>
@@ -55,9 +56,9 @@ export function SessionGate({
             </>
           ) : null}
           . Escolha continuar no painel ou sair para trocar de usuário.
-        </p>
-      </div>
-
+        </>
+      )}
+    >
       {error && (
         <p role="alert" className="mb-4 text-sm font-medium text-danger-600">
           {error}
@@ -89,6 +90,6 @@ export function SessionGate({
           )}
         </Button>
       </div>
-    </div>
+    </AuthCard>
   )
 }

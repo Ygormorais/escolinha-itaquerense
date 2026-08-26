@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Mail, Lock, LogIn, Loader2 } from "lucide-react"
-import { AuthShell } from "@/components/auth/auth-shell"
+import { Mail, LogIn, Loader2 } from "lucide-react"
+import { AuthCard, AuthShell } from "@/components/auth/auth-shell"
+import { PasswordField } from "@/components/auth/password-field"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
@@ -39,23 +40,18 @@ export default function ResponsavelLoginPage() {
       description="Entre no portal para consultar mensalidades, comunicados, desempenho e os registros mais importantes da rotina na escolinha."
       accentLabel="Acesso"
       accentValue="Informações da família em um ambiente organizado e acolhedor"
-      tone="responsavel"
       footer={(
-        <Link href="/responsavel/recuperar-senha" className="font-medium text-brand-800 underline underline-offset-4 transition-colors hover:text-brand-900">
-          Esqueceu a senha?
-        </Link>
+        <div className="space-y-2">
+          <Link href="/responsavel/recuperar-senha" className="block font-medium text-brand-800 underline-offset-4 hover:underline">
+            Esqueceu a senha?
+          </Link>
+          <Link href="/login" className="block text-xs text-muted-foreground underline-offset-4 hover:underline">
+            É da equipe? Acesso restrito →
+          </Link>
+        </div>
       )}
     >
-      <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
-        <div className="mb-6 space-y-2">
-          <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
-            Entrar
-          </h2>
-          <p className="text-sm leading-6 text-[var(--color-ink-700)]">
-            Use seu email e senha para acessar o portal.
-          </p>
-        </div>
-
+      <AuthCard title="Entrar" description="Use seu email e senha para acessar o portal.">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-semibold text-[var(--color-ink-900)]">
@@ -78,23 +74,19 @@ export default function ResponsavelLoginPage() {
             <label htmlFor="senha" className="text-sm font-semibold text-[var(--color-ink-900)]">
               Senha
             </label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
-              <Input
-                id="senha"
-                type="password"
-                className="pl-11"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                autoComplete="current-password"
-              />
-            </div>
+            <PasswordField
+              id="senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder="Digite a senha..."
+              autoComplete="current-password"
+            />
           </div>
           <Button type="submit" className="w-full" size="lg" disabled={loading || !email || !senha}>
             {loading ? <><Loader2 className="size-4 animate-spin" /> Entrando...</> : <><LogIn className="size-4" /> Entrar</>}
           </Button>
         </form>
-      </div>
+      </AuthCard>
     </AuthShell>
   )
 }
