@@ -1,0 +1,10 @@
+[
+  {
+    "date": "2026-08-26",
+    "scope": "app",
+    "macrostructure": "Workbench",
+    "theme": "Escolinha Orgânico / Humano",
+    "enrichment": "none",
+    "brief": "Correções críticas de responsividade, acessibilidade e consistência visual do portal administrativo e landing"
+  }
+]

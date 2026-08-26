@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { TURMAS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { StatusBadge } from "@/components/ui/status-badge"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -370,54 +371,117 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          placeholder="Buscar por nome..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
-        <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-          <SelectTrigger className="h-12 w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Todas">Todas as turmas</SelectItem>
-            {TURMAS.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-          <SelectTrigger className="h-12 w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Todos">Todos os status</SelectItem>
-            <SelectItem value="Ativo">Ativo</SelectItem>
-            <SelectItem value="Inativo">Inativo</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="ml-auto flex gap-2">
-          <Link href="/alunos/importar">
-            <Button variant="outline" className="h-12">
+      <div data-slot="student-filter-bar" className="grid min-w-0 gap-3 rounded-[var(--radius-card)] border bg-card p-4 lg:grid-cols-[minmax(14rem,1fr)_11rem_10rem_auto] lg:items-end">
+        <div className="min-w-0 space-y-1.5">
+          <Label htmlFor="alunos-busca" className="text-xs">Buscar aluno</Label>
+          <Input
+            id="alunos-busca"
+            type="search"
+            placeholder="Buscar por nome..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="min-w-0 space-y-1.5">
+          <Label id="alunos-turma-label" className="text-xs">Turma</Label>
+          <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
+            <SelectTrigger aria-labelledby="alunos-turma-label" className="h-12 w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Todas">Todas as turmas</SelectItem>
+              {TURMAS.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="min-w-0 space-y-1.5">
+          <Label id="alunos-status-label" className="text-xs">Status</Label>
+          <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
+            <SelectTrigger aria-labelledby="alunos-status-label" className="h-12 w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Todos">Todos os status</SelectItem>
+              <SelectItem value="Ativo">Ativo</SelectItem>
+              <SelectItem value="Inativo">Inativo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-2 gap-2 lg:flex">
+          <Link href="/alunos/importar" className="min-w-0">
+            <Button variant="outline" className="h-12 w-full">
               <Upload className="size-4" />
               Importar CSV
             </Button>
           </Link>
-          <Button variant="outline" className="h-12" onClick={exportarCSV} disabled={alunos.length === 0}>
+          <Button variant="outline" className="h-12 w-full" onClick={exportarCSV} disabled={alunos.length === 0}>
             <Download className="size-4" />
             Exportar CSV
           </Button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>{plural(total, "aluno encontrado", "alunos encontrados", "nenhum")}</span>
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border bg-card">
+      <div data-slot="student-mobile-list" className="grid gap-3 md:hidden">
+        {alunos.length === 0 && (
+          <div className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border bg-card py-10 text-center">
+            <Users className="size-8 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Nenhum aluno encontrado</p>
+          </div>
+        )}
+        {alunos.map((aluno) => (
+          <article key={aluno.id} className="min-w-0 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Link href={`/alunos/${aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">
+                  {aluno.nome}
+                </Link>
+                <p className="mt-1 text-sm text-muted-foreground">{aluno.turma} · {aluno.horario}</p>
+              </div>
+              <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />
+            </div>
+            {baixaSet.has(aluno.id) && (
+              <p className="mt-3 inline-flex rounded-full bg-danger-50 px-2 py-1 text-xs font-semibold text-danger-600">
+                Frequência abaixo de 75%
+              </p>
+            )}
+            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="min-w-0">
+                <dt className="text-xs text-muted-foreground">Responsável</dt>
+                <dd className="truncate font-medium">{aluno.responsavel}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Mensalidade</dt>
+                <dd data-numeric className="font-semibold">{formatMoney(aluno.mensalidade)}</dd>
+              </div>
+            </dl>
+            <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-3">
+              <AlunoFormDialog
+                aluno={aluno}
+                trigger={<Button variant="outline" className="w-full"><PencilIcon className="size-4" />Editar</Button>}
+              />
+              {aluno.status === "Ativo" ? (
+                <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
+                  <Button variant="ghost" className="w-full"><UserXIcon className="size-4" />Inativar</Button>
+                </ConfirmDialog>
+              ) : (
+                <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
+                  <Button variant="ghost" className="w-full"><UserCheckIcon className="size-4 text-success-600" />Reativar</Button>
+                </ConfirmDialog>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div data-slot="student-table" className="hidden overflow-x-auto rounded-xl border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>

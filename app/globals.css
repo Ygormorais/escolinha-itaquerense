@@ -1,3 +1,5 @@
+/* Hallmark · pre-emit critique: P5 H4 E4 S5 R4 V4 · genre: playful · tone: acolhedor e operacional · anchor: vermelho alvirrubro · macrostructure: Workbench · slop: scoped-pass; legacy gates 7, 10, 48 tracked */
+@import "../tokens.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -6,16 +8,16 @@
 
 @theme {
   /* Brand — vermelho alvirrubro (mesmo do site público) */
-  --color-brand-950: #4A0B0B;
-  --color-brand-900: #7F0000;
-  --color-brand-800: #9F1D1D;
-  --color-brand-700: #9F1D1D;
-  --color-brand-600: #C62828;
-  --color-brand-500: #E53935;
-  --color-brand-200: #F6CACA;
-  --color-brand-300: #EF9A9A;
-  --color-brand-100: #FFEBEE;
-  --color-brand-50:  #FFF5F5;
+  --color-brand-950: var(--brand-950);
+  --color-brand-900: var(--brand-900);
+  --color-brand-800: var(--brand-800);
+  --color-brand-700: var(--brand-800);
+  --color-brand-600: var(--brand-600);
+  --color-brand-500: var(--brand-500);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-100: var(--brand-100);
+  --color-brand-50: var(--brand-50);
 
   /* Neutros quentes (papel / tinta) — alinhados a --bg / --text públicos */
   --color-ink-950: #1C1412;
@@ -29,9 +31,9 @@
   /* Semânticos */
   --color-success-50:  #EDF9F4;
   --color-success-600: #0F7A5A;
-  --color-warning-50:  #FFF8ED;
-  --color-warning-600: #A86417;
-  --color-warning-700: #7A450C;
+  --color-warning-50: var(--warning-50);
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
   --color-danger-50:   #FEF1F0;
   --color-danger-600:  #B3261E;
   --color-info-50:     #EFF5FD;
@@ -95,14 +97,16 @@
 
 :root {
   /* Papel quente + vermelho C62828 — mesma base do site público */
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
   --background: #FAF8F5;
   --foreground: #1C1412;
-  --card: #FFFFFF;
+  --card: var(--paper-raised);
   --card-foreground: #1C1412;
-  --popover: #FFFFFF;
+  --popover: var(--paper-raised);
   --popover-foreground: #1C1412;
   --primary: #C62828;
-  --primary-foreground: #FFFFFF;
+  --primary-foreground: var(--paper-raised);
   --secondary: #F3EFE9;
   --secondary-foreground: #1C1412;
   --muted: #F3EFE9;
@@ -110,7 +114,7 @@
   --accent: #FFF5F5;
   --accent-foreground: #9F1D1D;
   --destructive: #B3261E;
-  --destructive-foreground: #FFFFFF;
+  --destructive-foreground: var(--paper-raised);
   --border: #E8E2DA;
   --input: #E8E2DA;
   --ring: #C62828;
@@ -178,12 +182,19 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body {
+    overflow-x: clip;
+  }
   body {
     font-family: var(--font-body), var(--font-inter), Inter, system-ui, sans-serif;
     background-color: var(--background);
     color: var(--foreground);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+  :where(button, a, [role="button"]) {
+    white-space: nowrap;
   }
   :where([data-numeric]) {
     font-family: var(--font-body), var(--font-inter), Inter, system-ui, sans-serif;
