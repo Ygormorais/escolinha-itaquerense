@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { Sheet } from "@/components/ui/sheet"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import type { StaffRole } from "@/lib/permissions"
+import { staffRoleLabel } from "@/lib/permissions"
 
 interface AdminShellProps {
   children: React.ReactNode
@@ -40,7 +41,7 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
             E.C. Itaquerense
           </p>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Painel admin
+            Painel · {staffRoleLabel(role)}
           </p>
         </div>
       </header>

@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { OnboardingRestart } from "@/components/onboarding/onboarding-restart"
-import { canAccessStaffPath, type StaffRole } from "@/lib/permissions"
+import { canAccessStaffPath, staffRoleLabel, type StaffRole } from "@/lib/permissions"
 
 function LogoutButton() {
   const router = useRouter()
@@ -138,7 +138,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
             Escolinha
           </p>
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Itaquerense · Admin
+            Itaquerense · {staffRoleLabel(role)}
           </p>
         </div>
       </div>
@@ -183,6 +183,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                 <div>
                   <button
                     onClick={() => setRelOpen((v) => !v)}
+                    aria-expanded={relOpen}
                     className={cn(
                       "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                       pathname.startsWith("/relatorio")

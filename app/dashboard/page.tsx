@@ -15,12 +15,15 @@ import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
 import { getQtdeAlunosEmQueda } from "@/app/actions/frequencia"
 import { TURMAS } from "@/lib/constants"
-import { AlertBanner, type AlertIcon } from "@/components/dashboard/alert-banner"
+import { AlertBanner, type AlertItem } from "@/components/dashboard/alert-banner"
 import { EmptyState } from "@/components/ui/empty-state"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ResumoFinanceiro } from "@/components/dashboard/resumo-financeiro"
 import { AniversariantesCard } from "@/components/dashboard/aniversariantes-card"
 import { aniversariantesDoMes } from "@/lib/aniversariantes"
+import { requireAuth } from "@/lib/auth"
+import { normalizeDashboardMonth } from "@/lib/dashboard-query"
+import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
 
 const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-receita-custos").then(m => ({ default: m.ChartReceitaCustos })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
 const ChartInadimplencia = dynamic(() => import("@/components/dashboard/chart-inadimplencia").then(m => ({ default: m.ChartInadimplencia })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
@@ -31,11 +34,20 @@ export const metadata = { title: "Dashboard — Escolinha Itaquerense" }
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string }>
+  searchParams: Promise<{ mes?: string | string[] }>
 }) {
-  const params = await searchParams
+  const [{ role: sessionRole }, params] = await Promise.all([
+    requireAuth(["admin", "secretaria", "tecnico"]),
+    searchParams,
+  ])
+  if (!isStaffRole(sessionRole)) {
+    throw new Error("Perfil administrativo inválido.")
+  }
+  const role = sessionRole
+  const canViewPayments = canAccessStaffPath("/pagamentos", role)
+  const canViewCash = canAccessStaffPath("/caixa", role)
   const now = new Date()
-  const mesSelecionado = params.mes ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+  const mesSelecionado = normalizeDashboardMonth(params.mes, now)
 
   const [anoRef, mesRef] = mesSelecionado.split("-").map(Number)
   const dataRef = new Date(anoRef, mesRef - 1, 1)
@@ -74,22 +86,22 @@ export default async function DashboardPage({
     inadimplentesComFreqBaixa,
   ] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
-    db.pagamento.findMany({
+    canViewPayments ? db.pagamento.findMany({
       where: { mesReferencia: mesAtual, dataPagamento: { not: null } },
-    }),
-    db.pagamento.findMany({
+    }) : Promise.resolve([]),
+    canViewPayments ? db.pagamento.findMany({
       where: { dataPagamento: { not: null } },
       include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataPagamento: "desc" },
       take: 5,
-    }),
+    }) : Promise.resolve([]),
     db.frequencia.count({
       where: { data: { gte: inicioMes, lte: fimMes }, presenca: "Presente" },
     }),
     db.frequencia.count({
       where: { data: { gte: inicioMes, lte: fimMes } },
     }),
-    db.pagamento.findMany({
+    canViewPayments ? db.pagamento.findMany({
       where: {
         mesReferencia: mesAtual,
         dataPagamento: null,
@@ -98,28 +110,28 @@ export default async function DashboardPage({
       include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
       take: 5,
-    }),
-    db.pagamento.findMany({
+    }) : Promise.resolve([]),
+    canViewPayments ? db.pagamento.findMany({
       where: { dataPagamento: { gte: sixMonthsAgo } },
       select: { dataPagamento: true, valorRecebido: true },
-    }),
-    db.custo.findMany({
+    }) : Promise.resolve([]),
+    canViewCash ? db.custo.findMany({
       where: { data: { gte: sixMonthsAgo } },
       select: { data: true, valor: true },
-    }),
+    }) : Promise.resolve([]),
     db.aluno.findMany({
       where: { status: "Ativo" },
       select: { id: true, nome: true, dataNascimento: true },
       orderBy: { dataNascimento: "asc" },
     }),
-    db.pagamento.findMany({
+    canViewPayments ? db.pagamento.findMany({
       where: {
         dataPagamento: null,
         dataVencimento: { gte: inicioMes, lte: addDays(fimMes, 7) },
       },
       include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataVencimento: "asc" },
-    }),
+    }) : Promise.resolve([]),
     db.aluno.groupBy({
       by: ["turma"],
       where: { status: "Ativo" },
@@ -128,24 +140,24 @@ export default async function DashboardPage({
       turma,
       count: rows.find((r) => r.turma === turma)?._count.id ?? 0,
     }))),
-    db.pagamento.findMany({
+    canViewPayments ? db.pagamento.findMany({
       where: { mesReferencia: { in: last6Months } },
       select: { mesReferencia: true, dataPagamento: true, valorRecebido: true },
-    }),
-    db.pagamento.findMany({
+    }) : Promise.resolve([]),
+    canViewPayments ? db.pagamento.findMany({
       where: { mesReferencia: mesAtual, dataPagamento: { not: null } },
       select: { valorRecebido: true, aluno: { select: { turma: true } } },
-    }),
+    }) : Promise.resolve([]),
     // Previous month data for comparison
-    (() => {
+    canViewPayments ? (() => {
       const mesAnteriorObj = subMonths(dataRef, 1)
       const mesAnteriorStr = format(mesAnteriorObj, "yyyy-MM")
       return db.pagamento.aggregate({
         where: { mesReferencia: mesAnteriorStr, dataPagamento: { not: null } },
         _sum: { valorRecebido: true },
       }).then(r => ({ mes: mesAnteriorStr, receita: r._sum.valorRecebido ?? 0 }))
-    })(),
-    (() => {
+    })() : Promise.resolve({ mes: format(subMonths(dataRef, 1), "yyyy-MM"), receita: 0 }),
+    canViewCash ? (() => {
       const mesAnteriorObj = subMonths(dataRef, 1)
       const inicio = startOfMonth(mesAnteriorObj)
       const fim = endOfMonth(mesAnteriorObj)
@@ -153,19 +165,19 @@ export default async function DashboardPage({
         where: { data: { gte: inicio, lte: fim } },
         _sum: { valor: true },
       }).then(r => ({ custos: r._sum.valor ?? 0 }))
-    })(),
+    })() : Promise.resolve({ custos: 0 }),
     // Contagens sem take — mesmos critérios da página /inadimplencia
-    db.pagamento.count({
+    canViewPayments ? db.pagamento.count({
       where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
-    }),
-    db.pagamento.findMany({
+    }) : Promise.resolve(0),
+    canViewPayments ? db.pagamento.findMany({
       where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
       select: { alunoId: true },
       distinct: ["alunoId"],
-    }).then((rows) => rows.length),
+    }).then((rows) => rows.length) : Promise.resolve(0),
     getQtdeAlunosEmQueda(mesSelecionado),
     // Alunos em risco: inadimplentes com frequência baixa no mês
-    db.aluno.findMany({
+    canViewPayments ? db.aluno.findMany({
       where: {
         status: "Ativo",
         pagamentos: { some: { dataPagamento: null, dataVencimento: { lt: now } } },
@@ -184,7 +196,7 @@ export default async function DashboardPage({
         },
       },
       orderBy: { nome: "asc" },
-    }),
+    }) : Promise.resolve([]),
   ])
 
   const chartData = last6Months.map((mes) => {
@@ -239,24 +251,24 @@ export default async function DashboardPage({
     .reverse()
     .slice(0, 8)
 
-  const alerts: { type: "danger" | "warning" | "info"; icon: AlertIcon; message: string; detail: string }[] = []
+  const alerts: AlertItem[] = []
   if (mensalidadesVencidas > 5) {
-    alerts.push({ type: "danger", icon: "alerta", message: `${mensalidadesVencidas} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação." })
+    alerts.push({ type: "danger", icon: "alerta", message: `${mensalidadesVencidas} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação.", href: "/inadimplencia" })
   }
   if (mensalidadesVencidas > 0 && mensalidadesVencidas <= 5) {
-    alerts.push({ type: "warning", icon: "alerta", message: `${plural(mensalidadesVencidas, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção." })
+    alerts.push({ type: "warning", icon: "alerta", message: `${plural(mensalidadesVencidas, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção.", href: "/inadimplencia" })
   }
   if (presencaMedia < 50 && totalFrequencias > 0) {
-    alerts.push({ type: "danger", icon: "frequencia", message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.` })
+    alerts.push({ type: "danger", icon: "frequencia", message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.`, href: "/frequencia" })
   }
   if (presencaMedia >= 50 && presencaMedia < 75 && totalFrequencias > 0) {
-    alerts.push({ type: "warning", icon: "frequencia", message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.` })
+    alerts.push({ type: "warning", icon: "frequencia", message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.`, href: "/frequencia" })
   }
   if (vencendoSemana.length > 0) {
-    alerts.push({ type: "info", icon: "tendencia", message: `${plural(vencendoSemana.length, "mensalidade vence", "mensalidades vencem", "nenhuma")} nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento." })
+    alerts.push({ type: "info", icon: "tendencia", message: `${plural(vencendoSemana.length, "mensalidade vence", "mensalidades vencem", "nenhuma")} nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento.", href: "/pagamentos" })
   }
   if (riscoEvasao.length >= 3) {
-    alerts.push({ type: "warning", icon: "alerta", message: `${riscoEvasao.length} alunos em risco de evasão`, detail: "Inadimplentes com presença abaixo de 60% este mês." })
+    alerts.push({ type: "warning", icon: "alerta", message: `${riscoEvasao.length} alunos em risco de evasão`, detail: "Inadimplentes com presença abaixo de 60% este mês.", href: "/alunos" })
   }
 
   const receitaAnterior = mesAnteriorData.receita
@@ -269,7 +281,7 @@ export default async function DashboardPage({
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}
         action={
             <div className="flex items-center gap-2">
-              <GerarMesButton mes={mesAtual} />
+              {canViewPayments && <GerarMesButton mes={mesAtual} />}
               <MonthPicker mes={mesSelecionado} basePath="/dashboard" />
             </div>
           }
@@ -277,17 +289,19 @@ export default async function DashboardPage({
 
       {alerts.length > 0 && <AlertBanner alerts={alerts} />}
 
-      <QuickActions />
+      <QuickActions role={role} />
 
-      <ResumoFinanceiro
-        receita={receitaMes}
-        custos={custosMes}
-        saldo={receitaMes - custosMes}
-        mesAnterior={receitaAnterior > 0 || custosAnterior > 0 ? {
-          receita: receitaAnterior,
-          custos: custosAnterior,
-        } : undefined}
-      />
+      {canViewCash && (
+        <ResumoFinanceiro
+          receita={receitaMes}
+          custos={custosMes}
+          saldo={receitaMes - custosMes}
+          mesAnterior={receitaAnterior > 0 || custosAnterior > 0 ? {
+            receita: receitaAnterior,
+            custos: custosAnterior,
+          } : undefined}
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
         <StatCard
@@ -298,27 +312,31 @@ export default async function DashboardPage({
           borderAccent
           href="/alunos"
         />
-        <StatCard
-          title="Receita do Mês"
-          value={formatMoney(receitaMes)}
-          icon={TrendingUp}
-          variant={config.metaMensal > 0 && receitaMes >= config.metaMensal ? "success" : "brand"}
-          borderAccent
-          href="/caixa"
-          progress={config.metaMensal > 0 ? {
-            value: receitaMes,
-            max: config.metaMensal,
-            label: `de ${formatMoney(config.metaMensal)}`,
-          } : undefined}
-        />
-        <StatCard
-          title="Inadimplentes"
-          value={alunosInadimplentes}
-          description="Alunos com mensalidade vencida"
-          icon={AlertCircle}
-          variant={alunosInadimplentes > 0 ? "danger" : "success"}
-          href="/inadimplencia"
-        />
+        {canViewPayments && (
+          <StatCard
+            title="Receita do Mês"
+            value={formatMoney(receitaMes)}
+            icon={TrendingUp}
+            variant={config.metaMensal > 0 && receitaMes >= config.metaMensal ? "success" : "brand"}
+            borderAccent
+            href={canViewCash ? "/caixa" : "/pagamentos"}
+            progress={config.metaMensal > 0 ? {
+              value: receitaMes,
+              max: config.metaMensal,
+              label: `de ${formatMoney(config.metaMensal)}`,
+            } : undefined}
+          />
+        )}
+        {canViewPayments && (
+          <StatCard
+            title="Inadimplentes"
+            value={alunosInadimplentes}
+            description="Alunos com mensalidade vencida"
+            icon={AlertCircle}
+            variant={alunosInadimplentes > 0 ? "danger" : "success"}
+            href="/inadimplencia"
+          />
+        )}
         <StatCard
           title="Frequência em queda"
           value={alunosEmQueda}
@@ -337,12 +355,13 @@ export default async function DashboardPage({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <ChartReceitaCustos data={chartData} />
-        <ChartInadimplencia data={inadimplenciaData} />
-      </div>
-
-      <ChartReceitaPorTurma data={receitaTurmaData} />
+      {canViewPayments && (
+        <div className={canViewCash ? "grid grid-cols-1 gap-4 lg:grid-cols-2" : undefined}>
+          {canViewCash && <ChartReceitaCustos data={chartData} />}
+          <ChartInadimplencia data={inadimplenciaData} />
+        </div>
+      )}
+      {canViewPayments && <ChartReceitaPorTurma data={receitaTurmaData} />}
 
       <Card>
         <CardHeader>
@@ -381,7 +400,7 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
 
-      {vencendoSemana.length > 0 && (
+      {canViewPayments && vencendoSemana.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-warning-600">
@@ -418,7 +437,7 @@ export default async function DashboardPage({
         </Card>
       )}
 
-      {riscoEvasao.length > 0 && (
+      {canViewPayments && riscoEvasao.length > 0 && (
         <Card className="border-danger-600/20">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-danger-600">
@@ -456,8 +475,9 @@ export default async function DashboardPage({
 
       <AniversariantesCard aniversariantes={aniversariantesMes} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
+      {canViewPayments && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Card>
           <CardHeader>
             <CardTitle>Últimos Pagamentos</CardTitle>
           </CardHeader>
@@ -495,9 +515,9 @@ export default async function DashboardPage({
               </Table>
             )}
           </CardContent>
-        </Card>
+          </Card>
 
-        <Card>
+          <Card>
           <CardHeader>
             <CardTitle>Mensalidades em Atraso</CardTitle>
           </CardHeader>
@@ -533,8 +553,9 @@ export default async function DashboardPage({
               </Table>
             )}
           </CardContent>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
