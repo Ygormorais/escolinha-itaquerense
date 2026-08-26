@@ -1,5 +1,11 @@
 export type StaffRole = "admin" | "secretaria" | "tecnico"
 
+const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
+  admin: "Administrador",
+  secretaria: "Secretaria",
+  tecnico: "Técnico",
+}
+
 const RESTRICTED_PREFIXES: Record<Exclude<StaffRole, "admin">, readonly string[]> = {
   tecnico: [
     "/pagamentos",
@@ -31,6 +37,10 @@ const RESTRICTED_PREFIXES: Record<Exclude<StaffRole, "admin">, readonly string[]
 
 export function isStaffRole(value: string | undefined): value is StaffRole {
   return value === "admin" || value === "secretaria" || value === "tecnico"
+}
+
+export function staffRoleLabel(role: StaffRole): string {
+  return STAFF_ROLE_LABELS[role]
 }
 
 function matchesPrefix(pathname: string, prefix: string): boolean {

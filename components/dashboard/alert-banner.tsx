@@ -1,6 +1,7 @@
 "use client"
 
 import { AlertCircle, CalendarCheck, MessageSquareWarning, TrendingUp } from "lucide-react"
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 
 // Mapa de chave → ícone. A chave (string) é o que vem do server component;
@@ -14,7 +15,7 @@ const ICONS = {
 
 export type AlertIcon = keyof typeof ICONS
 
-interface AlertItem {
+export interface AlertItem {
   type: "danger" | "warning" | "info"
   icon: AlertIcon
   message: string
@@ -34,17 +35,29 @@ export function AlertBanner({ alerts }: { alerts: AlertItem[] }) {
           info: "border-info-600/30 bg-info-50 text-info-600 dark:bg-info-600/10",
         }
         const Icon = ICONS[alert.icon]
-        return (
+        const card = (
           <Card
-            key={i}
-            className={`flex items-center gap-3 border-l-4 px-4 py-3 ${colorMap[alert.type]}`}
+            className={`flex items-center gap-3 border-l-4 px-4 py-3 transition-colors ${colorMap[alert.type]} ${alert.href ? "hover:border-r-brand-300 hover:bg-card" : ""}`}
           >
             <Icon className="size-5 shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">{alert.message}</p>
               <p className="text-xs opacity-80">{alert.detail}</p>
             </div>
+            {alert.href && (
+              <span className="shrink-0 text-xs font-semibold underline-offset-4 group-hover:underline">
+                Ver detalhes
+              </span>
+            )}
           </Card>
+        )
+
+        return alert.href ? (
+          <Link key={i} href={alert.href} className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+            {card}
+          </Link>
+        ) : (
+          <div key={i}>{card}</div>
         )
       })}
     </div>

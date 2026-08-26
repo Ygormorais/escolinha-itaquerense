@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { can, roleLabel, ROLES } from "@/lib/auth"
-import { canAccessStaffPath } from "@/lib/permissions"
+import { canAccessStaffPath, staffRoleLabel } from "@/lib/permissions"
 
 describe("permissions", () => {
   describe("can()", () => {
@@ -76,5 +76,13 @@ describe("canAccessStaffPath", () => {
 
   it("não confunde prefixos de rotas semelhantes", () => {
     expect(canAccessStaffPath("/caixa-forte", "secretaria")).toBe(true)
+  })
+})
+
+describe("staffRoleLabel", () => {
+  it("identifica o perfil exibido no portal", () => {
+    expect(staffRoleLabel("admin")).toBe("Administrador")
+    expect(staffRoleLabel("secretaria")).toBe("Secretaria")
+    expect(staffRoleLabel("tecnico")).toBe("Técnico")
   })
 })

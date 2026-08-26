@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { UserPlus, Receipt, CalendarCheck, Send, TrendingUp } from "lucide-react"
+import { canAccessStaffPath, type StaffRole } from "@/lib/permissions"
 
 const actions = [
   {
@@ -34,10 +35,14 @@ const actions = [
   },
 ]
 
-export function QuickActions() {
+export function getQuickActions(role: StaffRole) {
+  return actions.filter((action) => canAccessStaffPath(action.href, role))
+}
+
+export function QuickActions({ role }: { role: StaffRole }) {
   return (
     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
-      {actions.map((a) => {
+      {getQuickActions(role).map((a) => {
         const Icon = a.icon
         return (
           <Link

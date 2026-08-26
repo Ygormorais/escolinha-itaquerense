@@ -34,4 +34,11 @@ test.describe("Dashboard", () => {
     const main = page.locator("main")
     await expect(main.getByRole("button", { name: "Mês anterior" }).first()).toBeVisible()
   })
+
+  test("ignora mês inválido sem quebrar o dashboard", async ({ page }) => {
+    await page.goto("/dashboard?mes=valor-invalido", { waitUntil: "domcontentloaded" })
+
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+    await expect(page.getByText("Alunos Ativos", { exact: true })).toBeVisible()
+  })
 })
