@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import Link from "next/link"
 import { Mail, ArrowLeft, Send, Loader2 } from "lucide-react"
-import { AuthShell } from "@/components/auth/auth-shell"
+import { AuthCard, AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
@@ -36,25 +36,16 @@ export default function RecuperarSenhaPage() {
       description="Informe o email cadastrado para receber um link de redefinição de senha e seguir com o acesso da família."
       accentLabel="Suporte"
       accentValue="Fluxo seguro para restaurar o acesso ao portal do responsável"
-      tone="responsavel"
       footer={(
         <Link href="/responsavel/login" className="font-medium text-brand-800 underline underline-offset-4 transition-colors hover:text-brand-900">
           Voltar ao login
         </Link>
       )}
     >
-      <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
-        <div className="mb-6 space-y-2">
-          <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
-            Recuperar senha
-          </h2>
-          <p className="text-sm leading-6 text-[var(--color-ink-700)]">
-            {enviado
-              ? "Verifique sua caixa de entrada"
-              : "Enviaremos um link para redefinir sua senha"}
-          </p>
-        </div>
-
+      <AuthCard
+        title="Recuperar senha"
+        description={enviado ? "Verifique sua caixa de entrada" : "Enviaremos um link para redefinir sua senha"}
+      >
         {enviado ? (
           <div className="space-y-5">
             <p className="text-sm leading-6 text-[var(--color-ink-700)]">
@@ -92,7 +83,7 @@ export default function RecuperarSenhaPage() {
             </Button>
           </form>
         )}
-      </div>
+      </AuthCard>
     </AuthShell>
   )
 }

@@ -2,14 +2,15 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2, Lock, User } from "lucide-react"
+import { Loader2, LogIn, User } from "lucide-react"
+import { AuthCard } from "@/components/auth/auth-shell"
+import { PasswordField } from "@/components/auth/password-field"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 export function LoginForm({ next }: { next?: string }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [show, setShow] = useState(false)
   const [loading, startLoading] = useTransition()
   const [error, setError] = useState("")
   const router = useRouter()
@@ -40,16 +41,10 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <div className="rounded-2xl border border-black/6 bg-white/86 p-6 shadow-sm backdrop-blur sm:p-7">
-      <div className="mb-6 space-y-2">
-        <h2 className="font-heading text-2xl font-bold text-[var(--color-ink-950)]">
-          Entrar na equipe
-        </h2>
-        <p className="text-sm leading-6 text-[var(--color-ink-700)]">
-          Informe usuário e senha da equipe. Este acesso não é para pais ou responsáveis.
-        </p>
-      </div>
-
+    <AuthCard
+      title="Entrar na equipe"
+      description="Informe usuário e senha da equipe. Este acesso não é para pais ou responsáveis."
+    >
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <label htmlFor="login-usuario" className="text-sm font-semibold text-[var(--color-ink-900)]">Usuário</label>
@@ -70,27 +65,13 @@ export function LoginForm({ next }: { next?: string }) {
 
         <div className="space-y-2">
           <label htmlFor="login-senha" className="text-sm font-semibold text-[var(--color-ink-900)]">Senha</label>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--color-ink-500)]" />
-            <Input
-              id="login-senha"
-              type={show ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Digite a senha..."
-              className="pl-11 pr-12"
-              autoComplete="current-password"
-            />
-            <button
-              type="button"
-              onClick={() => setShow(!show)}
-              aria-label={show ? "Ocultar senha" : "Mostrar senha"}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-ink-500)] transition-colors hover:text-[var(--color-ink-900)]"
-              tabIndex={-1}
-            >
-              {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-            </button>
-          </div>
+          <PasswordField
+            id="login-senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Digite a senha..."
+            autoComplete="current-password"
+          />
           {error && (
             <p role="alert" className="text-sm font-medium text-danger-600">{error}</p>
           )}
@@ -108,10 +89,10 @@ export function LoginForm({ next }: { next?: string }) {
               Entrando...
             </>
           ) : (
-            "Entrar"
+            <><LogIn className="size-4" /> Entrar</>
           )}
         </Button>
       </form>
-    </div>
+    </AuthCard>
   )
 }

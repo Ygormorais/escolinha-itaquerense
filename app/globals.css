@@ -185,7 +185,8 @@
  * papel #FAF8F5, tinta #1C1412, accent #C62828, Inter + Playfair.
  * Força tema claro localmente (site público não usa dark).
  */
-.portal-familia {
+.portal-familia,
+.auth-experience {
   color-scheme: light;
   --background: #FAF8F5;
   --foreground: #1C1412;
@@ -247,15 +248,21 @@
 .portal-familia h1,
 .portal-familia h2,
 .portal-familia h3,
-.portal-familia h4 {
+.portal-familia h4,
+.auth-experience h1,
+.auth-experience h2,
+.auth-experience h3,
+.auth-experience h4 {
   font-family: var(--font-heading), var(--font-playfair), Georgia, "Times New Roman", serif;
   letter-spacing: -0.015em;
 }
 
-.portal-familia .font-heading {
+.portal-familia .font-heading,
+.auth-experience .font-heading {
   font-family: var(--font-heading), var(--font-playfair), Georgia, "Times New Roman", serif;
 }
 
-.portal-familia .font-body {
+.portal-familia .font-body,
+.auth-experience .font-body {
   font-family: var(--font-body), var(--font-inter), Inter, system-ui, sans-serif;
 }
