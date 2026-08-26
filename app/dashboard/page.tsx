@@ -23,6 +23,7 @@ import { AniversariantesCard } from "@/components/dashboard/aniversariantes-card
 import { aniversariantesDoMes } from "@/lib/aniversariantes"
 import { requireAuth } from "@/lib/auth"
 import { normalizeDashboardMonth } from "@/lib/dashboard-query"
+import { summarizeFrequency, summarizeOverduePayments } from "@/lib/dashboard-metrics"
 import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
 
 const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-receita-custos").then(m => ({ default: m.ChartReceitaCustos })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
@@ -54,6 +55,7 @@ export default async function DashboardPage({
   const mesAtual = mesSelecionado
   const inicioMes = startOfMonth(dataRef)
   const fimMes = endOfMonth(dataRef)
+  const mesAnterior = format(subMonths(dataRef, 1), "yyyy-MM")
 
   const sixMonthsAgo = subMonths(startOfMonth(dataRef), 5)
 
@@ -65,29 +67,27 @@ export default async function DashboardPage({
   const config = getConfig()
 
   const [
-    totalAtivos,
-    pagamentosMes,
+    pagamentosMesesRecentes,
     ultimosPagamentos,
-    frequenciasMes,
-    totalFrequencias,
+    frequenciasPorStatus,
     inadimplentes,
     pagamentosChart,
     custosChart,
     aniversariantes,
     vencendoSemana,
-    ocupacaoTurmas,
+    ocupacaoTurmasRaw,
     todosPagamentos6Meses,
-    receitaTurmaRaw,
-    mesAnteriorData,
-    mesAnteriorCustos,
-    mensalidadesVencidas,
-    alunosInadimplentes,
+    pagamentosVencidosPorAluno,
     alunosEmQueda,
     inadimplentesComFreqBaixa,
   ] = await Promise.all([
-    db.aluno.count({ where: { status: "Ativo" } }),
     canViewPayments ? db.pagamento.findMany({
-      where: { mesReferencia: mesAtual, dataPagamento: { not: null } },
+      where: { mesReferencia: { in: [mesAtual, mesAnterior] }, dataPagamento: { not: null } },
+      select: {
+        mesReferencia: true,
+        valorRecebido: true,
+        aluno: { select: { turma: true } },
+      },
     }) : Promise.resolve([]),
     canViewPayments ? db.pagamento.findMany({
       where: { dataPagamento: { not: null } },
@@ -95,11 +95,10 @@ export default async function DashboardPage({
       orderBy: { dataPagamento: "desc" },
       take: 5,
     }) : Promise.resolve([]),
-    db.frequencia.count({
-      where: { data: { gte: inicioMes, lte: fimMes }, presenca: "Presente" },
-    }),
-    db.frequencia.count({
+    db.frequencia.groupBy({
+      by: ["presenca"],
       where: { data: { gte: inicioMes, lte: fimMes } },
+      _count: { _all: true },
     }),
     canViewPayments ? db.pagamento.findMany({
       where: {
@@ -112,11 +111,11 @@ export default async function DashboardPage({
       take: 5,
     }) : Promise.resolve([]),
     canViewPayments ? db.pagamento.findMany({
-      where: { dataPagamento: { gte: sixMonthsAgo } },
+      where: { dataPagamento: { gte: sixMonthsAgo, lte: fimMes } },
       select: { dataPagamento: true, valorRecebido: true },
     }) : Promise.resolve([]),
     canViewCash ? db.custo.findMany({
-      where: { data: { gte: sixMonthsAgo } },
+      where: { data: { gte: sixMonthsAgo, lte: fimMes } },
       select: { data: true, valor: true },
     }) : Promise.resolve([]),
     db.aluno.findMany({
@@ -136,47 +135,17 @@ export default async function DashboardPage({
       by: ["turma"],
       where: { status: "Ativo" },
       _count: { id: true },
-    }).then((rows) => TURMAS.map((turma) => ({
-      turma,
-      count: rows.find((r) => r.turma === turma)?._count.id ?? 0,
-    }))),
+    }),
     canViewPayments ? db.pagamento.findMany({
       where: { mesReferencia: { in: last6Months } },
       select: { mesReferencia: true, dataPagamento: true, valorRecebido: true },
     }) : Promise.resolve([]),
-    canViewPayments ? db.pagamento.findMany({
-      where: { mesReferencia: mesAtual, dataPagamento: { not: null } },
-      select: { valorRecebido: true, aluno: { select: { turma: true } } },
+    canViewPayments ? db.pagamento.groupBy({
+      by: ["alunoId"],
+      where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
+      _count: { _all: true },
     }) : Promise.resolve([]),
-    // Previous month data for comparison
-    canViewPayments ? (() => {
-      const mesAnteriorObj = subMonths(dataRef, 1)
-      const mesAnteriorStr = format(mesAnteriorObj, "yyyy-MM")
-      return db.pagamento.aggregate({
-        where: { mesReferencia: mesAnteriorStr, dataPagamento: { not: null } },
-        _sum: { valorRecebido: true },
-      }).then(r => ({ mes: mesAnteriorStr, receita: r._sum.valorRecebido ?? 0 }))
-    })() : Promise.resolve({ mes: format(subMonths(dataRef, 1), "yyyy-MM"), receita: 0 }),
-    canViewCash ? (() => {
-      const mesAnteriorObj = subMonths(dataRef, 1)
-      const inicio = startOfMonth(mesAnteriorObj)
-      const fim = endOfMonth(mesAnteriorObj)
-      return db.custo.aggregate({
-        where: { data: { gte: inicio, lte: fim } },
-        _sum: { valor: true },
-      }).then(r => ({ custos: r._sum.valor ?? 0 }))
-    })() : Promise.resolve({ custos: 0 }),
-    // Contagens sem take — mesmos critérios da página /inadimplencia
-    canViewPayments ? db.pagamento.count({
-      where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
-    }) : Promise.resolve(0),
-    canViewPayments ? db.pagamento.findMany({
-      where: { dataPagamento: null, dataVencimento: { lt: now }, aluno: { status: "Ativo" } },
-      select: { alunoId: true },
-      distinct: ["alunoId"],
-    }).then((rows) => rows.length) : Promise.resolve(0),
     getQtdeAlunosEmQueda(mesSelecionado),
-    // Alunos em risco: inadimplentes com frequência baixa no mês
     canViewPayments ? db.aluno.findMany({
       where: {
         status: "Ativo",
@@ -198,6 +167,21 @@ export default async function DashboardPage({
       orderBy: { nome: "asc" },
     }) : Promise.resolve([]),
   ])
+
+  const totalAtivos = ocupacaoTurmasRaw.reduce((sum, row) => sum + row._count.id, 0)
+  const pagamentosMes = pagamentosMesesRecentes.filter((pagamento) => pagamento.mesReferencia === mesAtual)
+  const ocupacaoTurmas = TURMAS.map((turma) => ({
+    turma,
+    count: ocupacaoTurmasRaw.find((row) => row.turma === turma)?._count.id ?? 0,
+  }))
+  const {
+    total: totalFrequencias,
+    percentage: presencaMedia,
+  } = summarizeFrequency(frequenciasPorStatus)
+  const {
+    payments: mensalidadesVencidas,
+    students: alunosInadimplentes,
+  } = summarizeOverduePayments(pagamentosVencidosPorAluno)
 
   const chartData = last6Months.map((mes) => {
     const recebido = pagamentosChart
@@ -222,10 +206,10 @@ export default async function DashboardPage({
   })
 
   const receitaTurmaData = TURMAS.map((turma) => {
-    const receita = receitaTurmaRaw
+    const receita = pagamentosMes
       .filter((p) => p.aluno.turma === turma)
       .reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
-    const alunos = receitaTurmaRaw.filter((p) => p.aluno.turma === turma).length
+    const alunos = pagamentosMes.filter((p) => p.aluno.turma === turma).length
     return { turma, receita, alunos }
   }).filter((t) => t.alunos > 0)
 
@@ -235,9 +219,6 @@ export default async function DashboardPage({
   const custosMes = custosChart
     .filter((c) => format(c.data, "yyyy-MM") === mesAtual)
     .reduce((s, c) => s + c.valor, 0)
-  const presencaMedia = totalFrequencias > 0
-    ? Math.round((frequenciasMes / totalFrequencias) * 100)
-    : 0
 
   const riscoEvasao = inadimplentesComFreqBaixa
     .map((a) => {
@@ -271,8 +252,12 @@ export default async function DashboardPage({
     alerts.push({ type: "warning", icon: "alerta", message: `${riscoEvasao.length} alunos em risco de evasão`, detail: "Inadimplentes com presença abaixo de 60% este mês.", href: "/alunos" })
   }
 
-  const receitaAnterior = mesAnteriorData.receita
-  const custosAnterior = mesAnteriorCustos.custos
+  const receitaAnterior = pagamentosMesesRecentes
+    .filter((pagamento) => pagamento.mesReferencia === mesAnterior)
+    .reduce((sum, pagamento) => sum + (pagamento.valorRecebido ?? 0), 0)
+  const custosAnterior = custosChart
+    .filter((c) => format(c.data, "yyyy-MM") === mesAnterior)
+    .reduce((sum, custo) => sum + custo.valor, 0)
 
   return (
     <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
