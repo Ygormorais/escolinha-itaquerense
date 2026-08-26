@@ -66,19 +66,19 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
   const label = `${MESES_EXTENSO[curMonth]} de ${curYear}`
 
   return (
-    <div ref={ref} className={cn("relative", className)}>
+    <div ref={ref} className={cn("relative w-full min-w-0 sm:w-auto", className)}>
       <button
         id={id}
         type="button"
         onClick={() => setOpen(v => !v)}
         className={cn(
-          "flex h-9 w-44 items-center gap-2 rounded-lg border border-input bg-background px-3 py-1.5 text-sm shadow-sm",
-          "text-foreground transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          "flex h-10 w-full min-w-0 items-center gap-2 rounded-[var(--radius-control)] border border-input bg-background px-3 py-1.5 text-sm shadow-[var(--shadow-xs)] sm:w-44",
+          "text-foreground transition-colors hover:bg-muted focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/15",
           open && "border-ring bg-muted"
         )}
       >
         <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
-        <span className="flex-1 text-left font-medium capitalize">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-left font-medium capitalize">{label}</span>
       </button>
 
       {open && (

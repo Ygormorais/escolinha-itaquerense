@@ -34,7 +34,7 @@ export function GerarMesButton({ mes }: { mes: string }) {
       size="sm"
       onClick={handleGerar}
       disabled={pending}
-      className="gap-1.5"
+      className="w-full gap-1.5 sm:w-auto"
     >
       {pending ? <Loader2 className="size-4 animate-spin" /> : <CalendarPlus className="size-4" />}
       Gerar Mensalidades

@@ -368,27 +368,27 @@ export function PagamentosClient({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border bg-card p-3">
+      <section data-slot="payment-metrics" aria-label="Resumo dos pagamentos" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-[var(--radius-card)] border bg-card p-3 shadow-sm sm:p-4">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total Pago</p>
-          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(totalPago)}</p>
+          <p data-numeric className="mt-1 text-xl font-bold text-success-600">{formatMoney(totalPago)}</p>
         </div>
-        <div className="rounded-xl border bg-card p-3">
+        <div className="rounded-[var(--radius-card)] border bg-card p-3 shadow-sm sm:p-4">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pendentes</p>
-          <p className="mt-1 text-2xl font-extrabold text-muted-foreground">{totalPendente}</p>
+          <p data-numeric className="mt-1 text-2xl font-bold text-muted-foreground">{totalPendente}</p>
         </div>
-        <div className="rounded-xl border bg-card p-3">
+        <div className="rounded-[var(--radius-card)] border bg-card p-3 shadow-sm sm:p-4">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Vencidos</p>
-          <p className={`mt-1 text-2xl font-extrabold ${totalVencido > 0 ? "text-danger-600" : "text-muted-foreground"}`}>{totalVencido}</p>
+          <p data-numeric className={`mt-1 text-2xl font-bold ${totalVencido > 0 ? "text-danger-600" : "text-muted-foreground"}`}>{totalVencido}</p>
         </div>
-        <div className="rounded-xl border bg-card p-3">
+        <div className="rounded-[var(--radius-card)] border bg-card p-3 shadow-sm sm:p-4">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Adimplência</p>
-          <p className={`mt-1 text-2xl font-extrabold ${taxaAdimplencia >= 80 ? "text-success-600" : taxaAdimplencia >= 60 ? "text-warning-600" : "text-danger-600"}`}>{taxaAdimplencia}%</p>
+          <p data-numeric className={`mt-1 text-2xl font-bold ${taxaAdimplencia >= 80 ? "text-success-600" : taxaAdimplencia >= 60 ? "text-warning-600" : "text-danger-600"}`}>{taxaAdimplencia}%</p>
         </div>
-      </div>
+      </section>
 
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[var(--radius-control)] border border-brand-200 bg-brand-50 px-4 py-3">
           <span className="text-sm font-medium text-brand-800">{plural(selected.size, "selecionado", "selecionados", "nenhum")}</span>
           <Button
             size="sm"
@@ -432,15 +432,15 @@ export function PagamentosClient({
         </DialogContent>
       </Dialog>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <section data-slot="payment-filter-bar" aria-label="Filtros e arquivos" className="grid gap-3 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm lg:grid-cols-[minmax(14rem,1fr)_10rem_10rem_auto_auto] lg:items-end">
         <Input
           placeholder="Buscar aluno..."
+          aria-label="Buscar aluno"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
         />
         <Select value={statusFilter} onValueChange={(v) => { if (v) setStatusFilter(v) }}>
-          <SelectTrigger className="h-12 w-36">
+          <SelectTrigger className="w-full" aria-label="Filtrar por status">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -451,7 +451,7 @@ export function PagamentosClient({
           </SelectContent>
         </Select>
         <Select value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
-          <SelectTrigger className="h-12 w-36">
+          <SelectTrigger className="w-full" aria-label="Filtrar por turma">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -459,29 +459,30 @@ export function PagamentosClient({
             {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button variant="outline" className="h-12" onClick={exportarCSV} disabled={filtered.length === 0}>
+        <Button variant="outline" className="w-full lg:w-auto" onClick={exportarCSV} disabled={filtered.length === 0}>
           <Download className="size-4" />
           Exportar CSV
         </Button>
-        <Button variant="outline" className="h-12" onClick={() => router.push("/pagamentos/importar")}>
+        <Button variant="outline" className="w-full lg:w-auto" onClick={() => router.push("/pagamentos/importar")}>
           <FileUp className="size-4" />
           Importar OFX
         </Button>
-      </div>
-      <div className="flex items-end gap-4">
-        <div>
+      </section>
+      <section data-slot="payment-context-bar" aria-label="Período e ações de cobrança" className="flex flex-col gap-3 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm lg:flex-row lg:items-end">
+        <div className="w-full sm:w-auto">
           <Label htmlFor="pag-mes" className="text-muted-foreground">Mês de referência</Label>
           <MonthInput id="pag-mes" value={mes} onChange={(v) => router.push(`/pagamentos?mes=${v}`)} className="mt-1" />
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setConfirmOpen(true)}
-          disabled={gerando}
-        >
-          <PlusCircleIcon className="size-4" />
-          Gerar Mensalidades
-        </Button>
+        <div className="grid w-full gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:items-center">
+          <Button
+            variant="outline"
+            onClick={() => setConfirmOpen(true)}
+            disabled={gerando}
+            className="w-full lg:w-auto"
+          >
+            <PlusCircleIcon className="size-4" />
+            Gerar Mensalidades
+          </Button>
 
         <Dialog
           open={confirmOpen}
@@ -514,23 +515,138 @@ export function PagamentosClient({
           </DialogContent>
         </Dialog>
 
-        <ConfirmDialog title="Notificar responsáveis?" description={`Abrir WhatsApp para ${vencendoSemana.length} responsável(is)? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarVencendo}>
-          <Button variant="outline" size="sm" className="text-success-600 border-success-600/30 hover:bg-success-50">
-            <MessageCircle className="size-4" />
-            Notificar vencendo ({vencendoSemana.length})
-          </Button>
-        </ConfirmDialog>
+          <ConfirmDialog title="Notificar responsáveis?" description={`Abrir WhatsApp para ${vencendoSemana.length} responsável(is)? Os links serão abertos um a um.`} confirmLabel="Abrir WhatsApp" variant="warning" onConfirm={handleNotificarVencendo}>
+            <Button variant="outline" className="w-full border-success-600/30 text-success-600 hover:bg-success-50 lg:w-auto">
+              <MessageCircle className="size-4" />
+              Notificar vencendo ({vencendoSemana.length})
+            </Button>
+          </ConfirmDialog>
+        </div>
+      </section>
 
-        <div className="ml-auto text-right">
-          <p className="text-sm text-muted-foreground">Total recebido</p>
-          <p className="text-xl font-bold font-heading text-success-600">
-            {formatMoney(totalPago)}
+      {filtered.length === 0 ? (
+        <div data-slot="payment-empty-state" className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border bg-card px-4 py-10 text-center shadow-sm">
+          <CreditCard className="size-8 text-muted-foreground/30" aria-hidden />
+          <p className="text-sm text-muted-foreground">
+            {search || statusFilter !== "Todos" || turmaFilter !== "Todas"
+              ? "Nenhum pagamento para os filtros aplicados"
+              : "Nenhum pagamento cadastrado neste mês"}
           </p>
         </div>
+      ) : null}
+
+      <div data-slot="payment-mobile-list" className={filtered.length === 0 ? "hidden" : "grid gap-3 md:hidden"}>
+        {filtered.map((p) => {
+          const status = getPagamentoStatus(p)
+          return (
+            <article key={p.id} className={selected.has(p.id) ? "rounded-[var(--radius-card)] border border-brand-300 bg-brand-50 p-4 shadow-sm" : "rounded-[var(--radius-card)] border bg-card p-4 shadow-sm"}>
+              <div className="flex items-start gap-3">
+                {status !== "Pago" ? (
+                  <input
+                    type="checkbox"
+                    checked={selected.has(p.id)}
+                    onChange={() => toggleSelect(p.id)}
+                    aria-label={`Selecionar pagamento de ${p.aluno.nome}`}
+                    className="mt-1 size-4 cursor-pointer"
+                  />
+                ) : null}
+                <div className="min-w-0 flex-1">
+                  <Link href={`/alunos/${p.aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">
+                    {p.aluno.nome}
+                  </Link>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{p.aluno.turma} · {p.mesReferencia}</p>
+                </div>
+                <StatusBadge status={status} />
+              </div>
+
+              <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 text-sm">
+                <div>
+                  <dt className="text-xs text-muted-foreground">Vencimento</dt>
+                  <dd data-numeric className="mt-0.5 font-semibold">{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</dd>
+                </div>
+                <div className="text-right">
+                  <dt className="text-xs text-muted-foreground">Valor</dt>
+                  <dd data-numeric className="mt-0.5 font-bold">{formatMoney(p.valorRecebido ?? p.aluno.mensalidade)}</dd>
+                </div>
+                {p.dataPagamento ? (
+                  <div>
+                    <dt className="text-xs text-muted-foreground">Pagamento</dt>
+                    <dd data-numeric className="mt-0.5 font-semibold">{format(new Date(p.dataPagamento), "dd/MM/yyyy")}</dd>
+                  </div>
+                ) : null}
+                {p.externalId ? (
+                  <div className={p.dataPagamento ? "text-right" : "col-span-2"}>
+                    <dt className="text-xs text-muted-foreground">Cobrança</dt>
+                    <dd className="mt-1">
+                      <CobrancaDialog
+                        pagamentoId={p.id}
+                        alunoNome={p.aluno.nome}
+                        mesReferencia={p.mesReferencia}
+                        pixCopiaECola={p.pixCopiaECola}
+                        linhaDigitavel={p.linhaDigitavel}
+                        externalUrl={p.externalUrl}
+                        canalPrevisto={p.canalPrevisto}
+                      >
+                        <CobrancaBadge status={p.statusCobranca} />
+                      </CobrancaDialog>
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {status !== "Pago" ? <RegistrarPagamentoDialog pagamento={p} /> : null}
+                {status !== "Pago" && !p.externalId ? (
+                  <CobrancaDialog pagamentoId={p.id} alunoNome={p.aluno.nome} mesReferencia={p.mesReferencia}>
+                    <Button variant="outline" size="sm"><QrCode className="size-3.5" /> Gerar cobrança</Button>
+                  </CobrancaDialog>
+                ) : null}
+                {status !== "Pago" && chavePix && nomeClube && cidade ? (
+                  <PixButton
+                    chave={chavePix}
+                    nomeClube={nomeClube}
+                    cidade={cidade}
+                    valor={p.aluno.mensalidade}
+                    descricao={`Mensalidade ${p.mesReferencia} ${p.aluno.nome.split(" ")[0]}`}
+                    telefoneResponsavel={p.aluno.telefone}
+                    nomeResponsavel={p.aluno.nome}
+                  />
+                ) : null}
+                {status !== "Pago" && p.aluno.telefone ? (
+                  <a
+                    href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] border border-success-600/25 px-3 text-xs font-semibold text-success-600"
+                  >
+                    <MessageCircle className="size-3.5" aria-hidden /> Cobrar
+                  </a>
+                ) : null}
+                {status === "Pago" ? (
+                  <a
+                    href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] border border-border px-3 text-xs font-semibold text-muted-foreground"
+                  >
+                    <Receipt className="size-3.5" aria-hidden /> Recibo
+                  </a>
+                ) : null}
+                {status !== "Pago" ? (
+                  <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
+                    <Button variant="ghost" size="icon-lg" className="ml-auto" aria-label={`Excluir pagamento de ${p.aluno.nome}`}>
+                      <Trash2Icon className="size-4 text-danger-600" />
+                    </Button>
+                  </ConfirmDialog>
+                ) : null}
+              </div>
+            </article>
+          )
+        })}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border bg-card">
-        <Table>
+      <div data-slot="payment-table" className="hidden overflow-x-auto rounded-[var(--radius-card)] border bg-card shadow-sm md:block">
+        <Table className="min-w-[980px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-8">
@@ -549,24 +665,10 @@ export function PagamentosClient({
               <TableHead>Cobrança</TableHead>
               <TableHead>Pagamento</TableHead>
               <TableHead className="text-right">Valor</TableHead>
-              <TableHead className="w-28">Ação</TableHead>
+              <TableHead className="w-28 text-right">Ação</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={9}>
-                  <div className="flex flex-col items-center gap-2 py-10 text-center">
-                    <CreditCard className="size-8 text-muted-foreground/30" />
-                    <p className="text-sm text-muted-foreground">
-                      {search || statusFilter !== "Todos" || turmaFilter !== "Todas"
-                        ? "Nenhum pagamento para os filtros aplicados"
-                        : "Nenhum pagamento cadastrado neste mês"}
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
             {filtered.map((p) => {
               const status = getPagamentoStatus(p)
               return (
@@ -584,6 +686,7 @@ export function PagamentosClient({
                         type="checkbox"
                         checked={selected.has(p.id)}
                         onChange={() => toggleSelect(p.id)}
+                        aria-label={`Selecionar pagamento de ${p.aluno.nome}`}
                         className="cursor-pointer"
                       />
                     )}
@@ -622,11 +725,11 @@ export function PagamentosClient({
                   <TableCell>
                     {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell data-numeric className="text-right font-semibold">
                     {formatMoney(p.valorRecebido ?? p.aluno.mensalidade)}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1 items-center">
+                    <div className="flex items-center justify-end gap-1">
                       {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
                       {status !== "Pago" && chavePix && nomeClube && cidade && (
                         <PixButton

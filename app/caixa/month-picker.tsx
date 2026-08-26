@@ -19,12 +19,12 @@ export function MonthPicker({ mes, basePath = "/caixa" }: { mes: string; basePat
   }
 
   return (
-    <div className="flex items-center gap-1">
-      <Button type="button" size="icon" variant="outline" onClick={() => shift(-1)} aria-label="Mês anterior">
+    <div data-slot="month-picker" className="grid w-full min-w-0 grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-1 sm:w-auto sm:grid-cols-[2.5rem_11rem_2.5rem]">
+      <Button type="button" size="icon" className="size-10" variant="outline" onClick={() => shift(-1)} aria-label="Mês anterior">
         <ChevronLeft className="size-4" />
       </Button>
       <MonthInput value={mes} onChange={navigate} />
-      <Button type="button" size="icon" variant="outline" onClick={() => shift(1)} aria-label="Próximo mês">
+      <Button type="button" size="icon" className="size-10" variant="outline" onClick={() => shift(1)} aria-label="Próximo mês">
         <ChevronRight className="size-4" />
       </Button>
     </div>
