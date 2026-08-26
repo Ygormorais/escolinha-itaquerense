@@ -15,12 +15,16 @@ export async function FpfsJogos() {
   const campeonatos = await db.campeonato.findMany({
     where: { fpfsEventoId: { not: null } },
     include: {
-      partidas: { orderBy: { data: "asc" } },
+      partidas: {
+        where: { local: { in: ["Casa", "Fora"] } },
+        orderBy: { data: "asc" },
+      },
     },
     orderBy: { dataInicio: "desc" },
   })
 
-  if (campeonatos.length === 0) return null
+  const campeonatosComJogos = campeonatos.filter((camp) => camp.partidas.length > 0)
+  if (campeonatosComJogos.length === 0) return null
 
   const session = await getSession()
   const isAdmin = session.role === "admin"
@@ -49,14 +53,16 @@ export async function FpfsJogos() {
         </h2>
       </div>
 
-      {campeonatos.map((camp) => {
+      {campeonatosComJogos.map((camp) => {
         const realizadas = camp.partidas
           .filter((p) => p.golsPro != null)
           .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+          .slice(0, 5)
 
         const proximas = camp.partidas
           .filter((p) => p.golsPro == null && new Date(p.data) >= agora)
           .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+          .slice(0, 5)
 
         return (
           <Card key={camp.id} className="overflow-hidden border-border/80 border-l-4 border-l-brand-600 shadow-sm">
