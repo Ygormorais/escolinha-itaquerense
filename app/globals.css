@@ -31,9 +31,9 @@
   /* Semânticos */
   --color-success-50:  #EDF9F4;
   --color-success-600: #0F7A5A;
-  --color-warning-50:  #FFF8ED;
-  --color-warning-600: #A86417;
-  --color-warning-700: #7A450C;
+  --color-warning-50: var(--warning-50);
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
   --color-danger-50:   #FEF1F0;
   --color-danger-600:  #B3261E;
   --color-info-50:     #EFF5FD;
@@ -97,6 +97,8 @@
 
 :root {
   /* Papel quente + vermelho C62828 — mesma base do site público */
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
   --background: #FAF8F5;
   --foreground: #1C1412;
   --card: var(--paper-raised);
