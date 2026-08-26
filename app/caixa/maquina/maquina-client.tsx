@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Upload, CheckCircle, XCircle, RefreshCw, AlertTriangle, Smartphone } from "lucide-react"
 import { formatMoney } from "@/lib/utils"
@@ -23,6 +23,8 @@ import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { toDate, type RscDate } from "@/lib/rsc-date"
+import { MAQUINA_PAGE_SIZE, type MaquinaFilters } from "@/lib/maquina-query"
+import { Pagination } from "@/components/ui/pagination"
 
 type Transacao = {
   id: number
@@ -44,10 +46,21 @@ type Transacao = {
 
 type Aluno = { id: number; nome: string; responsavel: string }
 
-export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[]; alunos: Aluno[] }) {
+export function MaquinaClient({
+  transacoes,
+  alunos,
+  filters,
+  pagination,
+  resumo,
+}: {
+  transacoes: Transacao[]
+  alunos: Aluno[]
+  filters: MaquinaFilters
+  pagination: { page: number; totalPages: number; total: number }
+  resumo: { totalValor: number; reconciliadas: number; pendentes: number }
+}) {
   const router = useRouter()
-  const [filter, setFilter] = useState("todas")
-  const [filtroPeriodo, setFiltroPeriodo] = useState("")
+  const searchParams = useSearchParams()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedTransacao, setSelectedTransacao] = useState<Transacao | null>(null)
   const [alunoId, setAlunoId] = useState("")
@@ -56,15 +69,15 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
   const [pending, start] = useTransition()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const filtered = transacoes.filter((t) => {
-    if (filter !== "todas" && t.status !== filter) return false
-    if (filtroPeriodo) {
-      const d = toDate(t.dataTransacao)
-      const mes = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
-      if (mes !== filtroPeriodo) return false
+  function navegar(changes: Record<string, string | number>) {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [key, value] of Object.entries(changes)) {
+      if (!value || value === "todas") params.delete(key)
+      else params.set(key, String(value))
     }
-    return true
-  })
+    if (!("pagina" in changes)) params.delete("pagina")
+    router.push(`/caixa/maquina?${params.toString()}`, { scroll: false })
+  }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -123,28 +136,24 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
     })
   }
 
-  const totalValor = filtered.reduce((s, t) => s + t.valor, 0)
-  const reconciliadas = filtered.filter((t) => t.status === "reconciliado").length
-  const pendentes = filtered.filter((t) => t.status === "pendente").length
-
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Transações</p>
-          <p className="mt-1 text-2xl font-extrabold text-brand-800">{filtered.length}</p>
+          <p className="mt-1 text-2xl font-extrabold text-brand-800">{pagination.total}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</p>
-          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(totalValor)}</p>
+          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(resumo.totalValor)}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Reconciliadas</p>
-          <p className="mt-1 text-2xl font-extrabold text-success-600">{reconciliadas}</p>
+          <p className="mt-1 text-2xl font-extrabold text-success-600">{resumo.reconciliadas}</p>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pendentes</p>
-          <p className={`mt-1 text-2xl font-extrabold ${pendentes > 0 ? "text-warning-600" : "text-muted-foreground"}`}>{pendentes}</p>
+          <p className={`mt-1 text-2xl font-extrabold ${resumo.pendentes > 0 ? "text-warning-600" : "text-muted-foreground"}`}>{resumo.pendentes}</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -164,16 +173,16 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="month"
-            value={filtroPeriodo}
-            onChange={(e) => setFiltroPeriodo(e.target.value)}
+            value={filters.periodo}
+            onChange={(e) => navegar({ periodo: e.target.value })}
             className="rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
-          {filtroPeriodo && (
-            <Button variant="ghost" size="sm" onClick={() => setFiltroPeriodo("")}>Limpar</Button>
+          {filters.periodo && (
+            <Button variant="ghost" size="sm" onClick={() => navegar({ periodo: "" })}>Limpar</Button>
           )}
           <span className="text-border">|</span>
           {["todas", "pendente", "reconciliado", "ignorado"].map((f) => (
-            <Button key={f} variant={filter === f ? "default" : "ghost"} size="sm" onClick={() => setFilter(f)}>
+            <Button key={f} variant={filters.status === f ? "default" : "ghost"} size="sm" onClick={() => navegar({ status: f })}>
               {f === "todas" ? "Todas" : f === "pendente" ? "Pendentes" : f === "reconciliado" ? "Reconciliadas" : "Ignoradas"}
             </Button>
           ))}
@@ -197,7 +206,7 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 && (
+              {transacoes.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={9}>
                     <div className="flex flex-col items-center gap-2 py-10 text-center">
@@ -207,7 +216,7 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
                   </TableCell>
                 </TableRow>
               )}
-              {filtered.map((t) => (
+              {transacoes.map((t) => (
                 <TableRow key={t.id} className="hover:bg-muted/40 transition-colors">
                   <TableCell>{format(new Date(t.dataTransacao), "dd/MM/yyyy")}</TableCell>
                   <TableCell className="font-medium">{formatMoney(t.valor)}</TableCell>
@@ -253,6 +262,19 @@ export function MaquinaClient({ transacoes, alunos }: { transacoes: Transacao[];
           </Table>
         </CardContent>
       </Card>
+
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>
+          {pagination.total === 0
+            ? "Nenhuma transação"
+            : `${(pagination.page - 1) * MAQUINA_PAGE_SIZE + 1}–${Math.min(pagination.page * MAQUINA_PAGE_SIZE, pagination.total)} de ${pagination.total}`}
+        </span>
+        <Pagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          onPageChange={(page) => navegar({ pagina: page })}
+        />
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

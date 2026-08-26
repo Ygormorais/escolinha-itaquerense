@@ -17,6 +17,23 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["**/*.test.ts", "**/*.test.tsx"],
+    coverage: {
+      provider: "v8",
+      include: [
+        "app/actions/**/*.ts",
+        "app/api/**/*.ts",
+        "lib/**/*.ts",
+        "scripts/**/*.ts",
+      ],
+      exclude: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
+      reporter: ["text-summary", "json-summary"],
+      thresholds: {
+        statements: 65,
+        branches: 55,
+        functions: 70,
+        lines: 66,
+      },
+    },
   },
   resolve: {
     alias: {

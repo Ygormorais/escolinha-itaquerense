@@ -6,9 +6,14 @@ import { db } from "@/lib/db"
 
 export const metadata = { title: "Maquininha — Escolinha Itaquerense" }
 
-export default async function MaquinaPage() {
-  const [transacoes, resumo, alunos] = await Promise.all([
-    getTransacoes("todas"),
+export default async function MaquinaPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const params = await searchParams
+  const [listagem, resumo, alunos] = await Promise.all([
+    getTransacoes(params),
     getResumoMaquina(),
     db.aluno.findMany({
       where: { status: "Ativo" },
@@ -51,7 +56,14 @@ export default async function MaquinaPage() {
         </div>
       </div>
 
-      <MaquinaClient transacoes={transacoes} alunos={alunos} />
+      <MaquinaClient
+        key={JSON.stringify(listagem.filters)}
+        transacoes={listagem.transacoes}
+        alunos={alunos}
+        filters={listagem.filters}
+        pagination={listagem.pagination}
+        resumo={listagem.resumo}
+      />
     </div>
   )
 }
