@@ -15,7 +15,9 @@ test.describe("Escalações Admin", () => {
 
   test("link Escalações aparece no sidebar", async ({ page }) => {
     await page.goto("/dashboard")
-    await expect(page.locator('aside a[href="/configuracoes/escalacoes"]')).toBeVisible()
+    const sidebar = page.locator("aside")
+    await sidebar.getByRole("button", { name: "Documentos & Config" }).click()
+    await expect(sidebar.locator('a[href="/configuracoes/escalacoes"]')).toBeVisible()
   })
 
   test("página de escalações carrega", async ({ page }) => {

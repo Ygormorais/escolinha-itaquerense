@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react"
+import { useId, useState } from "react"
 import {
   LayoutDashboard,
   Users,
@@ -65,15 +65,35 @@ type NavItem = {
 type NavGroup = {
   label: string
   items: NavItem[]
+  matchPrefixes?: string[]
 }
 
 function filterByRole(items: NavItem[], role: StaffRole): NavItem[] {
   return items.filter((item) => canAccessStaffPath(item.href, role))
 }
 
+function isNavItemActive(pathname: string, href: string, allItems: NavItem[]): boolean {
+  return pathname === href || (
+    pathname.startsWith(`${href}/`) &&
+    !allItems.some((item) =>
+      item.href !== href &&
+      item.href.startsWith(`${href}/`) &&
+      pathname.startsWith(item.href)
+    )
+  )
+}
+
 export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0 }: { onClose?: () => void; role?: StaffRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number }) {
   const pathname = usePathname()
-  const [relOpen, setRelOpen] = useState(() => pathname.startsWith("/relatorio"))
+  const sidebarId = useId().replaceAll(":", "")
+
+  const reportItems = filterByRole([
+    { href: "/relatorio", label: "Financeiro", icon: BarChart3 },
+    { href: "/relatorio/turmas", label: "Por Turma", icon: Users2 },
+    { href: "/relatorio/alunos", label: "Alunos", icon: Users },
+    { href: "/relatorio/pagamentos", label: "Pagamentos", icon: CreditCard },
+    { href: "/relatorio/frequencia", label: "Frequência", icon: CalendarCheck },
+  ], role)
 
   const navGroups: NavGroup[] = [
     {
@@ -105,6 +125,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
     },
     {
       label: "Documentos & Config",
+      matchPrefixes: ["/relatorio"],
       items: filterByRole([
         { href: "/recibos",       label: "Recibos",       icon: FileText },
         { href: "/historico",     label: "Histórico",     icon: History },
@@ -117,6 +138,26 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
       ], role),
     },
   ]
+
+  const allNavItems = navGroups.flatMap((group) => group.items)
+  const activeGroup = navGroups.find((group) =>
+    group.items.some((item) => isNavItemActive(pathname, item.href, allNavItems)) ||
+    group.matchPrefixes?.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+  )?.label
+  const [groupPreference, setGroupPreference] = useState(() => ({
+    pathname,
+    value: activeGroup ?? "Visão Geral",
+  }))
+  const [reportPreference, setReportPreference] = useState(() => ({
+    pathname,
+    value: pathname.startsWith("/relatorio"),
+  }))
+  const openGroup = groupPreference.pathname === pathname
+    ? groupPreference.value
+    : activeGroup ?? "Visão Geral"
+  const relOpen = reportPreference.pathname === pathname
+    ? reportPreference.value
+    : pathname.startsWith("/relatorio")
 
   return (
     <aside className="flex h-full min-h-screen w-64 flex-col border-r border-border bg-[var(--color-paper-50)] dark:bg-card md:h-screen">
@@ -147,15 +188,35 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
         <BuscaGlobal />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-5 overflow-y-auto p-3 pt-4" aria-label="Navegação principal">
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-800/70 dark:text-brand-300/70">
-              {group.label}
-            </p>
-            <div className="flex flex-col gap-0.5">
+      <nav className="flex flex-1 flex-col gap-2 overflow-y-auto p-3 pt-4" aria-label="Navegação principal">
+        {navGroups.map((group, groupIndex) => {
+          const isOpen = openGroup === group.label
+          const groupId = `${sidebarId}-nav-group-${groupIndex}`
+          const pendingCount = group.items.reduce((total, item) => total + (item.badge ?? 0), 0)
+
+          return (
+            <div key={group.label} className="rounded-xl border border-transparent data-[open=true]:border-border data-[open=true]:bg-white/60 dark:data-[open=true]:bg-muted/30" data-open={isOpen}>
+              <button
+                type="button"
+                onClick={() => setGroupPreference({
+                  pathname,
+                  value: openGroup === group.label ? "" : group.label,
+                })}
+                aria-expanded={isOpen}
+                aria-controls={groupId}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-brand-800/70 transition-colors hover:bg-white hover:text-brand-800 dark:text-brand-300/70 dark:hover:bg-muted"
+              >
+                <span className="flex-1">{group.label}</span>
+                {pendingCount > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] tracking-normal text-white" aria-label={`${pendingCount} pendências`}>
+                    {pendingCount > 99 ? "99+" : pendingCount}
+                  </span>
+                )}
+                <ChevronRight className={cn("size-3.5 shrink-0 transition-transform", isOpen && "rotate-90")} aria-hidden />
+              </button>
+              {isOpen && <div id={groupId} className="flex flex-col gap-0.5 px-1 pb-1.5">
               {group.items.map(({ href, label, icon: Icon, badge }) => {
-                const isActive = pathname === href || (pathname.startsWith(href + "/") && !navGroups.flatMap(g => g.items).some(i => i.href !== href && i.href.startsWith(href + "/") && pathname.startsWith(i.href)))
+                const isActive = isNavItemActive(pathname, href, allNavItems)
                 return (
                   <Link
                     key={href}
@@ -182,8 +243,10 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
               {group.label === "Documentos & Config" && (
                 <div>
                   <button
-                    onClick={() => setRelOpen((v) => !v)}
+                    type="button"
+                    onClick={() => setReportPreference({ pathname, value: !relOpen })}
                     aria-expanded={relOpen}
+                    aria-controls={`${sidebarId}-reports`}
                     className={cn(
                       "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                       pathname.startsWith("/relatorio")
@@ -196,14 +259,8 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                     <ChevronRight className={cn("size-3.5 shrink-0 transition-transform", relOpen && "rotate-90")} />
                   </button>
                   {relOpen && (
-                    <div className="ml-4 flex flex-col gap-0.5 border-l-2 border-brand-100 pl-3 dark:border-brand-900">
-                      {filterByRole([
-                        { href: "/relatorio", label: "Financeiro", icon: BarChart3 },
-                        { href: "/relatorio/turmas", label: "Por Turma", icon: Users2 },
-                        { href: "/relatorio/alunos", label: "Alunos", icon: Users },
-                        { href: "/relatorio/pagamentos", label: "Pagamentos", icon: CreditCard },
-                        { href: "/relatorio/frequencia", label: "Frequência", icon: CalendarCheck },
-                      ], role).map(({ href, label, icon: Icon }) => {
+                    <div id={`${sidebarId}-reports`} className="ml-4 flex flex-col gap-0.5 border-l-2 border-brand-100 pl-3 dark:border-brand-900">
+                      {reportItems.map(({ href, label, icon: Icon }) => {
                         const isActive = pathname === href || (href !== "/relatorio" && pathname.startsWith(href))
                         return (
                           <Link
@@ -227,9 +284,10 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                   )}
                 </div>
               )}
+              </div>}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </nav>
 
       <div className="border-t border-border bg-white/60 px-4 py-3 flex items-center justify-between dark:bg-card">
