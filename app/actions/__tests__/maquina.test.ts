@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 vi.mock("@/lib/db", () => {
   const db = {
     $transaction: vi.fn(),
-    transacaoMaquina: { createMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn() },
+    transacaoMaquina: { createMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn(), groupBy: vi.fn() },
     pagamento: { create: vi.fn(), upsert: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn() },
   }
@@ -22,7 +22,7 @@ vi.mock("@/lib/maquina-csv", () => ({
   detectarFormato: vi.fn(() => "Cielo"),
 }))
 
-import { importarCSV, reconciliarTransacao, reconciliarAuto, getResumoMaquina } from "@/app/actions/maquina"
+import { importarCSV, reconciliarTransacao, reconciliarAuto, getResumoMaquina, getTransacoes } from "@/app/actions/maquina"
 import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes } from "@/lib/maquina-csv"
 
@@ -35,6 +35,7 @@ const m = db as unknown as {
     update: ReturnType<typeof vi.fn>
     aggregate: ReturnType<typeof vi.fn>
     count: ReturnType<typeof vi.fn>
+    groupBy: ReturnType<typeof vi.fn>
   }
   pagamento: { create: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn> }
   aluno: { findMany: ReturnType<typeof vi.fn>; findFirst: ReturnType<typeof vi.fn> }
@@ -54,10 +55,39 @@ beforeEach(() => {
   m.transacaoMaquina.findUnique.mockResolvedValue(tx())
   m.transacaoMaquina.findMany.mockResolvedValue([])
   m.transacaoMaquina.update.mockResolvedValue({})
+  m.transacaoMaquina.aggregate.mockResolvedValue({ _sum: { valor: 0 } })
+  m.transacaoMaquina.count.mockResolvedValue(0)
+  m.transacaoMaquina.groupBy.mockResolvedValue([])
   m.pagamento.create.mockResolvedValue({ id: 99 })
   m.pagamento.upsert.mockResolvedValue({ id: 99 })
   m.aluno.findMany.mockResolvedValue([])
   m.$transaction.mockImplementation(async (callback: (client: typeof m) => unknown) => callback(m))
+})
+
+describe("getTransacoes", () => {
+  it("pagina e resume no banco com filtros normalizados", async () => {
+    m.transacaoMaquina.count.mockResolvedValue(61)
+    m.transacaoMaquina.aggregate.mockResolvedValue({ _sum: { valor: 1220 } })
+    m.transacaoMaquina.groupBy.mockResolvedValue([
+      { status: "pendente", _count: { _all: 4 } },
+      { status: "reconciliado", _count: { _all: 57 } },
+    ])
+    m.transacaoMaquina.findMany.mockResolvedValue([tx()])
+
+    const result = await getTransacoes({ status: "pendente", periodo: "2026-06", pagina: "9" })
+
+    expect(result).toMatchObject({
+      filters: { status: "pendente", periodo: "2026-06", page: 3 },
+      pagination: { page: 3, totalPages: 3, total: 61 },
+      resumo: { totalValor: 1220, pendentes: 4, reconciliadas: 57 },
+    })
+    expect(m.transacaoMaquina.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ status: "pendente", dataTransacao: expect.any(Object) }),
+      orderBy: [{ dataTransacao: "desc" }, { id: "desc" }],
+      skip: 50,
+      take: 25,
+    }))
+  })
 })
 
 describe("importarCSV", () => {

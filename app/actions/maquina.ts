@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
 import { requireAuth } from "@/lib/auth"
+import { buildMaquinaWhere, MAQUINA_PAGE_SIZE, parseMaquinaFilters } from "@/lib/maquina-query"
 
 type AlunoConciliacao = { id: number; nomeBusca: string; responsavelBusca: string }
 type ChaveTransacao = { dataTransacao: Date; valor: number; nomeNoCartao: string }
@@ -110,14 +111,38 @@ export async function importarCSV(
   }
 }
 
-export async function getTransacoes(status?: string) {
+export async function getTransacoes(
+  params: Record<string, string | string[] | undefined> = {}
+) {
   await requireAuth(["admin", "secretaria"])
-  const where = status && status !== "todas" ? { status } : {}
-  return db.transacaoMaquina.findMany({
+  const filters = parseMaquinaFilters(params)
+  const where = buildMaquinaWhere(filters)
+  const [total, agregado, contagens] = await Promise.all([
+    db.transacaoMaquina.count({ where }),
+    db.transacaoMaquina.aggregate({ where, _sum: { valor: true } }),
+    db.transacaoMaquina.groupBy({ by: ["status"], where, _count: { _all: true } }),
+  ])
+  const totalPages = Math.max(1, Math.ceil(total / MAQUINA_PAGE_SIZE))
+  const page = Math.min(filters.page, totalPages)
+  const transacoes = await db.transacaoMaquina.findMany({
     where,
     include: { aluno: { select: { id: true, nome: true, turma: true } } },
-    orderBy: { dataTransacao: "desc" },
+    orderBy: [{ dataTransacao: "desc" }, { id: "desc" }],
+    skip: (page - 1) * MAQUINA_PAGE_SIZE,
+    take: MAQUINA_PAGE_SIZE,
   })
+
+  const quantidade = (status: string) => contagens.find((item) => item.status === status)?._count._all ?? 0
+  return {
+    transacoes,
+    filters: { ...filters, page },
+    pagination: { page, totalPages, total },
+    resumo: {
+      totalValor: agregado._sum.valor ?? 0,
+      reconciliadas: quantidade("reconciliado"),
+      pendentes: quantidade("pendente"),
+    },
+  }
 }
 
 export async function reconciliarTransacao(
