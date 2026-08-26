@@ -56,6 +56,20 @@ function capMes(d: Date) {
   return format(d, "MMMM yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())
 }
 
+function parseDiaSelecionado(value: string | undefined, ano: number, mes: number) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? "")) return null
+
+  const [diaAno, diaMes, dia] = value!.split("-").map(Number)
+  const parsed = new Date(diaAno, diaMes - 1, dia)
+  const valido = parsed.getFullYear() === diaAno
+    && parsed.getMonth() === diaMes - 1
+    && parsed.getDate() === dia
+    && diaAno === ano
+    && diaMes === mes
+
+  return valido ? parsed : null
+}
+
 function gerarICS(eventos: Evento[], jogos: Jogo[], mes: number, ano: number) {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
@@ -96,9 +110,21 @@ function gerarICS(eventos: Evento[], jogos: Jogo[], mes: number, ano: number) {
   URL.revokeObjectURL(url)
 }
 
-export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; jogos: Jogo[]; mes: number; ano: number }) {
+export function AgendaClient({
+  eventos,
+  jogos,
+  mes,
+  ano,
+  diaSelecionado,
+}: {
+  eventos: Evento[]
+  jogos: Jogo[]
+  mes: number
+  ano: number
+  diaSelecionado?: string
+}) {
   const currentMonth = new Date(ano, mes - 1)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => parseDiaSelecionado(diaSelecionado, ano, mes))
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvento, setEditingEvento] = useState<Evento | null>(null)
   const router = useRouter()
@@ -108,11 +134,11 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
 
   // ao trocar de mês (via URL), limpa o dia selecionado do mês anterior — ajuste
   // de estado durante o render (padrão React p/ "estado derivado de prop"), sem effect
-  const monthKey = `${ano}-${mes}`
-  const [prevMonthKey, setPrevMonthKey] = useState(monthKey)
-  if (monthKey !== prevMonthKey) {
-    setPrevMonthKey(monthKey)
-    setSelectedDate(null)
+  const selectionKey = `${ano}-${mes}-${diaSelecionado ?? ""}`
+  const [prevSelectionKey, setPrevSelectionKey] = useState(selectionKey)
+  if (selectionKey !== prevSelectionKey) {
+    setPrevSelectionKey(selectionKey)
+    setSelectedDate(parseDiaSelecionado(diaSelecionado, ano, mes))
   }
 
   const [form, setForm] = useState({
@@ -151,7 +177,8 @@ export function AgendaClient({ eventos, jogos, mes, ano }: { eventos: Evento[]; 
   function irHoje() {
     const hoje = new Date()
     setSelectedDate(hoje)
-    irParaMes(hoje)
+    const alvo = format(hoje, "yyyy-MM-dd")
+    startNav(() => router.push(`/agenda?mes=${alvo.slice(0, 7)}&dia=${alvo}`))
   }
 
   function openNewEvento(date: Date) {

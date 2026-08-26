@@ -9,7 +9,7 @@ export const metadata = { title: "Agenda — Escolinha Itaquerense" }
 export default async function AgendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string }>
+  searchParams: Promise<{ mes?: string; dia?: string }>
 }) {
   await requireAuth(["admin", "secretaria", "tecnico"])
   const params = await searchParams
@@ -25,7 +25,10 @@ export default async function AgendaPage({
   const [eventos, partidas] = await Promise.all([
     db.evento.findMany({ where: { data: { gte: inicio, lte: fim } }, orderBy: { data: "asc" } }),
     db.partida.findMany({
-      where: { data: { gte: inicio, lte: fim } },
+      where: {
+        data: { gte: inicio, lte: fim },
+        local: { in: ["Casa", "Fora"] },
+      },
       select: {
         id: true,
         data: true,
@@ -56,7 +59,7 @@ export default async function AgendaPage({
         title="Agenda"
         description="Calendário de treinos, jogos, eventos e reuniões"
       />
-      <AgendaClient eventos={eventos} jogos={jogos} mes={mes} ano={ano} />
+      <AgendaClient eventos={eventos} jogos={jogos} mes={mes} ano={ano} diaSelecionado={params.dia} />
       <FpfsJogos />
     </div>
   )

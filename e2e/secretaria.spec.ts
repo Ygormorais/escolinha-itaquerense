@@ -49,7 +49,11 @@ test.describe("Agenda", () => {
 
   test("botão novo evento abre dialog", async ({ page }) => {
     await page.goto("/agenda")
-    await page.getByRole("button", { name: "Hoje", exact: true }).click()
+    const hoje = page.getByRole("button", { name: "Hoje", exact: true })
+    await expect(async () => {
+      await hoje.click()
+      await expect(page).toHaveURL(/\/agenda\?mes=\d{4}-\d{2}&dia=\d{4}-\d{2}-\d{2}$/, { timeout: 1_000 })
+    }).toPass({ timeout: 30_000 })
     const btn = page.getByRole("button", { name: "Novo", exact: true })
     await expect(btn).toBeVisible()
     await btn.click()
