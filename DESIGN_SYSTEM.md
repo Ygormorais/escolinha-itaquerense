@@ -367,7 +367,48 @@ Novo padrão para período, filtros globais e ações de exportação:
 - lint, TypeScript, unitários, E2E e build permanecem verdes;
 - conteúdo textual e rotas permanecem inalterados.
 
-## Decisão necessária
+## Hallmark — sistema bloqueado
 
-Este documento conclui a Fase 2. A implementação deve começar pela fundação de tokens
-e componentes, seguida pelo dashboard e por pagamentos.
+- **Gênero:** playful, aplicado como acolhimento sofisticado — nunca infantil.
+- **Marketing:** composição editorial institucional, preservando a arquitetura da landing.
+- **Aplicação:** macroestrutura Workbench, orientada a filtros, resumo e ação.
+- **Conteúdo:** leitura tipográfica direta, sem enriquecimento ornamental.
+- **Movimento:** feedback de controle; sem elevação decorativa de cards.
+- **Fonte de tokens:** `tokens.css`, importado por `app/globals.css`.
+
+Todas as páginas compartilham tema, tipografia, CTA e navegação. A variação ocorre
+somente pela densidade e pelos componentes necessários à tarefa.
+
+## Exports
+
+### CSS e Tailwind v4
+
+`tokens.css` contém os primitivos portáteis em OKLCH. O bloco `@theme` de
+`app/globals.css` mapeia esses primitivos para as utilities Tailwind já usadas pelo app.
+
+### DTCG
+
+```json
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "color": {
+    "paper": { "$value": "oklch(97.8% 0.009 76)", "$type": "color" },
+    "ink": { "$value": "oklch(20.5% 0.015 38)", "$type": "color" },
+    "accent": { "$value": "oklch(51.6% 0.197 28)", "$type": "color" }
+  },
+  "font": {
+    "display": { "$value": "Playfair Display, Georgia, serif", "$type": "fontFamily" },
+    "body": { "$value": "Inter, system-ui, sans-serif", "$type": "fontFamily" }
+  },
+  "space": {
+    "md": { "$value": "1rem", "$type": "dimension" },
+    "lg": { "$value": "1.5rem", "$type": "dimension" }
+  }
+}
+```
+
+### shadcn/ui
+
+O mapeamento canônico permanece em `app/globals.css`: paper → `--background`,
+paper-raised → `--card`/`--popover`, ink → `--foreground`, vermelho alvirrubro →
+`--primary`/`--ring`, e os neutros quentes → `--muted`/`--border`/`--input`.

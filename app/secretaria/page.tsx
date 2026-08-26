@@ -76,7 +76,7 @@ export default async function SecretariaPage() {
     .sort((a, b) => a.dataNascimento.getDate() - b.dataNascimento.getDate())
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div data-page="secretaria" className="mx-auto flex w-full max-w-[var(--content-max)] min-w-0 flex-col gap-6 bg-[var(--color-paper-50)]/40 p-[var(--space-page)] dark:bg-transparent">
       <PageHeader
         title="Secretaria"
         description="Visão geral do dia para a secretaria"

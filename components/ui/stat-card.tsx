@@ -47,14 +47,14 @@ export function StatCard({
 
   const inner = (
     <Card className={cn(
-      "h-full border-border/80 bg-card shadow-sm transition-all duration-200",
-      href && "cursor-pointer hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md",
-      borderAccent && "border-l-4 border-l-brand-600",
+      "h-full border-border/80 bg-card shadow-sm transition-colors duration-200",
+      href && "cursor-pointer hover:border-brand-200 hover:bg-brand-50/30",
+      borderAccent && "border-brand-200 bg-brand-50/30",
       className
     )}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="min-w-0 [overflow-wrap:anywhere] text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
             {title}
           </p>
           <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", iconCls)}>
@@ -63,9 +63,9 @@ export function StatCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div data-numeric className="truncate text-xl font-bold tracking-tight text-foreground min-[420px]:text-2xl sm:text-3xl" title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>
+        <p data-numeric className="text-xl font-bold tracking-tight text-foreground min-[420px]:text-2xl sm:text-3xl" title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>
           {value}
-        </div>
+        </p>
         {trend && (
           <div className={cn(
             "mt-1 flex items-center gap-1 text-xs font-semibold",
@@ -85,7 +85,7 @@ export function StatCard({
           <div className="mt-3 space-y-1">
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
               <div
-                className={cn("h-full rounded-full transition-[width] duration-300 ease-out", barCls)}
+                className={cn("h-full rounded-full", barCls)}
                 style={{ width: `${progressPct}%` }}
               />
             </div>

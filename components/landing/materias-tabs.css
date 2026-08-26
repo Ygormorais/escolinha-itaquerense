@@ -81,16 +81,9 @@
 
 .lp .mt .mt-tabs {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
   margin-bottom: -1px;
-}
-
-.lp .mt .mt-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .lp .mt .mt-tab {
@@ -262,7 +255,7 @@ html.dark .lp .mt .mt-badge {
 .lp .mt .mt-fonte {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-light, #8a827c);
+  color: var(--text-muted, #5c534e);
   letter-spacing: 0.02em;
 }
 

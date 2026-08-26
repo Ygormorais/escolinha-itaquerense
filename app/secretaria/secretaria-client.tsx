@@ -1,10 +1,11 @@
 "use client"
 
 import {
-  Calendar, Cake, Users, AlertTriangle, GraduationCap, ArrowRight,
+  Calendar, Cake, Users, AlertTriangle, GraduationCap,
   CheckCircle2, ClipboardList, CreditCard, Clock, ImageOff, Phone, Mail, ChevronRight, FileText,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { StatCard } from "@/components/ui/stat-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { format, formatDistanceToNow } from "date-fns"
@@ -123,84 +124,25 @@ export function SecretariaClient({
   pendenciasDoc: PendenciaDoc[]
 }) {
   const hoje = new Date()
+  const aniversariantesHoje = aniversariantes.filter((a) => {
+    const data = new Date(a.dataNascimento)
+    return data.getDate() === hoje.getDate() && data.getMonth() === hoje.getMonth()
+  })
+  const resumoAniversariantes = aniversariantesHoje.length === 0
+    ? `no mês de ${format(hoje, "MMMM", { locale: ptBR })}`
+    : aniversariantesHoje.length === 1
+      ? `${aniversariantesHoje[0].nome.split(" ")[0]} faz aniversário hoje`
+      : `${aniversariantesHoje.length} fazem aniversário hoje`
 
   return (
     <div className="space-y-6">
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="border-l-4 border-l-brand-600">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Users className="size-3" /> Alunos Ativos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-extrabold font-heading tracking-tight">{alunosAtivos}</p>
-            <Link href="/alunos" className="mt-1 inline-flex items-center gap-1 text-xs text-brand-600 hover:underline">
-              Ver todos <ArrowRight className="size-3" />
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-success-600">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <GraduationCap className="size-3" /> Matrículas no Mês
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-extrabold font-heading tracking-tight text-success-600">{matriculasMes}</p>
-            <Link href="/alunos" className="mt-1 inline-flex items-center gap-1 text-xs text-success-600 hover:underline">
-              Ver alunos <ArrowRight className="size-3" />
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-danger-600">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <AlertTriangle className="size-3" /> Inadimplentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-extrabold font-heading tracking-tight text-danger-600">{inadimplentes}</p>
-            <Link href="/inadimplencia" className="mt-1 inline-flex items-center gap-1 text-xs text-danger-600 hover:underline">
-              Cobrar <ArrowRight className="size-3" />
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-warning-600">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Cake className="size-3" /> Aniversariantes do Mês
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-extrabold font-heading tracking-tight text-warning-600">{aniversariantes.length}</p>
-            {(() => {
-              const hojeNiver = aniversariantes.filter((a) => {
-                const d = new Date(a.dataNascimento)
-                return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth()
-              })
-              if (hojeNiver.length === 0) {
-                return (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    no mês de {format(hoje, "MMMM", { locale: ptBR })}
-                  </p>
-                )
-              }
-              return (
-                <p className="mt-1 text-xs font-medium text-brand-600">
-                  {hojeNiver.length === 1
-                    ? `${hojeNiver[0].nome.split(" ")[0]} faz aniversário hoje`
-                    : `${hojeNiver.length} fazem aniversário hoje`}
-                </p>
-              )
-            })()}
-          </CardContent>
-        </Card>
+        <StatCard title="Alunos Ativos" value={alunosAtivos} description="Ver todos" icon={Users} variant="brand" href="/alunos" />
+        <StatCard title="Matrículas no Mês" value={matriculasMes} description="Ver alunos" icon={GraduationCap} variant="success" href="/alunos" />
+        <StatCard title="Inadimplentes" value={inadimplentes} description="Cobrar" icon={AlertTriangle} variant="danger" href="/inadimplencia" />
+        <StatCard title="Aniversariantes do Mês" value={aniversariantes.length} description={resumoAniversariantes} icon={Cake} variant="warning" />
       </div>
 
 

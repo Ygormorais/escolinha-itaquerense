@@ -132,7 +132,7 @@ test.describe("Aprovação de Pré-Matrícula — fluxo admin", () => {
     // Passo 4: verifica que o aluno aparece na lista de alunos
     await page.goto("/alunos")
     await page.waitForLoadState("networkidle")
-    await expect(page.getByText(nomeAluno)).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole("link", { name: nomeAluno, exact: true })).toBeVisible({ timeout: 10000 })
   })
 
   test("rejeição de pré-matrícula muda status para Recusada", async ({ page }) => {

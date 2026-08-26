@@ -1,3 +1,4 @@
+/* Hallmark · pre-emit critique: P5 H4 E4 S5 R4 V4 · genre: playful · tone: comunitário e acolhedor · anchor: vermelho alvirrubro · macrostructure: Community Bulletin · slop: legacy gates 7, 10, 48 tracked */
 /* Tokens alinhados a lib/public-css.ts (fonte de verdade) */
 .lp{
     --red:#C62828;
@@ -120,13 +121,13 @@
   .lp .btn-staff:hover{color:var(--text);border-color:var(--text-muted);background:var(--bg-muted)}
   .lp .btn-staff:focus-visible{outline:3px solid var(--red);outline-offset:2px}
   .lp .foot-bottom .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-  .lp .foot-staff{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:rgba(255,255,255,.45);transition:var(--transition)}
+  .lp .foot-staff{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:rgba(255,255,255,.75);transition:var(--transition)}
   .lp .foot-staff:hover{color:rgba(255,255,255,.85)}
   .lp .brand{display:flex;align-items:center;gap:14px;flex-shrink:0;min-width:0}
   .lp .brand .shield{width:48px;height:48px}
   .lp .brand .name{font-family:var(--font-body),sans-serif;line-height:1.1;min-width:0}
   .lp .brand .name b{display:block;font-size:18px;font-weight:700;color:var(--red);letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lp .brand .name span{font-size:10px;color:var(--text-light);letter-spacing:2px;text-transform:uppercase;font-weight:500}
+  .lp .brand .name span{font-size:10px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;font-weight:500}
   .lp .nav-backdrop{display:none;position:fixed;inset:74px 0 0 0;background:rgba(28,20,18,.35);z-index:999;border:none;cursor:pointer;padding:0}
   html.dark .lp .nav-backdrop{background:rgba(0,0,0,.55)}
   .lp .nav-backdrop.open{display:block}
@@ -164,13 +165,13 @@
   .lp .btn-ghost-white{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
   .lp .btn-ghost-white:hover{background:rgba(255,255,255,.12);border-color:#fff;color:#fff}
 
-  .lp footer{background:var(--red-deep);color:#fff;padding-top:60px}
+  .lp > footer{background:var(--red-deep);color:#fff;padding-top:60px}
   .lp .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px}
   .lp .foot-brand .shield{width:68px;height:68px;margin-bottom:16px}
   .lp .foot-brand p{font-size:13px;opacity:.78;margin-bottom:18px;max-width:280px;line-height:1.65}
-  .lp footer h4{font-family:var(--font-body),sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:1.5px;font-weight:700;margin-bottom:16px;color:rgba(255,255,255,.6)}
-  .lp footer .fcol a{display:block;font-size:13px;opacity:.75;padding:6px 0;transition:var(--transition)}
-  .lp footer .fcol a:hover{opacity:1;color:#FFCDD2;padding-left:6px}
+  .lp > footer h4{font-family:var(--font-body),sans-serif;text-transform:uppercase;font-size:11px;letter-spacing:1.5px;font-weight:700;margin-bottom:16px;color:rgba(255,255,255,.6)}
+  .lp > footer .fcol a{display:block;font-size:13px;opacity:.75;padding:6px 0;transition:var(--transition)}
+  .lp > footer .fcol a:hover{opacity:1;color:#FFCDD2;padding-left:6px}
   .lp .foot-addr{font-size:13px;opacity:.75;line-height:1.7}
   .lp .foot-addr p{margin-bottom:4px}
   .lp .foot-addr a{opacity:1;color:inherit;transition:var(--transition)}
@@ -234,7 +235,7 @@
   .lp .depo .autor{display:flex;flex-direction:column;gap:4px;margin-top:auto;padding-top:4px}
   .lp .depo .autor b{display:block;font-size:14px;font-weight:700}
   .lp .depo .autor span{font-size:12px;color:var(--text-muted)}
-  .lp .depo .autor .fonte{font-size:11px;color:var(--text-light);margin-top:6px;text-decoration:none;font-weight:600}
+  .lp .depo .autor .fonte{font-size:11px;color:var(--text-muted);margin-top:6px;text-decoration:none;font-weight:600}
   .lp .depo .autor a.fonte:hover{color:var(--red);text-decoration:underline;text-underline-offset:2px}
   @media(prefers-reduced-motion:reduce){
     .lp .depo .card:hover,.lp .marcos-item:hover{transform:none}
@@ -296,4 +297,3 @@
     .lp .btn{padding:12px 22px;font-size:13px}
     .lp .container{padding:0 14px}
   }
-
