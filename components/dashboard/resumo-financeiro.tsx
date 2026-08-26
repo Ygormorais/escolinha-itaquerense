@@ -19,15 +19,15 @@ export function ResumoFinanceiro({ receita, custos, saldo, mesAnterior }: Resumo
     : null
 
   return (
-    <div className="grid grid-cols-3 gap-3">
-      <div className="rounded-xl border bg-card p-4">
+    <section aria-label="Resumo financeiro" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Receita</p>
           <div className="flex size-7 items-center justify-center rounded-lg bg-success-50">
             <TrendingUp className="size-3.5 text-success-600" />
           </div>
         </div>
-        <p className="mt-2 text-lg font-bold font-heading text-success-600">
+        <p data-numeric className="mt-2 text-lg font-bold text-success-600">
           R$ {receita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
         </p>
         {pctReceita !== null && (
@@ -37,14 +37,14 @@ export function ResumoFinanceiro({ receita, custos, saldo, mesAnterior }: Resumo
         )}
       </div>
 
-      <div className="rounded-xl border bg-card p-4">
+      <div className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Custos</p>
           <div className="flex size-7 items-center justify-center rounded-lg bg-danger-50">
             <TrendingDown className="size-3.5 text-danger-600" />
           </div>
         </div>
-        <p className="mt-2 text-lg font-bold font-heading text-danger-600">
+        <p data-numeric className="mt-2 text-lg font-bold text-danger-600">
           R$ {custos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
         </p>
         {pctCustos !== null && (
@@ -54,14 +54,14 @@ export function ResumoFinanceiro({ receita, custos, saldo, mesAnterior }: Resumo
         )}
       </div>
 
-      <div className="rounded-xl border bg-card p-4">
+      <div className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Saldo</p>
           <div className={`flex size-7 items-center justify-center rounded-lg ${saldo >= 0 ? "bg-success-50" : "bg-danger-50"}`}>
             <DollarSign className={`size-3.5 ${saldo >= 0 ? "text-success-600" : "text-danger-600"}`} />
           </div>
         </div>
-        <p className={`mt-2 text-lg font-bold font-heading ${saldo >= 0 ? "text-foreground" : "text-danger-600"}`}>
+        <p data-numeric className={`mt-2 text-lg font-bold ${saldo >= 0 ? "text-foreground" : "text-danger-600"}`}>
           R$ {saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
         </p>
         {saldo >= 0 ? (
@@ -70,6 +70,6 @@ export function ResumoFinanceiro({ receita, custos, saldo, mesAnterior }: Resumo
           <p className="mt-0.5 text-xs text-danger-600">Negativo</p>
         )}
       </div>
-    </div>
+    </section>
   )
 }

@@ -41,14 +41,14 @@ export function getQuickActions(role: StaffRole) {
 
 export function QuickActions({ role }: { role: StaffRole }) {
   return (
-    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
+    <nav aria-label="Ações rápidas" className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
       {getQuickActions(role).map((a) => {
         const Icon = a.icon
         return (
           <Link
             key={a.href}
             href={a.href}
-            className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+            className="group flex min-h-24 flex-col items-center justify-center gap-2 rounded-[var(--radius-card)] border border-border bg-card p-3.5 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15"
           >
             <div
               className={`flex size-10 items-center justify-center rounded-xl ring-1 transition-transform group-hover:scale-105 ${a.tint}`}
@@ -61,6 +61,6 @@ export function QuickActions({ role }: { role: StaffRole }) {
           </Link>
         )
       })}
-    </div>
+    </nav>
   )
 }

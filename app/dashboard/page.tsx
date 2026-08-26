@@ -260,12 +260,12 @@ export default async function DashboardPage({
     .reduce((sum, custo) => sum + custo.valor, 0)
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div data-page="dashboard" className="mx-auto flex w-full max-w-[var(--content-max)] flex-col gap-6 bg-[var(--color-paper-50)]/40 p-[var(--space-page)] dark:bg-transparent">
       <PageHeader
         title="Dashboard"
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}
         action={
-            <div className="flex items-center gap-2">
+            <div data-slot="dashboard-context" className="grid w-full min-w-0 gap-2 sm:flex sm:w-auto sm:items-center">
               {canViewPayments && <GerarMesButton mes={mesAtual} />}
               <MonthPicker mes={mesSelecionado} basePath="/dashboard" />
             </div>
@@ -288,7 +288,7 @@ export default async function DashboardPage({
         />
       )}
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+      <section aria-label="Indicadores do mês" className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
         <StatCard
           title="Alunos Ativos"
           value={totalAtivos}
@@ -338,7 +338,7 @@ export default async function DashboardPage({
           variant={totalFrequencias === 0 ? "default" : presencaMedia >= 75 ? "success" : presencaMedia >= 50 ? "warning" : "danger"}
           href="/frequencia"
         />
-      </div>
+      </section>
 
       {canViewPayments && (
         <div className={canViewCash ? "grid grid-cols-1 gap-4 lg:grid-cols-2" : undefined}>

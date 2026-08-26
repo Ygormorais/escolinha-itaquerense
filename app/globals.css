@@ -31,6 +31,7 @@
   --color-success-600: #0F7A5A;
   --color-warning-50:  #FFF8ED;
   --color-warning-600: #A86417;
+  --color-warning-700: #7A450C;
   --color-danger-50:   #FEF1F0;
   --color-danger-600:  #B3261E;
   --color-info-50:     #EFF5FD;
@@ -119,6 +120,15 @@
   --chart-4: #A86417;
   --chart-5: #0F7A5A;
   --radius: 0.875rem;
+  --radius-control: 0.625rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
+  --radius-hero: 1.5rem;
+  --radius-pill: 999px;
+  --shadow-xs: 0 1px 2px rgba(74, 11, 11, 0.05);
+  --shadow-focus: 0 0 0 4px rgba(198, 40, 40, 0.15);
+  --space-page: clamp(1rem, 2.2vw, 2rem);
+  --content-max: 100rem;
   --sidebar: #FFFCF9;
   --sidebar-foreground: #1C1412;
   --sidebar-primary: #C62828;
@@ -174,6 +184,10 @@
     color: var(--foreground);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+  :where([data-numeric]) {
+    font-family: var(--font-body), var(--font-inter), Inter, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading), var(--font-playfair), Georgia, serif;

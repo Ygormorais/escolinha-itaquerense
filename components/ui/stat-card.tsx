@@ -63,7 +63,7 @@ export function StatCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="font-heading text-xl font-extrabold tracking-tight text-foreground min-[420px]:text-2xl sm:text-3xl truncate tabular-nums" title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>
+        <div data-numeric className="truncate text-xl font-bold tracking-tight text-foreground min-[420px]:text-2xl sm:text-3xl" title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>
           {value}
         </div>
         {trend && (
@@ -98,6 +98,6 @@ export function StatCard({
     </Card>
   )
 
-  if (href) return <Link href={href} className="block h-full">{inner}</Link>
+  if (href) return <Link href={href} className="block h-full rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15">{inner}</Link>
   return inner
 }
