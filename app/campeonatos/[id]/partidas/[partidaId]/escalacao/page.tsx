@@ -33,7 +33,7 @@ export default async function EscalacaoPage({
   ])
 
   return (
-    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-6">
+    <div className="mx-auto w-full max-w-[var(--content-max)] min-w-0 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
       <EscalacaoBoard
         campeonatoId={Number(id)}
         partida={{ id: partida.id, adversario: partida.adversario, rodada: partida.rodada, data: partida.data }}
@@ -46,16 +46,17 @@ export default async function EscalacaoPage({
           numero: e.numero,
           ordem: e.ordem,
         }))}
-      />
-      <ConvocacaoPanel
-        partidaId={pid}
-        jaConvocada={escalacao.some((e) => e.convocadoEm != null)}
-        escalados={escalacao.map((e) => ({
-          id: e.id,
-          nome: e.aluno.nome,
-          confirmacao: e.confirmacao,
-        }))}
-      />
+      >
+        <ConvocacaoPanel
+          partidaId={pid}
+          jaConvocada={escalacao.some((e) => e.convocadoEm != null)}
+          escalados={escalacao.map((e) => ({
+            id: e.id,
+            nome: e.aluno.nome,
+            confirmacao: e.confirmacao,
+          }))}
+        />
+      </EscalacaoBoard>
     </div>
   )
 }
