@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-08-27",
+    "scope": "app/configuracoes/escalacoes",
+    "macrostructure": "Index-First",
+    "theme": "Escolinha Orgânico / Humano",
+    "enrichment": "none",
+    "brief": "Índice cronológico de convocações administrativas com partidas escaneáveis, ação persistente e responsividade móvel"
+  },
+  {
+    "date": "2026-08-27",
     "scope": "app/campeonatos/[id]/partidas/[partidaId]/escalacao",
     "macrostructure": "Control Room",
     "theme": "Escolinha Orgânico / Humano",
