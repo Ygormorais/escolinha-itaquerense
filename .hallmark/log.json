@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-08-27",
+    "scope": "app/configuracoes/solicitacoes",
+    "macrostructure": "Ecosystem Index",
+    "theme": "Escolinha Orgânico / Humano",
+    "enrichment": "none",
+    "brief": "Triagem administrativa de solicitações por estado, com busca rotulada, registros escaneáveis e resposta responsiva"
+  },
+  {
+    "date": "2026-08-27",
     "scope": "app/configuracoes/escalacoes",
     "macrostructure": "Index-First",
     "theme": "Escolinha Orgânico / Humano",
