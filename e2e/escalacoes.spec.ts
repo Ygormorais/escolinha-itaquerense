@@ -29,8 +29,28 @@ test.describe("Escalações Admin", () => {
   test("exibe conteúdo da página de convocações", async ({ page }) => {
     await page.goto("/configuracoes/escalacoes")
     await expect(page).toHaveURL("/configuracoes/escalacoes")
-    // ou lista de partidas ou estado vazio — ambos ficam abaixo do heading
-    await expect(page.locator("h1").first()).toBeVisible()
+    await expect(page.locator('[data-slot="convocacoes-index"]')).toBeVisible()
+    await expect(page.getByText("Próximos Jogos", { exact: true })).toBeVisible()
+    await expect(page.getByText("Editar", { exact: true }).first()).toBeVisible()
+  })
+
+  for (const width of [320, 375, 414, 768]) {
+    test(`índice não estoura horizontalmente em ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto("/configuracoes/escalacoes")
+      await expect(page.locator('[data-slot="convocacoes-index"]')).toBeVisible()
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      expect(overflow).toBeLessThanOrEqual(0)
+    })
+  }
+
+  test("índice não tem violações críticas ou sérias de acessibilidade", async ({ page }) => {
+    await page.goto("/configuracoes/escalacoes")
+    const result = await new AxeBuilder({ page }).analyze()
+    const serious = result.violations.filter((violation) =>
+      violation.impact === "critical" || violation.impact === "serious"
+    )
+    expect(serious).toEqual([])
   })
 })
 
