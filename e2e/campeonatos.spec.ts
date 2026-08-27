@@ -59,14 +59,43 @@ test.describe("Campeonatos", () => {
     await page.goto(`/campeonatos/${campeonatoId}`)
     await expect(page).toHaveURL(`/campeonatos/${campeonatoId}`)
     await expect(page.getByRole("heading", { name: "E2E Campeonato Fluxos", exact: true })).toBeVisible()
-    await expect(page.getByText("E2E Adversário", { exact: true }).first()).toBeVisible()
+    await expect(page.locator('[data-slot="partidas-section"]')).toContainText("E2E Adversário")
+  })
+
+  for (const width of [320, 375, 414, 768]) {
+    test(`detalhe não estoura horizontalmente em ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto(`/campeonatos/${campeonatoId}`)
+      await expect(page.locator('[data-slot="campeonato-detail-bento"]')).toBeVisible()
+      await expect(page.locator('[data-slot="inscricoes-section"]')).toBeVisible()
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      expect(overflow).toBeLessThanOrEqual(0)
+    })
+  }
+
+  test("detalhe permite abrir a edição com campos rotulados", async ({ page }) => {
+    await page.goto(`/campeonatos/${campeonatoId}`)
+    await page.getByRole("button", { name: "Editar", exact: true }).first().click()
+    await expect(page.getByRole("dialog")).toBeVisible()
+    await expect(page.getByRole("textbox", { name: "Nome *", exact: true })).toHaveValue("E2E Campeonato Fluxos")
+    await expect(page.getByText("Status", { exact: true }).last()).toBeVisible()
+  })
+
+  test("detalhe não tem violações críticas ou sérias de acessibilidade", async ({ page }) => {
+    await page.goto(`/campeonatos/${campeonatoId}`)
+    const result = await new AxeBuilder({ page }).analyze()
+    const serious = result.violations.filter((violation) =>
+      violation.impact === "critical" || violation.impact === "serious"
+    )
+    expect(serious).toEqual([])
   })
 
   test("partida controlada exibe link de Convocação", async ({ page }) => {
     await page.goto(`/campeonatos/${campeonatoId}`)
     const href = `/campeonatos/${campeonatoId}/partidas/${partidaId}/escalacao`
-    const convocacaoLink = page.locator(`a[href="${href}"]`).first()
+    const convocacaoLink = page.locator(`a[href="${href}"]:visible`).first()
     await expect(convocacaoLink).toBeVisible()
     await expect(convocacaoLink).toContainText("Convocação")
   })
+
 })

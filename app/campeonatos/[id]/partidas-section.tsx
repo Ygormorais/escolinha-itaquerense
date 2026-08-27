@@ -26,32 +26,19 @@ import { cn } from "@/lib/utils"
 import { criarPartida, editarPartida, deletarPartida } from "@/app/actions/campeonatos"
 import { calcularClassificacao } from "@/lib/campeonatos"
 import { format } from "date-fns"
-import type { RscDate } from "@/lib/rsc-date"
+import type { PartidaCampeonato } from "@/components/campeonatos/types"
 
-type Partida = {
-  id: number
-  campeonatoId: number
-  rodada: number
-  data: RscDate
-  adversario: string
-  local: string
-  golsPro: number | null
-  golsContra: number | null
-  resultado: string | null
-  observacoes: string | null
-}
-
-export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense", convocacoesMap = new Set() }: { partidas: Partida[]; campeonatoId: number; nomeClube?: string; convocacoesMap?: Set<number> }) {
+export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaquerense", convocacoesMap = new Set() }: { partidas: PartidaCampeonato[]; campeonatoId: number; nomeClube?: string; convocacoesMap?: Set<number> }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<Partida | null>(null)
+  const [editing, setEditing] = useState<PartidaCampeonato | null>(null)
   const [form, setForm] = useState({
     rodada: "1", data: "", adversario: "", local: "Casa",
     golsPro: "", golsContra: "", observacoes: "",
   })
   const [search, setSearch] = useState("")
   const [filtroStatus, setFiltroStatus] = useState<"todas" | "realizadas" | "pendentes">("todas")
-  const [scoreDialog, setScoreDialog] = useState<Partida | null>(null)
+  const [scoreDialog, setScoreDialog] = useState<PartidaCampeonato | null>(null)
   const [scoreForm, setScoreForm] = useState({ golsPro: "", golsContra: "" })
   const [saving, startSaving] = useTransition()
 
@@ -106,7 +93,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
     })
   }
 
-  function handleEdit(p: Partida) {
+  function handleEdit(p: PartidaCampeonato) {
     setEditing(p)
     setForm({
       rodada: String(p.rodada),
@@ -126,7 +113,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
     router.refresh()
   }
 
-  function openScore(p: Partida) {
+  function openScore(p: PartidaCampeonato) {
     setScoreDialog(p)
     setScoreForm({
       golsPro: p.golsPro != null ? String(p.golsPro) : "",
@@ -166,9 +153,9 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+    <div className="min-w-0 space-y-6" data-slot="partidas-section">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-12 lg:gap-4" data-slot="partidas-summary">
+        <Card className="col-span-2 lg:col-span-6">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Jogos</CardTitle>
           </CardHeader>
@@ -176,7 +163,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
             <p className="text-2xl font-bold font-heading">{stats.jogos}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-success-600">Vitórias</CardTitle>
           </CardHeader>
@@ -184,7 +171,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
             <p className="text-2xl font-bold font-heading text-success-600">{stats.vitorias}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Empates</CardTitle>
           </CardHeader>
@@ -192,7 +179,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
             <p className="text-2xl font-bold font-heading">{stats.empates}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-danger-600">Derrotas</CardTitle>
           </CardHeader>
@@ -206,10 +193,10 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Trophy className="size-4 text-brand-600" /> Classificação
+              <Trophy className="size-4 text-brand-600" aria-hidden="true" /> Classificação
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -246,10 +233,33 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
         <Card className="border-warning-200 bg-warning-50/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-warning-600 flex items-center gap-2">
-              <Swords className="size-4" /> Pendentes ({pendentes.length})
+              <Swords className="size-4" aria-hidden="true" /> Pendentes ({pendentes.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
+            <div className="divide-y divide-warning-200 xl:hidden">
+              {pendentes.map((p) => (
+                <article key={p.id} className="space-y-4 p-4">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium break-words">{p.adversario}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{format(new Date(p.data), "dd/MM/yyyy")}</p>
+                    </div>
+                    <Badge variant="secondary" className="shrink-0 text-[10px]">{p.local}</Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
+                      <Button size="sm" variant="outline" className={convocacoesMap.has(p.id) ? "border-success-600 text-success-600" : ""}>
+                        <Shirt className="size-3.5" aria-hidden="true" /> Convocação
+                      </Button>
+                    </Link>
+                    <Button size="sm" variant="outline" onClick={() => openScore(p)}>Placar</Button>
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(p)}>Editar</Button>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto xl:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -261,7 +271,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
               </TableHeader>
               <TableBody>
                 {pendentes.map((p) => (
-                  <TableRow key={p.id} className="cursor-pointer hover:bg-muted/30 transition-colors">
+                  <TableRow key={p.id} className="hover:bg-muted/30">
                     <TableCell>{format(new Date(p.data), "dd/MM/yyyy")}</TableCell>
                     <TableCell className="font-medium">{p.adversario}</TableCell>
                     <TableCell><Badge variant="secondary" className="text-[10px]">{p.local}</Badge></TableCell>
@@ -269,7 +279,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                       <div className="flex gap-1">
                         <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
                           <Button size="sm" variant="outline" className={convocacoesMap.has(p.id) ? "border-success-600 text-success-600" : ""}>
-                            <Shirt className="size-3.5" />
+                            <Shirt className="size-3.5" aria-hidden="true" />
                             Convocação
                             {convocacoesMap.has(p.id) && <span className="ml-1 size-2 rounded-full bg-success-600" />}
                           </Button>
@@ -286,49 +296,58 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardHeader className="flex flex-col items-stretch gap-4 pb-3 xl:flex-row xl:items-center xl:justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Swords className="size-4" /> Todas as Partidas ({filtradas.length})
+            <Swords className="size-4" aria-hidden="true" /> Todas as Partidas ({filtradas.length})
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-              <Input
-                className="pl-8 h-8 w-48"
-                placeholder="Buscar adversário..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="min-w-0 flex-1 space-y-2 sm:min-w-56">
+              <Label htmlFor="partidas-busca">Buscar</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                <Input
+                  id="partidas-busca"
+                  className="w-full pl-9"
+                  placeholder="Buscar adversário..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              {(["todas", "realizadas", "pendentes"] as const).map((s) => (
-                <Button
-                  key={s}
-                  variant={filtroStatus === s ? "default" : "outline"}
-                  size="sm"
-                  className="text-xs capitalize h-8"
-                  onClick={() => setFiltroStatus(s)}
-                >
-                  {s === "todas" ? "Todas" : s === "realizadas" ? "Realizadas" : "Pendentes"}
-                </Button>
-              ))}
+            <div className="space-y-2">
+              <span className="block text-sm font-medium">Status</span>
+              <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Filtrar partidas por status">
+                {(["todas", "realizadas", "pendentes"] as const).map((s) => (
+                  <Button
+                    key={s}
+                    variant={filtroStatus === s ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs capitalize"
+                    onClick={() => setFiltroStatus(s)}
+                    aria-pressed={filtroStatus === s}
+                  >
+                    {s === "todas" ? "Todas" : s === "realizadas" ? "Realizadas" : "Pendentes"}
+                  </Button>
+                ))}
+              </div>
             </div>
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditing(null); setForm({ rodada: "1", data: "", adversario: "", local: "Casa", golsPro: "", golsContra: "", observacoes: "" }) } }}>
-              <Button size="sm" className="h-8" onClick={() => setOpen(true)}>
-                <Plus className="size-4" /> Partida
+              <Button size="sm" onClick={() => setOpen(true)}>
+                <Plus className="size-4" aria-hidden="true" /> Partida
               </Button>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <Swords className="size-4" /> {editing ? "Editar" : "Nova"} Partida
+                    <Swords className="size-4" aria-hidden="true" /> {editing ? "Editar" : "Nova"} Partida
                   </DialogTitle>
                 </DialogHeader>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="pt-rodada">Rodada</Label>
                     <Input id="pt-rodada" type="number" min="1" value={form.rodada} onChange={(e) => setForm({ ...form, rodada: e.target.value })} />
@@ -337,14 +356,14 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     <Label htmlFor="pt-data">Data *</Label>
                     <Input id="pt-data" type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
                   </div>
-                  <div className="col-span-2 space-y-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="pt-adversario">Adversário *</Label>
                     <Input id="pt-adversario" value={form.adversario} onChange={(e) => setForm({ ...form, adversario: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Local</Label>
+                    <Label id="pt-local-label">Local</Label>
                     <Select value={form.local} onValueChange={(v) => { if (v) setForm({ ...form, local: v }) }}>
-                      <SelectTrigger>
+                      <SelectTrigger aria-labelledby="pt-local-label">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -362,7 +381,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     <Label htmlFor="pt-gols-contra">Gols Contra</Label>
                     <Input id="pt-gols-contra" type="number" min="0" value={form.golsContra} onChange={(e) => setForm({ ...form, golsContra: e.target.value })} placeholder="—" />
                   </div>
-                  <div className="col-span-2 space-y-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="pt-obs">Observações</Label>
                     <Input id="pt-obs" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
                   </div>
@@ -370,7 +389,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                 <DialogFooter>
                   <Button variant="outline" onClick={() => { setOpen(false); setEditing(null) }}>Cancelar</Button>
                   <Button onClick={handleSubmit} disabled={saving}>
-                    {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : editing ? "Salvar" : "Criar"}
+                    {saving ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Salvando...</> : editing ? "Salvar" : "Criar"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -378,6 +397,42 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
           </div>
         </CardHeader>
         <CardContent className="p-0">
+          <div className="divide-y divide-border xl:hidden">
+            {filtradas.length === 0 && (
+              <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                <CalendarX className="size-8 text-muted-foreground/40" aria-hidden="true" />
+                <p className="text-sm text-muted-foreground">Nenhuma partida encontrada</p>
+              </div>
+            )}
+            {filtradas.map((p) => (
+              <article key={p.id} className={cn("space-y-4 p-4", p.resultado == null && "bg-warning-50/30")}>
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium break-words">{p.adversario}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Rodada {p.rodada} · {format(new Date(p.data), "dd/MM")}</p>
+                  </div>
+                  {resultadoBadge(p.resultado)}
+                </div>
+                <dl className="grid grid-cols-2 gap-3 text-sm">
+                  <div><dt className="text-muted-foreground">Local</dt><dd className="mt-1">{p.local}</dd></div>
+                  <div><dt className="text-muted-foreground">Placar</dt><dd className="mt-1 font-semibold">{p.golsPro != null && p.golsContra != null ? `${p.golsPro} × ${p.golsContra}` : "—"}</dd></div>
+                </dl>
+                <div className="flex flex-wrap gap-2">
+                  <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
+                    <Button size="sm" variant="outline" className={convocacoesMap.has(p.id) ? "border-success-600 text-success-600" : ""}>
+                      <Shirt className="size-3.5" aria-hidden="true" /> Convocação
+                    </Button>
+                  </Link>
+                  <Button size="sm" variant="outline" onClick={() => openScore(p)}>Placar</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(p)}>Editar</Button>
+                  <ConfirmDialog title="Deletar partida?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={() => handleDelete(p.id)}>
+                    <Button size="icon" variant="ghost" aria-label="Deletar partida"><Trash2 className="size-4 text-danger-600" aria-hidden="true" /></Button>
+                  </ConfirmDialog>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto xl:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -402,7 +457,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                 </TableRow>
               )}
               {filtradas.map((p) => (
-                <TableRow key={p.id} className={cn(p.resultado == null ? "bg-warning-50/30" : "", "cursor-pointer hover:bg-muted/30 transition-colors")}>
+                <TableRow key={p.id} className={cn(p.resultado == null ? "bg-warning-50/30" : "", "hover:bg-muted/30")}>
                   <TableCell className="text-muted-foreground">{p.rodada}</TableCell>
                   <TableCell>{format(new Date(p.data), "dd/MM")}</TableCell>
                   <TableCell className="font-medium">{p.adversario}</TableCell>
@@ -422,15 +477,15 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                     <div className="flex gap-1">
                       <Link href={`/campeonatos/${campeonatoId}/partidas/${p.id}/escalacao`}>
                         <Button size="icon-sm" variant="ghost" aria-label="Convocação" className={convocacoesMap.has(p.id) ? "text-success-600" : ""}>
-                          <Shirt className="size-3.5" />
+                          <Shirt className="size-3.5" aria-hidden="true" />
                         </Button>
                       </Link>
                       <Button size="icon-sm" variant="ghost" onClick={() => openScore(p)} aria-label="Registrar placar">
-                        <Pencil className="size-3.5" />
+                          <Pencil className="size-3.5" aria-hidden="true" />
                       </Button>
                       <ConfirmDialog title="Deletar partida?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={() => handleDelete(p.id)}>
                         <Button size="icon-sm" variant="ghost" aria-label="Deletar partida">
-                          <Trash2 className="size-3.5 text-danger-600" />
+                          <Trash2 className="size-3.5 text-danger-600" aria-hidden="true" />
                         </Button>
                       </ConfirmDialog>
                     </div>
@@ -439,6 +494,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -446,14 +502,15 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Swords className="size-4" /> {scoreDialog ? `Placar — ${scoreDialog.adversario}` : ""}
+              <Swords className="size-4" aria-hidden="true" /> {scoreDialog ? `Placar — ${scoreDialog.adversario}` : ""}
             </DialogTitle>
           </DialogHeader>
           {scoreDialog && (
-            <div className="grid grid-cols-2 gap-4 py-4">
+            <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2">
               <div className="text-center space-y-2">
-                <Label className="text-lg font-bold">{nomeClube}</Label>
+                <Label htmlFor="placar-pro" className="block break-words text-base font-bold">{nomeClube}</Label>
                 <Input
+                  id="placar-pro"
                   type="number" min="0"
                   className="text-center text-2xl h-14"
                   value={scoreForm.golsPro}
@@ -461,8 +518,9 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
                 />
               </div>
               <div className="text-center space-y-2">
-                <Label className="text-lg font-bold">{scoreDialog.adversario}</Label>
+                <Label htmlFor="placar-contra" className="block break-words text-base font-bold">{scoreDialog.adversario}</Label>
                 <Input
+                  id="placar-contra"
                   type="number" min="0"
                   className="text-center text-2xl h-14"
                   value={scoreForm.golsContra}
@@ -474,7 +532,7 @@ export function PartidasSection({ partidas, campeonatoId, nomeClube = "E.C. Itaq
           <DialogFooter>
             <Button variant="outline" onClick={() => setScoreDialog(null)}>Cancelar</Button>
             <Button onClick={handleSaveScore} disabled={saving}>
-              {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Salvar Placar"}
+              {saving ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Salvando...</> : "Salvar Placar"}
             </Button>
           </DialogFooter>
         </DialogContent>

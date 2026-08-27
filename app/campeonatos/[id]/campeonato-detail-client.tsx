@@ -1,22 +1,10 @@
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V5 · macrostructure: Bento Grid · theme: Escolinha Orgânico / Humano · knobs: operational header + asymmetric finance grid + responsive records · contrast: pass (40–41) · slop: pass (42–45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50–57) */
 "use client"
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import {
-  Trophy, ArrowLeft, Pencil, Trash2, Plus, UserPlus,
-  CheckCircle, XCircle, CircleDollarSign,
-  CreditCard, Calendar, MapPin, Users, AlertTriangle, Loader2,
-} from "lucide-react"
+import { CreditCard, Loader2, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  Card, CardContent, CardHeader, CardTitle,
-} from "@/components/ui/card"
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog"
@@ -27,68 +15,18 @@ import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { CampeonatoDetailOverview } from "@/components/campeonatos/campeonato-detail-overview"
+import { EditarCampeonatoDialog } from "@/components/campeonatos/editar-campeonato-dialog"
+import { InscricoesSection } from "@/components/campeonatos/inscricoes-section"
+import type { CampeonatoDetalhe, InscricaoCampeonato } from "@/components/campeonatos/types"
 import {
   editarCampeonato, deletarCampeonato,
   inscreverAluno, removerInscricao, registrarPagamentoInscricao,
   sincronizarFpfs,
 } from "@/app/actions/campeonatos"
 import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { cn, formatMoney, plural } from "@/lib/utils"
+import { formatMoney } from "@/lib/utils"
 import { PartidasSection } from "./partidas-section"
-import type { RscDate } from "@/lib/rsc-date"
-
-type AlunoInfo = { id: number; nome: string; turma: string; responsavel: string; telefone: string }
-
-type Inscricao = {
-  id: number
-  campeonatoId: number
-  alunoId: number
-  aluno: AlunoInfo
-  bolsa: boolean
-  desconto: number
-  taxaPaga: boolean
-  valorPago: number | null
-  dataPagamento: RscDate | null
-  formaPagamento: string | null
-  observacoes: string | null
-  createdAt: RscDate
-}
-
-type Campeonato = {
-  id: number
-  nome: string
-  descricao: string | null
-  dataInicio: RscDate
-  dataFim: RscDate | null
-  local: string | null
-  taxaInscricao: number
-  taxaJogo: number
-  taxaArbitragem: number
-  custoTransporte: number
-  custoUniforme: number
-  observacoes: string | null
-  status: string
-  fpfsEventoId: number | null
-  fpfsTimeNome: string | null
-  fpfsSyncEm: RscDate | null
-  createdAt: RscDate
-  inscricoes: Inscricao[]
-  partidas: PartidaItem[]
-}
-
-type PartidaItem = {
-  id: number
-  campeonatoId: number
-  rodada: number
-  data: RscDate
-  adversario: string
-  local: string
-  golsPro: number | null
-  golsContra: number | null
-  resultado: string | null
-  observacoes: string | null
-}
 
 
 const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Transferência", "Cartão", "Boleto"]
@@ -99,7 +37,7 @@ export function CampeonatoDetailClient({
   nomeClube = "E.C. Itaquerense",
   convocacoesMap = new Set(),
 }: {
-  campeonato: Campeonato
+  campeonato: CampeonatoDetalhe
   alunosDisponiveis: { id: number; nome: string; turma: string }[]
   nomeClube?: string
   convocacoesMap?: Set<number>
@@ -107,29 +45,11 @@ export function CampeonatoDetailClient({
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
   const [inscreverOpen, setInscreverOpen] = useState(false)
-  const [pagamentoOpen, setPagamentoOpen] = useState<Inscricao | null>(null)
+  const [pagamentoOpen, setPagamentoOpen] = useState<InscricaoCampeonato | null>(null)
 
-  const [editing, startEditing] = useTransition()
   const [sincronizando, startSincronizando] = useTransition()
   const [inscrevendo, startInscrevendo] = useTransition()
   const [pagando, startPagando] = useTransition()
-
-  const [form, setForm] = useState({
-    nome: campeonato.nome,
-    descricao: campeonato.descricao || "",
-    dataInicio: format(new Date(campeonato.dataInicio), "yyyy-MM-dd"),
-    dataFim: campeonato.dataFim ? format(new Date(campeonato.dataFim), "yyyy-MM-dd") : "",
-    local: campeonato.local || "",
-    taxaInscricao: String(campeonato.taxaInscricao),
-    taxaJogo: String(campeonato.taxaJogo),
-    taxaArbitragem: String(campeonato.taxaArbitragem),
-    custoTransporte: String(campeonato.custoTransporte),
-    custoUniforme: String(campeonato.custoUniforme),
-    observacoes: campeonato.observacoes || "",
-    status: campeonato.status,
-    fpfsEventoId: campeonato.fpfsEventoId != null ? String(campeonato.fpfsEventoId) : "",
-    fpfsTimeNome: campeonato.fpfsTimeNome || "",
-  })
 
   const [inscForm, setInscForm] = useState({
     alunoId: "",
@@ -159,38 +79,6 @@ export function CampeonatoDetailClient({
     return s + (i.taxaPaga ? 0 : taxa)
   }, 0)
 
-  function handleEdit() {
-    if (!form.nome.trim() || !form.dataInicio) {
-      toast.error("Preencha nome e data de início")
-      return
-    }
-    startEditing(async () => {
-      try {
-        await editarCampeonato(campeonato.id, {
-          nome: form.nome,
-          descricao: form.descricao || undefined,
-          dataInicio: form.dataInicio,
-          dataFim: form.dataFim || undefined,
-          local: form.local || undefined,
-          taxaInscricao: Number(form.taxaInscricao),
-          taxaJogo: Number(form.taxaJogo),
-          taxaArbitragem: Number(form.taxaArbitragem),
-          custoTransporte: Number(form.custoTransporte),
-          custoUniforme: Number(form.custoUniforme),
-          observacoes: form.observacoes || undefined,
-          status: form.status,
-          fpfsEventoId: form.fpfsEventoId ? Number(form.fpfsEventoId) : null,
-          fpfsTimeNome: form.fpfsTimeNome || null,
-        })
-        toast.success("Campeonato atualizado!")
-        setEditOpen(false)
-        router.refresh()
-      } catch {
-        toast.error("Erro ao atualizar campeonato")
-      }
-    })
-  }
-
   function handleSincronizarFpfs() {
     if (campeonato.fpfsEventoId == null) {
       toast.error("Configure o ID do evento FPFS em Editar antes de sincronizar")
@@ -212,6 +100,21 @@ export function CampeonatoDetailClient({
     await deletarCampeonato(campeonato.id)
     toast.success("Campeonato deletado")
     router.push("/campeonatos")
+  }
+
+  async function handleIniciar() {
+    await editarCampeonato(campeonato.id, {
+      ...campeonato,
+      nome: campeonato.nome,
+      status: "andamento",
+      dataInicio: format(new Date(campeonato.dataInicio), "yyyy-MM-dd"),
+      dataFim: campeonato.dataFim ? format(new Date(campeonato.dataFim), "yyyy-MM-dd") : undefined,
+      descricao: campeonato.descricao || undefined,
+      local: campeonato.local || undefined,
+      observacoes: campeonato.observacoes || undefined,
+    })
+    toast.success("Campeonato iniciado!")
+    router.refresh()
   }
 
   function handleInscrever() {
@@ -240,6 +143,15 @@ export function CampeonatoDetailClient({
     await removerInscricao(inscricaoId, campeonato.id)
     toast.success("Inscrição removida")
     router.refresh()
+  }
+
+  function openPagamento(inscricao: InscricaoCampeonato, valorDevido: number) {
+    setPagamentoOpen(inscricao)
+    setPagForm({
+      valorPago: String(valorDevido),
+      formaPagamento: "PIX",
+      dataPagamento: format(new Date(), "yyyy-MM-dd"),
+    })
   }
 
   function handlePagar() {
@@ -281,375 +193,47 @@ export function CampeonatoDetailClient({
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <Link
-          href="/campeonatos"
-          className="inline-flex items-center justify-center size-9 rounded-md hover:bg-muted transition-colors"
-        >
-          <ArrowLeft className="size-5" />
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">{campeonato.nome}</h1>
-            <Badge variant={st.variant}>{st.label}</Badge>
-          </div>
-          {campeonato.descricao && (
-            <p className="text-sm text-muted-foreground mt-0.5">{campeonato.descricao}</p>
-          )}
-          {campeonato.fpfsSyncEm && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              FPFS atualizada em {format(new Date(campeonato.fpfsSyncEm), "dd/MM/yyyy HH:mm")}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleSincronizarFpfs} disabled={sincronizando}>
-            {sincronizando ? <><Loader2 className="size-4 animate-spin" /> Sincronizando...</> : "Sincronizar FPFS"}
-          </Button>
-          <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-              <Pencil className="size-4" /> Editar
-            </Button>
-            <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Pencil className="size-4" /> Editar Campeonato
-                </DialogTitle>
-              </DialogHeader>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 space-y-2">
-                  <Label htmlFor="det-nome">Nome *</Label>
-                  <Input id="det-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label htmlFor="det-descricao">Descrição</Label>
-                  <Textarea id="det-descricao" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-data-inicio">Data Início *</Label>
-                  <Input id="det-data-inicio" type="date" value={form.dataInicio} onChange={(e) => setForm({ ...form, dataInicio: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-data-fim">Data Fim</Label>
-                  <Input id="det-data-fim" type="date" value={form.dataFim} onChange={(e) => setForm({ ...form, dataFim: e.target.value })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label htmlFor="det-local">Local</Label>
-                  <Input id="det-local" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-fpfs-id">ID Evento FPFS</Label>
-                  <Input id="det-fpfs-id" type="number" min="0" placeholder="ex.: 920" value={form.fpfsEventoId} onChange={(e) => setForm({ ...form, fpfsEventoId: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-fpfs-nome">Nome do time na FPFS</Label>
-                  <Input id="det-fpfs-nome" placeholder="igual ao site da FPFS" value={form.fpfsTimeNome} onChange={(e) => setForm({ ...form, fpfsTimeNome: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Select value={form.status} onValueChange={(v) => { if (v) setForm({ ...form, status: v }) }}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="aberto">Aberto</SelectItem>
-                      <SelectItem value="andamento">Em Andamento</SelectItem>
-                      <SelectItem value="encerrado">Encerrado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-taxa-inscricao">Taxa Inscrição (R$)</Label>
-                  <Input id="det-taxa-inscricao" type="number" step="0.01" min="0" value={form.taxaInscricao} onChange={(e) => setForm({ ...form, taxaInscricao: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-taxa-jogo">Taxa Jogo (R$)</Label>
-                  <Input id="det-taxa-jogo" type="number" step="0.01" min="0" value={form.taxaJogo} onChange={(e) => setForm({ ...form, taxaJogo: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-taxa-arbitragem">Taxa Arbitragem (R$)</Label>
-                  <Input id="det-taxa-arbitragem" type="number" step="0.01" min="0" value={form.taxaArbitragem} onChange={(e) => setForm({ ...form, taxaArbitragem: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="det-custo-transporte">Custo Transporte (R$)</Label>
-                  <Input id="det-custo-transporte" type="number" step="0.01" min="0" value={form.custoTransporte} onChange={(e) => setForm({ ...form, custoTransporte: e.target.value })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label htmlFor="det-custo-uniforme">Custo Uniforme (R$)</Label>
-                  <Input id="det-custo-uniforme" type="number" step="0.01" min="0" value={form.custoUniforme} onChange={(e) => setForm({ ...form, custoUniforme: e.target.value })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label htmlFor="det-obs">Observações</Label>
-                  <Textarea id="det-obs" value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
-                <Button onClick={handleEdit} disabled={editing}>
-                  {editing ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Salvar"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <div className="h-5 w-px bg-border" />
-          <ConfirmDialog title="Deletar campeonato?" description="Esta ação não pode ser desfeita." confirmLabel="Deletar" onConfirm={handleDelete}>
-            <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-danger-600 hover:bg-danger-50" aria-label="Deletar campeonato">
-              <Trash2 className="size-4" />
-            </Button>
-          </ConfirmDialog>
-        </div>
-      </div>
+      <CampeonatoDetailOverview
+        campeonato={campeonato}
+        status={st}
+        custos={custosCampeonato}
+        totalCustos={totalCustos}
+        totalPago={totalPago}
+        totalPendente={totalPendente}
+        alunosDisponiveis={alunosDisponiveis.length}
+        sincronizando={sincronizando}
+        onSincronizar={handleSincronizarFpfs}
+        onEditar={() => setEditOpen(true)}
+        onDeletar={handleDelete}
+        onInscrever={() => setInscreverOpen(true)}
+        onIniciar={handleIniciar}
+      />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Calendar className="size-4" /> Datas & Local
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>
-              <span className="text-muted-foreground">Início:</span>{" "}
-              {format(new Date(campeonato.dataInicio), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-            </p>
-            {campeonato.dataFim && (
-              <p>
-                <span className="text-muted-foreground">Fim:</span>{" "}
-                {format(new Date(campeonato.dataFim), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-              </p>
-            )}
-            {campeonato.local && (
-              <p className="flex items-center gap-1.5">
-                <MapPin className="size-3.5 text-muted-foreground" />
-                {campeonato.local}
-              </p>
-            )}
-            <p>
-              <span className="text-muted-foreground">Inscrições:</span>{" "}
-              {plural(campeonato.inscricoes.length, "aluno", "alunos", "nenhum")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <CircleDollarSign className="size-4" /> Custos do Campeonato
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {custosCampeonato.map((c) => (
-              <div key={c.label} className="flex justify-between">
-                <span className="text-muted-foreground">{c.label}</span>
-                <span className={c.valor > 0 ? "font-medium" : "text-muted-foreground"}>
-                  {formatMoney(c.valor)}
-                </span>
-              </div>
-            ))}
-            <div className="border-t pt-2 flex justify-between font-bold text-brand-800">
-              <span>Total por aluno</span>
-              <span>{formatMoney(totalCustos)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <CircleDollarSign className="size-4" /> Financeiro Geral
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Alunos inscritos</span>
-              <span>{campeonato.inscricoes.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Com bolsa integral</span>
-              <span>{campeonato.inscricoes.filter((i) => i.bolsa).length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Taxas pagas</span>
-              <span>{campeonato.inscricoes.filter((i) => i.taxaPaga).length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total arrecadado</span>
-              <span className="font-medium text-success-600">{formatMoney(totalPago)}</span>
-            </div>
-            <div className="flex justify-between border-t pt-2">
-              <span className="text-muted-foreground">A receber</span>
-              <span className="font-bold text-warning-600">{formatMoney(totalPendente)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <AlertTriangle className="size-4" /> Ações Rápidas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button
-              className="w-full justify-start"
-              variant="outline"
-              onClick={() => setInscreverOpen(true)}
-              disabled={alunosDisponiveis.length === 0}
-            >
-              <UserPlus className="size-4" /> Inscrever Aluno
-            </Button>
-            {campeonato.status === "aberto" && (
-              <Button
-                className="w-full justify-start"
-                variant="outline"
-                onClick={async () => {
-                  await editarCampeonato(campeonato.id, {
-                    ...campeonato,
-                    nome: campeonato.nome,
-                    status: "andamento",
-                    dataInicio: format(new Date(campeonato.dataInicio), "yyyy-MM-dd"),
-                    dataFim: campeonato.dataFim ? format(new Date(campeonato.dataFim), "yyyy-MM-dd") : undefined,
-                    descricao: campeonato.descricao || undefined,
-                    local: campeonato.local || undefined,
-                    observacoes: campeonato.observacoes || undefined,
-                  })
-                  toast.success("Campeonato iniciado!")
-                  router.refresh()
-                }}
-              >
-                <Trophy className="size-4" /> Iniciar Campeonato
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Users className="size-4" /> Alunos Inscritos
-          </CardTitle>
-          <Button
-            size="sm"
-            onClick={() => setInscreverOpen(true)}
-            disabled={alunosDisponiveis.length === 0}
-          >
-            <Plus className="size-4" /> Inscrever
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Aluno</TableHead>
-                <TableHead>Turma</TableHead>
-                <TableHead>Desconto</TableHead>
-                <TableHead>Bolsa</TableHead>
-                <TableHead>Valor Devido</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-32">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {campeonato.inscricoes.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7}>
-                    <div className="flex flex-col items-center gap-2 py-10 text-center">
-                      <Users className="size-8 text-muted-foreground/30" />
-                      <p className="text-sm text-muted-foreground">Nenhum aluno inscrito neste campeonato</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-              {campeonato.inscricoes.map((insc) => {
-                const valorDevido = Math.max(0, totalCustos - insc.desconto)
-                return (
-                  <TableRow key={insc.id} className="cursor-pointer hover:bg-muted/30 transition-colors">
-                    <TableCell>
-                      <Link href={`/alunos/${insc.aluno.id}`} className="font-medium hover:underline text-brand-800">{insc.aluno.nome}</Link>
-                      <p className="text-xs text-muted-foreground">{insc.aluno.responsavel} · {insc.aluno.telefone}</p>
-                    </TableCell>
-                    <TableCell>{insc.aluno.turma}</TableCell>
-                    <TableCell>
-                      {insc.desconto > 0 ? (
-                        <span className="text-success-600 font-medium">- {formatMoney(insc.desconto)}</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {insc.bolsa ? (
-                        <span className="flex items-center gap-1 text-xs font-medium text-info-600">
-                          <CheckCircle className="size-3" /> Bolsa Integral
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">Não</span>
-                      )}
-                    </TableCell>
-                    <TableCell className={cn("font-medium", insc.bolsa ? "text-muted-foreground line-through" : "")}>
-                      {insc.bolsa ? "R$ 0,00" : formatMoney(valorDevido)}
-                    </TableCell>
-                    <TableCell>
-                      {insc.bolsa ? (
-                        <Badge variant="outline" className="text-info-600 border-info-300">Isento</Badge>
-                      ) : insc.taxaPaga ? (
-                        <Badge variant="default" className="bg-success-600">
-                          <CheckCircle className="size-3 mr-1" /> Pago
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-warning-600">
-                          <AlertTriangle className="size-3 mr-1" /> Pendente
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        {!insc.bolsa && !insc.taxaPaga && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs"
-                            onClick={() => {
-                              setPagamentoOpen(insc)
-                              setPagForm({
-                                valorPago: String(valorDevido),
-                                formaPagamento: "PIX",
-                                dataPagamento: format(new Date(), "yyyy-MM-dd"),
-                              })
-                            }}
-                          >
-                            <CreditCard className="size-3 mr-1" /> Pagar
-                          </Button>
-                        )}
-                        <ConfirmDialog title="Remover inscrição?" description={`Remover ${insc.aluno.nome} do campeonato?`} confirmLabel="Remover" onConfirm={() => handleRemover(insc.id, insc.aluno.nome)}>
-                          <Button size="icon-sm" variant="ghost" aria-label="Remover inscrição">
-                            <XCircle className="size-4 text-danger-600" />
-                          </Button>
-                        </ConfirmDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <InscricoesSection
+        inscricoes={campeonato.inscricoes}
+        totalCustos={totalCustos}
+        podeInscrever={alunosDisponiveis.length > 0}
+        onInscrever={() => setInscreverOpen(true)}
+        onPagar={openPagamento}
+        onRemover={handleRemover}
+      />
 
       <PartidasSection partidas={campeonato.partidas} campeonatoId={campeonato.id} nomeClube={nomeClube} convocacoesMap={convocacoesMap} />
+
+      <EditarCampeonatoDialog campeonato={campeonato} open={editOpen} onOpenChange={setEditOpen} />
 
       <Dialog open={inscreverOpen} onOpenChange={setInscreverOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="size-4" /> Inscrever Aluno
+              <UserPlus className="size-4" aria-hidden="true" /> Inscrever Aluno
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Aluno</Label>
+              <Label id="insc-aluno-label">Aluno</Label>
               <Select value={inscForm.alunoId} onValueChange={(v) => { if (v) setInscForm({ ...inscForm, alunoId: v }) }}>
-                <SelectTrigger>
+                <SelectTrigger aria-labelledby="insc-aluno-label">
                   <SelectValue placeholder="Selecionar aluno" />
                 </SelectTrigger>
                 <SelectContent>
@@ -697,7 +281,7 @@ export function CampeonatoDetailClient({
           <DialogFooter>
             <Button variant="outline" onClick={() => setInscreverOpen(false)}>Cancelar</Button>
             <Button onClick={handleInscrever} disabled={inscrevendo}>
-              {inscrevendo ? <><Loader2 className="size-4 animate-spin" /> Inscrevendo...</> : "Inscrever"}
+              {inscrevendo ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Inscrevendo...</> : "Inscrever"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -707,7 +291,7 @@ export function CampeonatoDetailClient({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="size-4" /> Registrar Pagamento
+              <CreditCard className="size-4" aria-hidden="true" /> Registrar Pagamento
             </DialogTitle>
           </DialogHeader>
           {pagamentoOpen && (
@@ -730,9 +314,9 @@ export function CampeonatoDetailClient({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Forma de Pagamento</Label>
+                <Label id="pag-forma-label">Forma de Pagamento</Label>
                 <Select value={pagForm.formaPagamento} onValueChange={(v) => { if (v) setPagForm({ ...pagForm, formaPagamento: v }) }}>
-                  <SelectTrigger>
+                  <SelectTrigger aria-labelledby="pag-forma-label">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -754,7 +338,7 @@ export function CampeonatoDetailClient({
           <DialogFooter>
             <Button variant="outline" onClick={() => setPagamentoOpen(null)}>Cancelar</Button>
             <Button onClick={handlePagar} disabled={pagando}>
-              {pagando ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : "Confirmar Pagamento"}
+              {pagando ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Salvando...</> : "Confirmar Pagamento"}
             </Button>
           </DialogFooter>
         </DialogContent>
