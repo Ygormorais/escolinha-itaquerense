@@ -21,7 +21,7 @@ export default async function CampeonatosPage() {
   const comFpfs = campeonatos.filter((c) => c.fpfsEventoId != null).length
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div data-page="campeonatos" className="mx-auto flex w-full max-w-[var(--content-max)] min-w-0 flex-col gap-6 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
       <PageHeader
         title="Campeonatos"
         description={`${plural(campeonatos.length, "competição", "competições")} · ${abertos} abertas · ${comFpfs} com integração FPFS`}

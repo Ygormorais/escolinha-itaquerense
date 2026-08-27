@@ -1,0 +1,10 @@
+{
+  "scannedAt": "2026-08-27",
+  "framework": "Next.js 16 App Router with React 19 and TypeScript",
+  "styling": "Tailwind CSS 4 with shadcn/ui and app/globals.css",
+  "fonts": ["Inter", "Playfair Display"],
+  "tokens": "tokens.css with OKLCH primitives mapped through app/globals.css",
+  "spacing": "4px semantic scale",
+  "motion": "motion-cut; no dedicated motion library",
+  "preserve": ["brand palette", "font pairing", "spacing scale", "existing admin navigation"]
+}
