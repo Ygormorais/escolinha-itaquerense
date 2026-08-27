@@ -44,7 +44,7 @@ test.describe("Escalação de Partida (board)", () => {
   test("botão Convocação da partida controlada abre o board", async ({ page }) => {
     await page.goto(`/campeonatos/${campeonatoId}`)
     const href = `/campeonatos/${campeonatoId}/partidas/${partidaId}/escalacao`
-    const btn = page.locator(`a[href="${href}"]`).first()
+    const btn = page.locator(`a[href="${href}"]:visible`).first()
     await expect(btn).toBeVisible()
     await btn.click()
     await expect(page).toHaveURL(href)
