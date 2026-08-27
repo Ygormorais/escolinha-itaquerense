@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-08-27",
+    "scope": "app/campeonatos",
+    "macrostructure": "Catalogue",
+    "theme": "Escolinha Orgânico / Humano",
+    "enrichment": "none",
+    "brief": "Listagem administrativa de campeonatos com resumo compacto, filtros rotulados e catálogo responsivo"
+  },
+  {
     "date": "2026-08-26",
     "scope": "app",
     "macrostructure": "Workbench",

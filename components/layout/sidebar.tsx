@@ -204,7 +204,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                 })}
                 aria-expanded={isOpen}
                 aria-controls={groupId}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-brand-800/70 transition-colors hover:bg-white hover:text-brand-800 dark:text-brand-300/70 dark:hover:bg-muted"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-brand-900/80 transition-colors hover:bg-white hover:text-brand-900 dark:text-brand-200/80 dark:hover:bg-muted"
               >
                 <span className="flex-1">{group.label}</span>
                 {pendingCount > 0 && (
