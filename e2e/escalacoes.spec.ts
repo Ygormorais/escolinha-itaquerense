@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+import AxeBuilder from "@axe-core/playwright"
 import { loginAsAdmin } from "./helpers"
 import { resetCampeonatoE2E } from "./fixtures"
 
@@ -49,4 +50,34 @@ test.describe("Escalação de Partida (board)", () => {
     await btn.click()
     await expect(page).toHaveURL(href)
   })
+
+  for (const width of [320, 375, 414, 768]) {
+    test(`board não estoura horizontalmente em ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto(`/campeonatos/${campeonatoId}/partidas/${partidaId}/escalacao`)
+      await expect(page.locator('[data-slot="escalacao-control-room"]')).toBeVisible()
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+      expect(overflow).toBeLessThanOrEqual(0)
+    })
+  }
+
+  test("filtros são rotulados e jogador pode ser adicionado por clique", async ({ page }) => {
+    await page.goto(`/campeonatos/${campeonatoId}/partidas/${partidaId}/escalacao`)
+    await expect(page.getByText("Turma", { exact: true })).toBeVisible()
+    await expect(page.getByRole("textbox", { name: "Buscar" })).toBeVisible()
+    const jogador = page.getByRole("button", { name: /^Adicionar .+ à escalação$/ }).first()
+    const nomeAcessivel = await jogador.getAttribute("aria-label")
+    await jogador.click()
+    await expect(page.getByRole("button", { name: nomeAcessivel ?? "" })).toHaveCount(0)
+  })
+
+  test("board não tem violações críticas ou sérias de acessibilidade", async ({ page }) => {
+    await page.goto(`/campeonatos/${campeonatoId}/partidas/${partidaId}/escalacao`)
+    const result = await new AxeBuilder({ page }).analyze()
+    const serious = result.violations.filter((violation) =>
+      violation.impact === "critical" || violation.impact === "serious"
+    )
+    expect(serious).toEqual([])
+  })
+
 })

@@ -32,10 +32,10 @@ export function ConvocacaoPanel({
   const { confirmados, ausentes, semResposta } = resumoConfirmacoes(escalados)
 
   return (
-    <Card>
+    <Card data-slot="convocacao-panel" className="min-w-0 shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Megaphone className="size-5 text-brand-600" /> Convocação
+          <Megaphone className="size-5 text-brand-600" aria-hidden="true" /> Convocação
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -72,7 +72,7 @@ export function ConvocacaoPanel({
         <p className="text-xs text-muted-foreground">
           Quem permanece na escalação mantém a resposta; quem sai perde a convocação.
         </p>
-        <Button onClick={convocar} disabled={pending || escalados.length === 0} className="bg-brand-800 text-white hover:bg-brand-900">
+        <Button onClick={convocar} disabled={pending || escalados.length === 0} className="w-full">
           {pending ? "Enviando..." : jaConvocada ? "Re-convocar pendentes" : "Convocar escalação"}
         </Button>
       </CardContent>

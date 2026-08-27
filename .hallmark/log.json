@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-08-27",
+    "scope": "app/campeonatos/[id]/partidas/[partidaId]/escalacao",
+    "macrostructure": "Control Room",
+    "theme": "Escolinha Orgânico / Humano",
+    "enrichment": "none",
+    "brief": "Escalação administrativa com quadra como foco, rail operacional unificado e interação acessível por arraste ou toque"
+  },
+  {
+    "date": "2026-08-27",
     "scope": "app/campeonatos/[id]",
     "macrostructure": "Bento Grid",
     "theme": "Escolinha Orgânico / Humano",
