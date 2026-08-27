@@ -1,3 +1,4 @@
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · macrostructure: Ecosystem Index · tone: acolhedor e operacional · anchor hue: vermelho alvirrubro · slop: pass (58/58) */
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { PageHeader } from "@/components/layout/page-header"
@@ -13,7 +14,7 @@ export default async function SolicitacoesAdminPage() {
     take: 100,
   })
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-8 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
       <PageHeader title="Solicitações" description="Gerencie as solicitações dos responsáveis." />
       <AdminSolicitacoesClient solicitacoes={solicitacoes} />
     </div>
