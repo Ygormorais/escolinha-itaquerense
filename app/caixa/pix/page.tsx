@@ -74,7 +74,10 @@ export default async function PixPage() {
             <Badge variant="outline">PIX</Badge>
             Cobrancas aguardando pagamento no app ou via copia e cola.
           </div>
-          <div className="rounded-xl border bg-card overflow-x-auto">
+          <div className="grid gap-3 md:hidden">
+            {emitidos.map((p) => <article key={p.id} className="rounded-xl border bg-card p-4"><Link href={`/alunos/${p.aluno.id}`} className="font-semibold text-brand-800 hover:underline">{p.aluno.nome}</Link><p className="mt-1 text-sm text-muted-foreground">{p.aluno.turma} · {p.mesReferencia}</p><p className="mt-3 border-t pt-3 text-sm"><span className="text-muted-foreground">Vence em </span><strong>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</strong></p></article>)}
+          </div>
+          <div className="hidden overflow-x-auto rounded-xl border bg-card md:block">
             {emitidos.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-10 text-center">
                 <QrCode className="size-8 text-muted-foreground/30" />
@@ -111,7 +114,10 @@ export default async function PixPage() {
             <Badge variant="outline">Recebidos</Badge>
             Historico recente de pagamentos efetivamente baixados como PIX.
           </div>
-          <div className="rounded-xl border bg-card overflow-x-auto">
+          <div className="grid gap-3 md:hidden">
+            {recebidos.map((p) => <article key={p.id} className="rounded-xl border bg-card p-4"><div className="flex justify-between gap-3"><div><Link href={`/alunos/${p.aluno.id}`} className="font-semibold text-brand-800 hover:underline">{p.aluno.nome}</Link><p className="mt-1 text-sm text-muted-foreground">{p.aluno.turma} · {p.mesReferencia}</p></div><strong>{formatMoney(p.valorRecebido ?? 0)}</strong></div><p className="mt-3 border-t pt-3 text-sm text-muted-foreground">Recebido em {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</p></article>)}
+          </div>
+          <div className="hidden overflow-x-auto rounded-xl border bg-card md:block">
             {recebidos.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-10 text-center">
                 <Inbox className="size-8 text-muted-foreground/30" />
