@@ -256,7 +256,11 @@ export function RelatorioAlunosClient({
               description="Ajuste os filtros ou a busca para ver resultados."
             />
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="grid gap-3 p-4 md:hidden">
+              {alunos.map((a) => <article key={a.id} className="rounded-xl border bg-background p-4"><div className="flex justify-between gap-3"><div><Link href={`/alunos/${a.id}`} className="font-semibold text-brand-800 hover:underline">{a.nome}</Link><p className="mt-1 text-sm text-muted-foreground">{a.turma} · {a.horario}</p></div><Badge variant={a.status === "Ativo" ? "default" : "outline"}>{a.status}</Badge></div><dl className="mt-3 grid grid-cols-2 gap-3 border-t pt-3 text-sm"><div><dt className="text-xs text-muted-foreground">Responsável</dt><dd>{a.responsavel ?? "—"}</dd></div><div><dt className="text-xs text-muted-foreground">Mensalidade</dt><dd>{formatMoney(a.mensalidade)}</dd></div><div><dt className="text-xs text-muted-foreground">Telefone</dt><dd>{a.telefone ?? "—"}</dd></div><div><dt className="text-xs text-muted-foreground">Idade</dt><dd>{calcIdade(a.dataNascimento)} anos</dd></div></dl></article>)}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -312,6 +316,7 @@ export function RelatorioAlunosClient({
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
