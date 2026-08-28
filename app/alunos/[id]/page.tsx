@@ -236,7 +236,17 @@ export default async function AlunoDetailPage({
 
       <AvaliacoesCard alunoId={aluno.id} avaliacoes={avaliacoes} />
 
-      <Card>
+      <div className="grid gap-3 md:hidden" data-slot="student-payment-mobile-list">
+        {aluno.pagamentos.map((p) => {
+          const status = calcStatus(p.dataVencimento, p.dataPagamento)
+          return <article key={p.id} className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{p.mesReferencia}</p><p className="text-xs text-muted-foreground">Venc. {formatDate(p.dataVencimento)} · {p.formaPagamento ?? "Sem pagamento"}</p></div><span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${statusPagStyle[status] ?? ""}`}>{status}</span></div>
+            <p data-numeric className="mt-3 text-lg font-semibold">{p.valorRecebido ? formatMoney(p.valorRecebido) : formatMoney(aluno.mensalidade)}</p>
+          </article>
+        })}
+      </div>
+
+      <Card className="hidden md:block">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Histórico de Pagamentos</CardTitle>
           <PaginacaoAluno alunoId={numId} page={pagina} totalPages={totalPagesPag} />
