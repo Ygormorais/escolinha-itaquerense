@@ -229,7 +229,10 @@ export function MidiaClient({
         <p className="text-muted-foreground">Nenhuma mídia cadastrada.</p>
       ) : (
         <>
-        <Table>
+        <div className="grid gap-3 md:hidden">
+          {midias.map((m) => <article key={m.id} className="rounded-xl border bg-card p-4"><div className="flex justify-between gap-3"><div><h3 className="font-semibold">{m.titulo}</h3><p className="mt-1 text-sm text-muted-foreground">{formatVinculo(m)}</p></div>{m.tipo === "video" ? <Badge variant="secondary"><Film className="size-3" />Vídeo</Badge> : <Badge variant="secondary"><ImageIcon className="size-3" />Fotos</Badge>}</div><div className="mt-3 flex items-center justify-between border-t pt-3"><a href={m.url} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-800 hover:underline">Abrir mídia</a><ConfirmDialog title="Remover mídia?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => handleRemover(m.id)}><Button variant="ghost" size="icon" className="text-destructive" aria-label="Remover mídia"><Trash2 className="size-4" /></Button></ConfirmDialog></div></article>)}
+        </div>
+        <div className="hidden overflow-x-auto md:block"><Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">Prévia</TableHead>
@@ -291,7 +294,7 @@ export function MidiaClient({
               )
             })}
           </TableBody>
-        </Table>
+        </Table></div>
 
         {videoPlayer && (
           <VideoModal
