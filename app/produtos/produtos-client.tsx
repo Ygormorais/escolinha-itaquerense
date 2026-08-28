@@ -386,7 +386,11 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
       {produtos.length === 0 ? (
         <EmptyState icon={ShoppingBag} title="Nenhum produto cadastrado" description="Adicione produtos para a lojinha." />
       ) : (
-        <Table>
+        <>
+        <div className="grid gap-3 md:hidden">
+          {produtos.map((p) => <article key={p.id} className="rounded-xl border bg-card p-4"><div className="flex gap-3"><div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">{p.imagem ? <Image src={p.imagem} alt={p.nome} width={56} height={56} unoptimized className="size-full object-cover" /> : <ShoppingBag className="size-5 text-muted-foreground" />}</div><div className="min-w-0 flex-1"><div className="flex justify-between gap-2"><h3 aria-label={p.nome} data-name={p.nome} className="truncate font-semibold before:content-[attr(data-name)]" /><strong>{formatMoney(p.preco)}</strong></div><p className="mt-1 text-sm text-muted-foreground">{categoriaLabel[p.categoria] ?? p.categoria} · Estoque: {p.estoque}</p><div className="mt-3 grid grid-cols-3 gap-2 border-t pt-3"><AjustarEstoqueDialog produto={p} onDone={() => router.refresh()} /><Button variant="outline" size="sm" onClick={() => openEdit(p)} aria-label="Editar produto"><Pencil className="size-4" /></Button><ConfirmDialog title="Remover produto?" description={`Remover "${p.nome}" permanentemente?`} confirmLabel="Remover" onConfirm={() => handleRemover(p.id, p.nome)}><Button variant="ghost" size="sm" className="text-destructive" aria-label="Remover produto"><Trash2 className="size-4" /></Button></ConfirmDialog></div></div></div></article>)}
+        </div>
+        <div className="hidden md:block"><Table>
           <TableHeader>
             <TableRow>
               <TableHead>Preview</TableHead>
@@ -468,7 +472,8 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </Table></div>
+        </>
       )}
     </div>
   )
