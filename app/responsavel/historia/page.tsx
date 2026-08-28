@@ -68,9 +68,9 @@ export default async function HistoriaPage() {
 
       <Card className="border-border/80 bg-[var(--color-paper-50)] shadow-sm dark:bg-muted/30">
         <CardContent className="p-6 text-center sm:p-8">
-          <h2 className="mb-2 font-heading text-lg font-extrabold">Venha fazer parte dessa história!</h2>
+          <h2 className="mb-2 font-heading text-lg font-extrabold">Vocês já fazem parte dessa história!</h2>
           <p className="text-sm text-muted-foreground">
-            Entre em contato pelo WhatsApp e agende uma aula experimental.
+            Cada treino, conquista e momento vivido pelos nossos atletas também constrói a história da escolinha.
           </p>
         </CardContent>
       </Card>
