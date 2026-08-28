@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, CreditCard, Settings, Wallet } from "lucide-react"
+import { LayoutDashboard, Users, CreditCard, Wallet } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { canAccessStaffPath, type StaffRole } from "@/lib/permissions"
 
@@ -11,7 +11,6 @@ const items = [
   { href: "/alunos", label: "Alunos", icon: Users },
   { href: "/caixa", label: "Caixa", icon: Wallet },
   { href: "/pagamentos", label: "Pagamentos", icon: CreditCard },
-  { href: "/configuracoes", label: "Config", icon: Settings },
 ]
 
 export function BottomNav({ role }: { role: StaffRole }) {

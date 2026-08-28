@@ -18,7 +18,6 @@ import {
   Wallet,
   FileText,
   BarChart3,
-  Settings,
   History,
   LogOut,
   ClipboardList,
@@ -124,13 +123,12 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
       ], role),
     },
     {
-      label: "Documentos & Config",
+      label: "Documentos & Gestão",
       matchPrefixes: ["/relatorio"],
       items: filterByRole([
         { href: "/recibos",       label: "Recibos",       icon: FileText },
         { href: "/historico",     label: "Histórico",     icon: History },
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },
-        { href: "/configuracoes", label: "Configurações", icon: Settings },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
         { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
         { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning, badge: pendingSolicitacoes },
@@ -240,7 +238,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
                   </Link>
                 )
               })}
-              {group.label === "Documentos & Config" && (
+              {group.label === "Documentos & Gestão" && (
                 <div>
                   <button
                     type="button"
