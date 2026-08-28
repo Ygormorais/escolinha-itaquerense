@@ -17,7 +17,7 @@ test.describe("Autenticação", () => {
     const submit = page.locator('button[type="submit"]')
     await expect(submit).toBeEnabled()
     await submit.click()
-    await expect(page.getByText("incorretos")).toBeVisible()
+    await expect(page.getByText("Credenciais inválidas. Verifique seus dados e tente novamente.", { exact: true })).toBeVisible()
   })
 
   test("botão desabilitado com campos vazios", async ({ page }) => {

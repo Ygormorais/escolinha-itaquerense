@@ -28,6 +28,7 @@ import { POST } from "../route"
 import { db } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 const mockDb = db as unknown as { responsavel: { findUnique: ReturnType<typeof vi.fn> } }
 const mockBcrypt = bcrypt as unknown as { compare: ReturnType<typeof vi.fn> }
@@ -63,18 +64,21 @@ describe("POST /api/responsavel/auth", () => {
     mockDb.responsavel.findUnique.mockResolvedValue(null)
     const res = await POST(makeRequest({ email: "nao@existe.com", senha: "x" }))
     expect(res.status).toBe(401)
+    expect((await res.json()).error).toBe(INVALID_CREDENTIALS_MESSAGE)
   })
 
   it("retorna 401 quando conta está inativa", async () => {
     mockDb.responsavel.findUnique.mockResolvedValue({ ...RESPONSAVEL, ativo: false })
     const res = await POST(makeRequest({ email: "maria@email.com", senha: "correta" }))
     expect(res.status).toBe(401)
+    expect((await res.json()).error).toBe(INVALID_CREDENTIALS_MESSAGE)
   })
 
   it("retorna 401 quando senha incorreta", async () => {
     mockBcrypt.compare.mockResolvedValue(false)
     const res = await POST(makeRequest({ email: "maria@email.com", senha: "errada" }))
     expect(res.status).toBe(401)
+    expect((await res.json()).error).toBe(INVALID_CREDENTIALS_MESSAGE)
   })
 
   it("normaliza email para lowercase antes da busca", async () => {

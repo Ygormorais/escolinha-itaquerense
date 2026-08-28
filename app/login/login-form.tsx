@@ -7,6 +7,7 @@ import { AuthCard } from "@/components/auth/auth-shell"
 import { PasswordField } from "@/components/auth/password-field"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 export function LoginForm({ next }: { next?: string }) {
   const [username, setUsername] = useState("")
@@ -27,7 +28,7 @@ export function LoginForm({ next }: { next?: string }) {
         })
         if (!res.ok) {
           const data = await res.json()
-          setError(data.error ?? "Usuário ou senha incorretos")
+          setError(data.error ?? INVALID_CREDENTIALS_MESSAGE)
           return
         }
         // só caminhos internos; rejeita protocol-relative ("//evil.com") p/ evitar open redirect

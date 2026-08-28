@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { createResponsavelSession, responsavelCookieName, responsavelCookieMaxAge } from "@/lib/responsavel-session"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 export async function POST(request: Request) {
   const { email: rawEmail, senha } = await request.json()
@@ -16,12 +17,12 @@ export async function POST(request: Request) {
 
   const responsavel = await db.responsavel.findUnique({ where: { email } })
   if (!responsavel || !responsavel.ativo) {
-    return NextResponse.json({ error: "Email ou senha incorretos" }, { status: 401 })
+    return NextResponse.json({ error: INVALID_CREDENTIALS_MESSAGE }, { status: 401 })
   }
 
   const match = await bcrypt.compare(senha, responsavel.senha)
   if (!match) {
-    return NextResponse.json({ error: "Email ou senha incorretos" }, { status: 401 })
+    return NextResponse.json({ error: INVALID_CREDENTIALS_MESSAGE }, { status: 401 })
   }
 
   const token = await createResponsavelSession(responsavel.id)

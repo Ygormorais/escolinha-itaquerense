@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import Link from "next/link"
+import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 
 export default function ResponsavelLoginPage() {
@@ -16,9 +17,11 @@ export default function ResponsavelLoginPage() {
   const [email, setEmail] = useState("")
   const [senha, setSenha] = useState("")
   const [loading, startLoading] = useTransition()
+  const [error, setError] = useState("")
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError("")
     if (!email || !senha) { toast.error("Preencha email e senha"); return }
     startLoading(async () => {
       const res = await fetch("/api/responsavel/auth", {
@@ -27,7 +30,7 @@ export default function ResponsavelLoginPage() {
         body: JSON.stringify({ email, senha }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error); return }
+      if (!res.ok) { setError(data.error ?? INVALID_CREDENTIALS_MESSAGE); return }
       toast.success(`Bem-vindo, ${data.nome}!`)
       router.push("/responsavel")
     })
@@ -81,6 +84,9 @@ export default function ResponsavelLoginPage() {
               placeholder="Digite a senha..."
               autoComplete="current-password"
             />
+            {error && (
+              <p role="alert" className="text-sm font-medium text-danger-600">{error}</p>
+            )}
           </div>
           <Button type="submit" className="w-full" size="lg" disabled={loading || !email || !senha}>
             {loading ? <><Loader2 className="size-4 animate-spin" /> Entrando...</> : <><LogIn className="size-4" /> Entrar</>}

@@ -5,6 +5,7 @@ import { checkCredentials, createSession, cookieName, cookieMaxAge } from "@/lib
 import { checkDbCredentials } from "@/app/actions/usuarios"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 export async function POST(request: Request) {
   const { username, password } = await request.json()
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   const valid = dbResult.ok || envValid
 
   if (!valid) {
-    return NextResponse.json({ error: "Usuário ou senha incorretos" }, { status: 401 })
+    return NextResponse.json({ error: INVALID_CREDENTIALS_MESSAGE }, { status: 401 })
   }
 
   const role = dbResult.ok ? dbResult.role : "admin"
