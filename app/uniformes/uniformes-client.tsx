@@ -157,7 +157,14 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
         </Select>
       </div>
 
-      <div className="rounded-xl border bg-card">
+      <div className="grid gap-3 md:hidden" data-slot="uniform-mobile-list">
+        {filtered.map((aluno) => {
+          const entregues = aluno.uniformes.filter((u) => u.entregue).length
+          return <article key={aluno.id} className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><Link href={`/alunos/${aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">{aluno.nome}</Link><p className="mt-1 text-sm text-muted-foreground">{aluno.turma}</p></div><span className="text-sm font-semibold text-warning-600">{entregues}/{aluno.uniformes.length}</span></div><div className="mt-4 flex flex-wrap gap-1">{aluno.uniformes.length === 0 ? <span className="text-xs text-muted-foreground">Nenhum item</span> : aluno.uniformes.map((u) => <Badge key={u.id} variant={u.entregue ? "default" : "secondary"} className="text-[10px]">{u.item}{u.tamanho ? ` (${u.tamanho})` : ""}</Badge>)}</div></article>
+        })}
+      </div>
+
+      <div className="hidden rounded-xl border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
