@@ -118,6 +118,16 @@ test.describe("Admin — gerenciar responsáveis", () => {
 test.describe("Portal autenticado — dashboard", () => {
   test.use({ storageState: RESP_STORAGE })
 
+  test("mantém Solicitações visível no menu desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1720, height: 900 })
+    await page.goto("/responsavel")
+    const link = page.getByRole("link", { name: "Solicitações", exact: true })
+    await expect(link).toBeVisible()
+    const box = await link.boundingBox()
+    expect(box).not.toBeNull()
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(1720)
+  })
+
   test("carrega sem redirecionar para login", async ({ page }) => {
     await page.goto("/responsavel")
     await expect(page).toHaveURL("/responsavel")
