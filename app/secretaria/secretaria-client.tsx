@@ -275,7 +275,7 @@ export function SecretariaClient({
             ) : (
               <div className="space-y-1.5">
                 {preMatriculasPendentes.slice(0, 6).map((pm) => (
-                  <Link key={pm.id} href="/pre-matriculas">
+                  <Link key={pm.id} href="/configuracoes/matriculas">
                     <div className="flex items-center justify-between rounded-lg border bg-warning-50/40 px-3 py-2 hover:bg-warning-50 transition-colors">
                       <div>
                         <p className="text-sm font-medium">{pm.nomeAluno}</p>
@@ -293,7 +293,7 @@ export function SecretariaClient({
                   </Link>
                 ))}
                 {preMatriculasPendentes.length > 6 && (
-                  <Link href="/pre-matriculas" className="block pt-1 text-center text-xs text-muted-foreground hover:text-foreground">
+                  <Link href="/configuracoes/matriculas" className="block pt-1 text-center text-xs text-muted-foreground hover:text-foreground">
                     +{preMatriculasPendentes.length - 6} pendentes — ver todas
                   </Link>
                 )}

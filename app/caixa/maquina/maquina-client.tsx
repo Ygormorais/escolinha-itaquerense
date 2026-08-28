@@ -189,7 +189,23 @@ export function MaquinaClient({
         </div>
       </div>
 
-      <Card>
+      <div className="grid gap-3 md:hidden" data-slot="maquina-mobile-list">
+        {transacoes.map((t) => (
+          <article key={t.id} className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0"><p className="font-semibold">{formatMoney(t.valor)}</p><p className="text-xs text-muted-foreground">{format(new Date(t.dataTransacao), "dd/MM/yyyy")} · {t.bandeira || "—"} · {t.parcelas > 1 ? `${t.parcelas}x` : "À vista"}</p></div>
+              <Badge variant={t.status === "reconciliado" ? "default" : t.status === "ignorado" ? "outline" : "secondary"}>{t.status === "reconciliado" ? "Ok" : t.status === "ignorado" ? "Ignorado" : "Pendente"}</Badge>
+            </div>
+            <p className="mt-3 truncate text-sm text-muted-foreground">{t.nomeNoCartao || "Sem nome no cartão"}</p>
+            <div className="mt-3 flex items-center justify-between border-t pt-3">
+              {t.aluno ? <Link href={`/alunos/${t.aluno.id}`} className="truncate text-sm font-medium text-brand-800 hover:underline">{t.aluno.nome}</Link> : <span className="text-sm text-muted-foreground">Sem aluno</span>}
+              {t.status === "pendente" && <div className="flex gap-1"><Button size="icon-xs" variant="outline" aria-label="Reconciliar transação" onClick={() => openReconcile(t)}><CheckCircle className="size-3 text-success-600" /></Button><Button size="icon-xs" variant="ghost" aria-label="Ignorar transação" onClick={() => handleIgnorar(t.id)}><XCircle className="size-3" /></Button></div>}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <Card className="hidden md:block">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
