@@ -175,7 +175,11 @@ export function ResumoFrequenciaClient() {
       })()}
 
       {loaded && (
-        <div className="rounded-xl border bg-card">
+        <>
+        <div className="grid gap-3 md:hidden">
+          {resumo.map((r) => <article key={r.id} className="rounded-xl border bg-card p-4"><div className="flex justify-between gap-3"><Link href={`/alunos/${r.id}`} className="font-semibold text-brand-800 hover:underline">{r.nome}</Link><PctBadge pct={r.pct} /></div><dl className="mt-3 grid grid-cols-4 gap-2 border-t pt-3 text-center text-sm"><div><dt className="text-xs text-muted-foreground">Aulas</dt><dd>{r.total || "—"}</dd></div><div><dt className="text-xs text-muted-foreground">Pres.</dt><dd className="text-success-600">{r.presentes || "—"}</dd></div><div><dt className="text-xs text-muted-foreground">Aus.</dt><dd className="text-danger-600">{r.ausentes || "—"}</dd></div><div><dt className="text-xs text-muted-foreground">Just.</dt><dd className="text-info-600">{r.justificados || "—"}</dd></div></dl></article>)}
+        </div>
+        <div className="hidden rounded-xl border bg-card md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -215,6 +219,7 @@ export function ResumoFrequenciaClient() {
             </TableBody>
           </Table>
         </div>
+        </>
       )}
     </div>
   )
