@@ -35,15 +35,15 @@ function AlertEntry({ alert, compact = false }: { alert: AlertItem; compact?: bo
     <div className={`flex h-full min-w-0 gap-3 rounded-[var(--radius-control)] border p-3 transition-colors ${colorMap[alert.type]} ${alert.href ? "group-hover:bg-card" : ""}`}>
       <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold leading-5">{alert.message}</p>
-        <p className="mt-0.5 text-xs leading-4">{alert.detail}</p>
+        <p className="[overflow-wrap:anywhere] text-sm font-semibold leading-5">{alert.message}</p>
+        <p className="mt-0.5 [overflow-wrap:anywhere] text-xs leading-4">{alert.detail}</p>
         {alert.href && !compact ? <span className="mt-2 inline-block text-xs font-bold underline-offset-4 group-hover:underline">Ver detalhes</span> : null}
       </div>
     </div>
   )
 
   return alert.href ? (
-    <Link href={alert.href} className="group block rounded-[var(--radius-control)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15">
+    <Link href={alert.href} className="group block min-w-0 whitespace-normal rounded-[var(--radius-control)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15">
       {content}
     </Link>
   ) : content
@@ -77,7 +77,7 @@ export function AlertBanner({ alerts }: { alerts: AlertItem[] }) {
 
       <div className="grid gap-2 lg:grid-cols-3">
         {alerts.map((alert, index) => (
-          <div key={`${alert.message}-${index}`} className={index === 0 ? "block" : "hidden lg:block"}>
+          <div key={`${alert.message}-${index}`} className={index === 0 ? "min-w-0" : "hidden min-w-0 lg:block"}>
             <AlertEntry alert={alert} />
           </div>
         ))}
