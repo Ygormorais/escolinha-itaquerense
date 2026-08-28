@@ -47,7 +47,10 @@ export default async function DinheiroPage() {
         action={<RegistrarDinheiroDialog alunos={alunos} />}
       />
 
-      <div className="rounded-xl border border-border bg-card">
+      <div className="grid gap-3 md:hidden">
+        {entradas.map((e, i) => <article key={i} className="rounded-xl border bg-card p-4"><div className="flex justify-between gap-3"><div><h3 className="font-semibold">{e.origem}</h3><p className="mt-1 text-sm text-muted-foreground">{e.detalhe}</p></div><strong>{formatMoney(e.valor)}</strong></div><div className="mt-3 flex items-center justify-between border-t pt-3 text-sm"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${e.tipo === "Mensalidade" ? "bg-info-50 text-info-600" : "bg-success-50 text-success-600"}`}>{e.tipo}</span><span className="text-muted-foreground">{format(new Date(e.data), "dd/MM/yyyy")}</span></div></article>)}
+      </div>
+      <div className="hidden rounded-xl border border-border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
