@@ -200,7 +200,47 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
         />
       </div>
 
-      <div className="rounded-xl border bg-card">
+      <div className="grid gap-3 md:hidden" data-slot="recurring-cost-mobile-list">
+        {recorrentes.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-xl border bg-card py-10 text-center">
+            <RefreshCw className="size-8 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Nenhum modelo cadastrado</p>
+          </div>
+        ) : recorrentes.map((r) => (
+          <article key={r.id} className={`rounded-[var(--radius-card)] border bg-card p-4 shadow-sm ${!r.ativo ? "opacity-60" : ""}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="truncate font-semibold">{r.descricao}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{r.categoria} · {r.fornecedor}</p>
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${r.ativo ? "bg-success-50 text-success-600" : "bg-muted text-muted-foreground"}`}>
+                {r.ativo ? "Ativo" : "Inativo"}
+              </span>
+            </div>
+            <dl className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-sm">
+              <div>
+                <dt className="text-xs text-muted-foreground">Forma</dt>
+                <dd className="mt-1 font-medium">{r.formaPagamento}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Valor mensal</dt>
+                <dd data-numeric className="mt-1 font-semibold">{formatMoney(r.valor)}</dd>
+              </div>
+            </dl>
+            <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-3">
+              <RecorrenteFormDialog
+                recorrente={r}
+                trigger={<Button variant="outline" className="w-full"><PencilIcon className="size-4" />Editar</Button>}
+              />
+              <ConfirmDialog title="Excluir modelo recorrente?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => handleDelete(r.id)}>
+                <Button variant="ghost" className="w-full" disabled={deleting}><Trash2Icon className="size-4 text-danger-600" />Excluir</Button>
+              </ConfirmDialog>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden rounded-xl border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
