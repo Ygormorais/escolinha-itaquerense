@@ -244,7 +244,11 @@ export function RelatorioFrequenciaClient({
               description="Ajuste os filtros para ver resultados."
             />
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="grid gap-3 p-4 md:hidden">
+              {filtrados.map((s) => <article key={s.id} className="rounded-xl border bg-background p-4"><div className="flex justify-between gap-3"><div><Link href={`/alunos/${s.id}`} className="font-semibold text-brand-800 hover:underline">{s.nome}</Link><p className="mt-1 text-sm text-muted-foreground">{s.turma}</p></div><strong className={freqColor(s.percentual)}>{s.totalAulas === 0 ? "—" : `${s.percentual}%`}</strong></div><dl className="mt-3 grid grid-cols-2 gap-3 border-t pt-3 text-sm"><div><dt className="text-xs text-muted-foreground">Aulas</dt><dd>{s.totalAulas}</dd></div><div><dt className="text-xs text-muted-foreground">Presenças</dt><dd>{s.totalPresencas}</dd></div></dl></article>)}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -295,6 +299,7 @@ export function RelatorioFrequenciaClient({
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
