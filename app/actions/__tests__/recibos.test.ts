@@ -7,7 +7,7 @@ vi.mock("@/lib/db", () => ({
       create: vi.fn(),
       findMany: vi.fn(),
       findUnique: vi.fn(),
-      delete: vi.fn(),
+      update: vi.fn(),
     },
   },
 }))
@@ -18,7 +18,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
-import { salvarRecibo, getRecibos, deleteRecibo } from "@/app/actions/recibos"
+import { salvarRecibo, getRecibos, cancelarRecibo } from "@/app/actions/recibos"
 import { db } from "@/lib/db"
 
 const m = db as unknown as {
@@ -27,7 +27,7 @@ const m = db as unknown as {
     create: ReturnType<typeof vi.fn>
     findMany: ReturnType<typeof vi.fn>
     findUnique: ReturnType<typeof vi.fn>
-    delete: ReturnType<typeof vi.fn>
+    update: ReturnType<typeof vi.fn>
   }
 }
 
@@ -46,14 +46,20 @@ beforeEach(() => {
   m.recibo.create.mockResolvedValue({ id: 1 })
   m.recibo.findMany.mockResolvedValue([])
   m.recibo.findUnique.mockResolvedValue({ numero: 6 })
-  m.recibo.delete.mockResolvedValue({ id: 1 })
+  m.recibo.update.mockResolvedValue({ id: 1 })
 })
 
 describe("salvarRecibo", () => {
-  it("cria recibo com numero sequencial", async () => {
+  it("cria recibo com número e código de verificação únicos", async () => {
     const res = await salvarRecibo(validData)
     expect("numero" in res).toBe(true)
-    if ("numero" in res) expect(res.numero).toBe("006") // count=5 -> 6
+    if ("numero" in res) {
+      expect(res.numero).toMatch(/^REC-2026-/)
+      expect(res.codigoVerificacao).toBeTruthy()
+      expect(m.recibo.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ hashIntegridade: expect.stringMatching(/^[a-f0-9]{64}$/) }),
+      }))
+    }
   })
 
   it("rejeita alunoNome vazio", async () => {
@@ -89,11 +95,11 @@ describe("getRecibos", () => {
   })
 })
 
-describe("deleteRecibo", () => {
-  it("deleta recibo pelo id e invalida /recibos", async () => {
+describe("cancelarRecibo", () => {
+  it("cancela sem apagar e invalida /recibos", async () => {
     const { revalidatePath } = await import("next/cache")
-    await deleteRecibo(3)
-    expect(m.recibo.delete).toHaveBeenCalledWith({ where: { id: 3 } })
+    await cancelarRecibo(3)
+    expect(m.recibo.update).toHaveBeenCalledWith({ where: { id: 3 }, data: expect.objectContaining({ canceladoAt: expect.any(Date) }) })
     expect(revalidatePath).toHaveBeenCalledWith("/recibos")
   })
 })

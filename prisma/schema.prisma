@@ -201,12 +201,17 @@ model Usuario {
 model Recibo {
   id             Int      @id @default(autoincrement())
   numero         String   @unique
+  codigoVerificacao String? @unique
+  hashIntegridade String?
   alunoNome      String
   responsavel    String
   mesReferencia  String
   valor          Float
   formaPagamento String
   dataPagamento  DateTime
+  emitidoPor     String?
+  canceladoAt    DateTime?
+  canceladoPor   String?
   createdAt      DateTime @default(now())
 }
 
