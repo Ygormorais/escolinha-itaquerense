@@ -86,7 +86,40 @@ export default async function RecebimentosPage({
         </Card>
       </div>
 
-      <div className="rounded-xl border bg-card overflow-x-auto">
+      <div className="grid gap-3 md:hidden" data-slot="receipts-mobile-list">
+        {pagamentos.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-xl border bg-card py-10 text-center">
+            <Inbox className="size-8 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Nenhum recebimento em {labelMes}.</p>
+          </div>
+        ) : pagamentos.map((p) => (
+          <article key={p.id} className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Link href={`/alunos/${p.aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">
+                  {p.aluno.nome}
+                </Link>
+                <p className="mt-1 text-sm text-muted-foreground">{p.aluno.turma} · {p.mesReferencia}</p>
+              </div>
+              <p data-numeric className="shrink-0 font-heading text-lg font-bold text-success-600">
+                {formatMoney(p.valorRecebido ?? 0)}
+              </p>
+            </div>
+            <dl className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-sm">
+              <div>
+                <dt className="text-xs text-muted-foreground">Canal</dt>
+                <dd className="mt-1 font-medium">{getPaymentChannel(p.formaPagamento)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Recebido em</dt>
+                <dd className="mt-1 font-medium">{p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-xl border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
