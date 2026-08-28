@@ -94,19 +94,23 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="space-y-4" data-slot="pre-matriculas-triage">
+      <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[minmax(0,1fr)_11rem_auto] sm:items-end">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Label htmlFor="buscar-pre-matriculas" className="mb-1.5 block">Buscar</Label>
+          <Search className="absolute left-3 top-[calc(50%+0.625rem)] size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            id="buscar-pre-matriculas"
             placeholder="Buscar por aluno, responsável, telefone..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             className="pl-9"
           />
         </div>
+        <div>
+          <Label htmlFor="filtro-pre-matriculas" className="mb-1.5 block">Status</Label>
         <Select value={filtroStatus} onValueChange={(v) => { if (v) setFiltroStatus(v) }}>
-          <SelectTrigger className="h-12 w-44" aria-label="Filtrar por status">
+          <SelectTrigger id="filtro-pre-matriculas" className="h-11 w-full" aria-label="Filtrar por status">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -116,7 +120,8 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
             <SelectItem value="recusada">Recusadas</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground">{plural(filtradas.length, "registro", "registros", "nenhum")}</span>
+        </div>
+        <span className="pb-3 text-sm text-muted-foreground" aria-live="polite">{plural(filtradas.length, "registro", "registros", "nenhum")}</span>
       </div>
 
       <div className="rounded-xl border bg-card">
@@ -130,7 +135,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
           {filtradas.map((m) => {
             const st = STATUS_MAP[m.status] ?? STATUS_MAP.pendente
             return (
-              <div key={m.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <article key={m.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium truncate">{m.nomeAluno}</span>
@@ -182,7 +187,7 @@ export function MatriculasClient({ matriculas }: { matriculas: MatriculaRow[] })
                     </Button>
                   </ConfirmDialog>
                 </div>
-              </div>
+              </article>
             )
           })}
         </div>

@@ -37,7 +37,7 @@ async function criarPreMatriculaPublica(page: Parameters<typeof loginAsAdmin>[0]
 
 /** Localiza a linha (item da lista) de uma pré-matrícula pelo nome do aluno */
 function linhaPreMatricula(page: Parameters<typeof loginAsAdmin>[0], nomeAluno: string) {
-  return page.locator(".divide-y > div").filter({ hasText: nomeAluno })
+  return page.locator("article").filter({ hasText: nomeAluno })
 }
 
 // ── Testes ─────────────────────────────────────────────────────────────────

@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-08-27",
+    "scope": "app/configuracoes/matriculas",
+    "macrostructure": "Narrative Workflow",
+    "theme": "Escolinha Orgânico / Humano",
+    "enrichment": "none",
+    "brief": "Fluxo administrativo de pré-matrículas e renovações com etapas, filtros rotulados e filas escaneáveis"
+  },
+  {
+    "date": "2026-08-27",
     "scope": "app/configuracoes/solicitacoes",
     "macrostructure": "Ecosystem Index",
     "theme": "Escolinha Orgânico / Humano",
