@@ -371,7 +371,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
 
   return (
     <div className="space-y-4">
-      <div data-slot="student-filter-bar" className="grid min-w-0 gap-3 rounded-[var(--radius-card)] border bg-card p-4 lg:grid-cols-[minmax(14rem,1fr)_11rem_10rem_auto] lg:items-end">
+      <div data-slot="student-filter-bar" className="grid min-w-0 gap-3 rounded-[var(--radius-card)] border bg-card p-4 xl:grid-cols-[minmax(14rem,1fr)_11rem_10rem_minmax(17rem,auto)] xl:items-end">
         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="alunos-busca" className="text-xs">Buscar aluno</Label>
           <Input
@@ -410,7 +410,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
             </SelectContent>
           </Select>
         </div>
-        <div className="grid grid-cols-2 gap-2 lg:flex">
+        <div className="grid min-w-0 grid-cols-2 gap-2">
           <Link href="/alunos/importar" className="min-w-0">
             <Button variant="outline" className="h-12 w-full">
               <Upload className="size-4" />
