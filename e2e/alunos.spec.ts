@@ -31,6 +31,20 @@ test.describe("Alunos — listagem", () => {
     await expect(page).toHaveURL(/[?&]status=Ativo/)
     await expect(page.getByRole("link", { name: "E2E Aluno Fluxos Com Dados", exact: true })).toBeVisible()
   })
+
+  test("ações de importar e exportar não se sobrepõem", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto("/alunos")
+    const importar = page.getByRole("link", { name: "Importar CSV" })
+    const exportar = page.getByRole("button", { name: "Exportar CSV" })
+    await expect(importar).toBeVisible()
+    await expect(exportar).toBeVisible()
+
+    const [importarBox, exportarBox] = await Promise.all([importar.boundingBox(), exportar.boundingBox()])
+    expect(importarBox).not.toBeNull()
+    expect(exportarBox).not.toBeNull()
+    expect((importarBox?.x ?? 0) + (importarBox?.width ?? 0)).toBeLessThanOrEqual(exportarBox?.x ?? 0)
+  })
 })
 
 test.describe("Alunos — criar novo aluno", () => {
