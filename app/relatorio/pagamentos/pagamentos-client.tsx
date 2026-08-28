@@ -304,8 +304,20 @@ export function RelatorioPagamentosClient({
         )}
       </div>
 
+      {/* Detalhamento móvel */}
+      <div className="grid gap-3 md:hidden" data-slot="payment-report-mobile-list">
+        {pagamentos.map((p) => {
+          const st = calcStatus(p)
+          const canal = getPaymentChannel(p.formaPagamento)
+          return <article key={p.id} className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3"><div className="min-w-0"><Link href={`/alunos/${p.aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">{p.aluno.nome}</Link><p className="mt-1 text-xs text-muted-foreground">{p.aluno.turma} · {p.mesReferencia} · {canal}</p></div><span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${statusBadge[st]}`}>{st}</span></div>
+            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><div><dt className="text-xs text-muted-foreground">Vencimento</dt><dd>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</dd></div><div><dt className="text-xs text-muted-foreground">Valor</dt><dd data-numeric className="font-semibold">{formatMoney(p.valorRecebido ?? p.aluno.mensalidade ?? 0)}</dd></div></dl>
+          </article>
+        })}
+      </div>
+
       {/* Tabela */}
-      <Card>
+      <Card className="hidden md:block">
         <CardHeader className="border-b">
           <CardTitle className="text-base">Detalhamento dos pagamentos</CardTitle>
           <CardDescription>
