@@ -25,6 +25,7 @@ import { POST } from "../route"
 import { checkCredentials, createSession } from "@/lib/session"
 import { checkDbCredentials } from "@/app/actions/usuarios"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 const mockCheckCredentials = checkCredentials as ReturnType<typeof vi.fn>
 const mockCreateSession = createSession as ReturnType<typeof vi.fn>
@@ -52,7 +53,7 @@ describe("POST /api/auth/login", () => {
     const res = await POST(makeRequest({ username: "wrong", password: "bad" }))
     expect(res.status).toBe(401)
     const body = await res.json()
-    expect(body.error).toMatch(/incorretos/i)
+    expect(body.error).toBe(INVALID_CREDENTIALS_MESSAGE)
   })
 
   it("autentica via DB e seta cookie com role correto", async () => {

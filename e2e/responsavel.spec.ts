@@ -23,7 +23,7 @@ test.describe("Portal do Responsável — página de login", () => {
     await page.fill('input[type="email"]', "naoexiste@teste.com")
     await page.fill('input[type="password"]', "senhaerrada")
     await page.click('button[type="submit"]')
-    await expect(page.getByText(/incorretos/i)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText("Credenciais inválidas. Verifique seus dados e tente novamente.", { exact: true })).toBeVisible({ timeout: 5000 })
   })
 
   test("link 'Esqueceu a senha?' existe e navega para recuperação", async ({ page }) => {
@@ -53,7 +53,7 @@ test.describe("Portal do Responsável — login com usuário real", () => {
     await page.fill('input[type="email"]', "resp.aluno1@teste.com")
     await page.fill('input[type="password"]', "seedPlaceholderHashNaoUsarParaLogin")
     await page.click('button[type="submit"]')
-    await expect(page.getByText(/incorretos/i)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText("Credenciais inválidas. Verifique seus dados e tente novamente.", { exact: true })).toBeVisible({ timeout: 5000 })
   })
 
   test("rota /responsavel sem sessão redireciona para login", async ({ page }) => {
