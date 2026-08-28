@@ -243,10 +243,11 @@ export default async function ClassificacaoPage() {
       )}
 
       <p className="text-center text-xs text-muted-foreground">
-        Versão pública em{" "}
+        Também disponível no{" "}
         <Link href="/resultados" className="font-semibold text-brand-600 hover:underline">
-          /resultados
+          site público
         </Link>
+        .
       </p>
     </div>
   )
