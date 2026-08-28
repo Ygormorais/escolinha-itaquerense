@@ -42,7 +42,10 @@ export default async function DescontosPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card overflow-x-auto">
+      <div className="grid gap-3 md:hidden">
+        {alunosComDesconto.map((a) => { const pct = (a.desconto / a.mensalidade) * 100; return <article key={a.id} className="rounded-xl border bg-card p-4"><div className="flex justify-between gap-3"><div><Link href={`/alunos/${a.id}`} className="font-semibold text-brand-800 hover:underline">{a.nome}</Link><p className="mt-1 text-sm text-muted-foreground">{a.turma}</p></div><Badge variant={pct > 50 ? "destructive" : pct > 25 ? "outline" : "secondary"}>{pct.toFixed(0)}%</Badge></div><dl className="mt-3 grid grid-cols-3 gap-2 border-t pt-3 text-center text-sm"><div><dt className="text-xs text-muted-foreground">Mensal.</dt><dd>{formatMoney(a.mensalidade)}</dd></div><div><dt className="text-xs text-muted-foreground">Desconto</dt><dd className="text-danger-600">− {formatMoney(a.desconto)}</dd></div><div><dt className="text-xs text-muted-foreground">A pagar</dt><dd className="font-semibold">{formatMoney(a.mensalidade - a.desconto)}</dd></div></dl></article> })}
+      </div>
+      <div className="hidden overflow-x-auto rounded-xl border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
