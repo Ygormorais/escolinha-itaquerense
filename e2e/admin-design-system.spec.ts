@@ -47,6 +47,10 @@ test.describe("Design system administrativo", () => {
     await expect(summary).toBeVisible()
     const visibleLinks = summary.getByRole("link", { name: /ver detalhes/i })
     await expect(visibleLinks).toHaveCount(3)
+    const temConteudoTransbordando = await visibleLinks.evaluateAll((links) =>
+      links.some((link) => link.scrollWidth > link.clientWidth),
+    )
+    expect(temConteudoTransbordando).toBe(false)
   })
 
   test("pagamentos troca a tabela por cartões funcionais no mobile", async ({ page }) => {
