@@ -48,7 +48,21 @@ export function CategoriasClient({ viradas, anoRef }: { viradas: ViradaSerializa
 
   return (
     <div className="space-y-4">
-      <Table>
+      <div className="grid gap-3 md:hidden" data-slot="category-transition-mobile-list">
+        {viradas.map((v) => (
+          <article key={v.id} className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <input type="checkbox" checked={selecionados.has(v.id)} disabled={v.turmaProposta == null} onChange={() => toggle(v.id)} aria-label={`Selecionar ${v.nome}`} className="mt-1 size-4" />
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold">{v.nome}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Nasc.: {format(new Date(v.dataNascimento), "dd/MM/yyyy")} · {v.idadeNoAno} anos</p>
+                <dl className="mt-3 grid grid-cols-2 gap-3 border-t pt-3 text-sm"><div><dt className="text-xs text-muted-foreground">Atual</dt><dd className="mt-1 font-medium">{v.turmaAtual}</dd></div><div><dt className="text-xs text-muted-foreground">Proposta</dt><dd className="mt-1 font-medium">{v.turmaProposta ?? <Badge variant="destructive">acima de Sub-máx</Badge>}</dd></div></dl>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="hidden md:block"><Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-10" />
@@ -81,7 +95,7 @@ export function CategoriasClient({ viradas, anoRef }: { viradas: ViradaSerializa
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+      </Table></div>
       <Button onClick={aplicar} disabled={pending || selecionados.size === 0} className="bg-brand-800 text-white hover:bg-brand-900">
         {pending ? "Aplicando..." : `Aplicar virada (${selecionados.size})`}
       </Button>
