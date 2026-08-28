@@ -10,6 +10,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
@@ -46,14 +47,17 @@ export function RenovacoesAdminClient({ renovacoes }: { renovacoes: Renovacao[] 
   })
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="space-y-4" data-slot="renovacoes-triage">
+      <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[minmax(0,1fr)_11rem_auto] sm:items-end">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Buscar..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
+          <Label htmlFor="buscar-renovacoes" className="mb-1.5 block">Buscar</Label>
+          <Search className="absolute left-3 top-[calc(50%+0.625rem)] size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input id="buscar-renovacoes" placeholder="Buscar..." value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
         </div>
+        <div>
+          <Label htmlFor="filtro-renovacoes" className="mb-1.5 block">Status</Label>
         <Select value={filtro} onValueChange={(v) => setFiltro(v ?? "todas")}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger id="filtro-renovacoes" className="h-11 w-full" aria-label="Status">
             <SelectValue placeholder="Todas" />
           </SelectTrigger>
           <SelectContent>
@@ -63,7 +67,8 @@ export function RenovacoesAdminClient({ renovacoes }: { renovacoes: Renovacao[] 
             <SelectItem value="recusada">Recusadas</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground">{plural(filtradas.length, "solicitação", "solicitações", "nenhuma")}</span>
+        </div>
+        <span className="pb-3 text-sm text-muted-foreground" aria-live="polite">{plural(filtradas.length, "solicitação", "solicitações", "nenhuma")}</span>
       </div>
 
       <div className="divide-y rounded-xl border bg-card">
