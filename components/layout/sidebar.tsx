@@ -113,7 +113,6 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
         { href: "/agenda",        label: "Agenda",         icon: Calendar },
         { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
         { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },
-        { href: "/noticias",     label: "Notícias",     icon: Newspaper },
         { href: "/custos",        label: "Custos",        icon: Receipt },
         { href: "/comunicados",   label: "Comunicados",   icon: Send },
         { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
@@ -128,6 +127,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
       items: filterByRole([
         { href: "/recibos",       label: "Recibos",       icon: FileText },
         { href: "/historico",     label: "Histórico",     icon: History },
+        { href: "/noticias",      label: "Notícias",      icon: Newspaper },
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },
         { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
         { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },

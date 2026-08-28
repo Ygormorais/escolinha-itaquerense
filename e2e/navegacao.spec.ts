@@ -18,10 +18,12 @@ test.describe("Navegação", () => {
     await expect(sidebar.locator('a[href="/agenda"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/campeonatos"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/caixa"]')).toBeVisible()
+    await expect(sidebar.locator('a[href="/noticias"]')).not.toBeVisible()
 
     await sidebar.getByRole("button", { name: "Documentos & Gestão" }).click()
     await expect(sidebar.locator('a[href="/alunos"]')).not.toBeVisible()
     await expect(sidebar.locator('a[href="/configuracoes"]')).toHaveCount(0)
+    await expect(sidebar.locator('a[href="/noticias"]')).toBeVisible()
     await expect(sidebar.locator('a[href="/configuracoes/escalacoes"]')).toBeVisible()
   })
 
