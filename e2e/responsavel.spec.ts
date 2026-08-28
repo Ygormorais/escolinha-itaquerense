@@ -118,6 +118,31 @@ test.describe("Admin — gerenciar responsáveis", () => {
 test.describe("Portal autenticado — dashboard", () => {
   test.use({ storageState: RESP_STORAGE })
 
+  test("mantém Solicitações visível no menu desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1720, height: 900 })
+    await page.goto("/responsavel")
+    const link = page.getByRole("link", { name: "Solicitações", exact: true })
+    await expect(link).toBeVisible()
+    const box = await link.boundingBox()
+    expect(box).not.toBeNull()
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(1720)
+  })
+
+  test("painel de notificações abre inteiro fora do cabeçalho", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto("/responsavel")
+    await page.getByRole("button", { name: "Notificações" }).click()
+
+    const dialog = page.getByRole("dialog", { name: "Notificações recentes" })
+    await expect(dialog).toBeVisible()
+    const visibleAtBottom = await dialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect()
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.bottom - 4)
+      return hit !== null && element.contains(hit)
+    })
+    expect(visibleAtBottom).toBe(true)
+  })
+
   test("carrega sem redirecionar para login", async ({ page }) => {
     await page.goto("/responsavel")
     await expect(page).toHaveURL("/responsavel")

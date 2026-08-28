@@ -31,8 +31,6 @@ const linksSecundarios = [
   { href: "/responsavel/historia", label: "História" },
 ]
 
-const links = [...linksPrincipais, ...linksSecundarios]
-
 export function NavResponsavel() {
   const pathname = usePathname()
   const router = useRouter()
@@ -46,17 +44,46 @@ export function NavResponsavel() {
     }
   }
 
+  function renderLink(link: { href: string; label: string }) {
+    const active =
+      pathname === link.href ||
+      (link.href !== "/responsavel" && pathname.startsWith(link.href + "/"))
+
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        className={cn(
+          "relative shrink-0 px-3.5 py-3 font-body text-[13px] font-semibold tracking-[0.02em] whitespace-nowrap transition-colors sm:text-[14px]",
+          active
+            ? "text-[var(--red)]"
+            : "text-[var(--text)] hover:text-[var(--red)]",
+        )}
+        aria-current={active ? "page" : undefined}
+      >
+        {link.label}
+        <span
+          className={cn(
+            "absolute inset-x-3.5 bottom-2 h-0.5 rounded-full bg-[var(--red)] transition-transform origin-center",
+            active ? "scale-x-100" : "scale-x-0",
+          )}
+          aria-hidden
+        />
+      </Link>
+    )
+  }
+
   return (
     <nav
       className={cn(
-        "-mx-4 mb-8 sticky top-0 z-30 overflow-hidden rounded-2xl border border-[var(--border)]",
+        "-mx-4 mb-8 sticky top-0 z-30 overflow-visible rounded-2xl border border-[var(--border)]",
         "bg-[rgba(255,252,249,0.96)] shadow-[0_1px_0_var(--border),0_2px_8px_rgba(74,11,11,0.06)] backdrop-blur-md",
         "sm:-mx-6 lg:-mx-8 print:hidden",
       )}
     >
       {/* Faixa alvirrubra — mesma linguagem da landing */}
       <div
-        className="h-1 w-full bg-gradient-to-r from-[var(--red-deep)] via-[var(--red)] to-[var(--red-warm)]"
+        className="h-1 w-full rounded-t-2xl bg-gradient-to-r from-[var(--red-deep)] via-[var(--red)] to-[var(--red-warm)]"
         aria-hidden
       />
 
@@ -97,40 +124,20 @@ export function NavResponsavel() {
           </div>
         </div>
 
-        {/* Abas — mesma tipografia e underline da nav da landing */}
-        <div
-          className="flex items-stretch gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          role="tablist"
-          aria-label="Seções do portal"
-        >
-          {links.map((link) => {
-            const active =
-              pathname === link.href ||
-              (link.href !== "/responsavel" && pathname.startsWith(link.href + "/"))
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                role="tab"
-                aria-selected={active}
-                className={cn(
-                  "relative shrink-0 px-3.5 py-3.5 font-body text-[13px] font-semibold tracking-[0.02em] whitespace-nowrap transition-colors sm:text-[14px]",
-                  active
-                    ? "text-[var(--red)]"
-                    : "text-[var(--text)] hover:text-[var(--red)]",
-                )}
-              >
-                {link.label}
-                <span
-                  className={cn(
-                    "absolute inset-x-3.5 bottom-2.5 h-0.5 rounded-full bg-[var(--red)] transition-transform origin-center",
-                    active ? "scale-x-100" : "scale-x-0",
-                  )}
-                  aria-hidden
-                />
-              </Link>
-            )
-          })}
+        {/* Navegação em dois grupos para manter todos os caminhos descobríveis. */}
+        <div className="-mx-3 sm:-mx-5">
+          <div
+            className="flex items-stretch overflow-x-auto px-3 [scrollbar-width:none] sm:px-5 [&::-webkit-scrollbar]:hidden"
+            aria-label="Seções principais do portal"
+          >
+            {linksPrincipais.map(renderLink)}
+          </div>
+          <div
+            className="flex items-stretch overflow-x-auto border-t border-[var(--border)] px-3 [scrollbar-width:none] sm:px-5 [&::-webkit-scrollbar]:hidden"
+            aria-label="Mais seções do portal"
+          >
+            {linksSecundarios.map(renderLink)}
+          </div>
         </div>
       </div>
     </nav>
