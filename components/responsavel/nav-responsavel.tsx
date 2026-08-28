@@ -76,14 +76,14 @@ export function NavResponsavel() {
   return (
     <nav
       className={cn(
-        "-mx-4 mb-8 sticky top-0 z-30 overflow-hidden rounded-2xl border border-[var(--border)]",
+        "-mx-4 mb-8 sticky top-0 z-30 overflow-visible rounded-2xl border border-[var(--border)]",
         "bg-[rgba(255,252,249,0.96)] shadow-[0_1px_0_var(--border),0_2px_8px_rgba(74,11,11,0.06)] backdrop-blur-md",
         "sm:-mx-6 lg:-mx-8 print:hidden",
       )}
     >
       {/* Faixa alvirrubra — mesma linguagem da landing */}
       <div
-        className="h-1 w-full bg-gradient-to-r from-[var(--red-deep)] via-[var(--red)] to-[var(--red-warm)]"
+        className="h-1 w-full rounded-t-2xl bg-gradient-to-r from-[var(--red-deep)] via-[var(--red)] to-[var(--red-warm)]"
         aria-hidden
       />
 
