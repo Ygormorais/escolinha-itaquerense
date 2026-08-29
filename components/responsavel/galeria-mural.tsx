@@ -115,6 +115,7 @@ function MidiaCard({
   onPlay: (url: string, titulo: string) => void
 }) {
   const youtubeId = midia.tipo === "video" ? extractYoutubeId(midia.url) : null
+  const imagemDireta = midia.tipo === "fotos" && /\.(jpe?g|png|webp)(?:\?.*)?$/i.test(midia.url)
 
   return (
     <div className="group relative overflow-hidden rounded-xl border bg-card transition-all hover:shadow-lg hover:-translate-y-0.5">
@@ -144,6 +145,13 @@ function MidiaCard({
             <p className="text-sm font-medium leading-tight truncate">{midia.titulo}</p>
           </div>
         </button>
+      ) : imagemDireta ? (
+        <a href={midia.url} target="_blank" rel="noopener noreferrer" className="block">
+          <div className="relative aspect-video overflow-hidden bg-muted">
+            <Image src={midia.url} alt={midia.titulo} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 768px) 50vw, 20vw" unoptimized />
+          </div>
+          <div className="p-3"><p className="truncate text-sm font-medium">{midia.titulo}</p></div>
+        </a>
       ) : (
         <a
           href={midia.url}

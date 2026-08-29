@@ -73,6 +73,7 @@ export function isPublicPath(pathname: string): boolean {
     hasPrefix(pathname, "/api/escudo") || // escudos FPFS na landing (proxy anti-hotlink)
     hasPrefix(pathname, "/api/upload/matricula") ||
     pathname.startsWith("/uploads/fotos/") ||
+    pathname.startsWith("/uploads/midia/") ||
     hasPrefix(pathname, "/matricula") ||
     pathname.startsWith("/qr/") ||
     hasPrefix(pathname, "/checkin") ||
