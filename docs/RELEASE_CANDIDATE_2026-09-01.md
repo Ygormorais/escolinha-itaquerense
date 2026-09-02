@@ -32,6 +32,9 @@
 - 63 migrações aplicadas e banco sem duplicidades impeditivas.
 - Backup completo criado e validado por manifesto, hashes e `PRAGMA quick_check`.
 - Health check local retornando HTTP 200 com banco saudável.
+- `npm audit` sem vulnerabilidades conhecidas após fixar versões corrigidas das
+  dependências transitivas `mysql2`, `browserslist` e
+  `postcss-selector-parser`.
 
 ## Pendências antes do deploy público
 
