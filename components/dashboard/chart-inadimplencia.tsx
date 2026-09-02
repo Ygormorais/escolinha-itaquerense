@@ -19,7 +19,7 @@ export function ChartInadimplencia({ data }: { data: InadimplenciaData[] }) {
         {temMensalidades(data) ? (
           <>
             <div className="h-60 min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <ComposedChart data={data} barGap={4} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="mes" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} tickLine={false} />

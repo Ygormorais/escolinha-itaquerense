@@ -21,7 +21,7 @@ export function ChartReceitaPorTurma({ data }: { data: ReceitaTurmaData[] }) {
         {chartData.length > 0 ? (
           <>
             <div className="min-w-0" style={{ height: alturaGraficoTurmas(chartData.length) }}>
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 72, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} tickFormatter={formatarMoedaCompacta} tickLine={false} />

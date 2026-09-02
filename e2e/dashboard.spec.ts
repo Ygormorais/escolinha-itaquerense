@@ -25,7 +25,11 @@ test.describe("Dashboard", () => {
 
     await expect(main.locator("caption", { hasText: "Receita, custos e saldo mensal" })).toHaveCount(1)
     await expect(main.locator("caption", { hasText: "taxa de inadimplência" })).toHaveCount(1)
-    await expect(main.locator("caption", { hasText: "Receita recebida por turma" })).toHaveCount(1)
+    await expect(
+      main.locator('[data-slot="chart-receita-turma"] caption, [data-slot="chart-receita-turma"] p').filter({
+        hasText: /^(Receita recebida por turma no mês atual|Nenhuma receita por turma registrada neste mês\.)$/,
+      }),
+    ).toHaveCount(1)
   })
 
   test("mostra ocupação das turmas", async ({ page }) => {
