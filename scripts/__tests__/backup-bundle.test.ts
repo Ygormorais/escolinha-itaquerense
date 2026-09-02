@@ -5,6 +5,7 @@ import Database from "better-sqlite3"
 import { afterEach, describe, expect, it } from "vitest"
 import {
   createBackupBundle,
+  findLatestBackupBundle,
   restoreBackupBundle,
   validateBackupBundle,
 } from "../backup-bundle"
@@ -87,5 +88,31 @@ describe("backup completo", () => {
 
     expect(fs.readdirSync(locais.uploadsDir)).toEqual([])
     expect(fs.existsSync(locais.configPath)).toBe(false)
+  })
+
+  it("localiza o pacote completo mais recente para verificação operacional", async () => {
+    const locais = ambiente()
+    const antigo = await createBackupBundle({
+      ...locais,
+      prefix: "prod",
+      now: new Date("2026-08-10T12:00:00.000Z"),
+    })
+    const recente = await createBackupBundle({
+      ...locais,
+      prefix: "prod",
+      now: new Date("2026-08-11T12:00:00.000Z"),
+    })
+    const agora = Date.now() / 1000
+    fs.utimesSync(antigo, agora - 60, agora - 60)
+    fs.utimesSync(recente, agora, agora)
+
+    expect(findLatestBackupBundle(locais.backupDir)).toBe(recente)
+  })
+
+  it("avisa quando ainda não existe pacote completo para verificar", () => {
+    const locais = ambiente()
+    fs.mkdirSync(locais.backupDir, { recursive: true })
+
+    expect(() => findLatestBackupBundle(locais.backupDir)).toThrow("Nenhum backup completo")
   })
 })

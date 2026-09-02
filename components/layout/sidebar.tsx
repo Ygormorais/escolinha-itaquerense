@@ -28,6 +28,7 @@ import {
   Film,
   ShoppingBag,
   Award,
+  Activity,
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -82,7 +83,7 @@ function isNavItemActive(pathname: string, href: string, allItems: NavItem[]): b
   )
 }
 
-export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0 }: { onClose?: () => void; role?: StaffRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number }) {
+export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0, pendingPendencias = 0 }: { onClose?: () => void; role?: StaffRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number; pendingPendencias?: number }) {
   const pathname = usePathname()
   const sidebarId = useId().replaceAll(":", "")
 
@@ -99,8 +100,10 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
       label: "Visão Geral",
       items: filterByRole([
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/pendencias", label: "Pendências", icon: AlertTriangle, badge: pendingPendencias },
         { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
         { href: "/tecnico", label: "Painel Técnico", icon: Trophy },
+        { href: "/desenvolvimento", label: "Desenvolvimento", icon: Activity },
       ], role),
     },
     {
@@ -126,6 +129,8 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
       matchPrefixes: ["/relatorio"],
       items: filterByRole([
         { href: "/recibos",       label: "Recibos",       icon: FileText },
+        { href: "/configuracoes/documentos", label: "Documentos", icon: FileText },
+        { href: "/configuracoes/automacoes", label: "Automações", icon: History },
         { href: "/historico",     label: "Histórico",     icon: History },
         { href: "/noticias",      label: "Notícias",      icon: Newspaper },
         { href: "/configuracoes/midia", label: "Mídia", icon: Film },

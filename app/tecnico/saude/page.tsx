@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Heart, AlertTriangle, Phone, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { PageHeader } from "@/components/layout/page-header"
+import { ConfirmarLeituraFicha } from "./confirmar-leitura"
 
 export const metadata = { title: "Fichas de Saúde — Painel do Técnico" }
 
 export default async function TecnicoSaudePage() {
-  await requireAuth(["admin", "tecnico"])
+  const auth = await requireAuth(["admin", "tecnico"])
+  const usuario = await db.usuario.findUnique({ where: { username: auth.user }, select: { id: true } })
 
   const alunos = await db.aluno.findMany({
     where: { status: "Ativo" },
@@ -24,6 +26,13 @@ export default async function TecnicoSaudePage() {
       contatoEmergenciaNome: true,
       contatoEmergenciaTel: true,
       contatoEmergenciaParentesco: true,
+      fichaMedicaVersao: true,
+      leiturasFichaMedica: {
+        where: { usuarioId: usuario?.id ?? -1 },
+        select: { versao: true, lidaEm: true },
+        orderBy: { lidaEm: "desc" },
+        take: 1,
+      },
     },
     orderBy: [{ turma: "asc" }, { nome: "asc" }],
   })
@@ -108,6 +117,11 @@ export default async function TecnicoSaudePage() {
                           {a.contatoEmergenciaTel}
                         </a>
                       )}
+                      <ConfirmarLeituraFicha
+                        alunoId={a.id}
+                        versao={a.fichaMedicaVersao}
+                        lidaEm={a.leiturasFichaMedica.find((item) => item.versao === a.fichaMedicaVersao)?.lidaEm.toISOString() ?? null}
+                      />
                     </div>
 
                     {a.contatoEmergenciaNome && (

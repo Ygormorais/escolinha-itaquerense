@@ -19,6 +19,7 @@
     "db:check": "npx tsx scripts/check-pre-deploy.ts",
     "deploy:check": "npx tsx scripts/check-deploy.ts",
     "db:backup": "npx tsx scripts/backup.ts",
+    "db:backup:verify": "npx tsx scripts/verify-backup.ts",
     "db:restore": "npx tsx scripts/restore.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -27,7 +28,10 @@
     "housekeeping": "npx tsx scripts/housekeeping.ts",
     "fpfs:sync": "npx tsx scripts/fpfs-sync-once.ts",
     "fpfs:setup": "npx tsx scripts/setup-fpfs-sync.ts",
-    "fpfs:install-cron": "powershell -ExecutionPolicy Bypass -File scripts/install-fpfs-cron.ps1"
+    "fpfs:install-cron": "powershell -ExecutionPolicy Bypass -File scripts/install-fpfs-cron.ps1",
+    "automacoes:run": "npx tsx scripts/run-operational-automations.ts",
+    "automacoes:defaults": "npx tsx scripts/install-default-automation-rules.ts",
+    "automacoes:install": "powershell -ExecutionPolicy Bypass -File scripts/install-operational-automations.ps1"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",

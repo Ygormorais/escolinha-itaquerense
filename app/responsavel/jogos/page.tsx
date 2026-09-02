@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { categoriaCurta, nomeTime } from "@/lib/landing/times"
 import { candidatosEscudoAdversario } from "@/lib/landing/escudo-adversario"
 import { AdvCrest } from "@/components/responsavel/adv-crest"
+import { DisponibilidadeCard } from "@/components/responsavel/disponibilidade-card"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -83,6 +84,10 @@ export default async function JogosPage() {
     rodada: true,
     campeonato: {
       select: { id: true, nome: true, status: true, fpfsSyncEm: true },
+    },
+    disponibilidades: {
+      where: { responsavelId: session.responsavelId },
+      select: { alunoId: true, resposta: true, motivo: true },
     },
   } as const
 
@@ -224,7 +229,13 @@ export default async function JogosPage() {
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       {proximos.map((p) => (
-                        <MatchCard key={p.id} p={p} />
+                        <MatchCard
+                          key={p.id}
+                          p={p}
+                          alunos={alunos.filter((aluno) =>
+                            turmasParaCategorias([aluno.turma]).has(cat),
+                          )}
+                        />
                       ))}
                     </div>
                   </div>
@@ -237,7 +248,7 @@ export default async function JogosPage() {
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {recentes.map((p) => (
-                        <MatchCard key={p.id} p={p} />
+                        <MatchCard key={p.id} p={p} alunos={[]} />
                       ))}
                     </div>
                   </div>
@@ -265,6 +276,7 @@ export default async function JogosPage() {
 
 function MatchCard({
   p,
+  alunos,
 }: {
   p: {
     id: number
@@ -277,7 +289,9 @@ function MatchCard({
     resultado: string | null
     sumulaUrl: string | null
     rodada: number | null
+    disponibilidades: { alunoId: number; resposta: string; motivo: string | null }[]
   }
+  alunos: { id: number; nome: string; turma: string }[]
 }) {
   const meta = resultadoMeta(p.resultado, p.golsPro)
   const adv = nomeTime(p.adversario)
@@ -343,6 +357,29 @@ function MatchCard({
             Ver súmula na FPFS
             <ExternalLink className="size-3" />
           </a>
+        )}
+
+        {p.golsPro == null && new Date(p.data) >= new Date() && alunos.length > 0 && (
+          <div className="space-y-2 border-t border-border pt-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              Disponibilidade antecipada
+            </p>
+            {alunos.map((aluno) => {
+              const atual = p.disponibilidades.find((item) => item.alunoId === aluno.id)
+              return (
+                <DisponibilidadeCard
+                  key={aluno.id}
+                  tipo="partida"
+                  referenciaId={p.id}
+                  alunoId={aluno.id}
+                  alunoNome={aluno.nome.split(" ")[0]}
+                  respostaInicial={atual?.resposta ?? null}
+                  motivoInicial={atual?.motivo ?? null}
+                  compacto
+                />
+              )
+            })}
+          </div>
         )}
       </div>
     </article>

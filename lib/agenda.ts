@@ -13,16 +13,19 @@ export type ItemAgenda = {
   local: string | null
   descricao?: string | null
   jogo?: { escalacaoId: number; confirmacao: string | null; adversario: string }
+  evento?: { id: number; resposta: string | null; motivo: string | null }
 }
 export type DiaAgenda = { data: Date; itens: ItemAgenda[] }
 
 export type EventoInput = {
+  id?: number
   tipo: string
   data: Date
   horaInicio: string | null
   titulo: string
   local: string | null
   descricao: string | null
+  disponibilidade?: { resposta: string; motivo: string | null } | null
 }
 export type JogoInput = {
   escalacaoId: number
@@ -46,6 +49,11 @@ export function montarAgenda(eventos: EventoInput[], jogos: JogoInput[]): DiaAge
       titulo: e.titulo,
       local: e.local,
       descricao: e.descricao,
+      evento: e.id == null ? undefined : {
+        id: e.id,
+        resposta: e.disponibilidade?.resposta ?? null,
+        motivo: e.disponibilidade?.motivo ?? null,
+      },
     })),
     ...jogos.map((j) => ({
       tipo: "jogo" as const,

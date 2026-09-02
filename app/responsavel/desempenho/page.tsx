@@ -9,6 +9,8 @@ import { EmptyState } from "@/components/ui/empty-state"
 import type { AvaliacaoSnapshot } from "@/components/responsavel/radar-evolution-chart"
 import { DesempenhoAlunoSwitcher } from "@/components/responsavel/desempenho-aluno-switcher"
 import { montarSeriesEvolucao } from "@/lib/evolucao"
+import { ResumosPublicados } from "@/components/responsavel/resumos-publicados"
+import { ObjetivosCompartilhados } from "@/components/responsavel/objetivos-compartilhados"
 
 export const metadata = { title: "Desempenho — Escolinha Itaquerense" }
 
@@ -54,6 +56,11 @@ export default async function DesempenhoPage() {
               notaComportamento: true,
               frequencia: true,
             },
+          },
+          objetivosCompartilhados: {
+            orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+            take: 20,
+            select: { id: true, titulo: true, descricao: true, prazo: true, status: true, respostaFamilia: true },
           },
         },
       },
@@ -114,6 +121,8 @@ export default async function DesempenhoPage() {
       ) : (
         <>
           <DesempenhoAlunoSwitcher alunos={alunosDesempenho} />
+          <ObjetivosCompartilhados objetivos={responsavel.alunos.flatMap((aluno) => aluno.objetivosCompartilhados.map((objetivo) => ({ ...objetivo, aluno: { nome: aluno.nome } })))} />
+          <ResumosPublicados />
 
           <div className="space-y-6">
             {responsavel.alunos.map((aluno) => {

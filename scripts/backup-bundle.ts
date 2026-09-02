@@ -129,6 +129,24 @@ export function validateBackupBundle(bundleDir: string): BackupManifest {
   return manifest
 }
 
+export function findLatestBackupBundle(backupDir: string): string {
+  const resolvedDir = path.resolve(backupDir)
+  if (!fs.existsSync(resolvedDir) || !fs.statSync(resolvedDir).isDirectory()) {
+    throw new Error(`Diretório de backups não encontrado: ${resolvedDir}`)
+  }
+
+  const bundles = fs.readdirSync(resolvedDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.endsWith(BACKUP_BUNDLE_SUFFIX))
+    .map((entry) => {
+      const absolute = path.join(resolvedDir, entry.name)
+      return { absolute, modifiedAt: fs.statSync(absolute).mtimeMs }
+    })
+    .sort((a, b) => b.modifiedAt - a.modifiedAt)
+
+  if (bundles.length === 0) throw new Error(`Nenhum backup completo encontrado em: ${resolvedDir}`)
+  return bundles[0].absolute
+}
+
 export async function createBackupBundle(options: BackupLocations & {
   backupDir: string
   prefix: string

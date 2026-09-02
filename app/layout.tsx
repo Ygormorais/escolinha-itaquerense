@@ -7,6 +7,7 @@ import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
+import { contarPendencias } from "@/lib/pendencias-data"
 import { ShellGate } from "@/components/layout/shell-gate"
 import { db } from "@/lib/db"
 
@@ -90,13 +91,14 @@ export default async function RootLayout({
   const session = await getSession()
   // A decisão de mostrar o shell do admin é feita no cliente (ShellGate), porque
   // o root layout não re-renderiza em navegação client-side.
-  const [pendingEscalacoes, pendingMatriculas, pendingSolicitacoes] = session.authenticated
+  const [pendingEscalacoes, pendingMatriculas, pendingSolicitacoes, pendingPendencias] = session.authenticated
     ? await Promise.all([
         db.chatSession.count({ where: { bloqueado: true } }),
         db.preMatricula.count({ where: { status: "pendente" } }),
         db.solicitacao.count({ where: { status: "pendente" } }),
+        contarPendencias((session.role ?? "admin") as "admin" | "secretaria" | "tecnico", session.user ?? ""),
       ])
-    : [0, 0, 0]
+    : [0, 0, 0, 0]
 
   return (
       <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
@@ -130,6 +132,7 @@ export default async function RootLayout({
             pendingEscalacoes={pendingEscalacoes}
             pendingMatriculas={pendingMatriculas}
             pendingSolicitacoes={pendingSolicitacoes}
+            pendingPendencias={pendingPendencias}
           >
             {children}
           </ShellGate>

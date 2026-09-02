@@ -35,14 +35,14 @@ test.describe("Autenticação", () => {
     await expect(page).toHaveURL("/login")
   })
 
-  test("já autenticado em /login mostra sessão ativa (não pula o gate)", async ({ page }) => {
-    // Autentica via formulário e volta em /login: deve permanecer no gate,
-    // nunca pular o formulário/sessão em silêncio para o painel.
+  test("sessão ativa vai ao painel e mantém troca explícita de usuário", async ({ page }) => {
     await loginAsAdminViaForm(page)
     await expect(page).toHaveURL("/dashboard")
 
     await page.goto("/login")
-    await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
+    await expect(page).toHaveURL("/dashboard")
+    await page.goto("/login?trocar=1")
+    await expect(page).toHaveURL(/\/login\?trocar=1/, { timeout: 10000 })
     await expect(page.getByText("Sessão ativa")).toBeVisible()
     await expect(page.getByRole("button", { name: "Continuar para o painel" })).toBeVisible()
     await expect(page.getByRole("button", { name: /Sair e trocar de usuário/i })).toBeVisible()

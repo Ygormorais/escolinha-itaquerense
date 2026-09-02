@@ -25,7 +25,7 @@ export async function createCusto(data: {
     const d = parsed.data
     await db.custo.create({
       data: {
-        data: new Date(d.data),
+        data: new Date(`${d.data}T12:00:00`),
         categoria: d.categoria,
         descricao: d.descricao,
         fornecedor: d.fornecedor,
@@ -61,7 +61,7 @@ export async function updateCusto(id: number, data: {
     await db.custo.update({
       where: { id },
       data: {
-        data: new Date(d.data),
+        data: new Date(`${d.data}T12:00:00`),
         categoria: d.categoria,
         descricao: d.descricao,
         fornecedor: d.fornecedor,

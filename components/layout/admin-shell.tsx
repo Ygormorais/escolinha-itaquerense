@@ -14,9 +14,10 @@ interface AdminShellProps {
   pendingEscalacoes?: number
   pendingMatriculas?: number
   pendingSolicitacoes?: number
+  pendingPendencias?: number
 }
 
-export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0 }: AdminShellProps) {
+export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0, pendingPendencias = 0 }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -47,14 +48,16 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
       </header>
 
       <div className="hidden md:flex">
-        <Sidebar role={role} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} />
+        <Sidebar role={role} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} pendingPendencias={pendingPendencias} />
       </div>
 
       <Sheet open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-        <Sidebar role={role} onClose={() => setSidebarOpen(false)} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} />
+        <Sidebar role={role} onClose={() => setSidebarOpen(false)} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} pendingPendencias={pendingPendencias} />
       </Sheet>
 
-      <main id="main-content" className="flex min-w-0 flex-1 flex-col overflow-auto pb-16 md:pb-0">
+      {/* relative mantém elementos absolutos (inclusive sr-only) dentro da área
+          de rolagem, sem aumentar a altura do documento e criar um rodapé vazio. */}
+      <main id="main-content" className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-auto pb-16 md:pb-0">
         {children}
       </main>
 

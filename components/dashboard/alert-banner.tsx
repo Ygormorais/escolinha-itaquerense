@@ -43,7 +43,7 @@ function AlertEntry({ alert, compact = false }: { alert: AlertItem; compact?: bo
   )
 
   return alert.href ? (
-    <Link href={alert.href} className="group block min-w-0 whitespace-normal rounded-[var(--radius-control)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15">
+    <Link href={alert.href} className="group block h-full min-w-0 whitespace-normal rounded-[var(--radius-control)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15">
       {content}
     </Link>
   ) : content

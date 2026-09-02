@@ -26,7 +26,17 @@ export default async function EscalacaoPage({
   const [alunos, escalacao] = await Promise.all([
     db.aluno.findMany({
       where: { status: "Ativo" },
-      select: { id: true, nome: true, turma: true, posicao: true },
+      select: {
+        id: true,
+        nome: true,
+        turma: true,
+        posicao: true,
+        disponibilidadesPartida: {
+          where: { partidaId: pid },
+          select: { resposta: true, motivo: true },
+          take: 1,
+        },
+      },
       orderBy: { nome: "asc" },
     }),
     getEscalacao(pid),
@@ -37,7 +47,14 @@ export default async function EscalacaoPage({
       <EscalacaoBoard
         campeonatoId={Number(id)}
         partida={{ id: partida.id, adversario: partida.adversario, rodada: partida.rodada, data: partida.data }}
-        inscritos={alunos}
+        inscritos={alunos.map((aluno) => ({
+          id: aluno.id,
+          nome: aluno.nome,
+          turma: aluno.turma,
+          posicao: aluno.posicao,
+          disponibilidade: aluno.disponibilidadesPartida[0]?.resposta ?? null,
+          motivoIndisponibilidade: aluno.disponibilidadesPartida[0]?.motivo ?? null,
+        }))}
         escalacaoInicial={escalacao.map((e) => ({
           alunoId: e.alunoId,
           nome: e.aluno.nome,

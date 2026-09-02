@@ -15,8 +15,16 @@ import { toast } from "sonner"
 import { POSICOES_QUADRA, LABEL_POSICAO, type Posicao } from "@/lib/escalacao/posicoes"
 import { corDaTurma } from "@/lib/escalacao/cores"
 import { salvarEscalacao } from "@/app/actions/escalacao-partida"
+import { cn } from "@/lib/utils"
 
-type Aluno = { id: number; nome: string; turma: string; posicao: string | null }
+type Aluno = {
+  id: number
+  nome: string
+  turma: string
+  posicao: string | null
+  disponibilidade: string | null
+  motivoIndisponibilidade: string | null
+}
 type Placed = { alunoId: number; nome: string; turma: string; posicao: Posicao; numero: number | null; ordem: number }
 
 type Props = {
@@ -58,7 +66,11 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
       inscritos
         .filter((a) => !escaladosIds.has(a.id))
         .filter((a) => filtroTurma === "todas" || a.turma === filtroTurma)
-        .filter((a) => a.nome.toLowerCase().includes(busca.toLowerCase())),
+        .filter((a) => a.nome.toLowerCase().includes(busca.toLowerCase()))
+        .sort((a, b) => {
+          const peso = (valor: string | null) => valor === "disponivel" ? 0 : valor == null ? 1 : 2
+          return peso(a.disponibilidade) - peso(b.disponibilidade) || a.nome.localeCompare(b.nome, "pt-BR")
+        }),
     [inscritos, escaladosIds, filtroTurma, busca]
   )
 
@@ -70,6 +82,12 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
     () => jogadores.filter((j) => j.posicao === "BANCO").sort((a, b) => a.ordem - b.ordem),
     [jogadores]
   )
+
+  const resumoDisponibilidade = useMemo(() => ({
+    disponiveis: inscritos.filter((aluno) => aluno.disponibilidade === "disponivel").length,
+    indisponiveis: inscritos.filter((aluno) => aluno.disponibilidade === "indisponivel").length,
+    semResposta: inscritos.filter((aluno) => aluno.disponibilidade == null).length,
+  }), [inscritos])
 
   function colocar(alunoId: number, posicao: Posicao) {
     const aluno = inscritos.find((a) => a.id === alunoId)
@@ -240,6 +258,11 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
         <aside className="min-w-0 space-y-6">
         <section className="rounded-xl border border-border bg-card p-4 shadow-sm" aria-labelledby="jogadores-disponiveis">
           <h2 id="jogadores-disponiveis" className="mb-3 text-sm font-semibold">Jogadores (alunos ativos)</h2>
+          <div className="mb-3 grid grid-cols-3 gap-1.5 text-center text-[10px] font-semibold">
+            <span className="rounded-lg bg-success-50 px-1 py-2 text-success-700">{resumoDisponibilidade.disponiveis} disponíveis</span>
+            <span className="rounded-lg bg-muted px-1 py-2 text-muted-foreground">{resumoDisponibilidade.semResposta} sem resposta</span>
+            <span className="rounded-lg bg-destructive/10 px-1 py-2 text-destructive">{resumoDisponibilidade.indisponiveis} indisponíveis</span>
+          </div>
           <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <div className="space-y-2"><label id="filtro-turma-label" className="text-sm font-medium">Turma</label>
             <Select value={filtroTurma} onValueChange={(v) => setFiltroTurma(v ?? "todas")}>
@@ -278,6 +301,17 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
                     {a.posicao === "GOLEIRO" ? "GOL" : a.posicao === "ALA_ESQ" || a.posicao === "ALA_DIR" ? "ALA" : a.posicao === "PIVO" ? "PIV" : a.posicao}
                   </span>
                 )}
+                <span
+                  className={cn(
+                    "rounded px-1 py-0.5 text-[8px] font-bold uppercase leading-none",
+                    a.disponibilidade === "disponivel" && "bg-success-50 text-success-700",
+                    a.disponibilidade === "indisponivel" && "bg-destructive/10 text-destructive",
+                    a.disponibilidade == null && "bg-muted text-muted-foreground",
+                  )}
+                  title={a.motivoIndisponibilidade ?? undefined}
+                >
+                  {a.disponibilidade === "disponivel" ? "Pode ir" : a.disponibilidade === "indisponivel" ? "Não pode" : "Sem resposta"}
+                </span>
               </button>
             ))}
           </div>

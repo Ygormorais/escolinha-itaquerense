@@ -120,6 +120,7 @@ export async function proxy(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = "/responsavel/login"
         url.search = ""
+        url.searchParams.set("next", pathname)
         return NextResponse.redirect(url)
       }
     }
@@ -127,10 +128,8 @@ export async function proxy(request: NextRequest) {
     return nextResponse()
   }
 
-  // /login é sempre acessível (público). Não redirecionar sessão ativa aqui —
-  // a página de login decide se mostra o formulário ou a sessão existente
-  // (com opção de sair). Pular o formulário silenciosamente era confuso e
-  // escondia o gate de autenticação.
+  // A página resolve sessões ativas no servidor e mantém `?trocar=1` como
+  // entrada explícita para troca de conta.
   if (pathname === "/login") {
     return nextResponse()
   }
