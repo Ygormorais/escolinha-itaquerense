@@ -86,6 +86,14 @@ Após o primeiro deploy, confirmar que `public/uploads/` está vazio ou inexiste
 
 ## 4. Atualizar o app (cada release)
 
+Pelo GitHub, abra **Actions → Deploy de Produção → Run workflow**. O workflow
+usa o environment `production`, executa este mesmo `deploy.sh` por SSH e só
+conclui após o health check HTTPS. Configure antes os secrets `SSH_HOST`,
+`SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS` e `SSH_APP_DIR`, além da
+variable `APP_URL`.
+
+Ou execute diretamente de uma máquina com acesso à VPS:
+
 ```bash
 ssh root@IP_DA_VM "bash escolinha-itaquerense/deploy/deploy.sh"   # Oracle: ubuntu@
 ```
