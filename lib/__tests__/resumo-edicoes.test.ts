@@ -17,7 +17,7 @@ describe("edições do resumo familiar", () => {
   it("ignora apenas espaços nas bordas, como o salvamento", () => {
     expect(resumoTemEdicoesPendentes(resumo, ` ${resumo.texto} `, null)).toBe(false)
     expect(resumoEstaSalvo(resumo, ` ${salvo.texto} `, salvo)).toBe(true)
-    expect(resumoTemEdicoesPendentes(resumo, resumo.texto.replace("\n", "\r\n"), null)).toBe(true)
+    expect(resumoTemEdicoesPendentes(resumo, resumo.texto.replaceAll("\n", "\r\n"), null)).toBe(true)
   })
   it("remove o aviso ao desfazer uma edição", () => {
     expect(resumoTemEdicoesPendentes(resumo, resumo.texto, null)).toBe(false)
