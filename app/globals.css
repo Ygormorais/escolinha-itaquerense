@@ -51,6 +51,48 @@
   --font-nunito: var(--font-playfair), Georgia, serif;
 }
 
+@media print {
+  body[data-print-section="relatorio-gerencial"] * {
+    visibility: hidden;
+  }
+
+  body[data-print-section="relatorio-gerencial"] [data-print-target="relatorio-gerencial"],
+  body[data-print-section="relatorio-gerencial"] [data-print-target="relatorio-gerencial"] * {
+    visibility: visible;
+  }
+
+  body[data-print-section="relatorio-gerencial"] [data-print-target="relatorio-gerencial"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+@media print {
+  body[data-print-section="atividade-comissao"] *,
+  body[data-print-section="comparativo-desenvolvimento"] * {
+    visibility: hidden;
+  }
+
+  body[data-print-section="atividade-comissao"] [data-print-target="atividade-comissao"],
+  body[data-print-section="atividade-comissao"] [data-print-target="atividade-comissao"] *,
+  body[data-print-section="comparativo-desenvolvimento"] [data-print-target="comparativo-desenvolvimento"],
+  body[data-print-section="comparativo-desenvolvimento"] [data-print-target="comparativo-desenvolvimento"] * {
+    visibility: visible;
+  }
+
+  body[data-print-section="atividade-comissao"] [data-print-target="atividade-comissao"],
+  body[data-print-section="comparativo-desenvolvimento"] [data-print-target="comparativo-desenvolvimento"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

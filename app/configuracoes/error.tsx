@@ -32,10 +32,10 @@ export default function ConfiguracoesError({
           Tentar novamente
         </button>
         <Link
-          href="/configuracoes"
+          href="/dashboard"
           className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
         >
-          Ver configurações
+          Voltar ao dashboard
         </Link>
       </div>
     </div>

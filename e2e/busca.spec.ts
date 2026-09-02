@@ -15,6 +15,22 @@ test.describe("Busca global", () => {
     expect(temBusca).toBe(true)
   })
 
+  test("busca respeita a largura da sidebar", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto("/dashboard")
+    const button = page.getByRole("button", { name: "Buscar alunos, responsáveis ou campeonatos" })
+    const shortcut = button.locator("kbd")
+    await expect(button).toBeVisible()
+    await expect(shortcut).toBeVisible()
+
+    const [buttonBox, shortcutBox] = await Promise.all([button.boundingBox(), shortcut.boundingBox()])
+    expect(buttonBox).not.toBeNull()
+    expect(shortcutBox).not.toBeNull()
+    expect((shortcutBox?.x ?? 0) + (shortcutBox?.width ?? 0)).toBeLessThanOrEqual(
+      (buttonBox?.x ?? 0) + (buttonBox?.width ?? 0),
+    )
+  })
+
   test("página /busca carrega sem erro", async ({ page }) => {
     await page.goto("/busca")
     await expect(page).not.toHaveURL("/login")

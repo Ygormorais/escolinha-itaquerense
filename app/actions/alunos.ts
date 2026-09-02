@@ -182,13 +182,32 @@ export async function salvarFichaMedica(
         contatoEmergenciaNome: data.contatoEmergenciaNome?.trim() || null,
         contatoEmergenciaTel: data.contatoEmergenciaTel?.trim() || null,
         contatoEmergenciaParentesco: data.contatoEmergenciaParentesco?.trim() || null,
+        fichaMedicaVersao: { increment: 1 },
       },
     })
     revalidatePath(`/alunos/${id}`)
+    revalidatePath("/tecnico/saude")
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao salvar ficha médica" }
   }
+}
+
+export async function confirmarLeituraFichaMedica(alunoId: number, versao: number): Promise<ActionResult> {
+  const auth = await requireAuth(["admin", "tecnico"])
+  if (!Number.isInteger(alunoId) || !Number.isInteger(versao) || versao < 1) return { error: "Ficha inválida" }
+  const [usuario, aluno] = await Promise.all([
+    db.usuario.findUnique({ where: { username: auth.user }, select: { id: true } }),
+    db.aluno.findFirst({ where: { id: alunoId, status: "Ativo", fichaMedicaVersao: versao }, select: { id: true } }),
+  ])
+  if (!usuario || !aluno) return { error: "A ficha foi atualizada. Recarregue antes de confirmar." }
+  await db.fichaMedicaLeitura.upsert({
+    where: { alunoId_usuarioId_versao: { alunoId, usuarioId: usuario.id, versao } },
+    update: { lidaEm: new Date() },
+    create: { alunoId, usuarioId: usuario.id, versao },
+  })
+  revalidatePath("/tecnico/saude")
+  return { success: true }
 }
 
 export async function reativarAluno(id: number): Promise<ActionResult> {

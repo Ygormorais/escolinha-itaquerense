@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import { format } from "date-fns"
-import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download, RefreshCw, Users } from "lucide-react"
+import { SaveIcon, Printer, QrCode, ClipboardList, Loader2, Download, RefreshCw, Users, WifiOff } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,10 @@ type AlunoFrequencia = { id: number; nome: string; presenca: string | null }
 type PresencaValue = "Presente" | "Ausente" | "Justificado"
 
 const OPCOES: PresencaValue[] = ["Presente", "Ausente", "Justificado"]
+const FILA_FREQUENCIA_KEY = "escolinha:frequencia:manual-offline:v1"
+type ItemFila = { chave: string; registros: { alunoId: number; data: string; presenca: string }[]; criadoEm: string }
+const lerFila = (): ItemFila[] => { try { const valor = JSON.parse(localStorage.getItem(FILA_FREQUENCIA_KEY) ?? "[]"); return Array.isArray(valor) ? valor : [] } catch { return [] } }
+const gravarFila = (fila: ItemFila[]) => localStorage.setItem(FILA_FREQUENCIA_KEY, JSON.stringify(fila))
 
 const FREQUENCIA_PRINT_STYLES = `
   body { font-family: sans-serif; padding: 24px; }
@@ -43,6 +47,21 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
   const [saving, startSaving] = useTransition()
   const [loading, startLoading] = useTransition()
   const [presencas, setPresencas] = useState<Record<number, PresencaValue>>({})
+  const [pendentesOffline, setPendentesOffline] = useState(0)
+  const [sincronizando, setSincronizando] = useState(false)
+
+  async function sincronizarFila() {
+    if (!navigator.onLine || sincronizando) return
+    const fila = lerFila(); if (!fila.length) return
+    setSincronizando(true)
+    const restantes: ItemFila[] = []
+    let enviados = 0
+    for (const item of fila) {
+      try { const resposta = await salvarFrequencia(item.registros); if ("error" in resposta) restantes.push(item); else enviados++ } catch { restantes.push(item) }
+    }
+    gravarFila(restantes); setPendentesOffline(restantes.length); setSincronizando(false)
+    if (enviados) toast.success(`${enviados} lançamento(s) offline sincronizado(s).`)
+  }
 
   function handleLoad() {
     startLoading(async () => {
@@ -63,6 +82,17 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turma, data])
 
+  useEffect(() => {
+    const online = () => void sincronizarFila()
+    window.addEventListener("online", online)
+    const inicializacao = window.setTimeout(() => {
+      setPendentesOffline(lerFila().length)
+      if (navigator.onLine) void sincronizarFila()
+    }, 0)
+    return () => { window.clearTimeout(inicializacao); window.removeEventListener("online", online) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function togglePresenca(id: number, value: PresencaValue) {
     setPresencas((prev) => ({ ...prev, [id]: value }))
   }
@@ -74,12 +104,10 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
       presenca: presencas[a.id] ?? "Ausente",
     }))
     startSaving(async () => {
-      const result = await salvarFrequencia(registros)
-      if ("error" in result) {
-        toast.error(result.error)
-      } else {
-        toast.success("Frequência salva")
+      if (!navigator.onLine) {
+        const chave = `${turma}:${data}`; const fila = lerFila().filter((item) => item.chave !== chave); const nova = [...fila, { chave, registros, criadoEm: new Date().toISOString() }]; gravarFila(nova); setPendentesOffline(nova.length); toast.success("Frequência salva no aparelho para sincronização."); return
       }
+      try { const result = await salvarFrequencia(registros); if ("error" in result) toast.error(result.error); else toast.success("Frequência salva") } catch { const chave = `${turma}:${data}`; const fila = lerFila().filter((item) => item.chave !== chave); const nova = [...fila, { chave, registros, criadoEm: new Date().toISOString() }]; gravarFila(nova); setPendentesOffline(nova.length); toast.success("Conexão indisponível. Frequência guardada no aparelho.") }
     })
   }
 
@@ -171,6 +199,8 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
           <Button variant="outline" className="h-12 gap-2"><QrCode className="size-4" /> Scanner QR</Button>
         </Link>
       </div>
+
+      {pendentesOffline > 0 && <div className="flex flex-col gap-3 rounded-xl border border-warning-200 bg-warning-50 p-4 sm:flex-row sm:items-center sm:justify-between" role="status"><div className="flex items-start gap-2"><WifiOff className="mt-0.5 size-5 text-warning-700" aria-hidden /><div><p className="font-semibold text-warning-900">{pendentesOffline} lançamento(s) aguardando sincronização</p><p className="text-xs text-warning-800">Os dados permanecem neste aparelho até a confirmação do servidor.</p></div></div><Button size="sm" variant="outline" disabled={sincronizando} onClick={() => void sincronizarFila()}>{sincronizando ? "Sincronizando..." : "Sincronizar agora"}</Button></div>}
 
       {loading && (
         <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">

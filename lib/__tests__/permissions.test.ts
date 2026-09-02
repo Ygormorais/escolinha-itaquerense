@@ -72,6 +72,8 @@ describe("canAccessStaffPath", () => {
     expect(canAccessStaffPath("/custos/recorrentes", "secretaria")).toBe(false)
     expect(canAccessStaffPath("/tecnico/saude", "secretaria")).toBe(false)
     expect(canAccessStaffPath("/pagamentos", "secretaria")).toBe(true)
+    expect(canAccessStaffPath("/desenvolvimento", "secretaria")).toBe(false)
+    expect(canAccessStaffPath("/desenvolvimento", "tecnico")).toBe(true)
   })
 
   it("não confunde prefixos de rotas semelhantes", () => {

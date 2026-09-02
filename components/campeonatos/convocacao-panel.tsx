@@ -1,6 +1,7 @@
 "use client"
 
 import { useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Megaphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -20,12 +21,21 @@ export function ConvocacaoPanel({
   escalados: EscaladoStatus[]
 }) {
   const [pending, start] = useTransition()
+  const router = useRouter()
 
   function convocar() {
     start(async () => {
-      const r = await convocarEscalacao(partidaId)
-      if ("error" in r) toast.error(r.error)
-      else toast.success("Convocação enviada aos responsáveis")
+      try {
+        const r = await convocarEscalacao(partidaId)
+        if ("error" in r) {
+          toast.error(r.error)
+          return
+        }
+        toast.success("Convocação enviada aos responsáveis")
+        router.refresh()
+      } catch {
+        toast.error("Não foi possível enviar a convocação. Tente novamente.")
+      }
     })
   }
 
@@ -69,10 +79,12 @@ export function ConvocacaoPanel({
             ))}
           </ul>
         )}
-        <p className="text-xs text-muted-foreground">
-          Quem permanece na escalação mantém a resposta; quem sai perde a convocação.
+        <p id="convocacao-orientacao" className="text-xs text-muted-foreground">
+          {escalados.length === 0
+            ? "Adicione os jogadores e salve a escalação antes de enviar a convocação."
+            : "Quem permanece na escalação mantém a resposta; quem sai perde a convocação."}
         </p>
-        <Button onClick={convocar} disabled={pending || escalados.length === 0} className="w-full">
+        <Button onClick={convocar} disabled={pending} className="w-full" aria-describedby="convocacao-orientacao">
           {pending ? "Enviando..." : jaConvocada ? "Re-convocar pendentes" : "Convocar escalação"}
         </Button>
       </CardContent>

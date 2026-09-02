@@ -23,7 +23,9 @@ export default defineConfig({
         "app/actions/**/*.ts",
         "app/api/**/*.ts",
         "lib/**/*.ts",
-        "scripts/**/*.ts",
+        // Os demais arquivos de scripts são entrypoints CLI; o módulo reutilizável
+        // de backup permanece no contrato de cobertura.
+        "scripts/backup-bundle.ts",
       ],
       exclude: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
       reporter: ["text-summary", "json-summary"],

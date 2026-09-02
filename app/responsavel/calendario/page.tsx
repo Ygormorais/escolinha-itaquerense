@@ -16,6 +16,7 @@ import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { eventoAplicaATurma, montarAgenda, type ItemAgenda } from "@/lib/agenda"
 import { ConvocacaoCard } from "@/components/responsavel/convocacao-card"
+import { DisponibilidadeCard } from "@/components/responsavel/disponibilidade-card"
 
 export const metadata = { title: "Calendário — Portal do Responsável" }
 
@@ -87,7 +88,16 @@ export default async function CalendarioPage({
   const fim = new Date(ano, mesNum, 0, 23, 59, 59)
 
   const [eventos, jogos] = await Promise.all([
-    db.evento.findMany({ where: { data: { gte: inicio, lte: fim } }, orderBy: { data: "asc" } }),
+    db.evento.findMany({
+      where: { data: { gte: inicio, lte: fim } },
+      include: {
+        disponibilidades: {
+          where: { alunoId: alunoSel.id, responsavelId: session.responsavelId },
+          select: { resposta: true, motivo: true },
+        },
+      },
+      orderBy: { data: "asc" },
+    }),
     db.escalacaoJogador.findMany({
       where: { alunoId: alunoSel.id, convocadoEm: { not: null }, partida: { data: { gte: inicio, lte: fim } } },
       select: { id: true, confirmacao: true, partida: { select: { data: true, adversario: true, local: true } } },
@@ -96,7 +106,16 @@ export default async function CalendarioPage({
 
   const eventosTurma = eventos
     .filter((e) => e.turmas != null && eventoAplicaATurma(e.turmas, alunoSel.turma))
-    .map((e) => ({ tipo: e.tipo, data: e.data, horaInicio: e.horaInicio, titulo: e.titulo, local: e.local, descricao: e.descricao }))
+    .map((e) => ({
+      id: e.id,
+      tipo: e.tipo,
+      data: e.data,
+      horaInicio: e.horaInicio,
+      titulo: e.titulo,
+      local: e.local,
+      descricao: e.descricao,
+      disponibilidade: e.disponibilidades[0] ?? null,
+    }))
   const jogosInput = jogos.map((j) => ({ escalacaoId: j.id, confirmacao: j.confirmacao, partida: j.partida }))
 
   const dias = montarAgenda(eventosTurma, jogosInput)
@@ -162,14 +181,27 @@ export default async function CalendarioPage({
                     }}
                   />
                 ) : (
-                  <div key={`e-${i}`} className="flex items-start gap-3 rounded-xl border border-black/5 bg-card px-4 py-3">
+                  <div key={`e-${item.evento?.id ?? i}`} className="flex flex-col gap-3 rounded-xl border border-black/5 bg-card px-4 py-3 sm:flex-row sm:items-start">
                     <AgendaTipoIcon tipo={item.tipo} />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-[var(--color-ink-900)]">
                         {item.hora ? `${item.hora} · ` : ""}{item.titulo}
                       </p>
                       {item.local && <p className="text-sm text-muted-foreground">{item.local}</p>}
                       {item.descricao && <p className="mt-1 text-sm text-muted-foreground">{item.descricao}</p>}
+                      {item.evento && item.data >= new Date() && item.tipo === "treino" && (
+                        <div className="mt-3">
+                          <DisponibilidadeCard
+                            tipo="evento"
+                            referenciaId={item.evento.id}
+                            alunoId={alunoSel.id}
+                            alunoNome={alunoSel.nome.split(" ")[0]}
+                            respostaInicial={item.evento.resposta}
+                            motivoInicial={item.evento.motivo}
+                            compacto
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )

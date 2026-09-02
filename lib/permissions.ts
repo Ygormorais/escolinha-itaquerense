@@ -31,6 +31,7 @@ const RESTRICTED_PREFIXES: Record<Exclude<StaffRole, "admin">, readonly string[]
     "/produtos",
     "/campeonatos",
     "/avaliacoes",
+    "/desenvolvimento",
     "/tecnico",
   ],
 }
@@ -50,6 +51,15 @@ function matchesPrefix(pathname: string, prefix: string): boolean {
 /** Matriz única usada pelo proxy e pelas navegações desktop/mobile. */
 export function canAccessStaffPath(pathname: string, role: StaffRole): boolean {
   if (role === "admin") return true
+  if (role === "secretaria" && [
+    "/configuracoes/automacoes",
+    "/configuracoes/documentos",
+    "/configuracoes/escalacoes",
+    "/configuracoes/matriculas",
+    "/configuracoes/responsaveis",
+    "/configuracoes/solicitacoes",
+  ].some((prefix) => matchesPrefix(pathname, prefix))) return true
+  if (role === "tecnico" && matchesPrefix(pathname, "/configuracoes/escalacoes")) return true
   // O relatório de frequência é a única visão de relatórios necessária ao técnico.
   if (role === "tecnico" && matchesPrefix(pathname, "/relatorio/frequencia")) return true
   return !RESTRICTED_PREFIXES[role].some((prefix) => matchesPrefix(pathname, prefix))

@@ -1,5 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { createSqliteRateLimitStore } from "../rate-limit-store-sqlite"
+
+// Exercita SQLite real, mas nunca limpa os limites nem disputa escritas do
+// localhost. Cada store recebe um banco em memória exclusivo deste teste.
+vi.mock("../db-path", () => ({ resolveDbPath: () => ":memory:" }))
 
 describe("createSqliteRateLimitStore", () => {
   let store: ReturnType<typeof createSqliteRateLimitStore>

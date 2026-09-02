@@ -26,6 +26,8 @@ const linksSecundarios = [
   { href: "/responsavel/lojinha", label: "Lojinha" },
   { href: "/responsavel/galeria", label: "Mural" },
   { href: "/responsavel/solicitacoes", label: "Solicitações" },
+  { href: "/responsavel/documentos", label: "Documentos" },
+  { href: "/responsavel/conversas", label: "Conversas" },
   { href: "/responsavel/notificacoes", label: "Notificações" },
   { href: "/responsavel/renovacao", label: "Renovação" },
   { href: "/responsavel/historia", label: "História" },

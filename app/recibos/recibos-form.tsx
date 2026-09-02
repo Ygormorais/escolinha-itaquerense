@@ -8,12 +8,13 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { Printer, Trash2, Loader2 } from "lucide-react"
+import { Printer, Ban, Loader2, ShieldCheck, ExternalLink } from "lucide-react"
+import { QRCodeSVG } from "qrcode.react"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { salvarRecibo, deleteRecibo } from "@/app/actions/recibos"
+import { salvarRecibo, cancelarRecibo } from "@/app/actions/recibos"
 import type { ClubConfig } from "@/lib/config"
 import { formatMoney } from "@/lib/utils"
 
@@ -27,6 +28,8 @@ type Recibo = {
   formaPagamento: string
   dataPagamento: Date
   createdAt: Date
+  codigoVerificacao: string | null
+  canceladoAt: Date | null
 }
 
 interface ReciboData {
@@ -37,6 +40,7 @@ interface ReciboData {
   valor: string
   forma: string
   dataPagamento: string
+  codigoVerificacao: string
 }
 
 export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; config: ClubConfig }) {
@@ -51,11 +55,13 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
     valor: searchParams.get("valor") ?? "",
     forma: searchParams.get("forma") ?? "PIX",
     dataPagamento: searchParams.get("data") ?? today,
+    codigoVerificacao: "",
   })
 
   const [salvando, startSalvando] = useTransition()
   const [searchRecibo, setSearchRecibo] = useState("")
   const router = useRouter()
+  const origin = typeof window === "undefined" ? "" : window.location.origin
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -73,9 +79,10 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
           dataPagamento: form.dataPagamento,
         })
         if ("error" in result) { toast.error(result.error); return }
-        const { numero } = result
-        setForm((prev) => ({ ...prev, numero }))
-        window.print()
+        const { numero, codigoVerificacao } = result
+        setForm((prev) => ({ ...prev, numero, codigoVerificacao }))
+        toast.success("Recibo emitido e registrado")
+        setTimeout(() => window.print(), 100)
       } catch {
         toast.error("Erro ao salvar recibo")
       }
@@ -102,7 +109,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
       <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 no-print dark:bg-transparent">
         <PageHeader
           title="Recibos"
-          description="Geração e impressão de recibos de pagamento"
+          description="Emissão de recibos numerados, verificáveis e auditáveis"
           action={
             <Button
               onClick={handleImprimir}
@@ -123,7 +130,8 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
             <div className="grid grid-cols-2 gap-x-4 gap-y-5">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="rec-numero">Número</Label>
-                <Input id="rec-numero" name="numero" value={form.numero} onChange={handleChange} />
+                <Input id="rec-numero" name="numero" value={form.numero} readOnly aria-describedby="numero-ajuda" />
+                <span id="numero-ajuda" className="text-xs text-muted-foreground">Gerado automaticamente na emissão.</span>
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="rec-referencia">Referência</Label>
@@ -191,6 +199,9 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
 
         {/* Body */}
         <div className="bg-white px-8 py-6">
+          <p className="mb-5 text-sm leading-6 text-foreground">
+            Declaramos ter recebido de <strong>{form.responsavel || "—"}</strong> a quantia de <strong>{valorFormatado}</strong>, referente a <strong>{form.referencia || "—"}</strong> do aluno <strong>{form.aluno || "—"}</strong>, dando quitação exclusivamente ao pagamento descrito neste recibo.
+          </p>
           <div className="divide-y divide-border">
             <ReceiptRow label="Aluno" value={form.aluno || "—"} />
             <ReceiptRow label="Responsável" value={form.responsavel || "—"} />
@@ -200,7 +211,25 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
             <ReceiptRow label="Data do Pagamento" value={dataFormatada || "—"} />
           </div>
 
-          {/* Signature lines */}
+          <div className="mt-8 flex items-end justify-between gap-6 rounded-xl border border-brand-200 bg-brand-50 p-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 font-semibold text-brand-900">
+                <ShieldCheck className="size-4" /> Recibo verificável
+              </div>
+              {form.codigoVerificacao ? (
+                <>
+                  <p className="mt-1 text-xs text-muted-foreground">Confira a autenticidade e o status pelo QR code.</p>
+                  <p className="mt-2 break-all font-mono text-xs font-bold">Código: {form.codigoVerificacao}</p>
+                </>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">O código de validação será criado ao emitir.</p>
+              )}
+            </div>
+            {form.codigoVerificacao && origin ? (
+              <QRCodeSVG value={`${origin}/validar-recibo/${form.codigoVerificacao}`} size={82} level="M" aria-label="QR code de validação do recibo" />
+            ) : null}
+          </div>
+
           <div className="mt-10 grid grid-cols-2 gap-8">
             <div className="flex flex-col items-center gap-1">
               <div className="w-full border-t border-foreground/40" />
@@ -253,8 +282,8 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                     return !q || r.alunoNome.toLowerCase().includes(q) || r.mesReferencia.toLowerCase().includes(q)
                   })
                   .map((r, i) => (
-                  <tr key={r.id} className={i % 2 === 0 ? "bg-white" : "bg-brand-50"}>
-                    <td className="px-4 py-3 font-bold text-brand-800">#{r.numero}</td>
+                  <tr key={r.id} className={`${i % 2 === 0 ? "bg-white" : "bg-brand-50"} ${r.canceladoAt ? "opacity-60" : ""}`}>
+                    <td className="px-4 py-3 font-bold text-brand-800">#{r.numero}{r.canceladoAt ? <span className="ml-2 rounded bg-danger-100 px-2 py-0.5 text-[10px] text-danger-700">CANCELADO</span> : null}</td>
                     <td className="px-4 py-3 font-medium">{r.alunoNome}</td>
                     <td className="px-4 py-3">{r.mesReferencia}</td>
                     <td className="px-4 py-3 text-right">{formatMoney(r.valor)}</td>
@@ -272,6 +301,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                               valor: String(r.valor),
                               forma: r.formaPagamento,
                               dataPagamento: new Date(r.dataPagamento).toISOString().slice(0, 10),
+                              codigoVerificacao: r.codigoVerificacao ?? "",
                             })
                             window.scrollTo({ top: 0, behavior: "smooth" })
                           }}
@@ -279,11 +309,12 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                         >
                           Re-imprimir
                         </button>
-                        <ConfirmDialog title="Excluir recibo?" description={`Excluir recibo #${r.numero}?`} confirmLabel="Excluir" onConfirm={async () => { await deleteRecibo(r.id); router.refresh() }}>
-                          <button className="text-danger-600 hover:text-danger-600" aria-label="Excluir recibo">
-                            <Trash2 className="size-3.5" />
+                        {r.codigoVerificacao ? <a href={`/validar-recibo/${r.codigoVerificacao}`} target="_blank" rel="noreferrer" className="text-brand-800" aria-label="Validar recibo"><ExternalLink className="size-3.5" /></a> : null}
+                        {!r.canceladoAt ? <ConfirmDialog title="Cancelar recibo?" description={`O recibo #${r.numero} continuará no histórico e aparecerá como cancelado.`} confirmLabel="Cancelar recibo" onConfirm={async () => { await cancelarRecibo(r.id); router.refresh() }}>
+                          <button className="text-danger-600 hover:text-danger-700" aria-label="Cancelar recibo">
+                            <Ban className="size-3.5" />
                           </button>
-                        </ConfirmDialog>
+                        </ConfirmDialog> : null}
                       </div>
                     </td>
                   </tr>

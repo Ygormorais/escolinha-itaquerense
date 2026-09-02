@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { TurmasClient } from "./turmas-client"
 import { TURMAS } from "@/lib/constants"
 import { getConfig } from "@/lib/config"
+import { CapacidadeTurmas } from "./capacidade-client"
 
 export const metadata = { title: "Turmas & Horários — Escolinha Itaquerense" }
 
@@ -26,5 +27,5 @@ export default async function TurmasPage() {
     orderBy: { nome: "asc" },
   })
 
-  return <TurmasClient alunos={alunos} turmas={TURMAS} capacidade={config.capacidadeTurma} />
+  return <><TurmasClient alunos={alunos} turmas={TURMAS} capacidade={config.capacidadeTurma} /><CapacidadeTurmas /></>
 }

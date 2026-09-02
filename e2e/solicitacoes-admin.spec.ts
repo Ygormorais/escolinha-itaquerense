@@ -40,9 +40,10 @@ test.describe("Solicitações — painel admin", () => {
   })
 
   test("link de solicitações existe na sidebar ou nav de configurações", async ({ page }) => {
-    await page.goto("/configuracoes")
-    const link = page.locator('a[href*="solicitacoes"]')
-    await expect(link.first()).toBeVisible()
+    await page.goto("/configuracoes/solicitacoes")
+    const link = page.locator('a[href="/configuracoes/solicitacoes"]')
+    await expect(link).toBeVisible()
+    await expect(link).toHaveAttribute("aria-current", "page")
   })
 })
 

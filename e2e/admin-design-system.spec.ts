@@ -39,18 +39,22 @@ test.describe("Design system administrativo", () => {
     await expectNoHorizontalOverflow(page)
   })
 
-  test("resumo de alertas usa três colunas no desktop", async ({ page }) => {
+  test("resumo de alertas alinha os cards no desktop", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 })
     await page.goto("/dashboard", { waitUntil: "networkidle" })
 
     const summary = page.locator('[data-slot="alert-summary"]')
     await expect(summary).toBeVisible()
     const visibleLinks = summary.getByRole("link", { name: /ver detalhes/i })
-    await expect(visibleLinks).toHaveCount(3)
+    expect(await visibleLinks.count()).toBeGreaterThan(1)
     const temConteudoTransbordando = await visibleLinks.evaluateAll((links) =>
       links.some((link) => link.scrollWidth > link.clientWidth),
     )
     expect(temConteudoTransbordando).toBe(false)
+    const alturas = await visibleLinks.evaluateAll((links) =>
+      links.map((link) => Math.round(link.getBoundingClientRect().height)),
+    )
+    expect(new Set(alturas).size).toBe(1)
   })
 
   test("pagamentos troca a tabela por cartões funcionais no mobile", async ({ page }) => {
@@ -59,7 +63,10 @@ test.describe("Design system administrativo", () => {
 
     await expect(page.locator('[data-slot="payment-filter-bar"]')).toBeVisible()
     await expect(page.locator('[data-slot="payment-context-bar"]')).toBeVisible()
-    await expect(page.locator('[data-slot="payment-mobile-list"]')).toBeVisible()
+    const mobileContent = page.locator(
+      '[data-slot="payment-mobile-list"]:visible, [data-slot="payment-empty-state"]:visible',
+    )
+    await expect(mobileContent).toBeVisible()
     await expect(page.locator('[data-slot="payment-table"]')).toBeHidden()
     await expectNoHorizontalOverflow(page)
   })

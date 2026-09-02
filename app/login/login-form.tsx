@@ -7,6 +7,7 @@ import { AuthCard } from "@/components/auth/auth-shell"
 import { PasswordField } from "@/components/auth/password-field"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { resolveStaffDestination } from "@/lib/auth-destination"
 import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 export function LoginForm({ next }: { next?: string }) {
@@ -26,13 +27,12 @@ export function LoginForm({ next }: { next?: string }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),
         })
+        const data = await res.json()
         if (!res.ok) {
-          const data = await res.json()
           setError(data.error ?? INVALID_CREDENTIALS_MESSAGE)
           return
         }
-        // só caminhos internos; rejeita protocol-relative ("//evil.com") p/ evitar open redirect
-        const destino = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard"
+        const destino = resolveStaffDestination(next, data.role)
         router.replace(destino)
         router.refresh()
       } catch {

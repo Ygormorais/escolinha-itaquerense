@@ -34,6 +34,9 @@ import { getUniformes } from "@/app/actions/uniformes"
 import { AlunoPrintButton } from "./print-button"
 import { FichaMedicaCard } from "./ficha-medica-card"
 import { AvaliacoesCard } from "./avaliacoes-card"
+import { PassaporteDesenvolvimento } from "./passaporte-desenvolvimento"
+import { carregarPainelDesenvolvimento } from "@/lib/desenvolvimento-data"
+import { getSession } from "@/lib/session"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
@@ -71,7 +74,9 @@ export default async function AlunoDetailPage({
 
   const config = getConfig()
 
-  const [aluno, totalPagamentos, todosPagamentos, uniformes, avaliacoes] = await Promise.all([
+  const session = await getSession()
+  const podeVerDesenvolvimento = session.role === "admin" || session.role === "tecnico"
+  const [aluno, totalPagamentos, todosPagamentos, uniformes, avaliacoes, desenvolvimento] = await Promise.all([
     db.aluno.findUnique({
       where: { id: numId },
       include: {
@@ -95,6 +100,7 @@ export default async function AlunoDetailPage({
       orderBy: { periodo: "desc" },
       select: { id: true, periodo: true, notaTecnica: true, notaFisica: true, notaComportamento: true, frequencia: true, observacoes: true },
     }),
+    podeVerDesenvolvimento ? carregarPainelDesenvolvimento({ alunoId: numId }) : Promise.resolve(null),
   ])
 
   if (!aluno) notFound()
@@ -235,6 +241,8 @@ export default async function AlunoDetailPage({
       <FrequenciaChart alunoId={aluno.id} />
 
       <AvaliacoesCard alunoId={aluno.id} avaliacoes={avaliacoes} />
+
+      {desenvolvimento && <PassaporteDesenvolvimento alunoId={aluno.id} insights={desenvolvimento.insights} historico={desenvolvimento.historico} />}
 
       <div className="grid gap-3 md:hidden" data-slot="student-payment-mobile-list">
         {aluno.pagamentos.map((p) => {

@@ -1,7 +1,9 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { LoginForm } from "./login-form"
 import { SessionGate } from "./session-gate"
 import { AuthShell } from "@/components/auth/auth-shell"
+import { isSafeInternalPath, resolveStaffDestination } from "@/lib/auth-destination"
 import { getSession } from "@/lib/session"
 
 export const dynamic = "force-dynamic"
@@ -14,14 +16,17 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>
+  searchParams: Promise<{ next?: string; trocar?: string }>
 }) {
   const session = await getSession()
-  const { next } = await searchParams
+  const { next, trocar } = await searchParams
 
-  // Destino pós-login seguro (só path interno)
-  const nextSafe =
-    next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard"
+  const nextSafe = isSafeInternalPath(next) ? next : undefined
+  const destination = resolveStaffDestination(nextSafe, session.role)
+
+  if (session.authenticated && trocar !== "1") {
+    redirect(destination)
+  }
 
   return (
     <AuthShell
@@ -42,7 +47,7 @@ export default async function LoginPage({
       }
     >
       {session.authenticated ? (
-        <SessionGate user={session.user} nextPath={nextSafe} />
+        <SessionGate user={session.user} nextPath={destination} />
       ) : (
         <LoginForm next={nextSafe} />
       )}

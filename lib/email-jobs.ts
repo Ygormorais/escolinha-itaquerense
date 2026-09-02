@@ -1,5 +1,5 @@
 import { db } from "@/lib/db"
-import { enviarEmail } from "@/lib/mailer"
+import { enviarEmail, getErroConfiguracaoEmail } from "@/lib/mailer"
 import { getConfig } from "@/lib/config"
 import { differenceInDays } from "date-fns"
 import { logger } from "@/lib/logger"
@@ -9,6 +9,8 @@ export type ResultadoEmail = { enviados: number; erros: number; semEmail: number
 export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail | { error: string }> {
   const t0 = performance.now()
   try {
+    const erroConfiguracao = getErroConfiguracaoEmail()
+    if (erroConfiguracao) return { error: erroConfiguracao }
     const config = getConfig()
 
     const inadimplentes = await db.pagamento.findMany({
@@ -72,8 +74,9 @@ export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail 
       try {
         await enviarEmail(email, `[${config.nome}] Mensalidade em atraso — ${p.mesReferencia}`, html)
         enviados++
-      } catch {
+      } catch (e) {
         erros++
+        logger.error("email/inadimplencia: falha no envio", { pagamentoId: p.id, error: String(e) })
       }
     }
 
@@ -88,6 +91,8 @@ export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail 
 export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { error: string }> {
   const t0 = performance.now()
   try {
+    const erroConfiguracao = getErroConfiguracaoEmail()
+    if (erroConfiguracao) return { error: erroConfiguracao }
     const config = getConfig()
     const amanha = new Date()
     amanha.setDate(amanha.getDate() + 3)
@@ -134,8 +139,9 @@ export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { er
       try {
         await enviarEmail(email, `[${config.nome}] Lembrete de mensalidade — ${p.mesReferencia}`, html)
         enviados++
-      } catch {
+      } catch (e) {
         erros++
+        logger.error("email/vencimento: falha no envio", { pagamentoId: p.id, error: String(e) })
       }
     }
 

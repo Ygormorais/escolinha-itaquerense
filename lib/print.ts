@@ -17,9 +17,12 @@ export function printHTML(html: string, title = "Escolinha Itaquerense") {
       .info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
       .info dt { font-size: 10px; color: #7A6F6C; text-transform: uppercase; letter-spacing: 0.5px; }
       .info dd { font-size: 13px; font-weight: 600; color: #171312; }
-      .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 8px; font-size: 10px; color: #CFC4C1; border-top: 1px solid #E8DEDA; }
+      thead { display: table-header-group; }
+      tr { break-inside: avoid; page-break-inside: avoid; }
+      .footer { position: static; margin-top: 24px; text-align: center; padding: 8px 0 0; font-size: 10px; color: #9B8F8B; border-top: 1px solid #E8DEDA; }
       @media print {
-        body { padding: 12px; }
+        @page { margin: 12mm; }
+        body { padding: 0; }
         .no-print { display: none; }
       }
     </style>

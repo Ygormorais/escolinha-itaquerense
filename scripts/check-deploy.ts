@@ -37,6 +37,7 @@ const REQUIRED: { key: string; hint?: string }[] = [
   { key: "DATABASE_URL",    hint: "ex: file:/var/lib/escolinha/prod.db" },
   { key: "SESSION_SECRET",  hint: "min 32 chars — node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"" },
   { key: "CRON_SECRET",     hint: "token Bearer para /api/cron/lembretes" },
+  { key: "FPFS_SYNC_TOKEN", hint: "token Bearer para /api/sync/fpfs" },
   { key: "ADMIN_USERNAME",  hint: "nome de login do admin padrão" },
   { key: "ADMIN_PASSWORD",  hint: "senha do admin padrão" },
   { key: "NEXT_PUBLIC_APP_URL", hint: "URL pública do app — ex: https://escolinha.com.br" },
@@ -85,6 +86,12 @@ const vapidPublic = process.env.VAPID_PUBLIC_KEY
 const vapidPublicClient = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
 if (vapidPublic && vapidPublicClient && vapidPublic !== vapidPublicClient) {
   warn("VAPID_PUBLIC_KEY e NEXT_PUBLIC_VAPID_PUBLIC_KEY devem ter o mesmo valor")
+}
+
+if (process.env.DESENVOLVIMENTO_AI_ENABLED === "true") {
+  warn("DESENVOLVIMENTO_AI_ENABLED=true — o copiloto externo pode consumir uma API paga")
+} else {
+  ok("Copiloto de desenvolvimento em modo local, sem consumo de API")
 }
 
 // ── SESSION_SECRET tem entropia suficiente? ────────────────────────────────────

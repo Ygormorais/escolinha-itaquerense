@@ -78,9 +78,16 @@ instância única atual. Múltiplas réplicas exigiriam um backend compartilhado
 # Backup manual seguro (na VPS)
 npm run db:backup
 
+# Validar integridade do backup completo mais recente, sem restaurar
+npm run db:backup:verify
+
 # Atualizar para nova versão
 bash deploy/deploy.sh
 ```
+
+O cron instalado na VPS executa a criação e a validação de integridade antes
+do health check. Qualquer divergência interrompe a execução e fica registrada
+em `logs/backup.log`.
 
 Rollback de deploy: ver `deploy/rollback.sh` e a seção correspondente em `deploy/README.md`.
 

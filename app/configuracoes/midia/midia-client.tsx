@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
-import { Film, Image as ImageIcon, Trash2, Plus, Play, Loader2 } from "lucide-react"
+import { Film, Image as ImageIcon, Trash2, Plus, Play, Loader2, Upload, Link2 } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -99,6 +99,8 @@ export function MidiaClient({
   const [open, setOpen] = useState(false)
   const [isPending, startPending] = useTransition()
   const [videoPlayer, setVideoPlayer] = useState<string | null>(null)
+  const [origem, setOrigem] = useState<"upload" | "url">("upload")
+  const [arquivo, setArquivo] = useState<File | null>(null)
   const [form, setForm] = useState({
     tipo: "video" as "video" | "fotos",
     titulo: "",
@@ -112,16 +114,28 @@ export function MidiaClient({
     e.preventDefault()
     startPending(async () => {
       try {
+        let url = form.url
+        if (origem === "upload") {
+          if (!arquivo) { toast.error("Selecione um arquivo para enviar"); return }
+          const dados = new FormData()
+          dados.append("arquivo", arquivo)
+          const response = await fetch("/api/upload/midia", { method: "POST", body: dados })
+          const upload = await response.json() as { url?: string; error?: string }
+          if (!response.ok || !upload.url) { toast.error(upload.error ?? "Erro ao enviar arquivo"); return }
+          url = upload.url
+        }
         const result = await adicionarMidia({
           tipo: form.tipo,
           titulo: form.titulo,
-          url: form.url,
+          url,
           partidaId: form.vinculo === "partida" && form.partidaId ? Number(form.partidaId) : undefined,
           campeonatoId: form.vinculo === "campeonato" && form.campeonatoId ? Number(form.campeonatoId) : undefined,
         })
         if (result && "error" in result) { toast.error(result.error); return }
         toast.success("Mídia adicionada!")
         setOpen(false)
+        setArquivo(null)
+        setOrigem("upload")
         setForm({ tipo: "video", titulo: "", url: "", vinculo: "", partidaId: "", campeonatoId: "" })
       } catch {
         toast.error("Erro ao adicionar mídia")
@@ -170,15 +184,40 @@ export function MidiaClient({
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="midia-url">URL</Label>
-                <Input
-                  id="midia-url"
-                  value={form.url}
-                  onChange={(e) => setForm({ ...form, url: e.target.value })}
-                  placeholder="https://youtube.com/... ou https://photos.google.com/..."
-                  required
-                />
+              <div className="space-y-3">
+                <Label>Origem da mídia</Label>
+                <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
+                  <Button type="button" variant={origem === "upload" ? "default" : "ghost"} onClick={() => setOrigem("upload")} className="gap-2">
+                    <Upload className="size-4" /> Enviar arquivo
+                  </Button>
+                  <Button type="button" variant={origem === "url" ? "default" : "ghost"} onClick={() => setOrigem("url")} className="gap-2">
+                    <Link2 className="size-4" /> Usar link
+                  </Button>
+                </div>
+                {origem === "upload" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="midia-arquivo">Arquivo</Label>
+                    <Input
+                      id="midia-arquivo"
+                      type="file"
+                      accept={form.tipo === "video" ? "video/mp4,video/webm" : "image/jpeg,image/png,image/webp"}
+                      onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">{form.tipo === "video" ? "MP4 ou WebM, até 100 MB." : "JPG, PNG ou WebP, até 10 MB."}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="midia-url">URL</Label>
+                    <Input
+                      id="midia-url"
+                      value={form.url}
+                      onChange={(e) => setForm({ ...form, url: e.target.value })}
+                      placeholder="https://youtube.com/... ou https://photos.google.com/..."
+                      required
+                    />
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Vincular a</Label>
@@ -217,7 +256,7 @@ export function MidiaClient({
                 </div>
               )}
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? <><Loader2 className="size-4 animate-spin" /> Adicionando...</> : "Adicionar"}
+                {isPending ? <><Loader2 className="size-4 animate-spin" /> Enviando...</> : origem === "upload" ? "Enviar e adicionar" : "Adicionar"}
               </Button>
             </form>
           </DialogContent>
@@ -246,6 +285,7 @@ export function MidiaClient({
           <TableBody>
             {midias.map((m) => {
               const youtubeId = m.tipo === "video" ? extractYoutubeId(m.url) : null
+              const imagemDireta = m.tipo === "fotos" && /\.(jpe?g|png|webp)(?:\?.*)?$/i.test(m.url)
               return (
                 <TableRow key={m.id}>
                   <TableCell>
@@ -266,6 +306,10 @@ export function MidiaClient({
                           <Play className="size-6 text-white" />
                         </div>
                       </button>
+                    ) : imagemDireta ? (
+                      <div className="relative size-16 overflow-hidden rounded-md bg-muted">
+                        <Image src={m.url} alt={m.titulo} fill className="object-cover" sizes="64px" unoptimized />
+                      </div>
                     ) : (
                       <div className="flex size-16 items-center justify-center rounded-md bg-muted text-muted-foreground">
                         <ImageIcon className="size-6" />
