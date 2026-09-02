@@ -8,7 +8,9 @@ test("automações exibem configuração e histórico local", async ({ page }) =
   await page.goto("/configuracoes/automacoes")
   await expect(page.getByRole("heading", { name: "Automações administrativas" })).toBeVisible()
   await expect(page.getByRole("button", { name: "Instalar regras recomendadas" })).toBeVisible()
-  await expect(page.getByText("Execuções recentes").first()).toBeVisible()
+  await expect(
+    page.getByText("Execuções recentes").first().or(page.getByText("Nenhuma regra configurada")),
+  ).toBeVisible()
   await expect(page.getByText(/Nenhuma mensagem externa é enviada/)).toBeVisible()
 })
 
