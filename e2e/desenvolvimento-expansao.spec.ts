@@ -290,7 +290,10 @@ test("vínculo alterado bloqueia leitura de página já aberta", async ({ browse
 })
 
 for (const role of ["tecnico", "secretaria"] as const) test(`permissão real do perfil ${role} no desenvolvimento`, async ({ page }) => {
-  const login = await page.request.post("/api/auth/login", { data: { username: `e2e_expansao_${role}`, password: "E2EExpansao@123" } })
+  const login = await page.request.post("/api/auth/login", {
+    data: { username: `e2e_expansao_${role}`, password: "E2EExpansao@123" },
+    headers: { "x-forwarded-for": `e2e-expansao-${role}` },
+  })
   expect(login.ok()).toBe(true)
   await page.addInitScript(() => localStorage.setItem("escolinha_onboarding_v1", "true"))
   await page.goto("/desenvolvimento/treinos")
