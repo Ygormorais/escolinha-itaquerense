@@ -18,7 +18,18 @@ test.describe("Dashboard", () => {
   test("mostra gráficos (lazy-loaded)", async ({ page }) => {
     const main = page.locator("main")
     await expect(main.locator("text=Receita vs Custos")).toBeVisible()
-    await expect(main.locator("text=Inadimplência")).toBeVisible()
+    await expect(main.getByText("Inadimplência — Últimos 6 meses", { exact: true })).toBeVisible()
+    await expect(main.locator('[data-slot="chart-receita-custos"]')).toContainText("Entradas, saídas e saldo")
+    await expect(main.locator('[data-slot="chart-inadimplencia"]')).toContainText("percentual em atraso")
+    await expect(main.locator('[data-slot="chart-receita-turma"]')).toContainText("Turmas ordenadas")
+
+    await expect(main.locator("caption", { hasText: "Receita, custos e saldo mensal" })).toHaveCount(1)
+    await expect(main.locator("caption", { hasText: "taxa de inadimplência" })).toHaveCount(1)
+    await expect(
+      main.locator('[data-slot="chart-receita-turma"] caption, [data-slot="chart-receita-turma"] p').filter({
+        hasText: /^(Receita recebida por turma no mês atual|Nenhuma receita por turma registrada neste mês\.)$/,
+      }),
+    ).toHaveCount(1)
   })
 
   test("mostra ocupação das turmas", async ({ page }) => {
