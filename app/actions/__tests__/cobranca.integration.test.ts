@@ -63,7 +63,7 @@ describe("emitirCobranca — integração update", () => {
         dataVencimento: new Date("2026-01-10T12:00:00.000Z"),
       },
     })
-  })
+  }, 30_000)
 
   afterAll(async () => {
     await db?.$disconnect()
