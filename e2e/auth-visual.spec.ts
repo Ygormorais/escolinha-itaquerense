@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test"
 async function visualTokens(page: Page, path: string) {
   await page.goto(path)
   await expect(page.locator('[data-slot="auth-card"]')).toBeVisible()
+  await expect(page.getByRole("img", { name: "E.C. Itaquerense" })).toBeVisible()
 
   return page.evaluate(() => {
     const shell = getComputedStyle(document.querySelector('[data-slot="auth-shell"]')!)
@@ -22,6 +23,8 @@ async function visualTokens(page: Page, path: string) {
       cardPadding: card.padding,
       brandPadding: brandPanel.padding,
       formPadding: formPanel.padding,
+      horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      logoLoaded: (document.querySelector('img[alt="E.C. Itaquerense"]') as HTMLImageElement).naturalWidth > 0,
     }
   })
 }
@@ -34,17 +37,23 @@ test.describe("Autenticação — identidade visual compartilhada", () => {
     const familia = await visualTokens(page, "/responsavel/login")
 
     expect(restrito).toEqual(familia)
+    expect(restrito.horizontalOverflow).toBe(false)
+    expect(restrito.logoLoaded).toBe(true)
   })
 
-  test("restrito e família mantêm a mesma composição no mobile", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
+  for (const width of [320, 375, 414, 768]) {
+    test(`restrito e família mantêm a composição em ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
 
-    const restrito = await visualTokens(page, "/login")
-    const familia = await visualTokens(page, "/responsavel/login")
+      const restrito = await visualTokens(page, "/login")
+      const familia = await visualTokens(page, "/responsavel/login")
 
-    expect(restrito).toEqual(familia)
-    expect(restrito.frameColumns.split(" ")).toHaveLength(1)
-  })
+      expect(restrito).toEqual(familia)
+      expect(restrito.frameColumns.split(" ")).toHaveLength(1)
+      expect(restrito.horizontalOverflow).toBe(false)
+      expect(restrito.logoLoaded).toBe(true)
+    })
+  }
 
   test("recuperação e redefinição reutilizam o mesmo cartão", async ({ page }) => {
     for (const path of ["/responsavel/recuperar-senha", "/responsavel/redefinir-senha"]) {

@@ -44,7 +44,16 @@ export async function buscarOperacaoLocal(pergunta: string) {
     criterios.push("ocupação atual e lista de espera")
     const [turmas, contagens] = await Promise.all([db.configuracaoTurma.findMany({ where: { ativa: true }, include: { _count: { select: { listaEspera: { where: { status: { in: ["aguardando", "contatado"] } } } } } } }), db.aluno.groupBy({ by: ["turma"], where: { status: "Ativo" }, _count: { _all: true } })])
     const ocupacao = new Map(contagens.map((item) => [item.turma, item._count._all]))
-    for (const turma of turmas) resultados.push({ id: `turma-${turma.id}`, titulo: turma.nome, detalhe: `${ocupacao.get(turma.nome) ?? 0}/${turma.capacidade} vagas · ${turma._count.listaEspera} na espera.`, href: "/turmas#capacidade-turmas" })
+    const somenteLotadas = /\blotad/.test(q)
+    const somenteComEspera = /\b(?:com|tem|têm)\s+(?:lista de )?espera/.test(q)
+    if (somenteLotadas) criterios.push("somente turmas com ocupação igual ou superior à capacidade")
+    if (somenteComEspera) criterios.push("somente turmas com pessoas aguardando ou contatadas na lista de espera")
+    for (const turma of turmas) {
+      const inscritos = ocupacao.get(turma.nome) ?? 0
+      if (somenteLotadas && inscritos < turma.capacidade) continue
+      if (somenteComEspera && turma._count.listaEspera === 0) continue
+      resultados.push({ id: `turma-${turma.id}`, titulo: turma.nome, detalhe: `${inscritos}/${turma.capacidade} vagas · ${turma._count.listaEspera} na espera.`, href: "/turmas#capacidade-turmas" })
+    }
   }
   if (criterios.length === 0) {
     criterios.push("busca nominal em atletas ativos")

@@ -6,6 +6,19 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.describe("Dashboard", () => {
+  test("gráficos acompanham o tema e cabem no mobile", async ({ page }) => {
+    const chart = page.locator('[data-slot="chart-receita-custos"]')
+    await expect(chart).toBeVisible()
+    const light = await chart.evaluate(el => getComputedStyle(el).backgroundColor)
+    await page.getByRole("button", { name: "Modo escuro", exact: true }).click()
+    await expect(page.locator("html")).toHaveClass(/dark/)
+    await expect.poll(() => chart.evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe(light)
+    for (const width of [320, 375, 414, 768]) {
+      await page.setViewportSize({ width, height: 900 })
+      await expect(chart).toBeVisible()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+    }
+  })
   test("carrega e mostra stat cards", async ({ page }) => {
     await expect(page.locator("text=Alunos Ativos")).toBeVisible()
     await expect(page.locator("text=Receita do Mês")).toBeVisible()
