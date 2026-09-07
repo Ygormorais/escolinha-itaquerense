@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-09-02",
+    "scope": "components/auth/auth-shell",
+    "macrostructure": "Split Studio",
+    "theme": "Escolinha Orgânico / Humano",
+    "enrichment": "none",
+    "brief": "Acesso compartilhado da equipe e das famílias com identidade institucional, tarefa de autenticação prioritária e responsividade móvel"
+  },
+  {
     "date": "2026-08-27",
     "scope": "app/configuracoes/matriculas",
     "macrostructure": "Narrative Workflow",
