@@ -54,7 +54,7 @@ export default async function LojinhaPage() {
         stats={[
           { label: "Produtos", value: produtos.length },
           { label: "Categorias", value: new Set(produtos.map((produto) => produto.categoria)).size },
-          { label: "Pedidos", value: "WhatsApp" },
+          { label: "Como comprar", value: "WhatsApp" },
         ]}
       />
 
