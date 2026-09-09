@@ -14,7 +14,7 @@ test.describe("Uniformes — autenticado", () => {
 
   test("link 'Uniforme' aparece no menu de navegação", async ({ page }) => {
     await page.goto("/responsavel")
-    await expect(page.getByRole("tab", { name: "Uniforme", exact: true })).toBeVisible({ timeout: 8000 })
+    await expect(page.getByRole("link", { name: "Uniforme", exact: true })).toBeVisible({ timeout: 8000 })
   })
 
   test("página /responsavel/uniformes carrega com título", async ({ page }) => {
