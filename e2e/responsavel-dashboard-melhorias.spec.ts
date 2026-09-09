@@ -29,6 +29,6 @@ test.describe("Dashboard melhorias — autenticado", () => {
 
   test("aba Calendário permanece acessível no dashboard", async ({ page }) => {
     await page.goto("/responsavel")
-    await expect(page.getByRole("tab", { name: "Calendário", exact: true })).toBeVisible({ timeout: 8000 })
+    await expect(page.getByRole("link", { name: "Calendário", exact: true })).toBeVisible({ timeout: 8000 })
   })
 })
