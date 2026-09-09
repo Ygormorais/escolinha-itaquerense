@@ -105,12 +105,20 @@ export default async function globalSetup() {
   // entre cookies injetados pelo Playwright e o Chromium do runner Linux.
   const adminContext = await browser.newContext()
   const adminPage = await adminContext.newPage()
-  await adminPage.goto("http://localhost:3000/login")
+  // Em uma inicialização fria o Turbopack ainda pode estar compilando a rota
+  // depois que a porta 3000 já foi aberta. O timeout padrão de 30s tornava o
+  // setup intermitente em máquinas Windows mais lentas.
+  await adminPage.goto("http://localhost:3000/login", {
+    timeout: 90_000,
+    waitUntil: "load",
+  })
   await adminPage.locator("#login-usuario").fill(ADMIN_TESTE.username)
   await adminPage.locator("#login-senha").fill(ADMIN_TESTE.senha)
   const [loginResponse] = await Promise.all([
-    adminPage.waitForResponse((response) =>
-      response.url().endsWith("/api/auth/login") && response.request().method() === "POST"
+    adminPage.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/auth/login") && response.request().method() === "POST",
+      { timeout: 90_000 }
     ),
     adminPage.locator('button[type="submit"]').click(),
   ])
@@ -118,7 +126,7 @@ export default async function globalSetup() {
     throw new Error(`Login administrativo E2E falhou com HTTP ${loginResponse.status()}`)
   }
   await adminPage.waitForURL("**/dashboard", {
-    timeout: 45_000,
+    timeout: 90_000,
     waitUntil: "domcontentloaded",
   })
   await adminContext.storageState({ path: path.join(authDir, "admin.json") })
@@ -127,13 +135,16 @@ export default async function globalSetup() {
   const context = await browser.newContext()
   const page = await context.newPage()
 
-  await page.goto("http://localhost:3000/responsavel/login")
+  await page.goto("http://localhost:3000/responsavel/login", {
+    timeout: 90_000,
+    waitUntil: "load",
+  })
   await page.fill('input[type="email"]', RESP_TESTE.email)
   await page.fill('input[type="password"]', RESP_TESTE.senha)
   await page.click('button[type="submit"]')
   // No primeiro acesso o Next em dev pode compilar o portal do responsável;
   // 15s tornava a suíte intermitente apesar de o login ter sido aceito.
-  await page.waitForURL("**/responsavel", { timeout: 45_000, waitUntil: "domcontentloaded" })
+  await page.waitForURL("**/responsavel", { timeout: 90_000, waitUntil: "domcontentloaded" })
 
   await context.storageState({ path: path.join(authDir, "responsavel.json") })
   await context.close()

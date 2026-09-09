@@ -24,7 +24,13 @@ export function ChartReceitaCustos({ data }: { data: ReceitaCustoData[] }) {
         {temMovimentoFinanceiro(data) ? (
           <>
             <div className="h-60 min-w-0">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                minHeight={0}
+                initialDimension={{ width: 640, height: 240 }}
+              >
                 <ComposedChart data={chartData} barGap={4} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="mes" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} tickLine={false} />
