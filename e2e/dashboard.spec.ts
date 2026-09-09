@@ -29,6 +29,14 @@ test.describe("Dashboard", () => {
   })
 
   test("mostra gráficos (lazy-loaded)", async ({ page }) => {
+    const dimensionWarnings: string[] = []
+    page.on("console", (message) => {
+      if (message.type() === "warning" && message.text().includes("width(-1) and height(-1)")) {
+        dimensionWarnings.push(message.text())
+      }
+    })
+    await page.reload({ waitUntil: "load" })
+
     const main = page.locator("main")
     await expect(main.locator("text=Receita vs Custos")).toBeVisible()
     await expect(main.getByText("Inadimplência — Últimos 6 meses", { exact: true })).toBeVisible()
@@ -43,6 +51,7 @@ test.describe("Dashboard", () => {
         hasText: /^(Receita recebida por turma no mês atual|Nenhuma receita por turma registrada neste mês\.)$/,
       }),
     ).toHaveCount(1)
+    expect(dimensionWarnings).toEqual([])
   })
 
   test("mostra ocupação das turmas", async ({ page }) => {
