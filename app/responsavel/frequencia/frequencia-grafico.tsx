@@ -43,7 +43,7 @@ export function FrequenciaGrafico({ frequencias }: Props) {
 
   return (
     <div style={{ height: "144px", minHeight: "144px", width: "100%" }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 640, height: 144 }}>
         <BarChart data={dados} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
           <XAxis dataKey="mes" tick={{ fontSize: 11 }} />

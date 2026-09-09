@@ -444,7 +444,7 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
       {filtroAlunoId !== "all" && dadosGrafico.length >= 2 && (
         <div className="rounded-xl border bg-card p-4">
           <p className="mb-3 text-sm font-semibold">Evolução por período</p>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={220} initialDimension={{ width: 640, height: 220 }}>
             <LineChart data={dadosGrafico} margin={{ top: 4, right: 16, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />

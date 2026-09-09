@@ -16,7 +16,7 @@ export function EvolucaoChart({ pontos }: { pontos: PontoEvolucao[] }) {
   if (pontos.length < 2) return null
   return (
     <div className="h-64 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 640, height: 256 }}>
         <LineChart data={pontos} margin={{ top: 10, right: 20, bottom: 0, left: -20 }}>
           <CartesianGrid stroke="#EFE6E6" strokeDasharray="3 3" />
           <XAxis dataKey="periodo" tick={{ fontSize: 12 }} />

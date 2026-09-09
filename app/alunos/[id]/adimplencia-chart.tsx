@@ -64,7 +64,7 @@ export function AdimplenciaChart({ pagamentos }: Props) {
             </div>
           ))}
         </div>
-        <ResponsiveContainer width="100%" height={100}>
+        <ResponsiveContainer width="100%" height={100} initialDimension={{ width: 640, height: 100 }}>
           <BarChart data={data} barSize={28} margin={{ top: 18, bottom: 0, left: 0, right: 0 }}>
             <XAxis
               dataKey="mes"
