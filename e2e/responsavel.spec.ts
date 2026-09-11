@@ -247,6 +247,7 @@ test.describe("Portal autenticado — desempenho", () => {
     await page.goto("/responsavel/desempenho")
     await expect(page).toHaveURL("/responsavel/desempenho")
     await expect(page.getByRole("heading", { name: /Desempenho/i })).toBeVisible()
+    await expect(page.locator(".recharts-surface").first()).toBeVisible({ timeout: 8000 })
     expect(dimensionWarnings).toEqual([])
   })
 
