@@ -72,7 +72,7 @@ export function RadarEvolutionChart({ snapshots }: { snapshots: AvaliacaoSnapsho
         )}
       </div>
 
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={260} initialDimension={{ width: 640, height: 260 }}>
         <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
           <PolarGrid stroke="#e5e7eb" />
           <PolarAngleAxis dataKey="habilidade" tick={{ fontSize: 12 }} />

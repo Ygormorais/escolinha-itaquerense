@@ -109,7 +109,7 @@ export function RelatorioChart({
           <CardTitle>Receita × Custos — {ano}</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={260} initialDimension={{ width: 760, height: 260 }}>
             <BarChart data={meses} barGap={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
               <XAxis dataKey="label" tick={{ fontSize: 12 }} />
@@ -135,7 +135,7 @@ export function RelatorioChart({
             <CardTitle>Custos por Categoria</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={200} initialDimension={{ width: 360, height: 200 }}>
               <PieChart>
                 <Pie
                   data={pieData}

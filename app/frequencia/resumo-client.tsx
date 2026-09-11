@@ -128,7 +128,7 @@ export function ResumoFrequenciaClient() {
             <CardTitle className="text-base">Presença por Turma — {mes}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={200} initialDimension={{ width: 640, height: 200 }}>
               <BarChart data={porTurma} barSize={32}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
                 <XAxis dataKey="turma" tick={{ fontSize: 12 }} />

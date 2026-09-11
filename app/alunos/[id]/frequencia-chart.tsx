@@ -52,7 +52,7 @@ export function FrequenciaChart({ alunoId }: { alunoId: number }) {
         <CardTitle>Presença — últimos 6 meses</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height={180} initialDimension={{ width: 640, height: 180 }}>
           <BarChart data={data} barSize={28}>
             <CartesianGrid strokeDasharray="3 3" stroke="#EFE6E6" />
             <XAxis dataKey="label" tick={{ fontSize: 12 }} />

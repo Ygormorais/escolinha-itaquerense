@@ -237,9 +237,18 @@ test.describe("Portal autenticado — carteirinha", () => {
 test.describe("Portal autenticado — desempenho", () => {
   test.use({ storageState: RESP_STORAGE })
 
-  test("carrega sem redirecionar para login", async ({ page }) => {
+  test("carrega sem redirecionar e sem aviso de dimensão nos gráficos", async ({ page }) => {
+    const dimensionWarnings: string[] = []
+    page.on("console", (message) => {
+      if (message.type() === "warning" && message.text().includes("width(-1) and height(-1)")) {
+        dimensionWarnings.push(message.text())
+      }
+    })
     await page.goto("/responsavel/desempenho")
     await expect(page).toHaveURL("/responsavel/desempenho")
+    await expect(page.getByRole("heading", { name: /Desempenho/i })).toBeVisible()
+    await expect(page.locator(".recharts-surface").first()).toBeVisible({ timeout: 8000 })
+    expect(dimensionWarnings).toEqual([])
   })
 
   test("exibe heading Desempenho dos Atletas", async ({ page }) => {
