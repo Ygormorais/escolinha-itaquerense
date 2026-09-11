@@ -8,12 +8,16 @@ import {
 } from "@/components/public/resultados-client"
 import {
   categoriaCurta,
-  getNoticiasPorCategoria,
+  getNoticiasPorCategoriaCached,
 } from "@/lib/landing/noticias"
 import { preferirFaseGeral } from "@/lib/classificacao-view"
 import { db } from "@/lib/db"
 
-/** Sempre dados frescos da FPFS (sem cache estático). */
+/**
+ * Rota renderiza a cada request, mas a query de jogos/resultados usa
+ * `unstable_cache` de 60s (mesmo cache da landing) — atraso imperceptível,
+ * bem menos carga no banco.
+ */
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
@@ -64,7 +68,7 @@ export default async function ResultadosPage() {
 
   const [grupos, campeonatos] = await Promise.all([
     // 24 por Sub cobre temporada sem serializar centenas de cards no HTML
-    getNoticiasPorCategoria(new Date(), { porCategoria: 24 }),
+    getNoticiasPorCategoriaCached({ porCategoria: 24 }),
     db.campeonato.findMany({
       where: {
         status: { not: "encerrado" },

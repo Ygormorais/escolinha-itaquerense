@@ -15,7 +15,7 @@ vi.mock("@/lib/landing/noticias", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/landing/noticias")>()
   return {
     ...actual,
-    getNoticiasPorCategoria: vi.fn().mockResolvedValue([]),
+    getNoticiasPorCategoriaCached: vi.fn().mockResolvedValue([]),
   }
 })
 
@@ -24,7 +24,7 @@ vi.mock("next/image", () => ({
 }))
 
 import ResultadosPage from "@/app/resultados/page"
-import { getNoticiasPorCategoria } from "@/lib/landing/noticias"
+import { getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
 
 describe("ResultadosPage", () => {
   it("renderiza sem erros com lista vazia", async () => {
@@ -39,7 +39,7 @@ describe("ResultadosPage", () => {
   })
 
   it("renderiza abas e cards quando ha jogos por categoria", async () => {
-    vi.mocked(getNoticiasPorCategoria).mockResolvedValueOnce([
+    vi.mocked(getNoticiasPorCategoriaCached).mockResolvedValueOnce([
       {
         categoria: "Sub-13",
         items: [
