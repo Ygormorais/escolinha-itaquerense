@@ -280,10 +280,19 @@ export async function getNoticiasPorCategoria(
 }
 
 /**
+ * Timestamp truncado ao minuto — usar como parte da chave de cache evita
+ * que `Date.now()` (sempre diferente) invalide o cache a cada request.
+ * Função utilitária (fora de componente) para não violar a regra de pureza
+ * do React Server Components (`Date.now` não pode ser chamado durante o render).
+ */
+export function agoraTruncadoAoMinuto(): number {
+  return Math.floor(Date.now() / 60_000) * 60_000
+}
+
+/**
  * Versão cacheada (60s) de `getNoticiasPorCategoria` para a landing pública.
- * `agoraMinuto` é o timestamp truncado ao minuto — arredondar a chave evita
- * que `new Date()` (sempre diferente) invalide o cache a cada request.
- * A landing continua "sempre atualizada" na prática: no máximo 60s de atraso.
+ * `agoraMinuto` vem de `agoraTruncadoAoMinuto()`. A landing continua "sempre
+ * atualizada" na prática: no máximo 60s de atraso.
  */
 export const getNoticiasPorCategoriaCached = unstable_cache(
   (agoraMinuto: number, opts: NoticiasCarrosselOpts = {}) =>

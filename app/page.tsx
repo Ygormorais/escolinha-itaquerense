@@ -1,5 +1,5 @@
 import { heroView } from "@/lib/landing/jogos"
-import { getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
+import { agoraTruncadoAoMinuto, getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
 
 import { db } from "@/lib/db"
 import { sobre, galeria, depoimentos } from "@/lib/landing/conteudo"
@@ -23,9 +23,8 @@ export const revalidate = 0
  * - Carrossel → jogos/resultados com abas por categoria (Sub-7…Sub-18)
  */
 export default async function Page() {
-  const agoraMinuto = Math.floor(Date.now() / 60_000) * 60_000
   const [jogosPorCategoria, noticiasClube, config] = await Promise.all([
-    getNoticiasPorCategoriaCached(agoraMinuto),
+    getNoticiasPorCategoriaCached(agoraTruncadoAoMinuto()),
     db.noticia.findMany({
       where: { publicado: true },
       orderBy: [{ destaque: "desc" }, { createdAt: "desc" }],
