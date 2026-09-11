@@ -1,5 +1,6 @@
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { unstable_cache } from "next/cache"
 import { db } from "@/lib/db"
 import { urlJogos } from "@/lib/fpfs/client"
 import {
@@ -277,6 +278,22 @@ export async function getNoticiasPorCategoria(
   }
   return grupos
 }
+
+/**
+ * Versão cacheada (60s) de `getNoticiasPorCategoria` para a landing pública.
+ * Chave de cache FIXA — não incluir `Date.now()`/timestamp na chave, senão
+ * cada minuto vira uma entrada nova e órfã (nunca reaproveitada, e no
+ * filesystem Data Cache do deploy em VPS isso acumula lixo em disco pra
+ * sempre). `new Date()` é calculado dentro da função cacheada (não é o
+ * corpo de um componente, então não viola a regra de pureza do
+ * react-hooks); `revalidate: 60` já garante que ela reexecuta a cada
+ * minuto — a landing continua "sempre atualizada" com atraso imperceptível.
+ */
+export const getNoticiasPorCategoriaCached = unstable_cache(
+  (opts: NoticiasCarrosselOpts = {}) => getNoticiasPorCategoria(new Date(), opts),
+  ["landing-noticias-por-categoria"],
+  { revalidate: 60, tags: ["landing-jogos"] },
+)
 
 /**
  * Lista plana (legado / testes): junta todas as categorias.

@@ -1,5 +1,5 @@
 import { heroView } from "@/lib/landing/jogos"
-import { getNoticiasPorCategoria } from "@/lib/landing/noticias"
+import { getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
 
 import { db } from "@/lib/db"
 import { sobre, galeria, depoimentos } from "@/lib/landing/conteudo"
@@ -9,7 +9,11 @@ import type { NoticiaClube } from "@/components/landing/noticias-clube-carrossel
 
 export const metadata = { title: "Escolinha Itaquerense" }
 
-/** Landing sempre com jogos/resultados atualizados. */
+/**
+ * Rota renderiza a cada request (sem ISR/HTML estático), mas as queries de
+ * jogos/notícias usam `unstable_cache` de 60s — na prática a landing segue
+ * "sempre atualizada" (atraso imperceptível) com bem menos carga no banco.
+ */
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
@@ -20,7 +24,7 @@ export const revalidate = 0
  */
 export default async function Page() {
   const [jogosPorCategoria, noticiasClube, config] = await Promise.all([
-    getNoticiasPorCategoria(),
+    getNoticiasPorCategoriaCached(),
     db.noticia.findMany({
       where: { publicado: true },
       orderBy: [{ destaque: "desc" }, { createdAt: "desc" }],
