@@ -280,23 +280,17 @@ export async function getNoticiasPorCategoria(
 }
 
 /**
- * Timestamp truncado ao minuto — usar como parte da chave de cache evita
- * que `Date.now()` (sempre diferente) invalide o cache a cada request.
- * Função utilitária (fora de componente) para não violar a regra de pureza
- * do React Server Components (`Date.now` não pode ser chamado durante o render).
- */
-export function agoraTruncadoAoMinuto(): number {
-  return Math.floor(Date.now() / 60_000) * 60_000
-}
-
-/**
  * Versão cacheada (60s) de `getNoticiasPorCategoria` para a landing pública.
- * `agoraMinuto` vem de `agoraTruncadoAoMinuto()`. A landing continua "sempre
- * atualizada" na prática: no máximo 60s de atraso.
+ * Chave de cache FIXA — não incluir `Date.now()`/timestamp na chave, senão
+ * cada minuto vira uma entrada nova e órfã (nunca reaproveitada, e no
+ * filesystem Data Cache do deploy em VPS isso acumula lixo em disco pra
+ * sempre). `new Date()` é calculado dentro da função cacheada (não é o
+ * corpo de um componente, então não viola a regra de pureza do
+ * react-hooks); `revalidate: 60` já garante que ela reexecuta a cada
+ * minuto — a landing continua "sempre atualizada" com atraso imperceptível.
  */
 export const getNoticiasPorCategoriaCached = unstable_cache(
-  (agoraMinuto: number, opts: NoticiasCarrosselOpts = {}) =>
-    getNoticiasPorCategoria(new Date(agoraMinuto), opts),
+  (opts: NoticiasCarrosselOpts = {}) => getNoticiasPorCategoria(new Date(), opts),
   ["landing-noticias-por-categoria"],
   { revalidate: 60, tags: ["landing-jogos"] },
 )

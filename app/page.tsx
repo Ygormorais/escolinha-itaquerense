@@ -1,5 +1,5 @@
 import { heroView } from "@/lib/landing/jogos"
-import { agoraTruncadoAoMinuto, getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
+import { getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
 
 import { db } from "@/lib/db"
 import { sobre, galeria, depoimentos } from "@/lib/landing/conteudo"
@@ -24,7 +24,7 @@ export const revalidate = 0
  */
 export default async function Page() {
   const [jogosPorCategoria, noticiasClube, config] = await Promise.all([
-    getNoticiasPorCategoriaCached(agoraTruncadoAoMinuto()),
+    getNoticiasPorCategoriaCached(),
     db.noticia.findMany({
       where: { publicado: true },
       orderBy: [{ destaque: "desc" }, { createdAt: "desc" }],
