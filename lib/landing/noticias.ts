@@ -1,5 +1,6 @@
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { unstable_cache } from "next/cache"
 import { db } from "@/lib/db"
 import { urlJogos } from "@/lib/fpfs/client"
 import {
@@ -277,6 +278,19 @@ export async function getNoticiasPorCategoria(
   }
   return grupos
 }
+
+/**
+ * Versão cacheada (60s) de `getNoticiasPorCategoria` para a landing pública.
+ * `agoraMinuto` é o timestamp truncado ao minuto — arredondar a chave evita
+ * que `new Date()` (sempre diferente) invalide o cache a cada request.
+ * A landing continua "sempre atualizada" na prática: no máximo 60s de atraso.
+ */
+export const getNoticiasPorCategoriaCached = unstable_cache(
+  (agoraMinuto: number, opts: NoticiasCarrosselOpts = {}) =>
+    getNoticiasPorCategoria(new Date(agoraMinuto), opts),
+  ["landing-noticias-por-categoria"],
+  { revalidate: 60, tags: ["landing-jogos"] },
+)
 
 /**
  * Lista plana (legado / testes): junta todas as categorias.
