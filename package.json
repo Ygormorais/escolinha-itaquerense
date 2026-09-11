@@ -90,7 +90,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.23.5",
     "typescript": "^5",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.11"
   },
   "overrides": {
     "browserslist": "4.28.8",
