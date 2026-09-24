@@ -82,6 +82,7 @@ model Pagamento {
   @@index([dataPagamento])
   @@index([mesReferencia, dataPagamento])
   @@index([dataPagamento, dataVencimento])
+  @@index([alunoId, dataPagamento, dataVencimento])
   @@index([statusCobranca])
   @@index([externalId])
 }

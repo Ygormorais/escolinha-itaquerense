@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/auth", () => ({ requireAuth: vi.fn().mockResolvedValue({}) }))
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  // Passthrough: em teste não precisamos do cache real, só que a função rode.
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+}))
 vi.mock("@/lib/config", () => ({
   getConfig: vi
     .fn()
@@ -26,7 +31,7 @@ vi.mock("@/lib/config", () => ({
 
 import { getClubConfig, updateClubConfig } from "@/app/actions/config"
 import { requireAuth } from "@/lib/auth"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { getConfig, saveConfig, type ClubConfig } from "@/lib/config"
 
 const mockConfig: ClubConfig = {
@@ -92,6 +97,12 @@ describe("config", () => {
       expect(revalidatePath).toHaveBeenCalledTimes(2)
       expect(revalidatePath).toHaveBeenNthCalledWith(1, "/recibos")
       expect(revalidatePath).toHaveBeenNthCalledWith(2, "/configuracoes")
+    })
+
+    it("deve invalidar a tag de cache config-clube", async () => {
+      await updateClubConfig(mockConfig)
+
+      expect(revalidateTag).toHaveBeenCalledWith("config-clube", { expire: 0 })
     })
   })
 })
