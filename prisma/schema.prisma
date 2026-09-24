@@ -123,7 +123,6 @@ model Frequencia {
 
   @@unique([alunoId, data])
   @@index([data])
-  @@index([alunoId, data])
 }
 
 model Uniforme {

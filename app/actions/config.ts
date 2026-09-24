@@ -20,7 +20,7 @@ export async function updateClubConfig(data: ClubConfig) {
   await requireAuth(["admin"])
   saveConfig(data)
   void registrarLog("config_atualizada", "Configurações do clube atualizadas")
-  revalidateTag("config-clube")
+  revalidateTag("config-clube", { expire: 0 })
   revalidatePath("/recibos")
   revalidatePath("/configuracoes")
 }

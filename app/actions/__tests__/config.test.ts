@@ -102,7 +102,7 @@ describe("config", () => {
     it("deve invalidar a tag de cache config-clube", async () => {
       await updateClubConfig(mockConfig)
 
-      expect(revalidateTag).toHaveBeenCalledWith("config-clube")
+      expect(revalidateTag).toHaveBeenCalledWith("config-clube", { expire: 0 })
     })
   })
 })
