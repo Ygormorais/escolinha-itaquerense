@@ -82,6 +82,7 @@ model Pagamento {
   @@index([dataPagamento])
   @@index([mesReferencia, dataPagamento])
   @@index([dataPagamento, dataVencimento])
+  @@index([alunoId, dataPagamento, dataVencimento])
   @@index([statusCobranca])
   @@index([externalId])
 }
@@ -122,6 +123,7 @@ model Frequencia {
 
   @@unique([alunoId, data])
   @@index([data])
+  @@index([alunoId, data])
 }
 
 model Uniforme {
