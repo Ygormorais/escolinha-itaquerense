@@ -4,7 +4,7 @@ Sistema de gestão para escolinha de futebol E.C. Itaquerense — cadastro de al
 
 ## Stack
 
-- **Framework:** Next.js 16.3.0 (App Router, React 19)
+- **Framework:** Next.js 16.3.3 (App Router, React 19)
 - **UI:** Tailwind CSS v4 + shadcn/ui + @base-ui/react
 - **Banco:** Prisma 7 + SQLite (desenvolvimento e produção em VPS de instância única)
 - **Auth:** HMAC-SHA256 sessions + bcryptjs
