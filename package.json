@@ -54,8 +54,8 @@
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.16.0",
     "mercadopago": "^3.1.0",
-    "next": "16.3.0",
-    "nodemailer": "^9.0.4",
+    "next": "16.3.3",
+    "nodemailer": "^9.1.1",
     "pg": "^8.21.0",
     "prisma": "^7.9.1",
     "qrcode": "^1.5.4",
@@ -83,14 +83,14 @@
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^6.0.2",
-    "@vitest/coverage-v8": "^4.1.7",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9",
-    "eslint-config-next": "16.3.0",
+    "eslint-config-next": "16.3.3",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.5",
     "typescript": "^5",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.11"
   },
   "overrides": {
     "browserslist": "4.28.8",
