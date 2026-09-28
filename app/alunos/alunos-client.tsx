@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
-import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload, Loader2, Users } from "lucide-react"
+import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload, Loader2 } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
 import { Pagination } from "@/components/ui/pagination"
@@ -24,9 +24,8 @@ import {
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table"
+import { FilterBar } from "@/components/ui/filter-bar"
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table"
 import { toast } from "sonner"
 import { createAluno, updateAluno, inativarAluno, reativarAluno } from "@/app/actions/alunos"
 
@@ -302,9 +301,10 @@ type AlunosClientProps = {
   totalPages: number
   filters: { q: string; turma: string; status: string }
   frequenciaBaixa?: number[]
+  canManage: boolean
 }
 
-export function AlunosClient({ alunos, total, page, totalPages, filters, frequenciaBaixa = [] }: AlunosClientProps) {
+export function AlunosClient({ alunos, total, page, totalPages, filters, frequenciaBaixa = [], canManage }: AlunosClientProps) {
   const baixaSet = new Set(frequenciaBaixa)
   const [search, setSearch] = useState(filters.q)
   const debouncedSearch = useDebounce(search, 350)
@@ -369,200 +369,135 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
     router.push(`/alunos?${params.toString()}`)
   }
 
+  const activeFiltersCount =
+    (filters.turma !== "Todas" ? 1 : 0) + (filters.status !== "Todos" ? 1 : 0)
+
+  const columns: DataTableColumn<Aluno>[] = [
+    {
+      id: "nome",
+      header: "Nome",
+      cell: (aluno) => (
+        <div className="flex items-center gap-2">
+          <Link href={`/alunos/${aluno.id}`} className="font-medium hover:text-brand-800 hover:underline">
+            {aluno.nome}
+          </Link>
+          {baixaSet.has(aluno.id) && (
+            <span
+              title="Frequência abaixo de 75% este mês"
+              className="inline-flex shrink-0 rounded-full bg-danger-50 px-2 py-0.5 text-xs font-semibold text-danger-600"
+            >
+              Freq. baixa
+            </span>
+          )}
+        </div>
+      ),
+    },
+    { id: "turma", header: "Turma", cell: (aluno) => aluno.turma },
+    { id: "horario", header: "Horário", cell: (aluno) => aluno.horario, hideOnMobile: true },
+    { id: "responsavel", header: "Responsável", cell: (aluno) => aluno.responsavel },
+    {
+      id: "mensalidade",
+      header: "Mensalidade",
+      cell: (aluno) => <span data-numeric>{formatMoney(aluno.mensalidade)}</span>,
+    },
+    {
+      id: "status",
+      header: "Status",
+      cell: (aluno) => <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />,
+    },
+  ]
+
   return (
     <div className="space-y-4">
-      <div data-slot="student-filter-bar" className="grid min-w-0 gap-3 rounded-[var(--radius-card)] border bg-card p-4 xl:grid-cols-[minmax(14rem,1fr)_11rem_10rem_minmax(17rem,auto)] xl:items-end">
-        <div className="min-w-0 space-y-1.5">
-          <Label htmlFor="alunos-busca" className="text-xs">Buscar aluno</Label>
-          <Input
-            id="alunos-busca"
-            type="search"
-            placeholder="Buscar por nome..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <div className="min-w-0 space-y-1.5">
-          <Label id="alunos-turma-label" className="text-xs">Turma</Label>
-          <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-            <SelectTrigger aria-labelledby="alunos-turma-label" className="h-12 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Todas">Todas as turmas</SelectItem>
-              {TURMAS.map((t) => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="min-w-0 space-y-1.5">
-          <Label id="alunos-status-label" className="text-xs">Status</Label>
-          <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-            <SelectTrigger aria-labelledby="alunos-status-label" className="h-12 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Todos">Todos os status</SelectItem>
-              <SelectItem value="Ativo">Ativo</SelectItem>
-              <SelectItem value="Inativo">Inativo</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid min-w-0 grid-cols-2 gap-2">
-          <Link href="/alunos/importar" className="min-w-0">
-            <Button variant="outline" className="h-12 w-full">
-              <Upload className="size-4" />
-              Importar CSV
+      <FilterBar
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Buscar por nome...",
+          "aria-label": "Buscar aluno",
+        }}
+        filters={[
+          <div key="turma" className="min-w-0 space-y-1.5">
+            <Label id="alunos-turma-label" className="text-xs">Turma</Label>
+            <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
+              <SelectTrigger aria-labelledby="alunos-turma-label" className="w-full sm:w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todas">Todas as turmas</SelectItem>
+                {TURMAS.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>,
+          <div key="status" className="min-w-0 space-y-1.5">
+            <Label id="alunos-status-label" className="text-xs">Status</Label>
+            <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
+              <SelectTrigger aria-labelledby="alunos-status-label" className="w-full sm:w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todos">Todos os status</SelectItem>
+                <SelectItem value="Ativo">Ativo</SelectItem>
+                <SelectItem value="Inativo">Inativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>,
+        ]}
+        activeFiltersCount={activeFiltersCount}
+        actions={
+          <>
+            <Link href="/alunos/importar">
+              <Button variant="outline">
+                <Upload className="size-4" />
+                Importar CSV
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0}>
+              <Download className="size-4" />
+              Exportar CSV
             </Button>
-          </Link>
-          <Button variant="outline" className="h-12 w-full" onClick={exportarCSV} disabled={alunos.length === 0}>
-            <Download className="size-4" />
-            Exportar CSV
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>{plural(total, "aluno encontrado", "alunos encontrados", "nenhum")}</span>
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <div data-slot="student-mobile-list" className="grid gap-3 md:hidden">
-        {alunos.length === 0 && (
-          <div className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border bg-card py-10 text-center">
-            <Users className="size-8 text-muted-foreground/30" />
-            <p className="text-sm text-muted-foreground">Nenhum aluno encontrado</p>
-          </div>
-        )}
-        {alunos.map((aluno) => (
-          <article key={aluno.id} className="min-w-0 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
-            <div className="flex min-w-0 items-start justify-between gap-3">
-              <div className="min-w-0">
-                <Link href={`/alunos/${aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">
-                  {aluno.nome}
-                </Link>
-                <p className="mt-1 text-sm text-muted-foreground">{aluno.turma} · {aluno.horario}</p>
-              </div>
-              <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />
-            </div>
-            {baixaSet.has(aluno.id) && (
-              <p className="mt-3 inline-flex rounded-full bg-danger-50 px-2 py-1 text-xs font-semibold text-danger-600">
-                Frequência abaixo de 75%
-              </p>
+      <DataTable
+        columns={columns}
+        data={alunos}
+        getRowId={(aluno) => String(aluno.id)}
+        emptyState={{ title: "Nenhum aluno encontrado" }}
+        rowActions={canManage ? (aluno) => (
+          <>
+            <AlunoFormDialog
+              aluno={aluno}
+              trigger={
+                <Button variant="ghost" size="icon-sm" aria-label="Editar aluno">
+                  <PencilIcon className="size-3.5" />
+                </Button>
+              }
+            />
+            {aluno.status === "Ativo" ? (
+              <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
+                <Button variant="ghost" size="icon-sm" aria-label="Inativar aluno">
+                  <UserXIcon className="size-3.5" />
+                </Button>
+              </ConfirmDialog>
+            ) : (
+              <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
+                <Button variant="ghost" size="icon-sm" aria-label="Reativar aluno">
+                  <UserCheckIcon className="size-3.5 text-success-600" />
+                </Button>
+              </ConfirmDialog>
             )}
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div className="min-w-0">
-                <dt className="text-xs text-muted-foreground">Responsável</dt>
-                <dd className="truncate font-medium">{aluno.responsavel}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Mensalidade</dt>
-                <dd data-numeric className="font-semibold">{formatMoney(aluno.mensalidade)}</dd>
-              </div>
-            </dl>
-            <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-3">
-              <AlunoFormDialog
-                aluno={aluno}
-                trigger={<Button variant="outline" className="w-full"><PencilIcon className="size-4" />Editar</Button>}
-              />
-              {aluno.status === "Ativo" ? (
-                <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
-                  <Button variant="ghost" className="w-full"><UserXIcon className="size-4" />Inativar</Button>
-                </ConfirmDialog>
-              ) : (
-                <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
-                  <Button variant="ghost" className="w-full"><UserCheckIcon className="size-4 text-success-600" />Reativar</Button>
-                </ConfirmDialog>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div data-slot="student-table" className="hidden overflow-x-auto rounded-xl border bg-card md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Turma</TableHead>
-              <TableHead>Horário</TableHead>
-              <TableHead>Responsável</TableHead>
-              <TableHead>Mensalidade</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-20">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {alunos.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <div className="flex flex-col items-center gap-2 py-10 text-center">
-                    <Users className="size-8 text-muted-foreground/30" />
-                    <p className="text-sm text-muted-foreground">Nenhum aluno encontrado</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-            {alunos.map((aluno) => (
-              <TableRow key={aluno.id} className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/alunos/${aluno.id}`}
-                      className="hover:underline hover:text-brand-800"
-                    >
-                      {aluno.nome}
-                    </Link>
-                    {baixaSet.has(aluno.id) && (
-                      <span
-                        title="Frequência abaixo de 75% este mês"
-                        className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-danger-50 text-danger-600"
-                      >
-                        Freq. baixa
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{aluno.turma}</TableCell>
-                <TableCell>{aluno.horario}</TableCell>
-                <TableCell>{aluno.responsavel}</TableCell>
-                <TableCell>{formatMoney(aluno.mensalidade)}</TableCell>
-                <TableCell>
-                  <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <AlunoFormDialog
-                      key={aluno.id}
-                      aluno={aluno}
-                      trigger={
-                        <Button variant="ghost" size="icon-sm" aria-label="Editar aluno">
-                          <PencilIcon className="size-3.5" />
-                        </Button>
-                      }
-                    />
-                    {aluno.status === "Ativo" ? (
-                      <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
-                        <Button variant="ghost" size="icon-sm" aria-label="Inativar aluno">
-                          <UserXIcon className="size-3.5" />
-                        </Button>
-                      </ConfirmDialog>
-                    ) : (
-                      <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
-                        <Button variant="ghost" size="icon-sm" aria-label="Reativar aluno">
-                          <UserCheckIcon className="size-3.5 text-success-600" />
-                        </Button>
-                      </ConfirmDialog>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          </>
+        ) : undefined}
+      />
     </div>
   )
 }

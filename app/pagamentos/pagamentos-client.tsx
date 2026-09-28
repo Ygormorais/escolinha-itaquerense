@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { format } from "date-fns"
 import { formatMoney, plural, sanitizeCSVCell } from "@/lib/utils"
-import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download, FileUp, CreditCard } from "lucide-react"
+import { CheckCircleIcon, PlusCircleIcon, Printer, Trash2Icon, MessageCircle, ListChecks, Loader2, Receipt, QrCode, Download, FileUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MonthInput } from "@/components/ui/month-input"
@@ -22,9 +22,8 @@ import {
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table"
+import { FilterBar } from "@/components/ui/filter-bar"
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table"
 import { toast } from "sonner"
 import { registrarPagamento, gerarMensalidadesMes, deletePagamento, registrarPagamentosLote } from "@/app/actions/pagamentos"
 import { PixButton } from "@/components/ui/pix-modal"
@@ -234,7 +233,7 @@ export function PagamentosClient({
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("Todos")
   const [turmaFilter, setTurmaFilter] = useState("Todas")
-  const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkForma, setBulkForma] = useState("PIX")
   const [bulkData, setBulkData] = useState(format(new Date(), "yyyy-MM-dd"))
@@ -280,6 +279,17 @@ export function PagamentosClient({
     return matchSearch && matchStatus && matchTurma
   })
 
+  // Mudar busca/filtros pode tirar linhas selecionadas da lista visível — sem isso
+  // o lote agiria sobre pagamentos que não estão mais na tela. Mesmo padrão de
+  // ajuste de estado durante o render usado acima para a troca de mês.
+  const filterKey = `${search}|${statusFilter}|${turmaFilter}`
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey)
+    const filteredIds = new Set(filtered.map((p) => String(p.id)))
+    setSelected((prev) => new Set([...prev].filter((id) => filteredIds.has(id))))
+  }
+
   const now = new Date()
   const em7dias = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
   const vencendoSemana = pagamentos.filter((p) => {
@@ -311,9 +321,6 @@ export function PagamentosClient({
     }
   }
 
-  const pendentesFiltered = filtered.filter((p) => getPagamentoStatus(p) !== "Pago")
-  const allPendentesSelected = pendentesFiltered.length > 0 && pendentesFiltered.every((p) => selected.has(p.id))
-
   function exportarCSV() {
     const linhas = [
       ["Nome", "Turma", "Mês Ref.", "Mensalidade (R$)", "Vencimento", "Data Pagamento", "Forma", "Status"],
@@ -338,32 +345,134 @@ export function PagamentosClient({
     URL.revokeObjectURL(url)
   }
 
-  function toggleSelect(id: number) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  function toggleAll() {
-    if (allPendentesSelected) {
-      setSelected(new Set())
-    } else {
-      setSelected(new Set(pendentesFiltered.map((p) => p.id)))
-    }
-  }
-
   function handleBulkConfirm() {
     startBulk(async () => {
-      const r = await registrarPagamentosLote(Array.from(selected), { dataPagamento: bulkData, formaPagamento: bulkForma })
+      const r = await registrarPagamentosLote(Array.from(selected).map(Number), { dataPagamento: bulkData, formaPagamento: bulkForma })
       if ("error" in r) { toast.error(r.error); return }
       toast.success(`${plural(r.atualizados, "pagamento registrado", "pagamentos registrados", "nenhum")}`)
       setSelected(new Set())
       setBulkOpen(false)
       router.refresh()
     })
+  }
+
+  const columns: DataTableColumn<Pagamento>[] = [
+    {
+      id: "aluno",
+      header: "Aluno",
+      cell: (p) => (
+        <Link href={`/alunos/${p.aluno.id}`} className="font-medium text-brand-800 hover:underline">
+          {p.aluno.nome}
+        </Link>
+      ),
+    },
+    {
+      id: "turma",
+      header: "Turma",
+      cell: (p) => p.aluno.turma,
+    },
+    {
+      id: "vencimento",
+      header: "Vencimento",
+      cell: (p) => format(new Date(p.dataVencimento), "dd/MM/yyyy"),
+    },
+    {
+      id: "status",
+      header: "Status",
+      cell: (p) => <StatusBadge status={getPagamentoStatus(p)} />,
+    },
+    {
+      id: "cobranca",
+      header: "Cobrança",
+      mobileLabel: "Cobrança",
+      cell: (p) =>
+        p.externalId ? (
+          <CobrancaDialog
+            pagamentoId={p.id}
+            alunoNome={p.aluno.nome}
+            mesReferencia={p.mesReferencia}
+            pixCopiaECola={p.pixCopiaECola}
+            linhaDigitavel={p.linhaDigitavel}
+            externalUrl={p.externalUrl}
+            canalPrevisto={p.canalPrevisto}
+          >
+            <CobrancaBadge status={p.statusCobranca} />
+          </CobrancaDialog>
+        ) : !p.dataPagamento ? (
+          <CobrancaDialog pagamentoId={p.id} alunoNome={p.aluno.nome} mesReferencia={p.mesReferencia}>
+            <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+              <QrCode className="size-3" /> Gerar
+            </Button>
+          </CobrancaDialog>
+        ) : (
+          "-"
+        ),
+    },
+    {
+      id: "pagamento",
+      header: "Pagamento",
+      cell: (p) => (p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"),
+    },
+    {
+      id: "valor",
+      header: "Valor",
+      className: "text-right",
+      cell: (p) => (
+        <span data-numeric className="font-semibold">
+          {formatMoney(p.valorRecebido ?? p.aluno.mensalidade)}
+        </span>
+      ),
+    },
+  ]
+
+  function rowActions(p: Pagamento) {
+    const status = getPagamentoStatus(p)
+    return (
+      <>
+        {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
+        {status !== "Pago" && chavePix && nomeClube && cidade && (
+          <PixButton
+            chave={chavePix}
+            nomeClube={nomeClube}
+            cidade={cidade}
+            valor={p.aluno.mensalidade}
+            descricao={`Mensalidade ${p.mesReferencia} ${p.aluno.nome.split(" ")[0]}`}
+            telefoneResponsavel={p.aluno.telefone}
+            nomeResponsavel={p.aluno.nome}
+          />
+        )}
+        {status !== "Pago" && p.aluno.telefone && (
+          <a
+            href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Cobrar via WhatsApp"
+            className="inline-flex items-center justify-center size-9 rounded-md text-success-600 hover:bg-success-50 transition-colors md:size-7"
+          >
+            <MessageCircle className="size-3.5" />
+          </a>
+        )}
+        {status === "Pago" && (
+          <a
+            href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Imprimir recibo"
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Receipt className="size-3" />
+            Recibo
+          </a>
+        )}
+        {status !== "Pago" && (
+          <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
+            <Button variant="ghost" size="icon-sm" aria-label="Excluir pagamento">
+              <Trash2Icon className="size-3.5 text-danger-600" />
+            </Button>
+          </ConfirmDialog>
+        )}
+      </>
+    )
   }
 
   return (
@@ -432,42 +541,49 @@ export function PagamentosClient({
         </DialogContent>
       </Dialog>
 
-      <section data-slot="payment-filter-bar" aria-label="Filtros e arquivos" className="grid gap-3 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm lg:grid-cols-[minmax(14rem,1fr)_10rem_10rem_auto_auto] lg:items-end">
-        <Input
-          placeholder="Buscar aluno..."
-          aria-label="Buscar aluno"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Select value={statusFilter} onValueChange={(v) => { if (v) setStatusFilter(v) }}>
-          <SelectTrigger className="w-full" aria-label="Filtrar por status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Todos">Todos</SelectItem>
-            <SelectItem value="Pago">Pago</SelectItem>
-            <SelectItem value="Pendente">Pendente</SelectItem>
-            <SelectItem value="Vencido">Vencido</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
-          <SelectTrigger className="w-full" aria-label="Filtrar por turma">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Todas">Todas</SelectItem>
-            {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Button variant="outline" className="w-full lg:w-auto" onClick={exportarCSV} disabled={filtered.length === 0}>
-          <Download className="size-4" />
-          Exportar CSV
-        </Button>
-        <Button variant="outline" className="w-full lg:w-auto" onClick={() => router.push("/pagamentos/importar")}>
-          <FileUp className="size-4" />
-          Importar OFX
-        </Button>
-      </section>
+      <FilterBar
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Buscar aluno...",
+          "aria-label": "Buscar aluno",
+        }}
+        filters={[
+          <Select key="status" value={statusFilter} onValueChange={(v) => { if (v) setStatusFilter(v) }}>
+            <SelectTrigger className="w-full sm:w-40" aria-label="Filtrar por status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Todos">Todos</SelectItem>
+              <SelectItem value="Pago">Pago</SelectItem>
+              <SelectItem value="Pendente">Pendente</SelectItem>
+              <SelectItem value="Vencido">Vencido</SelectItem>
+            </SelectContent>
+          </Select>,
+          <Select key="turma" value={turmaFilter} onValueChange={(v) => { if (v) setTurmaFilter(v) }}>
+            <SelectTrigger className="w-full sm:w-40" aria-label="Filtrar por turma">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Todas">Todas</SelectItem>
+              {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+            </SelectContent>
+          </Select>,
+        ]}
+        activeFiltersCount={(statusFilter !== "Todos" ? 1 : 0) + (turmaFilter !== "Todas" ? 1 : 0)}
+        actions={
+          <>
+            <Button variant="outline" className="w-full sm:w-auto" onClick={exportarCSV} disabled={filtered.length === 0}>
+              <Download className="size-4" />
+              Exportar CSV
+            </Button>
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push("/pagamentos/importar")}>
+              <FileUp className="size-4" />
+              Importar OFX
+            </Button>
+          </>
+        }
+      />
       <section data-slot="payment-context-bar" aria-label="Período e ações de cobrança" className="flex flex-col gap-3 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm lg:flex-row lg:items-end">
         <div className="w-full sm:w-auto">
           <Label htmlFor="pag-mes" className="text-muted-foreground">Mês de referência</Label>
@@ -524,260 +640,23 @@ export function PagamentosClient({
         </div>
       </section>
 
-      {filtered.length === 0 ? (
-        <div data-slot="payment-empty-state" className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border bg-card px-4 py-10 text-center shadow-sm">
-          <CreditCard className="size-8 text-muted-foreground/30" aria-hidden />
-          <p className="text-sm text-muted-foreground">
-            {search || statusFilter !== "Todos" || turmaFilter !== "Todas"
+      <DataTable
+        columns={columns}
+        data={filtered}
+        getRowId={(p) => String(p.id)}
+        selectable
+        selectedIds={selected}
+        onSelectionChange={setSelected}
+        isRowSelectable={(p) => getPagamentoStatus(p) !== "Pago"}
+        getRowLabel={(p) => `${p.aluno.nome} — ${p.mesReferencia}`}
+        rowActions={rowActions}
+        emptyState={{
+          title:
+            search || statusFilter !== "Todos" || turmaFilter !== "Todas"
               ? "Nenhum pagamento para os filtros aplicados"
-              : "Nenhum pagamento cadastrado neste mês"}
-          </p>
-        </div>
-      ) : null}
-
-      <div data-slot="payment-mobile-list" className={filtered.length === 0 ? "hidden" : "grid gap-3 md:hidden"}>
-        {filtered.map((p) => {
-          const status = getPagamentoStatus(p)
-          return (
-            <article key={p.id} className={selected.has(p.id) ? "rounded-[var(--radius-card)] border border-brand-300 bg-brand-50 p-4 shadow-sm" : "rounded-[var(--radius-card)] border bg-card p-4 shadow-sm"}>
-              <div className="flex items-start gap-3">
-                {status !== "Pago" ? (
-                  <input
-                    type="checkbox"
-                    checked={selected.has(p.id)}
-                    onChange={() => toggleSelect(p.id)}
-                    aria-label={`Selecionar pagamento de ${p.aluno.nome}`}
-                    className="mt-1 size-4 cursor-pointer"
-                  />
-                ) : null}
-                <div className="min-w-0 flex-1">
-                  <Link href={`/alunos/${p.aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">
-                    {p.aluno.nome}
-                  </Link>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{p.aluno.turma} · {p.mesReferencia}</p>
-                </div>
-                <StatusBadge status={status} />
-              </div>
-
-              <dl className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 text-sm">
-                <div>
-                  <dt className="text-xs text-muted-foreground">Vencimento</dt>
-                  <dd data-numeric className="mt-0.5 font-semibold">{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</dd>
-                </div>
-                <div className="text-right">
-                  <dt className="text-xs text-muted-foreground">Valor</dt>
-                  <dd data-numeric className="mt-0.5 font-bold">{formatMoney(p.valorRecebido ?? p.aluno.mensalidade)}</dd>
-                </div>
-                {p.dataPagamento ? (
-                  <div>
-                    <dt className="text-xs text-muted-foreground">Pagamento</dt>
-                    <dd data-numeric className="mt-0.5 font-semibold">{format(new Date(p.dataPagamento), "dd/MM/yyyy")}</dd>
-                  </div>
-                ) : null}
-                {p.externalId ? (
-                  <div className={p.dataPagamento ? "text-right" : "col-span-2"}>
-                    <dt className="text-xs text-muted-foreground">Cobrança</dt>
-                    <dd className="mt-1">
-                      <CobrancaDialog
-                        pagamentoId={p.id}
-                        alunoNome={p.aluno.nome}
-                        mesReferencia={p.mesReferencia}
-                        pixCopiaECola={p.pixCopiaECola}
-                        linhaDigitavel={p.linhaDigitavel}
-                        externalUrl={p.externalUrl}
-                        canalPrevisto={p.canalPrevisto}
-                      >
-                        <CobrancaBadge status={p.statusCobranca} />
-                      </CobrancaDialog>
-                    </dd>
-                  </div>
-                ) : null}
-              </dl>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {status !== "Pago" ? <RegistrarPagamentoDialog pagamento={p} /> : null}
-                {status !== "Pago" && !p.externalId ? (
-                  <CobrancaDialog pagamentoId={p.id} alunoNome={p.aluno.nome} mesReferencia={p.mesReferencia}>
-                    <Button variant="outline" size="sm"><QrCode className="size-3.5" /> Gerar cobrança</Button>
-                  </CobrancaDialog>
-                ) : null}
-                {status !== "Pago" && chavePix && nomeClube && cidade ? (
-                  <PixButton
-                    chave={chavePix}
-                    nomeClube={nomeClube}
-                    cidade={cidade}
-                    valor={p.aluno.mensalidade}
-                    descricao={`Mensalidade ${p.mesReferencia} ${p.aluno.nome.split(" ")[0]}`}
-                    telefoneResponsavel={p.aluno.telefone}
-                    nomeResponsavel={p.aluno.nome}
-                  />
-                ) : null}
-                {status !== "Pago" && p.aluno.telefone ? (
-                  <a
-                    href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] border border-success-600/25 px-3 text-xs font-semibold text-success-600"
-                  >
-                    <MessageCircle className="size-3.5" aria-hidden /> Cobrar
-                  </a>
-                ) : null}
-                {status === "Pago" ? (
-                  <a
-                    href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-control)] border border-border px-3 text-xs font-semibold text-muted-foreground"
-                  >
-                    <Receipt className="size-3.5" aria-hidden /> Recibo
-                  </a>
-                ) : null}
-                {status !== "Pago" ? (
-                  <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
-                    <Button variant="ghost" size="icon-lg" className="ml-auto" aria-label={`Excluir pagamento de ${p.aluno.nome}`}>
-                      <Trash2Icon className="size-4 text-danger-600" />
-                    </Button>
-                  </ConfirmDialog>
-                ) : null}
-              </div>
-            </article>
-          )
-        })}
-      </div>
-
-      <div data-slot="payment-table" className="hidden overflow-x-auto rounded-[var(--radius-card)] border bg-card shadow-sm md:block">
-        <Table className="min-w-[980px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-8">
-                <input
-                  type="checkbox"
-                  checked={allPendentesSelected}
-                  onChange={toggleAll}
-                  className="cursor-pointer"
-                  aria-label="Selecionar todos pendentes"
-                />
-              </TableHead>
-              <TableHead>Aluno</TableHead>
-              <TableHead>Turma</TableHead>
-              <TableHead>Vencimento</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Cobrança</TableHead>
-              <TableHead>Pagamento</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead className="w-28 text-right">Ação</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((p) => {
-              const status = getPagamentoStatus(p)
-              return (
-                <TableRow
-                  key={p.id}
-                  className={
-                    selected.has(p.id)
-                      ? "bg-brand-50 dark:bg-brand-950/30"
-                      : "hover:bg-muted/40 transition-colors"
-                  }
-                >
-                  <TableCell>
-                    {status !== "Pago" && (
-                      <input
-                        type="checkbox"
-                        checked={selected.has(p.id)}
-                        onChange={() => toggleSelect(p.id)}
-                        aria-label={`Selecionar pagamento de ${p.aluno.nome}`}
-                        className="cursor-pointer"
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
-                  </TableCell>
-                  <TableCell>{p.aluno.turma}</TableCell>
-                  <TableCell>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
-                  <TableCell><StatusBadge status={status} /></TableCell>
-                  <TableCell>
-                    {p.externalId ? (
-                      <CobrancaDialog
-                        pagamentoId={p.id}
-                        alunoNome={p.aluno.nome}
-                        mesReferencia={p.mesReferencia}
-                        pixCopiaECola={p.pixCopiaECola}
-                        linhaDigitavel={p.linhaDigitavel}
-                        externalUrl={p.externalUrl}
-                        canalPrevisto={p.canalPrevisto}
-                      >
-                        <CobrancaBadge status={p.statusCobranca} />
-                      </CobrancaDialog>
-                    ) : !p.dataPagamento ? (
-                      <CobrancaDialog
-                        pagamentoId={p.id}
-                        alunoNome={p.aluno.nome}
-                        mesReferencia={p.mesReferencia}
-                      >
-                        <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
-                          <QrCode className="size-3" /> Gerar
-                        </Button>
-                      </CobrancaDialog>
-                    ) : null}
-                  </TableCell>
-                  <TableCell>
-                    {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"}
-                  </TableCell>
-                  <TableCell data-numeric className="text-right font-semibold">
-                    {formatMoney(p.valorRecebido ?? p.aluno.mensalidade)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
-                      {status !== "Pago" && chavePix && nomeClube && cidade && (
-                        <PixButton
-                          chave={chavePix}
-                          nomeClube={nomeClube}
-                          cidade={cidade}
-                          valor={p.aluno.mensalidade}
-                          descricao={`Mensalidade ${p.mesReferencia} ${p.aluno.nome.split(" ")[0]}`}
-                          telefoneResponsavel={p.aluno.telefone}
-                          nomeResponsavel={p.aluno.nome}
-                        />
-                      )}
-                      {status !== "Pago" && p.aluno.telefone && (
-                        <a
-                          href={`https://wa.me/55${p.aluno.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá! 👋 A mensalidade de *${p.aluno.nome}* referente a *${p.mesReferencia}* está em aberto.\n\nValor: *R$ ${p.aluno.mensalidade.toFixed(2).replace(".", ",")}*\n\nObrigado! ⚽`)}`}
-                          target="_blank" rel="noopener noreferrer"
-                          aria-label="Cobrar via WhatsApp"
-                          className="inline-flex items-center justify-center size-7 rounded-md text-success-600 hover:bg-success-50 transition-colors"
-                        >
-                          <MessageCircle className="size-3.5" />
-                        </a>
-                      )}
-                      {status === "Pago" && (
-                        <a
-                          href={`/recibos?aluno=${encodeURIComponent(p.aluno.nome)}&referencia=${encodeURIComponent(p.mesReferencia)}&valor=${p.valorRecebido ?? p.aluno.mensalidade}&forma=${encodeURIComponent(p.formaPagamento ?? "")}&data=${p.dataPagamento ? new Date(p.dataPagamento).toISOString().slice(0, 10) : ""}`}
-                          target="_blank" rel="noopener noreferrer"
-                          aria-label="Imprimir recibo"
-                          className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                        >
-                          <Receipt className="size-3" />
-                          Recibo
-                        </a>
-                      )}
-                      {status !== "Pago" && (
-                        <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
-                          <Button variant="ghost" size="icon-sm" aria-label="Excluir pagamento">
-                            <Trash2Icon className="size-3.5 text-danger-600" />
-                          </Button>
-                        </ConfirmDialog>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </div>
+              : "Nenhum pagamento cadastrado neste mês",
+        }}
+      />
     </div>
   )
 }
