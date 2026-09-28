@@ -347,17 +347,25 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   }
 
   async function handleInativar(id: number) {
-    const result = await inativarAluno(id)
-    if ("error" in result) { toast.error(result.error); return }
-    toast.success("Aluno inativado")
-    router.refresh()
+    try {
+      const result = await inativarAluno(id)
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("Aluno inativado")
+      router.refresh()
+    } catch {
+      toast.error("Erro ao inativar aluno")
+    }
   }
 
   async function handleReativar(id: number) {
-    const result = await reativarAluno(id)
-    if ("error" in result) { toast.error(result.error); return }
-    toast.success("Aluno reativado")
-    router.refresh()
+    try {
+      const result = await reativarAluno(id)
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("Aluno reativado")
+      router.refresh()
+    } catch {
+      toast.error("Erro ao reativar aluno")
+    }
   }
 
   function handlePageChange(p: number) {

@@ -88,7 +88,7 @@ export default async function AlunosPage({
       <PageHeader
         title="Alunos"
         description={plural(totalAtivos, "aluno ativo", "alunos ativos")}
-        action={<NovoAlunoButton />}
+        action={canManage ? <NovoAlunoButton /> : undefined}
       />
       <AlunosClient
         alunos={alunos}
