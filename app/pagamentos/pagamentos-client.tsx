@@ -465,7 +465,18 @@ export function PagamentosClient({
           </a>
         )}
         {status !== "Pago" && (
-          <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => { await deletePagamento(p.id); router.refresh() }}>
+          <ConfirmDialog title="Excluir pagamento?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={async () => {
+            try {
+              const result = await deletePagamento(p.id)
+              if ("error" in result) {
+                toast.error(result.error)
+                return
+              }
+              router.refresh()
+            } catch {
+              toast.error("Erro ao excluir pagamento")
+            }
+          }}>
             <Button variant="ghost" size="icon-sm" aria-label="Excluir pagamento">
               <Trash2Icon className="size-3.5 text-danger-600" />
             </Button>

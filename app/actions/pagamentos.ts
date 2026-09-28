@@ -74,10 +74,18 @@ export async function registrarPagamentosLote(
       include: { aluno: { select: { nome: true, mensalidade: true } } },
     })
 
-    await db.$transaction(
-      pagamentos.map((p) =>
-        db.pagamento.update({
-          where: { id: p.id },
+    // Trava server-side: o client já esconde linhas pagas via isRowSelectable, mas
+    // isso não impede um lote reenviado (replay/corrida) de tentar reabrir pagamentos
+    // já baixados. Pré-filtra os já pagos e, além disso, repete a checagem
+    // atomicamente no where do updateMany (condição de corrida: outro processo pode
+    // ter baixado o mesmo pagamento entre o findMany acima e este update). 0 linhas
+    // afetadas vira "pulado", não erro fatal do lote.
+    const pendentes = pagamentos.filter((p) => p.dataPagamento === null)
+
+    const resultados = await db.$transaction(
+      pendentes.map((p) =>
+        db.pagamento.updateMany({
+          where: { id: p.id, dataPagamento: null },
           data: {
             dataPagamento: new Date(data.dataPagamento),
             formaPagamento: data.formaPagamento,
@@ -88,14 +96,15 @@ export async function registrarPagamentosLote(
         })
       )
     )
+    const atualizados = resultados.reduce((soma, r) => soma + r.count, 0)
 
-    await registrarLog("pagamento", `Lote: ${plural(ids.length, "pagamento registrado", "pagamentos registrados", "nenhum")}`, { forma: data.formaPagamento, data: data.dataPagamento })
+    await registrarLog("pagamento", `Lote: ${plural(atualizados, "pagamento registrado", "pagamentos registrados", "nenhum")}`, { forma: data.formaPagamento, data: data.dataPagamento })
     revalidatePath("/pagamentos")
     revalidatePath("/inadimplencia")
     revalidatePath("/caixa")
     revalidatePath("/caixa/recebimentos")
     revalidatePath("/dashboard")
-    return { atualizados: ids.length }
+    return { atualizados }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamentos em lote" }
   }
