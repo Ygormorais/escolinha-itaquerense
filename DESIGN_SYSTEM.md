@@ -1,414 +1,236 @@
 # Design System — Escolinha Itaquerense
 
-## Direção estética
+Fase 2, passo 1 (ver `AUDIT.md`). Este documento define a direção estética única e os
+tokens canônicos que resolvem o achado #1 da auditoria ("Tokens fragmentados"). Ele é a
+**fonte da verdade**: qualquer cor, raio, sombra, fonte ou espaçamento usado no código deve
+vir daqui. Nenhum componente foi alterado ainda — isso é o mapa para a próxima tarefa.
 
-### Orgânico / Humano
+## 1. Direção estética
 
-A direção escolhida é **Orgânico / Humano**. Ela preserva a memória afetiva do clube,
-o acolhimento das famílias e a energia do esporte sem transformar o produto em uma
-interface infantil ou excessivamente decorativa.
+Não é redesign de marca. A auditoria já elogiou a identidade **alvirrubra** (vermelho de
+marca sobre neutros quentes) e a dupla **Inter + Playfair Display** como pontos fortes. A
+direção é **consolidar**, não reinventar:
 
-O sistema combina:
+- Vermelho de marca (`brand-600 #C62828`) como cor de ação e destaque, nunca como fundo
+  extenso.
+- Papel quente (não branco puro) como base de todas as superfícies claras.
+- Inter para toda interface funcional; Playfair Display reservada a títulos editoriais e
+  institucionais (regra detalhada na seção 5).
+- Um único conjunto de tokens de cor, raio, sombra e espaçamento, compartilhado por
+  landing, autenticação, portal da família e admin. Hoje existem 5 arquivos de origem de
+  tokens (`app/globals.css`, `tailwind.config.ts`, `components/landing/landing.css`,
+  `lib/public-css.ts` e `tokens.css`) e eles divergem entre si. A partir deste documento,
+  passam a ser **um** sistema com múltiplos pontos de entrada.
 
-- papel quente em vez de branco clínico;
-- vermelho alvirrubro como sinal de ação, identidade e urgência;
-- tinta marrom-escura para reduzir dureza visual;
-- Playfair Display em momentos editoriais e institucionais;
-- Inter em tarefas, números, formulários e dados;
-- formas suavemente arredondadas, bordas quentes e sombras discretas;
-- fotografia e escudo como elementos de identidade, não como ornamentos repetidos.
+## 2. Tokens de cor
 
-Essa direção já existe parcialmente na landing. O objetivo não é inventar outra marca,
-mas transformá-la em um sistema único, previsível e adequado tanto para comunicação
-quanto para operação administrativa.
+### 2.1 Marca (canônico)
 
-## Princípios
+| Token | Valor canônico | Uso |
+|---|---|---|
+| `brand-950` | `#4A0B0B` | texto sobre fundo vermelho vivo, rodapé |
+| `brand-900` | `#7F0000` | gradiente de destaque (hero, membership) |
+| `brand-800` | `#9F1D1D` | hover de vermelho escuro, accent-foreground |
+| `brand-700` | `#9F1D1D` | **alias intencional de `brand-800`** — não existe tom próprio, manter assim |
+| `brand-600` | `#C62828` | vermelho principal (ações, links, foco) |
+| `brand-500` | `#E53935` | vermelho vivo (dark mode primary, hover quente) |
+| `brand-300` | `#EF9A9A` | apoio suave (gráficos, bordas de destaque) |
+| `brand-200` | `#F6CACA` | apoio suave (accent-foreground em dark) |
+| `brand-100` | `#FFEBEE` | fundo suave (accent claro) |
+| `brand-50` | `#FFF5F5` | fundo suave mais claro (accent, hover leve) |
 
-1. **Humano antes de burocrático** — linguagem visual acolhedora sem esconder dados.
-2. **Ação evidente** — cada tela deve possuir uma ação principal reconhecível.
-3. **Densidade progressiva** — resumo primeiro; detalhes e ações avançadas sob demanda.
-4. **Um clube, um sistema** — landing, família, autenticação e admin compartilham tokens.
-5. **Mobile é operação real** — nenhuma funcionalidade depende de largura de desktop.
-6. **Estado nunca depende apenas de cor** — texto, ícone e semântica acompanham a cor.
-7. **Movimento com propósito** — transições ajudam orientação, sem animação ornamental.
+**Divergência encontrada:** `tokens.css` define esta mesma rampa em `oklch(...)`, com
+valores que **não correspondem** aos hex acima (é uma segunda tentativa de rampa, com
+`brand-700` inexistente e `brand-800/900` deslocados). `tailwind.config.ts`,
+`app/globals.css` (bloco `.portal-familia`/`.auth-experience`) e `landing.css`/
+`public-css.ts` já concordam entre si nos valores hex acima — são maioria e viram
+canônicos. **Mudança:** `tokens.css` deve parar de aproximar a rampa em `oklch` e passar a
+declarar os mesmos 10 valores hex (ou `oklch(from #HEX l c h)` se precisar interpolar
+tons no futuro), para que `brand-900` signifique o mesmo pixel em qualquer arquivo.
 
-## Arquitetura dos tokens
-
-Os valores primitivos devem existir uma única vez em `app/globals.css`. Tailwind,
-componentes e CSS público devem consumir aliases sem redeclarar os valores hexadecimais.
-
-Camadas:
-
-1. **Primitivos**: `--red-600`, `--warm-950`, `--paper-50`.
-2. **Semânticos**: `--background`, `--foreground`, `--primary`, `--danger`.
-3. **Componentes**: `--card-radius`, `--control-height`, `--sidebar-width`.
-
-## Tokens de cor
-
-### Marca
-
-| Token | Valor | Uso |
-|---|---:|---|
-| `--brand-950` | `#4A0B0B` | rodapé, superfícies profundas, texto sobre fundo claro |
-| `--brand-900` | `#7F0000` | hover forte e elementos institucionais |
-| `--brand-800` | `#9F1D1D` | ação secundária e texto de marca |
-| `--brand-600` | `#C62828` | ação principal, seleção e destaque |
-| `--brand-500` | `#E53935` | tema escuro e realces |
-| `--brand-300` | `#EF9A9A` | bordas e estados suaves |
-| `--brand-200` | `#F6CACA` | fundos de alerta leve |
-| `--brand-100` | `#FFEBEE` | seleção e hover |
-| `--brand-50` | `#FFF5F5` | superfície de marca mínima |
-
-### Neutros quentes
-
-| Token | Valor | Uso |
-|---|---:|---|
-| `--warm-950` | `#1C1412` | texto principal |
-| `--warm-700` | `#5C534E` | texto secundário |
-| `--warm-500` | `#8A827C` | texto auxiliar e ícones |
-| `--warm-300` | `#D4CBC0` | borda forte |
-| `--warm-200` | `#E8E2DA` | borda padrão |
-| `--paper-100` | `#F3EFE9` | fundo agrupado e muted |
-| `--paper-50` | `#FAF8F5` | fundo da aplicação |
-| `--paper-0` | `#FFFFFF` | card e popover |
-| `--paper-raised` | `#FFFCF9` | navegação e superfície elevada |
-
-### Semânticos
-
-| Token | Base | Fundo suave | Uso |
-|---|---:|---:|---|
-| `--success` | `#0F7A5A` | `#EDF9F4` | pago, concluído, positivo |
-| `--warning` | `#A86417` | `#FFF8ED` | atenção e prazo próximo |
-| `--danger` | `#B3261E` | `#FEF1F0` | vencido, erro e destrutivo |
-| `--info` | `#225EA8` | `#EFF5FD` | orientação e informação |
-| `--whatsapp` | `#25D366` | `#EFFCF3` | ações exclusivas do canal |
-
-### Tema claro
-
-- `--background: var(--paper-50)`
-- `--foreground: var(--warm-950)`
-- `--card: var(--paper-0)`
-- `--muted: var(--paper-100)`
-- `--border: var(--warm-200)`
-- `--primary: var(--brand-600)`
-- `--ring: var(--brand-600)`
-
-### Tema escuro
-
-Um único conjunto deve substituir as duas versões atuais:
-
-- `--background: #171312`
-- `--foreground: #F8F2F0`
-- `--card: #211A18`
-- `--popover: #211A18`
-- `--muted: #2B2321`
-- `--muted-foreground: #B7A7A1`
-- `--border: rgba(255,255,255,.10)`
-- `--primary: #E53935`
-- `--ring: #E53935`
-
-## Tipografia
-
-### Famílias
-
-- `--font-heading`: Playfair Display, peso 700 ou 800.
-- `--font-body`: Inter, pesos 400, 500, 600 e 700.
-- Dados numéricos, moedas e tabelas usam Inter com `font-variant-numeric: tabular-nums`.
-
-### Escala
-
-| Papel | Mobile | Desktop | Peso | Família |
-|---|---:|---:|---:|---|
-| Display | 36/40 | 56/60 | 800 | Playfair |
-| H1 | 30/34 | 36/40 | 800 | Playfair |
-| H2 | 24/30 | 30/36 | 700 | Playfair |
-| H3 | 20/26 | 22/28 | 700 | Playfair |
-| KPI | 28/32 | 32/36 | 700 | Inter |
-| Body large | 17/28 | 18/30 | 400 | Inter |
-| Body | 15/24 | 15/24 | 400 | Inter |
-| Label | 13/18 | 13/18 | 600 | Inter |
-| Caption | 12/16 | 12/16 | 500 | Inter |
-| Overline | 11/16 | 11/16 | 700 | Inter, uppercase |
-
-Regras:
-
-- Playfair fica restrita a títulos de página, seção e comunicação institucional.
-- KPI, moeda, datas, tabelas e controles usam Inter.
-- Overlines usam espaçamento de letras entre `0.08em` e `0.12em`.
-- Texto corrido mantém largura máxima aproximada de 65 caracteres.
-
-## Espaçamento
-
-Escala baseada em 4 px:
-
-| Token | Valor |
-|---|---:|
-| `--space-1` | 4 px |
-| `--space-2` | 8 px |
-| `--space-3` | 12 px |
-| `--space-4` | 16 px |
-| `--space-5` | 20 px |
-| `--space-6` | 24 px |
-| `--space-8` | 32 px |
-| `--space-10` | 40 px |
-| `--space-12` | 48 px |
-| `--space-16` | 64 px |
-| `--space-20` | 80 px |
-
-Uso:
-
-- controles relacionados: 8 a 12 px;
-- conteúdo interno de card: 16 a 24 px;
-- blocos de página: 24 a 32 px;
-- seções públicas: 56 a 88 px;
-- padding horizontal mobile: 16 px;
-- padding horizontal do admin desktop: 32 px.
-
-## Raios
-
-| Token | Valor | Uso |
-|---|---:|---|
-| `--radius-control` | 10 px | inputs, botões e selects |
-| `--radius-card` | 16 px | cards e tabelas |
-| `--radius-panel` | 20 px | painéis de destaque e dialogs |
-| `--radius-hero` | 24 px | composições institucionais |
-| `--radius-pill` | 999 px | badges e filtros segmentados |
-
-Raios maiores não devem ser aplicados isoladamente por página.
-
-## Sombras
+### 2.2 Neutros quentes — tema claro (canônico)
 
 | Token | Valor | Uso |
 |---|---|---|
-| `--shadow-xs` | `0 1px 2px rgba(74,11,11,.05)` | controle |
-| `--shadow-sm` | `0 2px 8px rgba(74,11,11,.06)` | card padrão |
-| `--shadow-md` | `0 8px 28px rgba(74,11,11,.10)` | popover e card elevado |
-| `--shadow-lg` | `0 24px 60px rgba(74,11,11,.12)` | dialog e hero |
-| `--shadow-focus` | `0 0 0 4px rgba(198,40,40,.15)` | foco de controle |
+| `paper-50` | `#FAF8F5` | fundo de página |
+| `paper-100` | `#F3EFE9` | fundo secundário / seções em wash |
+| `paper-raised` | `#FFFCF9` | superfície elevada (sidebar, cards sobre wash) |
+| `white` | `#FFFFFF` | cards no site público, botões brancos |
+| `ink-950` | `#1C1412` | texto principal |
+| `ink-700` | `#5C534E` | texto secundário |
+| `ink-500` | `#8A827C` | texto discreto |
+| `ink-300` / `border` | `#E8E2DA` | borda padrão |
+| `border-strong` | `#D4CBC0` | borda de ênfase |
 
-Elevação deve indicar camada ou interatividade; não deve substituir borda em todos os cards.
+Já é consistente entre `globals.css`, `landing.css` e `public-css.ts`. Nenhuma mudança de
+valor — só consolidar a origem (seção 6).
 
-## Layout responsivo
+### 2.3 Neutros quentes — tema escuro (canônico)
 
-### Breakpoints de intenção
+| Token | Valor canônico | Hoje diverge em |
+|---|---|---|
+| `bg` (fundo de página) | **`#171312`** | `landing.css`/`public-css.ts` usam `#14110F` |
+| `card` / `bg-card` | **`#211A18`** | `landing.css`/`public-css.ts` usam `#1F1A18` |
+| `bg-muted` / `secondary`/`muted` | **`#2B2321`** | `landing.css`/`public-css.ts` usam `#1A1614` |
+| `bg-elevated` | **`#3A1717`**\* | `landing.css`/`public-css.ts` usam `#24201D`; `globals.css` não tem equivalente público, mas usa `#3A1717` como `accent` |
+| `foreground` / `text` | **`#F8F2F0`** | `landing.css`/`public-css.ts` usam `#F5F0EB` |
+| `muted-foreground` / `text-muted` | **`#B7A7A1`** | `landing.css`/`public-css.ts` usam `#B8AFA8` |
+| `border` (dark) | **`rgba(255,255,255,0.1)`** | `landing.css`/`public-css.ts` usam `#3A332E` (cor sólida) |
+| `border-strong` (dark) | **`rgba(255,255,255,0.16)`**\* | só existe hoje em `landing.css`/`public-css.ts` como `#4A423C` |
 
-- até 479 px: celular compacto;
-- 480–767 px: celular amplo;
-- 768–1023 px: tablet;
-- 1024–1279 px: desktop;
-- 1280 px ou mais: desktop amplo.
+\* Onde não havia par direto, escolhido o valor mais próximo em uso (`accent` do
+`globals.css`) ou uma derivação em `rgba` consistente com o padrão de borda do app.
 
-### Regras globais
+Esta é a divergência-exemplo citada na auditoria (`#171312` vs `#14110F`). Critério de
+escolha: os valores de `app/globals.css` viram canônicos porque alimentam mais telas
+(admin inteiro) e já formam uma escala de contraste testada; `landing.css` e
+`public-css.ts` devem passar a referenciá-los. **Mudança:** editar
+`PUB_TOKENS_DARK` em `lib/public-css.ts` e o bloco `html.dark .lp` em
+`components/landing/landing.css` para os valores da coluna "canônico". Bordas em `rgba`
+branco (em vez de hex sólido) evitam um sexto tom de cinza flutuando fora da escala.
 
-- Conteúdo do admin: largura fluida, máximo de 1600 px.
-- Landing: container máximo de 1200 px.
-- Nenhuma toolbar deve depender de `overflow-x` para expor a ação principal.
-- Tabelas com mais de cinco colunas usam uma representação própria no mobile.
-- Bottom navigation reserva espaço por `safe-area-inset-bottom`.
-- Ações primárias permanecem visíveis; ações secundárias podem migrar para menu.
+### 2.4 Semânticos (canônico)
 
-## Componentes
+| Token | Valor | Uso |
+|---|---|---|
+| `success-600` | `#0F7A5A` | confirmação, pagamento em dia |
+| `warning-600` | `#A86417` | atenção, pendência |
+| `warning-700` | tom mais escuro de `#A86417` para hover/texto sobre fundo claro | atenção (ênfase) |
+| `danger-600` | `#B3261E` | erro, exclusão, inadimplência |
+| `info-600` | `#225EA8` | informação neutra |
+| `whatsapp` | `#25D366` | exclusivo do botão flutuante de WhatsApp — não usar como "sucesso" |
 
-### PageHeader
+**Divergência encontrada:** dentro do próprio `app/globals.css`, o bloco `@theme` declara
+`success`/`danger`/`info` como hex literal, mas `warning` é roteado por
+`var(--warning-600)` vindo de `tokens.css` em `oklch` — os quatro deveriam seguir a
+**mesma** estratégia. **Mudança:** `tokens.css` deve declarar `warning-50/600/700`
+também em hex (iguais à tabela acima), e `globals.css` deve consumir os quatro
+semânticos da mesma forma (hoje mistura hex direto com `var()`).
 
-- título e descrição à esquerda;
-- ação principal à direita no desktop;
-- no mobile, título em uma linha e contexto/ações em bloco separado;
-- seletor de período nunca divide a mesma linha com uma CTA larga em 390 px;
-- altura determinada pelo conteúdo, sem valores fixos.
+## 3. Escala de raio (canônico)
 
-### ContextBar
+| Token | rem | px | Substitui |
+|---|---|---|---|
+| `radius-control` (sm) | `0.625rem` | 10px | `landing.css`/`public-css.ts` `--radius-sm` (já bate, sem mudança) |
+| `radius-card` (md) | `1rem` | 16px | `landing.css`/`public-css.ts` `--radius-md` (hoje `14px` — **muda** para `16px`) |
+| `radius-panel` (lg) | `1.25rem` | 20px | `landing.css`/`public-css.ts` `--radius-lg` (já bate, sem mudança); autenticação `22px` (**muda** para `20px`) |
+| `radius-hero` (xl) | `1.5rem` | 24px | `public-css.ts` `--radius-xl` (já bate); `landing.css` não tem esse degrau — **adicionar**; autenticação `28px` (**muda** para `24px`) |
+| `radius-pill` (full) | `999px` | — | já consistente em todos os arquivos |
 
-Novo padrão para período, filtros globais e ações de exportação:
+Hoje coexistem **duas escalas de raio dentro do mesmo `app/globals.css`**: a fixa
+(`radius-control/card/panel/hero/pill`, definida em `tokens.css`) e a multiplicativa do
+shadcn (`--radius-sm`…`--radius-4xl`, derivada de `calc(var(--radius) * n)` com
+`--radius: 0.875rem`) — essa segunda escala é a fonte do "sistema global deriva raios de
+`0.875rem`" citado na auditoria, e não bate com a escala fixa acima. **Mudança:**
+eliminar a derivação por `calc()` e apontar cada alias do shadcn direto para a escala
+fixa: `--radius-sm → var(--radius-control)`, `--radius-md → var(--radius-card)`,
+`--radius-lg → var(--radius-panel)`, `--radius-xl → --radius-2xl → --radius-3xl →
+--radius-4xl → var(--radius-hero)` (nenhum componente hoje precisa de um raio maior que
+o hero). Remover também a declaração solta `--radius: 0.875rem` e a duplicata de
+`--radius-control` em `app/globals.css` `:root` (já existe em `tokens.css`).
 
-- desktop: linha flexível com agrupamentos visuais;
-- mobile: período na primeira linha, ação principal na segunda;
-- ações raras agrupadas em “Mais ações”;
-- estado atual sempre visível em texto.
+## 4. Escala de sombra (canônico)
 
-### AlertSummary
+| Token | Valor (claro) | Valor (escuro) | Uso |
+|---|---|---|---|
+| `shadow-xs` | `0 1px 2px rgba(74,11,11,.05)` | igual | inputs, divisores, elevação mínima |
+| `shadow-sm` | `0 2px 8px rgba(74,11,11,.06)` | `0 2px 8px rgba(0,0,0,.28)` | cards em repouso |
+| `shadow-md` | `0 8px 28px rgba(74,11,11,.10)` | `0 8px 28px rgba(0,0,0,.36)` | cards elevados, dropdowns, popovers |
+| `shadow-lg` | `0 24px 60px rgba(74,11,11,.12)` | mesma, opacidade preta equivalente | modais, lightbox, overlays grandes |
+| `shadow-hover` | `0 14px 40px rgba(198,40,40,.16)` | `0 14px 40px rgba(198,40,40,.28)` | elevação em hover de cards/CTAs (tingido de marca, não neutro) |
+| `shadow-focus` | `0 0 0 4px rgba(198,40,40,.15)` | igual | glow opcional sob o anel de foco (ver seção 7) |
 
-- um único card-resumo na primeira dobra;
-- exibe total por severidade e o alerta mais crítico;
-- detalhes em lista expansível ou seção imediatamente posterior;
-- perigo, atenção e informação mantêm ícone e rótulo textual;
-- não usar três painéis altos consecutivos.
+`shadow-sm`/`shadow-md` já são idênticos entre `globals.css`, `landing.css` e
+`public-css.ts` — manter. **Mudanças:** promover `shadow-hover` (hoje só em
+`landing.css`/`public-css.ts`) para dentro de `app/globals.css`/`tokens.css`; adicionar
+`shadow-lg` e `shadow-focus` a `landing.css`/`public-css.ts` (hoje ausentes lá); adicionar
+overrides de `.dark` para `shadow-sm`/`shadow-md`/`shadow-hover` em `app/globals.css`
+(hoje o admin não reescurece sombra nenhuma no tema escuro, só o público faz isso);
+trocar a sombra ad hoc de `.lp .lb-inner img` (`0 20px 60px rgba(0,0,0,.45)`) por
+`shadow-lg`.
 
-### StatCard
+## 5. Regra tipográfica: Playfair vs. Inter
 
-- overline curta;
-- valor em Inter com números tabulares;
-- comparação ou contexto em uma linha;
-- ícone opcional, sem competir com o valor;
-- variantes neutra, positiva, atenção e crítica.
+- **Playfair Display** — só para títulos editoriais/institucionais: `h1`–`h4` de página,
+  títulos de seção da landing (`.section-title`), hero, nomes de clube/marca em destaque,
+  citações de depoimento (texto de prosa, não dado).
+- **Inter** — tudo o mais, sem exceção: corpo de texto, controles, navegação, tabelas,
+  rótulos, **e todo número/KPI/dado tabular**, com `font-variant-numeric: tabular-nums`.
+- **Achado concreto da fuga:** `components/landing/landing.css`, seletor
+  `.lp .marcos-item strong` (os números de marcos — "anos", "alunos" etc. na landing),
+  usa `var(--font-heading)` (Playfair). É exatamente o vazamento que a auditoria aponta.
+  **Mudança:** trocar para `var(--font-body)` + `font-variant-numeric: tabular-nums`,
+  mantendo peso 800 e `letter-spacing` atual para preservar o impacto visual sem herdar a
+  leitura editorial.
+- O app já tem o padrão certo em `app/globals.css`: seletor `[data-numeric]` força Inter +
+  `tabular-nums`. **Adotar esse mesmo atributo/convenção em `landing.css` e
+  `public-css.ts`** para qualquer número futuro, em vez de reinventar a regra por
+  componente.
 
-### QuickAction
+## 6. Espaçamento
 
-- no máximo cinco ações primárias no dashboard;
-- ícone, verbo curto e área clicável mínima de 44 px;
-- mobile em grade de duas colunas;
-- ações secundárias permanecem na navegação contextual.
+`tokens.css` já define uma escala em múltiplos de 4px e deve ser a canônica — não criar
+uma nova:
 
-### FilterBar
+| Token | rem | px |
+|---|---|---|
+| `space-3xs` | `0.125rem` | 2px |
+| `space-2xs` | `0.25rem` | 4px |
+| `space-xs` | `0.5rem` | 8px |
+| `space-sm` | `0.75rem` | 12px |
+| `space-md` | `1rem` | 16px |
+| `space-lg` | `1.5rem` | 24px |
+| `space-xl` | `2rem` | 32px |
+| `space-2xl` | `3rem` | 48px |
+| `space-3xl` | `4rem` | 64px |
 
-- busca ocupa o espaço flexível;
-- filtros usam rótulos acessíveis e largura previsível;
-- filtros ativos aparecem como chips removíveis;
-- botão de limpar só aparece quando necessário;
-- desktop em uma linha; mobile empilhado sem corte.
+`landing.css` e `public-css.ts` hoje usam valores de espaçamento soltos em px (`14px`,
+`28px`, `36px`, `60px`...) fora dessa escala. Não é preciso migrar agora — mas qualquer
+espaçamento novo ou alterado nesses arquivos deve encaixar num dos oito degraus acima
+(arredondando para o mais próximo), não introduzir um nono valor.
 
-### DataTable
+## 7. Foco e acessibilidade
 
-- cabeçalho fixo apenas quando houver rolagem vertical real;
-- números alinhados à direita e com algarismos tabulares;
-- status em badge textual;
-- ação principal visível e ações secundárias em menu;
-- seleção em lote ativa uma barra contextual;
-- mobile usa cards/linhas resumidas com expansão, não uma tabela comprimida;
-- estados vazio, carregando, erro e sem resultado são componentes explícitos.
+- **Anel de foco canônico:** `outline: 3px solid var(--brand-600)` (`#C62828`) com
+  `outline-offset: 2px` (3px em botões/cards com borda visível). É o padrão já dominante
+  em `landing.css`, `public-css.ts` e nos blocos `.auth-experience`/`.portal-familia` de
+  `app/globals.css` — vira regra única, inclusive para os poucos lugares do admin que
+  ainda dependem só de `--shadow-focus`.
+- `--shadow-focus` (`0 0 0 4px rgba(198,40,40,.15)`) deixa de ser um mecanismo de foco
+  paralelo e passa a ser **glow opcional complementar** ao `outline`, só para
+  inputs/cards do admin que já o usam — nunca substituto do `outline` em elementos
+  focáveis por teclado (`outline` sozinho é o que sobrevive em modo alto-contraste do
+  SO; `box-shadow` não).
+- **Contraste mínimo:** texto normal ≥ 4.5:1; texto grande (≥ 24px, ou ≥ 19px em negrito)
+  ≥ 3:1; bordas de componente e indicador de foco ≥ 3:1 contra o fundo adjacente — WCAG
+  2.2 AA. `brand-600` (`#C62828`) sobre `paper-50` (`#FAF8F5`) atende a esse mínimo de
+  3:1 para uso em anel de foco e ícones; não usar `brand-600` como texto pequeno sobre
+  fundos claros sem checar contraste caso a caso (prefira `brand-800`/`brand-950` para
+  texto).
+- `prefers-reduced-motion: reduce` já é respeitado em `landing.css`; estender a mesma
+  guarda a qualquer transição nova introduzida no admin.
 
-### Button
+## 8. Como aplicar
 
-- alturas: 36 px compacto, 44 px padrão, 48 px destaque;
-- variantes: primary, secondary, outline, ghost, destructive e link;
-- apenas uma ação primary por região visual;
-- ícone isolado exige `aria-label` e área mínima de 40 × 40 px.
+Este documento não migra código — define a fonte da verdade para a próxima tarefa. Os
+quatro arquivos que hoje declaram tokens devem passar a **importar/referenciar** os
+valores acima em vez de redeclará-los cada um à sua maneira:
 
-### FormField
+1. **`tokens.css`** vira a única origem de valores brutos (hex, rem, easing, `oklch`
+   quando fizer sentido) — cor de marca, neutros, semânticos, raio e espaçamento.
+2. **`app/globals.css`** só deve mapear `tokens.css` para os slots do shadcn/Tailwind
+   (`--color-*`, `--radius-*`, `--shadow-*`, `--background`, `--card`, etc.) — sem
+   hex literal solto nem escala de raio paralela.
+3. **`tailwind.config.ts`** deve apontar `brand`/`ink`/`paper` para os mesmos valores de
+   `tokens.css` (hoje já bate em hex; é só formalizar a origem única para não
+   divergir de novo).
+4. **`components/landing/landing.css`** e **`lib/public-css.ts`** devem consumir os
+   mesmos valores canônicos de cor, raio e sombra (claro e escuro) em vez de manter uma
+   cópia própria — inclusive as correções listadas nas seções 2–4 (`bg`/`card`/`radius-md`
+   escuros, `shadow-hover`/`shadow-lg`/`shadow-focus` ausentes, número da `.marcos-item`
+   em Playfair).
+5. Telas de autenticação com raio solto em `22px`/`28px` (fora do escopo desta tarefa,
+   não estavam entre os 4 arquivos revisados) devem migrar para `radius-panel`/
+   `radius-hero` na mesma passada.
 
-- label sempre visível;
-- ajuda antes do erro; erro junto ao campo;
-- altura padrão de 44 px;
-- foco com ring de 4 px sem deslocamento do layout;
-- placeholder não substitui label.
-
-### Dialog e Sheet
-
-- dialog para decisões curtas e formulários focados;
-- sheet para navegação, detalhes e fluxos auxiliares no mobile;
-- rodapé com ação principal à direita no desktop e largura total no mobile;
-- confirmação destrutiva explicita objeto e consequência.
-
-## Navegação
-
-- Sidebar desktop mantém os três grupos atuais, com no máximo um grupo expandido por contexto.
-- Item ativo usa barra vermelha, fundo suave e texto forte.
-- Badges numéricos aparecem apenas quando exigem ação.
-- BottomNav contém cinco destinos prioritários; o restante fica no menu.
-- Nomes e ícones devem ser idênticos entre Sidebar, BottomNav e busca global.
-
-## Acessibilidade
-
-- contraste mínimo WCAG AA: 4,5:1 em texto e 3:1 em texto grande/elementos gráficos;
-- foco visível em todos os controles por teclado;
-- área de toque mínima de 44 × 44 px em mobile;
-- headings em ordem lógica, com um `h1` por página;
-- alerts dinâmicos usam `role="alert"` ou região `aria-live` apropriada;
-- ícones decorativos usam `aria-hidden`;
-- informações não dependem apenas de cor;
-- animações respeitam `prefers-reduced-motion`;
-- adicionar axe aos fluxos E2E principais.
-
-## Movimento
-
-- rápido: 120 ms para hover e press;
-- padrão: 200 ms para expansão e troca de estado;
-- entrada de overlay: 240 ms;
-- easing padrão: `cubic-bezier(.25,.46,.45,.94)`;
-- evitar animação de layout em tabelas e painéis de dados;
-- skeletons podem usar pulse suave, desativado em redução de movimento.
-
-## Iconografia e imagens
-
-- Lucide permanece como biblioteca única de ícones de interface.
-- Tamanho padrão: 16 px em controles, 20 px em navegação, 24 px em destaques.
-- Escudo oficial aparece em marca, contexto institucional e adversários, sem repetição ornamental.
-- Fotografias mantêm proporção definida, `object-fit: cover` e texto alternativo útil.
-- Assets faltantes usam fallback neutro com nome/iniciais, nunca imagem quebrada.
-
-## Estratégia de implementação
-
-### Fundação
-
-- consolidar tokens em `app/globals.css`;
-- fazer Tailwind e CSS público consumirem aliases;
-- alinhar Button, Card, Input, Badge e PageHeader;
-- introduzir testes de contraste, axe e overflow.
-
-### Portal administrativo
-
-- implementar ContextBar, AlertSummary, FilterBar e DataTable;
-- migrar dashboard e pagamentos primeiro;
-- validar 390, 768, 1024 e 1440 px;
-- decompor componentes por blocos reais da interface.
-
-### Demais áreas
-
-- migrar campeonatos, avaliações, agenda, alunos e inadimplência;
-- alinhar Sidebar e BottomNav;
-- migrar portal da família, landing e páginas públicas para os tokens canônicos;
-- preservar textos e estrutura de rotas.
-
-### Robustez
-
-- ampliar cobertura de Mercado Pago, email, Google Calendar, WhatsApp e IA;
-- automatizar snapshots visuais das páginas prioritárias;
-- concluir checklist de produção, backup e crons quando houver hospedagem.
-
-## Critérios de aceite
-
-- nenhuma página apresenta overflow horizontal em 390 px;
-- landing, autenticação, família e admin usam os mesmos tokens primitivos;
-- apenas títulos editoriais usam Playfair;
-- ações primárias são únicas e evidentes por região;
-- tabelas possuem alternativa mobile legível;
-- fluxos prioritários passam em axe sem violações críticas ou sérias;
-- screenshots de referência cobrem tema claro, tema escuro, desktop e mobile;
-- lint, TypeScript, unitários, E2E e build permanecem verdes;
-- conteúdo textual e rotas permanecem inalterados.
-
-## Hallmark — sistema bloqueado
-
-- **Gênero:** playful, aplicado como acolhimento sofisticado — nunca infantil.
-- **Marketing:** composição editorial institucional, preservando a arquitetura da landing.
-- **Aplicação:** macroestrutura Workbench, orientada a filtros, resumo e ação.
-- **Conteúdo:** leitura tipográfica direta, sem enriquecimento ornamental.
-- **Movimento:** feedback de controle; sem elevação decorativa de cards.
-- **Fonte de tokens:** `tokens.css`, importado por `app/globals.css`.
-
-Todas as páginas compartilham tema, tipografia, CTA e navegação. A variação ocorre
-somente pela densidade e pelos componentes necessários à tarefa.
-
-## Exports
-
-### CSS e Tailwind v4
-
-`tokens.css` contém os primitivos portáteis em OKLCH. O bloco `@theme` de
-`app/globals.css` mapeia esses primitivos para as utilities Tailwind já usadas pelo app.
-
-### DTCG
-
-```json
-{
-  "$schema": "https://design-tokens.github.io/community-group/format/",
-  "color": {
-    "paper": { "$value": "oklch(97.8% 0.009 76)", "$type": "color" },
-    "ink": { "$value": "oklch(20.5% 0.015 38)", "$type": "color" },
-    "accent": { "$value": "oklch(51.6% 0.197 28)", "$type": "color" }
-  },
-  "font": {
-    "display": { "$value": "Playfair Display, Georgia, serif", "$type": "fontFamily" },
-    "body": { "$value": "Inter, system-ui, sans-serif", "$type": "fontFamily" }
-  },
-  "space": {
-    "md": { "$value": "1rem", "$type": "dimension" },
-    "lg": { "$value": "1.5rem", "$type": "dimension" }
-  }
-}
-```
-
-### shadcn/ui
-
-O mapeamento canônico permanece em `app/globals.css`: paper → `--background`,
-paper-raised → `--card`/`--popover`, ink → `--foreground`, vermelho alvirrubro →
-`--primary`/`--ring`, e os neutros quentes → `--muted`/`--border`/`--input`.
+Nenhuma mudança de código foi feita nesta tarefa — só este documento.

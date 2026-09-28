@@ -29,20 +29,21 @@
   --color-paper-50: #FAF8F5;
 
   /* Semânticos */
-  --color-success-50:  #EDF9F4;
-  --color-success-600: #0F7A5A;
+  --color-success-50:  var(--success-50);
+  --color-success-600: var(--success-600);
   --color-warning-50: var(--warning-50);
   --color-warning-600: var(--warning-600);
   --color-warning-700: var(--warning-700);
-  --color-danger-50:   #FEF1F0;
-  --color-danger-600:  #B3261E;
-  --color-info-50:     #EFF5FD;
-  --color-info-600:    #225EA8;
+  --color-danger-50:   var(--danger-50);
+  --color-danger-600:  var(--danger-600);
+  --color-info-50:     var(--info-50);
+  --color-info-600:    var(--info-600);
 
   /* Sombras quentes */
   --shadow-sm: 0 2px 8px rgba(74, 11, 11, 0.06);
   --shadow-md: 0 8px 28px rgba(74, 11, 11, 0.10);
   --shadow-lg: 0 24px 60px rgba(74, 11, 11, 0.12);
+  --shadow-hover: 0 14px 40px rgba(198, 40, 40, 0.16);
 
   /* next/font no <html> define --font-inter e --font-playfair.
      Aqui só criamos aliases semânticos (sem auto-referência circular). */
@@ -128,13 +129,13 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: var(--radius-control);
+  --radius-md: var(--radius-card);
+  --radius-lg: var(--radius-panel);
+  --radius-xl: var(--radius-hero);
+  --radius-2xl: var(--radius-hero);
+  --radius-3xl: var(--radius-hero);
+  --radius-4xl: var(--radius-hero);
 }
 
 :root {
@@ -165,13 +166,12 @@
   --chart-3: #EF9A9A;
   --chart-4: #A86417;
   --chart-5: #0F7A5A;
-  --radius: 0.875rem;
-  --radius-control: 0.625rem;
   --radius-card: 1rem;
   --radius-panel: 1.25rem;
   --radius-hero: 1.5rem;
   --radius-pill: 999px;
   --shadow-xs: 0 1px 2px rgba(74, 11, 11, 0.05);
+  --shadow-hover: 0 14px 40px rgba(198, 40, 40, 0.16);
   --shadow-focus: 0 0 0 4px rgba(198, 40, 40, 0.15);
   --space-page: clamp(1rem, 2.2vw, 2rem);
   --content-max: 100rem;
@@ -205,6 +205,9 @@
   --border: rgba(255,255,255,0.1);
   --input: rgba(255,255,255,0.12);
   --ring: #E53935;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.36);
+  --shadow-hover: 0 14px 40px rgba(198, 40, 40, 0.28);
   --chart-1: #E53935;
   --chart-2: #B7A7A1;
   --chart-3: #F6CACA;

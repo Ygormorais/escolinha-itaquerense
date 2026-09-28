@@ -23,10 +23,12 @@ export const PUB_TOKENS = `
   --border-strong:#D4CBC0;
   --shadow-sm:0 2px 8px rgba(74,11,11,.06);
   --shadow-md:0 8px 28px rgba(74,11,11,.10);
+  --shadow-lg:0 24px 60px rgba(74,11,11,.12);
   --shadow-hover:0 14px 40px rgba(198,40,40,.16);
+  --shadow-focus:0 0 0 4px rgba(198,40,40,.15);
   --shadow-red:0 8px 28px rgba(198,40,40,.22);
   --radius-sm:10px;
-  --radius-md:14px;
+  --radius-md:16px;
   --radius-lg:20px;
   --radius-xl:24px;
   --radius-pill:999px;
@@ -42,17 +44,18 @@ export const PUB_TOKENS = `
 
 /** Tokens escuros — mantém brand vermelho; superfícies em carvão quente. */
 export const PUB_TOKENS_DARK = `
-  --bg:#14110F;
-  --bg-card:#1F1A18;
-  --bg-muted:#1A1614;
-  --bg-elevated:#24201D;
-  --text:#F5F0EB;
-  --text-muted:#B8AFA8;
+  --bg:#171312;
+  --bg-card:#211A18;
+  --bg-muted:#2B2321;
+  --bg-elevated:#3A1717;
+  --text:#F8F2F0;
+  --text-muted:#B7A7A1;
   --text-light:#8A827C;
-  --border:#3A332E;
-  --border-strong:#4A423C;
+  --border:rgba(255,255,255,.1);
+  --border-strong:rgba(255,255,255,.16);
   --shadow-sm:0 2px 8px rgba(0,0,0,.28);
   --shadow-md:0 8px 28px rgba(0,0,0,.36);
+  --shadow-lg:0 24px 60px rgba(0,0,0,.42);
   --shadow-hover:0 14px 40px rgba(198,40,40,.28);
   --shadow-red:0 8px 28px rgba(198,40,40,.32)
 `
