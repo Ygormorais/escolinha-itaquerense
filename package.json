@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "npx prisma generate",
+    "setup": "npx tsx scripts/setup-local.ts",
     "db:migrate": "npx prisma migrate deploy",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:seed-prod": "npx tsx prisma/seed-prod.ts",
