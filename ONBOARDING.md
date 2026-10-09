@@ -32,27 +32,21 @@ de instância única com Node/PM2/Caddy; veja `DEPLOY.md`.
 git clone https://github.com/Ygormorais/escolinha-itaquerense.git
 cd escolinha-itaquerense
 
-# 2. Use a branch de desenvolvimento
-git checkout develop
+# 2. Instale as dependências (o postinstall roda prisma generate automaticamente)
+npm ci
 
-# 3. Instale as dependências (o postinstall roda prisma generate automaticamente)
-npm install
+# 3. Crie o .env, aplique as migrations e popule o banco
+npm run setup
 
-# 4. Configure as variáveis de ambiente
-cp .env.example .env.local
-# Edite .env.local — veja a seção 3 para saber quais são obrigatórias
-
-# 5. Crie o banco e aplique as migrations
-npx prisma migrate dev
-
-# 6. (Opcional) Popule o banco com dados de teste
-npx tsx prisma/seed.ts
-
-# 7. Inicie o servidor de desenvolvimento
+# 4. Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-Acesse `http://localhost:3000`. O login padrão usa as credenciais definidas em `ADMIN_USERNAME` / `ADMIN_PASSWORD` no `.env.local` (fallback de ambiente). Se não definidas, o app lê as variáveis do arquivo `.env.example` como padrão — defina-as explicitamente para evitar surpresas.
+Acesse `http://localhost:3000`. O login padrão usa as credenciais definidas em `ADMIN_USERNAME` / `ADMIN_PASSWORD` no `.env` (fallback de ambiente).
+
+O `npm run setup` copia `.env.example` para `.env` (se ainda não existir `.env` nem `.env.local`), roda `npm run db:migrate` e, só quando o banco é novo, `npm run db:seed`. Para fazer à mão, rode esses mesmos passos. O `.env.example` já traz `DATABASE_URL=file:./prisma/dev.db`; caminhos relativos são resolvidos a partir da raiz do repo, tanto pelo app quanto pelo Prisma CLI.
+
+Se aparecer `The table main.Noticia does not exist` (ou outra tabela), o app abriu um banco sem migrations: confira o `DATABASE_URL` do `.env`/`.env.local`, verifique se não há um `DATABASE_URL` exportado no terminal (ele vence os arquivos; use `unset DATABASE_URL`) e rode `npm run db:migrate`.
 
 ### Rodando testes
 
@@ -71,7 +65,7 @@ npx playwright test  # terminal 2
 
 ## 3. Variáveis de Ambiente
 
-Copie `.env.example` para `.env.local` no desenvolvimento. Na VPS, use
+Copie `.env.example` para `.env` no desenvolvimento (o `npm run setup` faz isso). Na VPS, use
 `.env.production.example` como base para o `.env` de produção com modo `600`.
 
 | Variável | Obrigatória | Descrição | Exemplo |
@@ -79,7 +73,7 @@ Copie `.env.example` para `.env.local` no desenvolvimento. Na VPS, use
 | `ADMIN_USERNAME` | Sim | Usuário admin via env (fallback se não houver usuário no banco) | `admin` |
 | `ADMIN_PASSWORD` | Sim | Senha admin via env — **troque em produção** | `senha-segura-aqui` |
 | `SESSION_SECRET` | Sim | Chave HMAC para assinar cookies de sessão (32 bytes hex) | `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
-| `DATABASE_URL` | Sim | Caminho do SQLite ou URL do PostgreSQL | `file:/app/prisma/dev.db` |
+| `DATABASE_URL` | Sim | Caminho do SQLite (relativo à raiz do repo ou absoluto) | `file:./prisma/dev.db` |
 | `CRON_SECRET` | Sim (produção) | Bearer token para endpoints de cron (`/api/cron/*`) | string aleatória |
 | `NEXT_PUBLIC_APP_URL` | Sim | URL base pública do app (usada em links de e-mail e webhooks) | `https://meudominio.com.br` |
 | `EVOLUTION_API_URL` | Não | URL da Evolution API para WhatsApp | `http://localhost:8080` |

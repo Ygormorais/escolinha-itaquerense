@@ -21,13 +21,25 @@ Sistema de gestão para escolinha de futebol E.C. Itaquerense — cadastro de al
 
 ```bash
 npm ci
-cp .env.example .env  # configure suas variáveis
-npm run db:migrate
-npm run db:seed
+npm run setup   # cria o .env, aplica as migrations e popula o banco
 npm run dev
 ```
 
+O `npm run setup` equivale a:
+
+```bash
+cp .env.example .env   # já traz DATABASE_URL=file:./prisma/dev.db
+npm run db:migrate     # cria prisma/dev.db com todas as tabelas
+npm run db:seed        # dados de teste (apaga os dados de teste atuais)
+```
+
 Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definidos no `.env`.
+
+> **Erro `The table main.X does not exist`?** O app está abrindo um banco sem
+> migrations. Confira se `DATABASE_URL=file:./prisma/dev.db` no `.env` (caminho
+> relativo à raiz do repo), se não há um `DATABASE_URL` exportado no terminal
+> (ele tem prioridade sobre o `.env`; use `unset DATABASE_URL`) e rode
+> `npm run db:migrate` de novo.
 
 ## Scripts
 
@@ -41,7 +53,9 @@ Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definid
 | `npm run test:e2e` | Testes E2E (Playwright) |
 | `npm run db:backup` | Backup completo de banco, uploads e configuração |
 | `npm run db:restore -- --confirm-stopped <backup>` | Valida e restaura o pacote completo com o serviço PM2 parado |
+| `npm run setup` | Setup local do zero (.env + migrations + seed) |
 | `npm run db:migrate` | Aplica migrations |
+| `npm run db:seed` | Recria os dados de teste |
 | `npm run db:studio` | Prisma Studio |
 | `npm run housekeeping` | Limpeza de dados antigos |
 
