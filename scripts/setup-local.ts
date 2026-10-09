@@ -6,6 +6,7 @@
  * Seguro para rodar de novo: não sobrescreve .env existente e só roda o seed
  * quando o banco acabou de ser criado (o seed apaga os dados de teste atuais).
  */
+import Database from "better-sqlite3"
 import { execSync } from "child_process"
 import fs from "fs"
 import path from "path"
@@ -38,8 +39,33 @@ if (fromShell) {
 }
 
 const dbPath = resolveDbPath()
-const novo = !fs.existsSync(dbPath)
+let novo = !fs.existsSync(dbPath)
 console.log(`📦 Banco SQLite: ${dbPath}${novo ? " (novo)" : ""}`)
+
+// Rodar `npm run dev` antes do migrate cria só a tabela _rate_limit no banco,
+// e aí o migrate recusa com P3005 ("database schema is not empty").
+if (!novo) {
+  const sqlite = new Database(dbPath)
+  const tabelas = sqlite
+    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
+    .all()
+    .map((t) => (t as { name: string }).name)
+  if (!tabelas.includes("_prisma_migrations")) {
+    if (tabelas.every((t) => t === "_rate_limit")) {
+      sqlite.exec("DROP TABLE IF EXISTS _rate_limit")
+      novo = true
+      console.log("🧹 Banco sem migrations (só _rate_limit, criado pelo app); limpo para migrar.")
+    } else {
+      sqlite.close()
+      console.error(
+        `❌ ${dbPath} tem tabelas mas nenhuma migration registrada (${tabelas.join(", ")}).\n` +
+          "   Se for só banco de teste, apague o arquivo e rode `npm run setup` de novo.",
+      )
+      process.exit(1)
+    }
+  }
+  sqlite.close()
+}
 
 run("npx prisma migrate deploy")
 

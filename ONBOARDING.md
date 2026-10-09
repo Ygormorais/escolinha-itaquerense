@@ -48,6 +48,8 @@ O `npm run setup` copia `.env.example` para `.env` (se ainda não existir `.env`
 
 Se aparecer `The table main.Noticia does not exist` (ou outra tabela), o app abriu um banco sem migrations: confira o `DATABASE_URL` do `.env`/`.env.local`, verifique se não há um `DATABASE_URL` exportado no terminal (ele vence os arquivos; use `unset DATABASE_URL`) e rode `npm run db:migrate`.
 
+Se o `db:migrate` falhar com `P3005 The database schema is not empty`, o app foi aberto antes das migrations e criou só a tabela `_rate_limit`. Rode `npm run setup`, que limpa esse caso, ou apague `prisma/dev.db` e rode `npm run db:migrate` e `npm run db:seed`.
+
 ### Rodando testes
 
 ```bash

@@ -40,6 +40,11 @@ Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definid
 > relativo à raiz do repo), se não há um `DATABASE_URL` exportado no terminal
 > (ele tem prioridade sobre o `.env`; use `unset DATABASE_URL`) e rode
 > `npm run db:migrate` de novo.
+>
+> **Erro `P3005 The database schema is not empty`?** O app foi aberto antes do
+> migrate e criou só a tabela `_rate_limit`. Rode `npm run setup` (ele limpa
+> esse caso) ou apague `prisma/dev.db` e rode `npm run db:migrate` e
+> `npm run db:seed`.
 
 ## Scripts
 
