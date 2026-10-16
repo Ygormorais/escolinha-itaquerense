@@ -5,26 +5,26 @@
  * Use em todo page.tsx público via `pubBase("ns")` + `publicFontClass`.
  */
 export const PUB_TOKENS = `
-  --red:#C62828;
-  --red-dark:#9F1D1D;
-  --red-deep:#4A0B0B;
-  --red-warm:#D84040;
-  --red-darker:#7F0000;
-  --red-soft:#E53935;
+  --red:var(--brand-600);
+  --red-dark:var(--brand-800);
+  --red-deep:var(--brand-950);
+  --red-warm:color-mix(in oklab, var(--brand-600) 50%, var(--brand-500));
+  --red-darker:var(--brand-900);
+  --red-soft:var(--brand-500);
   --white:#fff;
-  --bg:#FAF8F5;
+  --bg:var(--paper-50);
   --bg-card:#fff;
-  --bg-muted:#F3EFE9;
-  --bg-elevated:#FFFCF9;
-  --text:#1C1412;
-  --text-muted:#5C534E;
-  --text-light:#8A827C;
-  --border:#E8E2DA;
-  --border-strong:#D4CBC0;
-  --shadow-sm:0 2px 8px rgba(74,11,11,.06);
-  --shadow-md:0 8px 28px rgba(74,11,11,.10);
-  --shadow-hover:0 14px 40px rgba(198,40,40,.16);
-  --shadow-red:0 8px 28px rgba(198,40,40,.22);
+  --bg-muted:var(--paper-100);
+  --bg-elevated:var(--paper-raised);
+  --text:var(--ink-950);
+  --text-muted:var(--ink-700);
+  --text-light:var(--ink-500);
+  --border:var(--ink-200);
+  --border-strong:var(--ink-300);
+  --shadow-sm:0 2px 8px color-mix(in srgb, var(--brand-950) 6%, transparent);
+  --shadow-md:0 8px 28px color-mix(in srgb, var(--brand-950) 10%, transparent);
+  --shadow-hover:0 14px 40px color-mix(in srgb, var(--brand-600) 16%, transparent);
+  --shadow-red:0 8px 28px color-mix(in srgb, var(--brand-600) 22%, transparent);
   --radius-sm:10px;
   --radius-md:14px;
   --radius-lg:20px;
@@ -48,13 +48,13 @@ export const PUB_TOKENS_DARK = `
   --bg-elevated:#24201D;
   --text:#F5F0EB;
   --text-muted:#B8AFA8;
-  --text-light:#8A827C;
+  --text-light:var(--ink-500);
   --border:#3A332E;
   --border-strong:#4A423C;
   --shadow-sm:0 2px 8px rgba(0,0,0,.28);
   --shadow-md:0 8px 28px rgba(0,0,0,.36);
-  --shadow-hover:0 14px 40px rgba(198,40,40,.28);
-  --shadow-red:0 8px 28px rgba(198,40,40,.32)
+  --shadow-hover:0 14px 40px color-mix(in srgb, var(--brand-600) 28%, transparent);
+  --shadow-red:0 8px 28px color-mix(in srgb, var(--brand-600) 32%, transparent)
 `
 
 /** CSS base para um namespace público: tokens + reset + link reset */
