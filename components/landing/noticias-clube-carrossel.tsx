@@ -14,12 +14,12 @@ export interface NoticiaClube {
 }
 
 const CORES: Record<string, string> = {
-  "Resultado":   "linear-gradient(140deg,#0F7A5A 0%,#1FA87A 100%)",
-  "Conquista":   "linear-gradient(140deg,#4A0B0B 0%,#C62828 55%,#D84040 100%)",
-  "Convocação":  "linear-gradient(140deg,#4A0B0B 0%,#9F1D1D 100%)",
-  "Evento":      "linear-gradient(140deg,#4A0B0B 0%,#C62828 60%,#D84040 100%)",
-  "Comunicado":  "linear-gradient(140deg,#4A0B0B 0%,#7F0000 100%)",
-  "Notícia":     "linear-gradient(140deg,#4A0B0B 0%,#C62828 60%,#D84040 100%)",
+  "Resultado":   "linear-gradient(140deg,var(--success-600) 0%,#1FA87A 100%)",
+  "Conquista":   "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 55%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
+  "Convocação":  "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-800) 100%)",
+  "Evento":      "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 60%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
+  "Comunicado":  "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-900) 100%)",
+  "Notícia":     "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 60%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
 }
 
 const PAGE_SIZE = 3
