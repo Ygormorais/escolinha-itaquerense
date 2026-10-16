@@ -1,15 +1,15 @@
 .ncc *{margin:0;padding:0;box-sizing:border-box}
-  .ncc{background:var(--bg,#FAF8F5);padding:0 0 clamp(48px,7vw,72px)}
+  .ncc{background:var(--bg,var(--paper-50));padding:0 0 clamp(48px,7vw,72px)}
   .ncc .container{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,28px)}
 
   .ncc-header{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;padding-bottom:24px;flex-wrap:wrap}
   .ncc-header h2{
     font-family:var(--font-heading),Georgia,serif;
-    font-size:clamp(24px,3vw,32px);font-weight:700;color:var(--text,#1C1412);
-    letter-spacing:-.015em;border-left:4px solid var(--red,#C62828);padding-left:14px;line-height:1.2;
+    font-size:clamp(24px,3vw,32px);font-weight:700;color:var(--text,var(--ink-950));
+    letter-spacing:-.015em;border-left:4px solid var(--red,var(--brand-600));padding-left:14px;line-height:1.2;
     margin:0;flex:1 1 auto;min-width:min(100%,200px)
   }
-  .ncc-header a{font-size:13px;font-weight:600;color:var(--red,#C62828);display:inline-flex;align-items:center;gap:6px;line-height:1;white-space:nowrap;flex:0 0 auto;transition:opacity .2s}
+  .ncc-header a{font-size:13px;font-weight:600;color:var(--red,var(--brand-600));display:inline-flex;align-items:center;gap:6px;line-height:1;white-space:nowrap;flex:0 0 auto;transition:opacity .2s}
   .ncc-header a:hover{opacity:.75}
   @media(max-width:640px){
     .ncc-header{flex-direction:column;align-items:flex-start;gap:12px}
@@ -22,8 +22,8 @@
   @media(max-width:1020px) and (min-width:761px){.ncc-track{grid-template-columns:repeat(2,1fr)}}
 
   .ncc-card{border-radius:var(--radius-md,14px);overflow:hidden;position:relative;height:220px;cursor:pointer;
-    box-shadow:var(--shadow-sm,0 2px 8px rgba(74,11,11,.06));transition:transform .25s,box-shadow .25s}
-  .ncc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover,0 14px 40px rgba(198,40,40,.16))}
+    box-shadow:var(--shadow-sm,0 2px 8px color-mix(in srgb, var(--brand-950) 6%, transparent));transition:transform .25s,box-shadow .25s}
+  .ncc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover,0 14px 40px color-mix(in srgb, var(--brand-600) 16%, transparent))}
   .ncc-bg{position:absolute;inset:0}
   .ncc-bg img{width:100%;height:100%;object-fit:cover}
   .ncc-bg-grad{position:absolute;inset:0}
@@ -33,7 +33,7 @@
   .ncc-logo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
   .ncc-logo img{width:56px;height:56px;object-fit:contain;opacity:.2;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3))}
   .ncc-overlay{position:absolute;bottom:0;left:0;right:0;
-    background:linear-gradient(to top,rgba(28,20,18,.88) 0%,rgba(28,20,18,.5) 55%,transparent 100%);
+    background:linear-gradient(to top,color-mix(in srgb, var(--ink-950) 88%, transparent) 0%,color-mix(in srgb, var(--ink-950) 50%, transparent) 55%,transparent 100%);
     padding:16px 18px 18px}
   .ncc-badge{display:inline-flex;align-items:center;gap:5px;
     background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);
@@ -47,6 +47,6 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
   .ncc-dots{display:flex;align-items:center;justify-content:center;gap:7px;padding-top:18px}
-  .ncc-dot{width:7px;height:7px;border-radius:50%;border:none;cursor:pointer;background:var(--border,#E8E2DA);
+  .ncc-dot{width:7px;height:7px;border-radius:50%;border:none;cursor:pointer;background:var(--border,var(--ink-200));
     transition:all .2s;padding:0}
-  .ncc-dot.active{background:var(--red,#C62828);width:20px;border-radius:3px}
+  .ncc-dot.active{background:var(--red,var(--brand-600));width:20px;border-radius:3px}
