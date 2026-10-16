@@ -94,8 +94,8 @@ branco (em vez de hex sólido) evitam um sexto tom de cinza flutuando fora da es
 | Token | Valor | Uso |
 |---|---|---|
 | `success-600` | `#0F7A5A` | confirmação, pagamento em dia |
-| `warning-600` | `#A86417` | atenção, pendência |
-| `warning-700` | tom mais escuro de `#A86417` para hover/texto sobre fundo claro | atenção (ênfase) |
+| `warning-600` | `#985A13` | atenção, pendência (texto; `#A86417` fica para preenchimento de gráfico) |
+| `warning-700` | tom mais escuro de `#985A13` para hover/texto sobre fundo claro | atenção (ênfase) |
 | `danger-600` | `#B3261E` | erro, exclusão, inadimplência |
 | `info-600` | `#225EA8` | informação neutra |
 | `whatsapp` | `#25D366` | exclusivo do botão flutuante de WhatsApp — não usar como "sucesso" |
