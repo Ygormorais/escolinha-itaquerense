@@ -252,7 +252,8 @@ export async function routeMessage(telefone: string, texto: string) {
         logger.error("ai-router: loop retry also failed", { telefone, error: String(retryErr) })
         const provider = getProvider()
         await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
-        break
+        // A resposta anterior ainda é o tool_use; seguir enviaria um texto parcial depois do aviso.
+        return
       }
     }
   }
