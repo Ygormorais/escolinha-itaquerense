@@ -11,20 +11,34 @@ import type { MatchResult } from "@/lib/ofx-matcher"
 
 type Fase = "upload" | "preview"
 
+const MAX_OFX_SIZE_BYTES = 5 * 1024 * 1024
+
 export function ImportarExtratoClient() {
   const [fase, setFase] = useState<Fase>("upload")
   const [arquivo, setArquivo] = useState<File | null>(null)
+  const [conteudoOfx, setConteudoOfx] = useState("")
   const [resultados, setResultados] = useState<MatchResult[]>([])
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
   const [isPreviewing, setIsPreviewing] = useState(false)
   const [isConfirming, startConfirm] = useTransition()
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setArquivo(e.target.files?.[0] ?? null)
+    const file = e.target.files?.[0] ?? null
+    if (file && file.size > MAX_OFX_SIZE_BYTES) {
+      toast.error("Arquivo excede o limite de 5MB.")
+      e.target.value = ""
+      setArquivo(null)
+      return
+    }
+    setArquivo(file)
   }
 
   function handleAnalisar() {
     if (!arquivo) return
+    if (arquivo.size > MAX_OFX_SIZE_BYTES) {
+      toast.error("Arquivo excede o limite de 5MB.")
+      return
+    }
     setIsPreviewing(true)
     const reader = new FileReader()
     reader.onload = async (e) => {
@@ -39,6 +53,7 @@ export function ImportarExtratoClient() {
         const alta = result
           .filter((r) => r.confianca === "alta")
           .map((r) => r.fitid)
+        setConteudoOfx(content)
         setSelecionados(new Set(alta))
         setResultados(result)
         setFase("preview")
@@ -70,12 +85,13 @@ export function ImportarExtratoClient() {
         pagamentoId: r.pagamentoId!,
         valor: r.amount,
         dataPagamento: r.date.toISOString().slice(0, 10),
+        fitid: r.fitid,
       }))
 
     if (selecoes.length === 0) return
 
     startConfirm(async () => {
-      const result = await confirmarImportacaoOFX(selecoes)
+      const result = await confirmarImportacaoOFX(selecoes, conteudoOfx)
       if ("error" in result) {
         toast.error(result.error)
         return
@@ -83,6 +99,7 @@ export function ImportarExtratoClient() {
       toast.success(`${result.atualizados} pagamento(s) registrado(s)`)
       setFase("upload")
       setArquivo(null)
+      setConteudoOfx("")
       setResultados([])
       setSelecionados(new Set())
     })

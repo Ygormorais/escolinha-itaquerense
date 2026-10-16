@@ -22,9 +22,39 @@ type AlunoCSV = {
 
 type ImportResult = { importados: number; erros: { linha: number; erro: string }[] }
 
-export async function importarAlunosCSV(alunos: AlunoCSV[]): Promise<ImportResult | { error: string }> {
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024
+
+function parseCSV(text: string): AlunoCSV[] {
+  const lines = text.trim().split(/\r?\n/)
+  if (lines.length < 2) return []
+  const header = lines[0].split(/[;,]/).map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase())
+  return lines.slice(1).filter((line) => line.trim() !== "").map((line) => {
+    const cols = line.split(/[;,]/).map((c) => c.trim().replace(/^"|"$/g, ""))
+    const row: Record<string, string> = {}
+    header.forEach((h, i) => { row[h] = cols[i] ?? "" })
+    return {
+      nome: row.nome ?? "",
+      dataNascimento: row.datanascimento ?? row["data nascimento"] ?? "",
+      turma: row.turma ?? "",
+      horario: row.horario ?? "",
+      responsavel: row.responsavel ?? "",
+      telefone: row.telefone ?? "",
+      email: row.email ?? "",
+      dataMatricula: row.datamatricula ?? row["data matricula"] ?? "",
+      mensalidade: parseFloat(row.mensalidade?.replace(",", ".") ?? "0"),
+      status: row.status || "Ativo",
+      observacoes: row.observacoes,
+    }
+  })
+}
+
+export async function importarAlunosCSV(csvText: string): Promise<ImportResult | { error: string }> {
   await requireAuth(["admin", "secretaria"])
+  if (Buffer.byteLength(csvText, "utf8") > MAX_IMPORT_BYTES) {
+    return { error: "Arquivo excede o limite de 5MB" }
+  }
   try {
+    const alunos = parseCSV(csvText)
     const erros: { linha: number; erro: string }[] = []
     let importados = 0
 

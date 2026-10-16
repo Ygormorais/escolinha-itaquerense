@@ -15,6 +15,7 @@ type AlunoRow = {
 }
 
 const COLUNAS = ["nome", "dataNascimento", "turma", "horario", "responsavel", "telefone", "email", "dataMatricula", "mensalidade", "status", "observacoes"]
+const MAX_FILE_SIZE = 5 * 1024 * 1024
 
 function parseCSV(text: string): AlunoRow[] {
   const lines = text.trim().split(/\r?\n/)
@@ -53,6 +54,7 @@ function baixarTemplate() {
 
 export function ImportarAlunosClient() {
   const [preview, setPreview] = useState<AlunoRow[]>([])
+  const [csvText, setCsvText] = useState("")
   const [fileName, setFileName] = useState("")
   const [resultado, setResultado] = useState<{ importados: number; erros: { linha: number; erro: string }[] } | null>(null)
   const [pending, start] = useTransition()
@@ -60,11 +62,17 @@ export function ImportarAlunosClient() {
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("Arquivo excede o limite de 5MB")
+      e.target.value = ""
+      return
+    }
     setFileName(file.name)
     setResultado(null)
     const reader = new FileReader()
     reader.onload = (ev) => {
       const text = ev.target?.result as string
+      setCsvText(text)
       setPreview(parseCSV(text))
     }
     reader.readAsText(file, "UTF-8")
@@ -72,7 +80,7 @@ export function ImportarAlunosClient() {
 
   function handleImportar() {
     start(async () => {
-      const r = await importarAlunosCSV(preview)
+      const r = await importarAlunosCSV(csvText)
       if ("error" in r) { toast.error(r.error); return }
       setResultado(r)
       if (r.importados > 0) toast.success(`${plural(r.importados, "aluno importado", "alunos importados", "nenhum")} com sucesso`)

@@ -22,7 +22,8 @@ test.describe("Pagamentos — listagem e filtros", () => {
     await expect(page.getByText(String(anoAlvo), { exact: true })).toBeVisible()
     await page.getByRole("button", { name: "jan", exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`mes=${anoAlvo}-01`))
-    await expect(page.locator("table")).toBeVisible()
+    // Mês sem cobranças mostra o estado vazio do DataTable no lugar da tabela.
+    await expect(page.locator('table, [data-slot="empty-state"]').first()).toBeVisible()
   })
 
   test("busca por nome funciona na listagem", async ({ page }) => {

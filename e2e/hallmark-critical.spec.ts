@@ -46,8 +46,8 @@ test.describe("Correções críticas Hallmark", () => {
   test("alunos e inadimplência usam cartões no mobile e tabelas no desktop", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto("/alunos", { waitUntil: "networkidle" })
-    await expect(page.locator('[data-slot="student-mobile-list"]')).toBeVisible()
-    await expect(page.locator('[data-slot="student-table"]')).toBeHidden()
+    await expect(page.locator('[data-slot="data-table-mobile"]')).toBeVisible()
+    await expect(page.locator('[data-slot="data-table-desktop"]')).toBeHidden()
 
     await page.goto("/inadimplencia", { waitUntil: "networkidle" })
     await expect(page.locator('[data-slot="delinquency-mobile-list"]')).toBeVisible()
