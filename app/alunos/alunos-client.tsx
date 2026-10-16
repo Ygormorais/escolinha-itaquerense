@@ -1,306 +1,33 @@
 "use client"
 
-import { useState, useEffect, useTransition } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { useForm } from "react-hook-form"
-import { format } from "date-fns"
-import { PlusIcon, PencilIcon, UserXIcon, UserCheckIcon, Download, Upload, Loader2, Users } from "lucide-react"
+import { Download, Upload } from "lucide-react"
 import { useDebounce } from "@/hooks/use-debounce"
-import { formatMoney, sanitizeCSVCell, plural } from "@/lib/utils"
+import { plural } from "@/lib/utils"
 import { Pagination } from "@/components/ui/pagination"
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { TURMAS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { StatusBadge } from "@/components/ui/status-badge"
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog"
-import {
-  Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
-} from "@/components/ui/form"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table"
 import { toast } from "sonner"
-import { createAluno, updateAluno, inativarAluno, reativarAluno } from "@/app/actions/alunos"
+import { inativarAluno, reativarAluno } from "@/app/actions/alunos"
+import { AlunosListaMobile } from "./alunos-lista-mobile"
+import { AlunosTabela } from "./alunos-tabela"
+import { gerarCSVAlunos, montarQueryAlunos, type Aluno, type FiltrosAlunos } from "./alunos-utils"
 
-type Aluno = {
-  id: number
-  nome: string
-  dataNascimento: Date
-  turma: string
-  horario: string
-  responsavel: string
-  telefone: string
-  email: string
-  dataMatricula: Date
-  mensalidade: number
-  desconto: number
-  status: string
-  posicao: string | null
-  observacoes: string | null
-}
-
-type FormValues = {
-  nome: string
-  dataNascimento: string
-  turma: string
-  horario: string
-  responsavel: string
-  telefone: string
-  email: string
-  dataMatricula: string
-  mensalidade: string
-  desconto: string
-  status: string
-  posicao: string
-  observacoes: string
-}
-
-const HORARIOS = ["Seg/Qua 08h", "Seg/Qua 10h", "Seg/Qua 14h", "Ter/Qui 08h", "Ter/Qui 10h", "Ter/Qui 14h"]
-const POSICOES_FUTSAL = [
-  { value: "GOLEIRO",  label: "Goleiro" },
-  { value: "FIXO",     label: "Fixo" },
-  { value: "ALA_ESQ",  label: "Ala Esquerda" },
-  { value: "ALA_DIR",  label: "Ala Direita" },
-  { value: "PIVO",     label: "Pivô" },
-]
-
-export function AlunoFormDialog({
-  aluno,
-  trigger,
-  open: externalOpen,
-  onOpenChange: externalOnOpenChange,
-}: {
-  aluno?: Aluno
-  trigger: React.ReactNode
-  open?: boolean
-  onOpenChange?: (v: boolean) => void
-}) {
-  const [internalOpen, setInternalOpen] = useState(false)
-  const open = externalOpen ?? internalOpen
-  const setOpen = externalOnOpenChange ?? setInternalOpen
-  const [loading, startLoading] = useTransition()
-  const router = useRouter()
-
-  const form = useForm<FormValues>({
-    defaultValues: {
-      nome: aluno?.nome ?? "",
-      dataNascimento: aluno ? format(new Date(aluno.dataNascimento), "yyyy-MM-dd") : "",
-      turma: aluno?.turma ?? "",
-      horario: aluno?.horario ?? "",
-      responsavel: aluno?.responsavel ?? "",
-      telefone: aluno?.telefone ?? "",
-      email: aluno?.email ?? "",
-      dataMatricula: aluno ? format(new Date(aluno.dataMatricula), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      mensalidade: aluno ? String(aluno.mensalidade) : "",
-      desconto: aluno ? String(aluno.desconto ?? 0) : "0",
-      status: aluno?.status ?? "Ativo",
-      posicao: aluno?.posicao ?? "",
-      observacoes: aluno?.observacoes ?? "",
-    },
-  })
-
-  function onSubmit(values: FormValues) {
-    startLoading(async () => {
-      try {
-        const payload = { ...values, mensalidade: Number(values.mensalidade), desconto: Number(values.desconto ?? 0), posicao: values.posicao || null }
-        const result = aluno ? await updateAluno(aluno.id, payload) : await createAluno(payload)
-        if ("error" in result) {
-          toast.error(result.error)
-          return
-        }
-        toast.success(aluno ? "Aluno atualizado" : "Aluno cadastrado")
-        setOpen(false)
-        form.reset()
-        router.refresh()
-      } catch {
-        toast.error("Erro ao salvar aluno")
-      }
-    })
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <div onClick={() => setOpen(true)}>{trigger}</div>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{aluno ? "Editar Aluno" : "Novo Aluno"}</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <FormField control={form.control} name="nome" render={({ field }) => (
-                <FormItem className="col-span-2">
-                  <FormLabel>Nome completo</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="dataNascimento" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data de nascimento</FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="dataMatricula" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data de matrícula</FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="turma" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Turma</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione a turma" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TURMAS.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="horario" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Horário</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione o horário" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {HORARIOS.map((h) => (
-                          <SelectItem key={h} value={h}>{h}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="responsavel" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Responsável</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="telefone" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem className="col-span-2">
-                  <FormLabel>E-mail</FormLabel>
-                  <FormControl><Input type="email" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="mensalidade" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mensalidade (R$)</FormLabel>
-                  <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="desconto" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Desconto/Bolsa (R$)</FormLabel>
-                  <FormControl><Input type="number" step="0.01" min="0" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="status" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Ativo">Ativo</SelectItem>
-                        <SelectItem value="Inativo">Inativo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="posicao" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Posição (futsal)</FormLabel>
-                  <Select value={field.value} onValueChange={(v) => field.onChange(v === "none" ? "" : v)}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Não definida" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Não definida</SelectItem>
-                      {POSICOES_FUTSAL.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="observacoes" render={({ field }) => (
-                <FormItem className="col-span-2">
-                  <FormLabel>Observações</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-
-            <DialogFooter showCloseButton>
-              <Button type="submit" disabled={loading} className="bg-brand-800 text-white hover:bg-brand-900">
-                {loading ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : aluno ? "Salvar" : "Cadastrar"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  )
-}
+export { AlunoFormDialog, NovoAlunoButton } from "./aluno-form-dialog"
 
 type AlunosClientProps = {
   alunos: Aluno[]
   total: number
   page: number
   totalPages: number
-  filters: { q: string; turma: string; status: string }
+  filters: FiltrosAlunos
   frequenciaBaixa?: number[]
 }
 
@@ -311,32 +38,15 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   const router = useRouter()
 
   useEffect(() => {
-    const params = new URLSearchParams()
-    if (debouncedSearch) params.set("q", debouncedSearch)
-    if (filters.turma !== "Todas") params.set("turma", filters.turma)
-    if (filters.status !== "Todos") params.set("status", filters.status)
-    router.push(`/alunos?${params.toString()}`)
+    router.push(`/alunos?${montarQueryAlunos(debouncedSearch, { turma: filters.turma, status: filters.status })}`)
   }, [debouncedSearch, filters.turma, filters.status, router])
 
   function pushFilter(key: string, value: string, defaultVal: string) {
-    const params = new URLSearchParams()
-    if (debouncedSearch) params.set("q", debouncedSearch)
-    if (filters.turma !== "Todas") params.set("turma", filters.turma)
-    if (filters.status !== "Todos") params.set("status", filters.status)
-    if (value !== defaultVal) params.set(key, value)
-    else params.delete(key)
-    router.push(`/alunos?${params.toString()}`)
+    router.push(`/alunos?${montarQueryAlunos(debouncedSearch, filters, { chave: key, valor: value, padrao: defaultVal })}`)
   }
 
   function exportarCSV() {
-    const linhas = [
-      ["Nome", "Turma", "Horário", "Responsável", "Telefone", "Email", "Mensalidade", "Status"],
-      ...alunos.map((a) => [
-        a.nome, a.turma, a.horario, a.responsavel, a.telefone, a.email,
-        a.mensalidade.toFixed(2), a.status,
-      ]),
-    ]
-    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
+    const csv = gerarCSVAlunos(alunos)
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -361,12 +71,7 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   }
 
   function handlePageChange(p: number) {
-    const params = new URLSearchParams()
-    if (filters.q) params.set("q", filters.q)
-    if (filters.turma !== "Todas") params.set("turma", filters.turma)
-    if (filters.status !== "Todos") params.set("status", filters.status)
-    if (p > 1) params.set("page", String(p))
-    router.push(`/alunos?${params.toString()}`)
+    router.push(`/alunos?${montarQueryAlunos(filters.q, filters, { chave: "page", valor: p > 1 ? String(p) : "1", padrao: "1" })}`)
   }
 
   return (
@@ -429,153 +134,9 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <div data-slot="student-mobile-list" className="grid gap-3 md:hidden">
-        {alunos.length === 0 && (
-          <div className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border bg-card py-10 text-center">
-            <Users className="size-8 text-muted-foreground/30" />
-            <p className="text-sm text-muted-foreground">Nenhum aluno encontrado</p>
-          </div>
-        )}
-        {alunos.map((aluno) => (
-          <article key={aluno.id} className="min-w-0 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
-            <div className="flex min-w-0 items-start justify-between gap-3">
-              <div className="min-w-0">
-                <Link href={`/alunos/${aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">
-                  {aluno.nome}
-                </Link>
-                <p className="mt-1 text-sm text-muted-foreground">{aluno.turma} · {aluno.horario}</p>
-              </div>
-              <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />
-            </div>
-            {baixaSet.has(aluno.id) && (
-              <p className="mt-3 inline-flex rounded-full bg-danger-50 px-2 py-1 text-xs font-semibold text-danger-600">
-                Frequência abaixo de 75%
-              </p>
-            )}
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div className="min-w-0">
-                <dt className="text-xs text-muted-foreground">Responsável</dt>
-                <dd className="truncate font-medium">{aluno.responsavel}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Mensalidade</dt>
-                <dd data-numeric className="font-semibold">{formatMoney(aluno.mensalidade)}</dd>
-              </div>
-            </dl>
-            <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-3">
-              <AlunoFormDialog
-                aluno={aluno}
-                trigger={<Button variant="outline" className="w-full"><PencilIcon className="size-4" />Editar</Button>}
-              />
-              {aluno.status === "Ativo" ? (
-                <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
-                  <Button variant="ghost" className="w-full"><UserXIcon className="size-4" />Inativar</Button>
-                </ConfirmDialog>
-              ) : (
-                <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
-                  <Button variant="ghost" className="w-full"><UserCheckIcon className="size-4 text-success-600" />Reativar</Button>
-                </ConfirmDialog>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
+      <AlunosListaMobile alunos={alunos} frequenciaBaixa={baixaSet} onInativar={handleInativar} onReativar={handleReativar} />
 
-      <div data-slot="student-table" className="hidden overflow-x-auto rounded-xl border bg-card md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Turma</TableHead>
-              <TableHead>Horário</TableHead>
-              <TableHead>Responsável</TableHead>
-              <TableHead>Mensalidade</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-20">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {alunos.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <div className="flex flex-col items-center gap-2 py-10 text-center">
-                    <Users className="size-8 text-muted-foreground/30" />
-                    <p className="text-sm text-muted-foreground">Nenhum aluno encontrado</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-            {alunos.map((aluno) => (
-              <TableRow key={aluno.id} className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/alunos/${aluno.id}`}
-                      className="hover:underline hover:text-brand-800"
-                    >
-                      {aluno.nome}
-                    </Link>
-                    {baixaSet.has(aluno.id) && (
-                      <span
-                        title="Frequência abaixo de 75% este mês"
-                        className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold bg-danger-50 text-danger-600"
-                      >
-                        Freq. baixa
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{aluno.turma}</TableCell>
-                <TableCell>{aluno.horario}</TableCell>
-                <TableCell>{aluno.responsavel}</TableCell>
-                <TableCell>{formatMoney(aluno.mensalidade)}</TableCell>
-                <TableCell>
-                  <StatusBadge status={aluno.status as "Ativo" | "Inativo"} />
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <AlunoFormDialog
-                      key={aluno.id}
-                      aluno={aluno}
-                      trigger={
-                        <Button variant="ghost" size="icon-sm" aria-label="Editar aluno">
-                          <PencilIcon className="size-3.5" />
-                        </Button>
-                      }
-                    />
-                    {aluno.status === "Ativo" ? (
-                      <ConfirmDialog title="Inativar aluno?" description="O aluno será desativado e não aparecerá nas listas padrão." confirmLabel="Inativar" onConfirm={() => handleInativar(aluno.id)}>
-                        <Button variant="ghost" size="icon-sm" aria-label="Inativar aluno">
-                          <UserXIcon className="size-3.5" />
-                        </Button>
-                      </ConfirmDialog>
-                    ) : (
-                      <ConfirmDialog title="Reativar aluno?" description="O aluno voltará a ficar ativo no sistema." confirmLabel="Reativar" variant="warning" onConfirm={() => handleReativar(aluno.id)}>
-                        <Button variant="ghost" size="icon-sm" aria-label="Reativar aluno">
-                          <UserCheckIcon className="size-3.5 text-success-600" />
-                        </Button>
-                      </ConfirmDialog>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <AlunosTabela alunos={alunos} frequenciaBaixa={baixaSet} onInativar={handleInativar} onReativar={handleReativar} />
     </div>
-  )
-}
-
-export function NovoAlunoButton() {
-  return (
-    <AlunoFormDialog
-      trigger={
-        <Button className="bg-brand-800 text-white hover:bg-brand-900">
-          <PlusIcon className="size-4" />
-          Novo Aluno
-        </Button>
-      }
-    />
   )
 }
