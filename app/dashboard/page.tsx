@@ -1,29 +1,36 @@
 import { db } from "@/lib/db"
-import { formatMoney, plural } from "@/lib/utils"
+import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Users, TrendingUp, AlertCircle, CalendarCheck, Inbox, CheckCircle2, TrendingDown, UserX } from "lucide-react"
+import { Users, TrendingUp, AlertCircle, CalendarCheck, TrendingDown } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import Link from "next/link"
 import dynamic from "next/dynamic"
 import { MonthPicker } from "@/app/caixa/month-picker"
 import { GerarMesButton } from "@/components/dashboard/gerar-mes-button"
 import { getConfig } from "@/lib/config"
 import { getQtdeAlunosEmQueda } from "@/app/actions/frequencia"
 import { TURMAS } from "@/lib/constants"
-import { AlertBanner, type AlertItem } from "@/components/dashboard/alert-banner"
-import { EmptyState } from "@/components/ui/empty-state"
+import { AlertBanner } from "@/components/dashboard/alert-banner"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ResumoFinanceiro } from "@/components/dashboard/resumo-financeiro"
 import { AniversariantesCard } from "@/components/dashboard/aniversariantes-card"
+import { OcupacaoTurmasCard } from "@/components/dashboard/ocupacao-turmas-card"
+import { RiscoEvasaoCard } from "@/components/dashboard/risco-evasao-card"
+import { MensalidadesAtrasoCard, UltimosPagamentosCard } from "@/components/dashboard/ultimos-pagamentos-card"
+import { VencendoSemanaCard } from "@/components/dashboard/vencendo-semana-card"
 import { aniversariantesDoMes } from "@/lib/aniversariantes"
 import { requireAuth } from "@/lib/auth"
 import { normalizeDashboardMonth } from "@/lib/dashboard-query"
-import { summarizeFrequency, summarizeOverduePayments } from "@/lib/dashboard-metrics"
+import {
+  alertasDashboard,
+  alunosEmRiscoDeEvasao,
+  receitaPorTurma,
+  serieInadimplencia,
+  serieReceitaCustos,
+  summarizeFrequency,
+  summarizeOverduePayments,
+} from "@/lib/dashboard-metrics"
 import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
 
 const ChartReceitaCustos = dynamic(() => import("@/components/dashboard/chart-receita-custos").then(m => ({ default: m.ChartReceitaCustos })), { loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> })
@@ -183,35 +190,9 @@ export default async function DashboardPage({
     students: alunosInadimplentes,
   } = summarizeOverduePayments(pagamentosVencidosPorAluno)
 
-  const chartData = last6Months.map((mes) => {
-    const recebido = pagamentosChart
-      .filter((p) => p.dataPagamento && format(p.dataPagamento, "yyyy-MM") === mes)
-      .reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
-    const custos = custosChart
-      .filter((c) => format(c.data, "yyyy-MM") === mes)
-      .reduce((s, c) => s + c.valor, 0)
-    const [year, month] = mes.split("-")
-    const label = format(new Date(Number(year), Number(month) - 1), "MMM/yy", { locale: ptBR })
-    return { mes: label, recebido, custos }
-  })
-
-  const inadimplenciaData = last6Months.map((mes) => {
-    const registros = todosPagamentos6Meses.filter((p) => p.mesReferencia === mes)
-    const pagas = registros.filter((p) => p.dataPagamento).length
-    const vencidas = registros.length - pagas
-    const total = registros.length
-    const [year, month] = mes.split("-")
-    const label = format(new Date(Number(year), Number(month) - 1), "MMM/yy", { locale: ptBR })
-    return { mes: label, pagas, vencidas, taxa: total > 0 ? Math.round((vencidas / total) * 100) : 0 }
-  })
-
-  const receitaTurmaData = TURMAS.map((turma) => {
-    const receita = pagamentosMes
-      .filter((p) => p.aluno.turma === turma)
-      .reduce((s, p) => s + (p.valorRecebido ?? 0), 0)
-    const alunos = pagamentosMes.filter((p) => p.aluno.turma === turma).length
-    return { turma, receita, alunos }
-  }).filter((t) => t.alunos > 0)
+  const chartData = serieReceitaCustos(last6Months, pagamentosChart, custosChart)
+  const inadimplenciaData = serieInadimplencia(last6Months, todosPagamentos6Meses)
+  const receitaTurmaData = receitaPorTurma(TURMAS, pagamentosMes)
 
   const aniversariantesMes = aniversariantesDoMes(aniversariantes, dataRef, now)
 
@@ -220,37 +201,15 @@ export default async function DashboardPage({
     .filter((c) => format(c.data, "yyyy-MM") === mesAtual)
     .reduce((s, c) => s + c.valor, 0)
 
-  const riscoEvasao = inadimplentesComFreqBaixa
-    .map((a) => {
-      const total = a.frequencias.length
-      const presentes = a.frequencias.filter((f) => f.presenca === "Presente").length
-      const pctFreq = total > 0 ? Math.round((presentes / total) * 100) : null
-      return { ...a, pctFreq, mesesAtraso: a.pagamentos.length }
-    })
-    .filter((a) => a.pctFreq === null || a.pctFreq < 60)
-    .sort((a, b) => a.mesesAtraso - b.mesesAtraso)
-    .reverse()
-    .slice(0, 8)
+  const riscoEvasao = alunosEmRiscoDeEvasao(inadimplentesComFreqBaixa)
 
-  const alerts: AlertItem[] = []
-  if (mensalidadesVencidas > 5) {
-    alerts.push({ type: "danger", icon: "alerta", message: `${mensalidadesVencidas} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação.", href: "/inadimplencia" })
-  }
-  if (mensalidadesVencidas > 0 && mensalidadesVencidas <= 5) {
-    alerts.push({ type: "warning", icon: "alerta", message: `${plural(mensalidadesVencidas, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção.", href: "/inadimplencia" })
-  }
-  if (presencaMedia < 50 && totalFrequencias > 0) {
-    alerts.push({ type: "danger", icon: "frequencia", message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.`, href: "/frequencia" })
-  }
-  if (presencaMedia >= 50 && presencaMedia < 75 && totalFrequencias > 0) {
-    alerts.push({ type: "warning", icon: "frequencia", message: "Presença média moderada", detail: `${presencaMedia}% no mês atual.`, href: "/frequencia" })
-  }
-  if (vencendoSemana.length > 0) {
-    alerts.push({ type: "info", icon: "tendencia", message: `${plural(vencendoSemana.length, "mensalidade vence", "mensalidades vencem", "nenhuma")} nos próximos 7 dias`, detail: "Lembrar de cobrar antes do vencimento.", href: "/pagamentos" })
-  }
-  if (riscoEvasao.length >= 3) {
-    alerts.push({ type: "warning", icon: "alerta", message: `${riscoEvasao.length} alunos em risco de evasão`, detail: "Inadimplentes com presença abaixo de 60% este mês.", href: "/alunos" })
-  }
+  const alerts = alertasDashboard({
+    mensalidadesVencidas,
+    presencaMedia,
+    totalFrequencias,
+    vencendoSemana: vencendoSemana.length,
+    riscoEvasao: riscoEvasao.length,
+  })
 
   const receitaAnterior = pagamentosMesesRecentes
     .filter((pagamento) => pagamento.mesReferencia === mesAnterior)
@@ -348,197 +307,23 @@ export default async function DashboardPage({
       )}
       {canViewPayments && <ChartReceitaPorTurma data={receitaTurmaData} />}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="size-4 text-brand-800" />
-            Ocupação das Turmas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {ocupacaoTurmas.map(({ turma, count }) => {
-              const pct = config.capacidadeTurma > 0
-                ? Math.min(100, Math.round((count / config.capacidadeTurma) * 100))
-                : 0
-              const barColor =
-                pct >= 90 ? "bg-danger-600" :
-                pct >= 70 ? "bg-warning-600" :
-                "bg-success-600"
-              return (
-                <div key={turma} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">{turma}</span>
-                    <span className="text-xs text-muted-foreground">{count}/{config.capacidadeTurma}</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{pct}% ocupado</p>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <OcupacaoTurmasCard ocupacaoTurmas={ocupacaoTurmas} capacidadeTurma={config.capacidadeTurma} />
 
       {canViewPayments && vencendoSemana.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-warning-600">
-              <AlertCircle className="size-4" />
-              Mensalidades vencendo nos próximos 7 dias ({vencendoSemana.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Aluno</TableHead>
-                  <TableHead>Turma</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Mês Ref.</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vencendoSemana.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">
-                      <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
-                    </TableCell>
-                    <TableCell>{p.aluno.turma}</TableCell>
-                    <TableCell className="text-warning-600 font-medium">
-                      {format(p.dataVencimento, "dd/MM/yyyy")}
-                    </TableCell>
-                    <TableCell>{p.mesReferencia}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <VencendoSemanaCard pagamentos={vencendoSemana} />
       )}
 
       {canViewPayments && riscoEvasao.length > 0 && (
-        <Card className="border-danger-600/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-danger-600">
-              <UserX className="size-4" />
-              Alunos em Risco de Evasão ({riscoEvasao.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-border">
-              {riscoEvasao.map((a) => (
-                <Link key={a.id} href={`/alunos/${a.id}`} className="flex items-center justify-between px-6 py-3 hover:bg-muted/30 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium">{a.nome}</p>
-                    <p className="text-xs text-muted-foreground">{a.turma}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {a.pctFreq !== null && (
-                      <Badge className={`text-[10px] ${a.pctFreq < 40 ? "bg-danger-50 text-danger-600" : "bg-warning-50 text-warning-600"}`}>
-                        {a.pctFreq}% presença
-                      </Badge>
-                    )}
-                    {a.pctFreq === null && (
-                      <Badge className="text-[10px] bg-muted text-muted-foreground">sem chamada</Badge>
-                    )}
-                    <Badge className="text-[10px] bg-danger-50 text-danger-600">
-                      {a.mesesAtraso} {a.mesesAtraso === 1 ? "mês" : "meses"} atraso
-                    </Badge>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <RiscoEvasaoCard alunos={riscoEvasao} />
       )}
 
       <AniversariantesCard aniversariantes={aniversariantesMes} />
 
       {canViewPayments && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Card>
-          <CardHeader>
-            <CardTitle>Últimos Pagamentos</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {ultimosPagamentos.length === 0 ? (
-              <EmptyState
-                icon={Inbox}
-                title="Nenhum pagamento registrado"
-                description="Os pagamentos confirmados aparecerão aqui."
-              />
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Aluno</TableHead>
-                    <TableHead>Turma</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {ultimosPagamentos.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">
-                        <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
-                      </TableCell>
-                      <TableCell>{p.aluno.turma}</TableCell>
-                      <TableCell>{p.dataPagamento ? format(p.dataPagamento, "dd/MM/yyyy") : "-"}</TableCell>
-                      <TableCell className="text-right">
-                        {formatMoney(p.valorRecebido ?? 0)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-          </Card>
+          <UltimosPagamentosCard pagamentos={ultimosPagamentos} />
 
-          <Card>
-          <CardHeader>
-            <CardTitle>Mensalidades em Atraso</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {inadimplentes.length === 0 ? (
-              <EmptyState
-                icon={CheckCircle2}
-                title="Nenhuma mensalidade em atraso"
-                description="Tudo em dia neste mês."
-              />
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Aluno</TableHead>
-                    <TableHead>Turma</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {inadimplentes.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">
-                        <Link href={`/alunos/${p.aluno.id}`} className="hover:underline text-brand-800">{p.aluno.nome}</Link>
-                      </TableCell>
-                      <TableCell>{p.aluno.turma}</TableCell>
-                      <TableCell className="text-danger-600">
-                        {format(p.dataVencimento, "dd/MM/yyyy")}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-          </Card>
+          <MensalidadesAtrasoCard pagamentos={inadimplentes} />
         </div>
       )}
     </div>
