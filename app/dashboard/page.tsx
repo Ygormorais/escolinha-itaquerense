@@ -274,8 +274,6 @@ export default async function DashboardPage({
 
       {alerts.length > 0 && <AlertBanner alerts={alerts} />}
 
-      <QuickActions role={role} />
-
       {canViewCash && (
         <ResumoFinanceiro
           receita={receitaMes}
@@ -339,6 +337,9 @@ export default async function DashboardPage({
           href="/frequencia"
         />
       </section>
+
+      {/* Atalhos depois dos números: a primeira dobra fica com o que apoia decisão. */}
+      <QuickActions role={role} />
 
       {canViewPayments && (
         <div className={canViewCash ? "grid grid-cols-1 gap-4 lg:grid-cols-2" : undefined}>
