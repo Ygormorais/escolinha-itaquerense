@@ -35,7 +35,7 @@ const css = `
   .res-hero{
     border-bottom:1px solid var(--border);
     padding:44px 24px 36px;
-    background:linear-gradient(180deg,rgba(74,11,11,.05) 0%,transparent 100%)
+    background:linear-gradient(180deg,color-mix(in srgb, var(--brand-950) 5%, transparent) 0%,transparent 100%)
   }
   .res-hero .inner{max-width:900px;margin:0 auto}
   .res-hero h1{

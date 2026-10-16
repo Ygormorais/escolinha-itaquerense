@@ -249,60 +249,60 @@
 
 /**
  * Portal da família — mesma identidade visual da landing pública (.lp / PUB_TOKENS):
- * papel #FAF8F5, tinta #1C1412, accent #C62828, Inter + Playfair.
+ * papel, tinta e vermelho dos primitivos de tokens.css, Inter + Playfair.
  * Força tema claro localmente (site público não usa dark).
  */
 .portal-familia,
 .auth-experience {
   color-scheme: light;
-  --background: #FAF8F5;
-  --foreground: #1C1412;
+  --background: var(--paper-50);
+  --foreground: var(--ink-950);
   --card: #FFFFFF;
-  --card-foreground: #1C1412;
+  --card-foreground: var(--ink-950);
   --popover: #FFFFFF;
-  --popover-foreground: #1C1412;
-  --primary: #C62828;
+  --popover-foreground: var(--ink-950);
+  --primary: var(--brand-600);
   --primary-foreground: #FFFFFF;
-  --secondary: #F3EFE9;
-  --secondary-foreground: #1C1412;
-  --muted: #F3EFE9;
-  --muted-foreground: #5C534E;
-  --accent: #FFF5F5;
-  --accent-foreground: #9F1D1D;
-  --destructive: #B3261E;
+  --secondary: var(--paper-100);
+  --secondary-foreground: var(--ink-950);
+  --muted: var(--paper-100);
+  --muted-foreground: var(--ink-700);
+  --accent: var(--brand-50);
+  --accent-foreground: var(--brand-800);
+  --destructive: var(--danger-600);
   --destructive-foreground: #FFFFFF;
-  --border: #E8E2DA;
-  --input: #E8E2DA;
-  --ring: #C62828;
-  --color-brand-950: #4A0B0B;
-  --color-brand-900: #7F0000;
-  --color-brand-800: #9F1D1D;
-  --color-brand-700: #9F1D1D;
-  --color-brand-600: #C62828;
-  --color-brand-500: #E53935;
-  --color-brand-200: #F6CACA;
-  --color-brand-300: #EF9A9A;
-  --color-brand-100: #FFEBEE;
-  --color-brand-50: #FFF5F5;
-  --color-ink-950: #1C1412;
-  --color-ink-900: #1C1412;
-  --color-ink-700: #5C534E;
-  --color-ink-500: #8A827C;
-  --color-ink-300: #D4CBC0;
-  --color-paper-100: #F3EFE9;
-  --color-paper-50: #FAF8F5;
+  --border: var(--ink-200);
+  --input: var(--ink-200);
+  --ring: var(--brand-600);
+  --color-brand-950: var(--brand-950);
+  --color-brand-900: var(--brand-900);
+  --color-brand-800: var(--brand-800);
+  --color-brand-700: var(--brand-800);
+  --color-brand-600: var(--brand-600);
+  --color-brand-500: var(--brand-500);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-100: var(--brand-100);
+  --color-brand-50: var(--brand-50);
+  --color-ink-950: var(--ink-950);
+  --color-ink-900: var(--ink-950);
+  --color-ink-700: var(--ink-700);
+  --color-ink-500: var(--ink-500);
+  --color-ink-300: var(--ink-300);
+  --color-paper-100: var(--paper-100);
+  --color-paper-50: var(--paper-50);
   /* aliases espelhados da landing */
-  --red: #C62828;
-  --red-dark: #9F1D1D;
-  --red-deep: #4A0B0B;
-  --red-warm: #D84040;
-  --bg: #FAF8F5;
+  --red: var(--brand-600);
+  --red-dark: var(--brand-800);
+  --red-deep: var(--brand-950);
+  --red-warm: color-mix(in oklab, var(--brand-600) 50%, var(--brand-500));
+  --bg: var(--paper-50);
   --bg-card: #FFFFFF;
-  --bg-muted: #F3EFE9;
-  --bg-elevated: #FFFCF9;
-  --text: #1C1412;
-  --text-muted: #5C534E;
-  --text-light: #8A827C;
+  --bg-muted: var(--paper-100);
+  --bg-elevated: var(--paper-raised);
+  --text: var(--ink-950);
+  --text-muted: var(--ink-700);
+  --text-light: var(--ink-500);
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body), var(--font-inter), Inter, system-ui, sans-serif;
