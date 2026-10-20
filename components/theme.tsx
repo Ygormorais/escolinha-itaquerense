@@ -39,6 +39,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // podemos ler localStorage/DOM e ajustar. É o uso legítimo de setState em effect.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(inicial)
+    // Se a hidratação falhar, o React recria o <html> no cliente e a classe
+    // posta pelo script anti-flash some; reaplica aqui.
+    if (inicial === "dark") {
+      document.documentElement.classList.add("dark")
+      document.documentElement.style.colorScheme = "dark"
+    }
   }, [])
 
   const setTheme = useCallback((t: Theme) => {
