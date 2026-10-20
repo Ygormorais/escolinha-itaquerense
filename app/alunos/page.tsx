@@ -4,6 +4,7 @@ import { AlunosClient, NovoAlunoButton } from "./alunos-client"
 import { PAGE_SIZE } from "@/lib/constants"
 import { plural } from "@/lib/utils"
 import { startOfMonth, endOfMonth } from "date-fns"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Alunos — Escolinha Itaquerense" }
 
@@ -12,7 +13,11 @@ export default async function AlunosPage({
 }: {
   searchParams: Promise<{ q?: string; turma?: string; status?: string; page?: string }>
 }) {
-  const params = await searchParams
+  const [{ role }, params] = await Promise.all([
+    requireAuth(["admin", "secretaria", "tecnico"]),
+    searchParams,
+  ])
+  const canManage = role === "admin" || role === "secretaria"
   const q = params.q ?? ""
   const turma = params.turma ?? "Todas"
   const status = params.status ?? "Todos"
@@ -83,7 +88,7 @@ export default async function AlunosPage({
       <PageHeader
         title="Alunos"
         description={plural(totalAtivos, "aluno ativo", "alunos ativos")}
-        action={<NovoAlunoButton />}
+        action={canManage ? <NovoAlunoButton /> : undefined}
       />
       <AlunosClient
         alunos={alunos}
@@ -92,6 +97,7 @@ export default async function AlunosPage({
         totalPages={totalPages}
         filters={{ q, turma, status }}
         frequenciaBaixa={[...frequenciasBaixa]}
+        canManage={canManage}
       />
     </div>
   )

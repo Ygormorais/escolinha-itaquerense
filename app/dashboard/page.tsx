@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
-import { PageHeader } from "@/components/layout/page-header"
+import { PageHeader, PageHeaderDateNav } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
 import { Users, TrendingUp, AlertCircle, CalendarCheck, TrendingDown } from "lucide-react"
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from "date-fns"
@@ -223,12 +223,12 @@ export default async function DashboardPage({
       <PageHeader
         title="Dashboard"
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}
-        action={
-            <div data-slot="dashboard-context" className="grid w-full min-w-0 gap-2 sm:flex sm:w-auto sm:items-center">
-              {canViewPayments && <GerarMesButton mes={mesAtual} />}
-              <MonthPicker mes={mesSelecionado} basePath="/dashboard" />
-            </div>
-          }
+        contextBar={
+          <PageHeaderDateNav
+            nav={<MonthPicker mes={mesSelecionado} basePath="/dashboard" />}
+            action={canViewPayments ? <GerarMesButton mes={mesAtual} /> : undefined}
+          />
+        }
       />
 
       {alerts.length > 0 && <AlertBanner alerts={alerts} />}

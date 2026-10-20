@@ -69,4 +69,26 @@ describe("parseOFX", () => {
     const result = parseOFX(OFX_SAMPLE)
     expect(result[1].date).toEqual(new Date(2025, 5, 5))
   })
+
+  it("descarta transação sem FITID em vez de inventar um id aleatório", () => {
+    const semFitid = `
+<OFX>
+<STMTTRN>
+<TRNTYPE>CREDIT</TRNTYPE>
+<DTPOSTED>20250601120000</DTPOSTED>
+<TRNAMT>150.00</TRNAMT>
+<MEMO>PIX SEM FITID</MEMO>
+</STMTTRN>
+<STMTTRN>
+<TRNTYPE>CREDIT</TRNTYPE>
+<DTPOSTED>20250605</DTPOSTED>
+<TRNAMT>200.50</TRNAMT>
+<FITID>222</FITID>
+<MEMO>PIX RECEBIDO - MARIA SANTOS</MEMO>
+</STMTTRN>
+</OFX>`
+    const result = parseOFX(semFitid)
+    expect(result).toHaveLength(1)
+    expect(result[0].fitid).toBe("222")
+  })
 })

@@ -4,6 +4,7 @@ vi.mock("@/lib/db", () => {
   const db = {
     pagamento: {
       update: vi.fn(),
+      updateMany: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn(),
       createMany: vi.fn(),
@@ -40,6 +41,7 @@ import { cancelarCobranca } from "@/app/actions/cobranca"
 const m = db as unknown as {
   pagamento: {
     update: ReturnType<typeof vi.fn>
+    updateMany: ReturnType<typeof vi.fn>
     findUnique: ReturnType<typeof vi.fn>
     findMany: ReturnType<typeof vi.fn>
     createMany: ReturnType<typeof vi.fn>
@@ -51,6 +53,7 @@ const m = db as unknown as {
 beforeEach(() => {
   vi.clearAllMocks()
   m.pagamento.update.mockResolvedValue({})
+  m.pagamento.updateMany.mockResolvedValue({ count: 1 })
   m.pagamento.findUnique.mockResolvedValue({ mesReferencia: "Junho/2026", aluno: { nome: "Aluno A" } })
   m.pagamento.findMany.mockResolvedValue([])
   m.pagamento.createMany.mockResolvedValue({ count: 0 })
@@ -121,16 +124,51 @@ describe("marcarComoPago", () => {
 describe("registrarPagamentosLote", () => {
   it("usa a mensalidade de cada aluno como valor recebido", async () => {
     m.pagamento.findMany.mockResolvedValue([
-      { id: 1, aluno: { nome: "A", mensalidade: 150 } },
-      { id: 2, aluno: { nome: "B", mensalidade: 220 } },
+      { id: 1, dataPagamento: null, aluno: { nome: "A", mensalidade: 150 } },
+      { id: 2, dataPagamento: null, aluno: { nome: "B", mensalidade: 220 } },
     ])
     const res = await registrarPagamentosLote([1, 2], { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro" })
     expect(res).toEqual({ atualizados: 2 })
-    expect(m.pagamento.update).toHaveBeenCalledTimes(2)
-    expect(m.pagamento.update.mock.calls[0][0].data.valorRecebido).toBe(150)
-    expect(m.pagamento.update.mock.calls[1][0].data.valorRecebido).toBe(220)
-    expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("Dinheiro")
-    expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
+    expect(m.pagamento.updateMany).toHaveBeenCalledTimes(2)
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.valorRecebido).toBe(150)
+    expect(m.pagamento.updateMany.mock.calls[1][0].data.valorRecebido).toBe(220)
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.canalPrevisto).toBe("Dinheiro")
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.statusCobranca).toBe("pago")
+  })
+
+  it("pula pagamentos que já estão pagos, sem quebrar o resto do lote (trava server-side)", async () => {
+    m.pagamento.findMany.mockResolvedValue([
+      { id: 1, dataPagamento: new Date("2026-05-01"), aluno: { nome: "A", mensalidade: 150 } },
+      { id: 2, dataPagamento: null, aluno: { nome: "B", mensalidade: 220 } },
+    ])
+    const res = await registrarPagamentosLote([1, 2], { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro" })
+    expect(res).toEqual({ atualizados: 1 })
+    expect(m.pagamento.updateMany).toHaveBeenCalledTimes(1)
+    expect(m.pagamento.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 2, dataPagamento: null } })
+    )
+  })
+
+  it("inclui dataPagamento: null no where do updateMany (trava contra corrida)", async () => {
+    m.pagamento.findMany.mockResolvedValue([
+      { id: 1, dataPagamento: null, aluno: { nome: "A", mensalidade: 150 } },
+    ])
+    await registrarPagamentosLote([1], { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro" })
+    expect(m.pagamento.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1, dataPagamento: null } })
+    )
+  })
+
+  it("conta como não atualizado quando o updateMany afeta 0 linhas (pagamento baixado entre a consulta e o update)", async () => {
+    m.pagamento.findMany.mockResolvedValue([
+      { id: 1, dataPagamento: null, aluno: { nome: "A", mensalidade: 150 } },
+      { id: 2, dataPagamento: null, aluno: { nome: "B", mensalidade: 220 } },
+    ])
+    m.pagamento.updateMany
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 1 })
+    const res = await registrarPagamentosLote([1, 2], { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro" })
+    expect(res).toEqual({ atualizados: 1 })
   })
 })
 

@@ -12,7 +12,7 @@ export function printHTML(html: string, title = "Escolinha Itaquerense") {
       td { color: #171312; }
       .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
       .badge-success { background: #EDF9F4; color: #0F7A5A; }
-      .badge-warning { background: #FFF8ED; color: #A86417; }
+      .badge-warning { background: #FFF8ED; color: #985A13; }
       .badge-danger { background: #FEF1F0; color: #B3261E; }
       .info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
       .info dt { font-size: 10px; color: #7A6F6C; text-transform: uppercase; letter-spacing: 0.5px; }

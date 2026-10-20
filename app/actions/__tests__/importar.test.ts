@@ -33,6 +33,13 @@ const alunoValido = {
   mensalidade: 150,
 }
 
+const CSV_HEADER = ["nome", "dataNascimento", "turma", "horario", "responsavel", "telefone", "email", "dataMatricula", "mensalidade", "status", "observacoes"]
+
+function toCsv(rows: Record<string, unknown>[]): string {
+  const linhas = rows.map((r) => CSV_HEADER.map((h) => String(r[h] ?? "")).join(";"))
+  return [CSV_HEADER.join(";"), ...linhas].join("\n")
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   m.aluno.create.mockResolvedValue({ id: 42 })
@@ -41,7 +48,7 @@ beforeEach(() => {
 
 describe("importarAlunosCSV", () => {
   it("fluxo feliz — 2 alunos válidos: importa ambos sem erros", async () => {
-    const resultado = await importarAlunosCSV([alunoValido, { ...alunoValido, nome: "Ana Costa" }])
+    const resultado = await importarAlunosCSV(toCsv([alunoValido, { ...alunoValido, nome: "Ana Costa" }]))
 
     expect(resultado).toEqual({ importados: 2, erros: [] })
     expect(m.aluno.create).toHaveBeenCalledTimes(2)
@@ -55,7 +62,7 @@ describe("importarAlunosCSV", () => {
   })
 
   it("linha com nome vazio — retorna erro na linha 2, zero importados", async () => {
-    const resultado = await importarAlunosCSV([{ ...alunoValido, nome: "" }])
+    const resultado = await importarAlunosCSV(toCsv([{ ...alunoValido, nome: "" }]))
 
     expect(resultado).toEqual({
       importados: 0,
@@ -65,7 +72,7 @@ describe("importarAlunosCSV", () => {
   })
 
   it("linha com mensalidade 0 (inválida) — captura erro da linha, não lança exceção", async () => {
-    const resultado = await importarAlunosCSV([{ ...alunoValido, mensalidade: 0 }])
+    const resultado = await importarAlunosCSV(toCsv([{ ...alunoValido, mensalidade: 0 }]))
 
     expect(resultado).toMatchObject({ importados: 0 })
     const r = resultado as { importados: number; erros: { linha: number; erro: string }[] }
@@ -76,10 +83,10 @@ describe("importarAlunosCSV", () => {
   })
 
   it("mix: 1 válido + 1 inválido (nome vazio) — importa 1, registra erro na linha 3", async () => {
-    const resultado = await importarAlunosCSV([
+    const resultado = await importarAlunosCSV(toCsv([
       alunoValido,
       { ...alunoValido, nome: "" },
-    ])
+    ]))
 
     expect(resultado).toEqual({
       importados: 1,
@@ -89,13 +96,13 @@ describe("importarAlunosCSV", () => {
   })
 
   it("exige autenticação — requireAuth é sempre chamado", async () => {
-    await importarAlunosCSV([alunoValido])
+    await importarAlunosCSV(toCsv([alunoValido]))
 
     expect(requireAuth).toHaveBeenCalledTimes(1)
   })
 
   it("registra log e revalida paths quando pelo menos 1 aluno é importado", async () => {
-    await importarAlunosCSV([alunoValido])
+    await importarAlunosCSV(toCsv([alunoValido]))
 
     expect(registrarLog).toHaveBeenCalledWith("aluno_novo", expect.stringContaining("importado"))
     expect(revalidatePath).toHaveBeenCalledWith("/alunos")
@@ -103,7 +110,7 @@ describe("importarAlunosCSV", () => {
   })
 
   it("não registra log quando nenhum aluno é importado", async () => {
-    await importarAlunosCSV([{ ...alunoValido, nome: "" }])
+    await importarAlunosCSV(toCsv([{ ...alunoValido, nome: "" }]))
 
     expect(registrarLog).not.toHaveBeenCalled()
     expect(revalidatePath).not.toHaveBeenCalled()

@@ -9,14 +9,13 @@ import { plural } from "@/lib/utils"
 import { Pagination } from "@/components/ui/pagination"
 import { TURMAS } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
+import { FilterBar } from "@/components/ui/filter-bar"
 import { toast } from "sonner"
 import { inativarAluno, reativarAluno } from "@/app/actions/alunos"
-import { AlunosListaMobile } from "./alunos-lista-mobile"
 import { AlunosTabela } from "./alunos-tabela"
 import { gerarCSVAlunos, montarQueryAlunos, type Aluno, type FiltrosAlunos } from "./alunos-utils"
 
@@ -29,9 +28,10 @@ type AlunosClientProps = {
   totalPages: number
   filters: FiltrosAlunos
   frequenciaBaixa?: number[]
+  canManage: boolean
 }
 
-export function AlunosClient({ alunos, total, page, totalPages, filters, frequenciaBaixa = [] }: AlunosClientProps) {
+export function AlunosClient({ alunos, total, page, totalPages, filters, frequenciaBaixa = [], canManage }: AlunosClientProps) {
   const baixaSet = new Set(frequenciaBaixa)
   const [search, setSearch] = useState(filters.q)
   const debouncedSearch = useDebounce(search, 350)
@@ -57,86 +57,101 @@ export function AlunosClient({ alunos, total, page, totalPages, filters, frequen
   }
 
   async function handleInativar(id: number) {
-    const result = await inativarAluno(id)
-    if ("error" in result) { toast.error(result.error); return }
-    toast.success("Aluno inativado")
-    router.refresh()
+    try {
+      const result = await inativarAluno(id)
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("Aluno inativado")
+      router.refresh()
+    } catch {
+      toast.error("Erro ao inativar aluno")
+    }
   }
 
   async function handleReativar(id: number) {
-    const result = await reativarAluno(id)
-    if ("error" in result) { toast.error(result.error); return }
-    toast.success("Aluno reativado")
-    router.refresh()
+    try {
+      const result = await reativarAluno(id)
+      if ("error" in result) { toast.error(result.error); return }
+      toast.success("Aluno reativado")
+      router.refresh()
+    } catch {
+      toast.error("Erro ao reativar aluno")
+    }
   }
 
   function handlePageChange(p: number) {
     router.push(`/alunos?${montarQueryAlunos(filters.q, filters, { chave: "page", valor: p > 1 ? String(p) : "1", padrao: "1" })}`)
   }
 
+  const activeFiltersCount =
+    (filters.turma !== "Todas" ? 1 : 0) + (filters.status !== "Todos" ? 1 : 0)
+
   return (
     <div className="space-y-4">
-      <div data-slot="student-filter-bar" className="grid min-w-0 gap-3 rounded-[var(--radius-card)] border bg-card p-4 xl:grid-cols-[minmax(14rem,1fr)_11rem_10rem_minmax(17rem,auto)] xl:items-end">
-        <div className="min-w-0 space-y-1.5">
-          <Label htmlFor="alunos-busca" className="text-xs">Buscar aluno</Label>
-          <Input
-            id="alunos-busca"
-            type="search"
-            placeholder="Buscar por nome..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <div className="min-w-0 space-y-1.5">
-          <Label id="alunos-turma-label" className="text-xs">Turma</Label>
-          <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
-            <SelectTrigger aria-labelledby="alunos-turma-label" className="h-12 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Todas">Todas as turmas</SelectItem>
-              {TURMAS.map((t) => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="min-w-0 space-y-1.5">
-          <Label id="alunos-status-label" className="text-xs">Status</Label>
-          <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
-            <SelectTrigger aria-labelledby="alunos-status-label" className="h-12 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Todos">Todos os status</SelectItem>
-              <SelectItem value="Ativo">Ativo</SelectItem>
-              <SelectItem value="Inativo">Inativo</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid min-w-0 grid-cols-2 gap-2">
-          <Link href="/alunos/importar" className="min-w-0">
-            <Button variant="outline" className="h-12 w-full">
-              <Upload className="size-4" />
-              Importar CSV
+      <FilterBar
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Buscar por nome...",
+          "aria-label": "Buscar aluno",
+        }}
+        filters={[
+          <div key="turma" className="min-w-0 space-y-1.5">
+            <Label id="alunos-turma-label" className="text-xs">Turma</Label>
+            <Select value={filters.turma} onValueChange={(v) => pushFilter("turma", v ?? "Todas", "Todas")}>
+              <SelectTrigger aria-labelledby="alunos-turma-label" className="w-full sm:w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todas">Todas as turmas</SelectItem>
+                {TURMAS.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>,
+          <div key="status" className="min-w-0 space-y-1.5">
+            <Label id="alunos-status-label" className="text-xs">Status</Label>
+            <Select value={filters.status} onValueChange={(v) => pushFilter("status", v ?? "Todos", "Todos")}>
+              <SelectTrigger aria-labelledby="alunos-status-label" className="w-full sm:w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todos">Todos os status</SelectItem>
+                <SelectItem value="Ativo">Ativo</SelectItem>
+                <SelectItem value="Inativo">Inativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>,
+        ]}
+        activeFiltersCount={activeFiltersCount}
+        actions={
+          <>
+            <Link href="/alunos/importar">
+              <Button variant="outline">
+                <Upload className="size-4" />
+                Importar CSV
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0}>
+              <Download className="size-4" />
+              Exportar CSV
             </Button>
-          </Link>
-          <Button variant="outline" className="h-12 w-full" onClick={exportarCSV} disabled={alunos.length === 0}>
-            <Download className="size-4" />
-            Exportar CSV
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>{plural(total, "aluno encontrado", "alunos encontrados", "nenhum")}</span>
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       </div>
 
-      <AlunosListaMobile alunos={alunos} frequenciaBaixa={baixaSet} onInativar={handleInativar} onReativar={handleReativar} />
-
-      <AlunosTabela alunos={alunos} frequenciaBaixa={baixaSet} onInativar={handleInativar} onReativar={handleReativar} />
+      <AlunosTabela
+        alunos={alunos}
+        frequenciaBaixa={baixaSet}
+        canManage={canManage}
+        onInativar={handleInativar}
+        onReativar={handleReativar}
+      />
     </div>
   )
 }

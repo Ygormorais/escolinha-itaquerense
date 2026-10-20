@@ -34,7 +34,7 @@ test.describe("Design system administrativo", () => {
       await page.setViewportSize({ width, height: 844 })
       await page.goto("/dashboard", { waitUntil: "networkidle" })
 
-      await expect(page.locator('[data-slot="dashboard-context"]')).toBeVisible()
+      await expect(page.locator('[data-slot="page-header-date-nav"]')).toBeVisible()
       await expect(page.locator('[data-slot="month-picker"]')).toBeVisible()
       await expect(page.locator('[data-slot="alert-summary"]')).toHaveCount(1)
       await expectNoHorizontalOverflow(page)
@@ -63,13 +63,13 @@ test.describe("Design system administrativo", () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto("/pagamentos", { waitUntil: "networkidle" })
 
-    await expect(page.locator('[data-slot="payment-filter-bar"]')).toBeVisible()
+    await expect(page.locator('[data-slot="filter-bar"]')).toBeVisible()
     await expect(page.locator('[data-slot="payment-context-bar"]')).toBeVisible()
     const mobileContent = page.locator(
-      '[data-slot="payment-mobile-list"]:visible, [data-slot="payment-empty-state"]:visible',
+      '[data-slot="data-table-mobile"]:visible, [data-slot="empty-state"]:visible',
     )
     await expect(mobileContent).toBeVisible()
-    await expect(page.locator('[data-slot="payment-table"]')).toBeHidden()
+    await expect(page.locator('[data-slot="data-table-desktop"]')).toBeHidden()
     await expectNoHorizontalOverflow(page)
   })
 

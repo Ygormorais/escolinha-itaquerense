@@ -50,7 +50,14 @@ export function parseOFX(content: string): OFXTransaction[] {
     const dateRaw = extractTag(block, "DTPOSTED")
     if (!dateRaw) continue
 
-    const fitid = extractTag(block, "FITID") || String(Math.random())
+    // FITID é obrigatório no padrão OFX e é usado como identificador único da
+    // transação na revalidação server-side da importação; sem ele (ou repetido)
+    // não dá pra confirmar com segurança que uma seleção do client corresponde
+    // a uma transação real, então a transação é descartada. Nunca gerar um
+    // fitid aleatório aqui — isso criaria uma transação "fantasma" combinável
+    // com qualquer seleção forjada pelo client.
+    const fitid = extractTag(block, "FITID")
+    if (!fitid) continue
     const memo = extractTag(block, "MEMO") || extractTag(block, "NAME") || ""
 
     transactions.push({ fitid, date: parseOFXDate(dateRaw), amount, memo })
