@@ -49,8 +49,24 @@ function AlertEntry({ alert, compact = false }: { alert: AlertItem; compact?: bo
   ) : content
 }
 
-export function AlertBanner({ alerts }: { alerts: AlertItem[] }) {
-  if (alerts.length === 0) return null
+const SEVERITY: Record<AlertItem["type"], number> = { danger: 0, warning: 1, info: 2 }
+
+/** No desktop cabem 3 cards lado a lado; o excedente vai para a lista recolhível. */
+const DESKTOP_VISIBLE = 3
+
+/** Mais grave primeiro; `sort` é estável, então a ordem original desempata. */
+export function sortAlerts(alerts: AlertItem[]): AlertItem[] {
+  return [...alerts].sort((a, b) => SEVERITY[a.type] - SEVERITY[b.type])
+}
+
+function outrosLabel(n: number) {
+  return n === 1 ? "Ver outro 1 alerta" : `Ver outros ${n} alertas`
+}
+
+export function AlertBanner({ alerts: input }: { alerts: AlertItem[] }) {
+  if (input.length === 0) return null
+  const alerts = sortAlerts(input)
+  const extrasDesktop = alerts.length - DESKTOP_VISIBLE
 
   return (
     <section
@@ -76,20 +92,26 @@ export function AlertBanner({ alerts }: { alerts: AlertItem[] }) {
       </div>
 
       <div className="grid gap-2 lg:grid-cols-3">
-        {alerts.map((alert, index) => (
+        {alerts.slice(0, DESKTOP_VISIBLE).map((alert, index) => (
           <div key={`${alert.message}-${index}`} className={index === 0 ? "min-w-0" : "hidden min-w-0 lg:block"}>
             <AlertEntry alert={alert} />
           </div>
         ))}
       </div>
 
+      {/* Mobile: tudo além do 1º. Desktop: só o que passou dos 3 cards visíveis. */}
       {alerts.length > 1 ? (
-        <details className="mt-2 rounded-[var(--radius-control)] border border-border bg-muted/35 lg:hidden">
+        <details className={`mt-2 rounded-[var(--radius-control)] border border-border bg-muted/35 ${extrasDesktop > 0 ? "" : "lg:hidden"}`}>
           <summary className="cursor-pointer px-3 py-2.5 text-sm font-semibold text-brand-800">
-            Ver outros {alerts.length - 1} {alerts.length - 1 === 1 ? "alerta" : "alertas"}
+            <span className={extrasDesktop > 0 ? "lg:hidden" : undefined}>{outrosLabel(alerts.length - 1)}</span>
+            {extrasDesktop > 0 ? <span className="hidden lg:inline">{outrosLabel(extrasDesktop)}</span> : null}
           </summary>
-          <div className="grid gap-2 border-t border-border p-2">
-            {alerts.slice(1).map((alert, index) => <AlertEntry key={`${alert.message}-${index}`} alert={alert} compact />)}
+          <div className="grid gap-2 border-t border-border p-2 lg:grid-cols-3">
+            {alerts.slice(1).map((alert, index) => (
+              <div key={`${alert.message}-${index}`} className={index + 1 < DESKTOP_VISIBLE ? "min-w-0 lg:hidden" : "min-w-0"}>
+                <AlertEntry alert={alert} compact />
+              </div>
+            ))}
           </div>
         </details>
       ) : null}
