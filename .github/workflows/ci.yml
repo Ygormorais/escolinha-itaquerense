@@ -56,7 +56,7 @@ jobs:
           ADMIN_PASSWORD: ci-password
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
       DATABASE_URL: file:./prisma/dev.db
