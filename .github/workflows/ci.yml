@@ -56,7 +56,8 @@ jobs:
           ADMIN_PASSWORD: ci-password
 
   e2e:
-    runs-on: ubuntu-latest
+    # Fixo: ubuntu-latest virou 26.04 e o Playwright 1.60 não instala o Chromium nele.
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
       DATABASE_URL: file:./prisma/dev.db

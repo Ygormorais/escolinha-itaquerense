@@ -1,3 +1,4 @@
+import "../scripts/env"
 import { alunosData } from "../lib/seed-data"
 import { db } from "../lib/db"
 import { hashSync } from "bcryptjs"
