@@ -17,7 +17,7 @@ export function PartidasResumo({ stats }: { stats: ClassificacaoItem }) {
             <CardTitle className="text-sm text-muted-foreground">Jogos</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{stats.jogos}</p>
+            <p data-numeric className="text-2xl font-bold">{stats.jogos}</p>
           </CardContent>
         </Card>
         <Card className="lg:col-span-2">
@@ -25,7 +25,7 @@ export function PartidasResumo({ stats }: { stats: ClassificacaoItem }) {
             <CardTitle className="text-sm text-success-600">Vitórias</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading text-success-600">{stats.vitorias}</p>
+            <p data-numeric className="text-2xl font-bold text-success-600">{stats.vitorias}</p>
           </CardContent>
         </Card>
         <Card className="lg:col-span-2">
@@ -33,7 +33,7 @@ export function PartidasResumo({ stats }: { stats: ClassificacaoItem }) {
             <CardTitle className="text-sm text-muted-foreground">Empates</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{stats.empates}</p>
+            <p data-numeric className="text-2xl font-bold">{stats.empates}</p>
           </CardContent>
         </Card>
         <Card className="lg:col-span-2">
@@ -41,7 +41,7 @@ export function PartidasResumo({ stats }: { stats: ClassificacaoItem }) {
             <CardTitle className="text-sm text-danger-600">Derrotas</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading text-danger-600">{stats.derrotas}</p>
+            <p data-numeric className="text-2xl font-bold text-danger-600">{stats.derrotas}</p>
           </CardContent>
         </Card>
       </div>

@@ -32,22 +32,22 @@ export default async function MaquinaPage({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Importado</p>
-          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight">{formatMoney(resumo.total)}</p>
+          <p data-numeric className="mt-1 text-2xl font-extrabold tracking-tight">{formatMoney(resumo.total)}</p>
           <p className="text-xs text-muted-foreground">{resumo.totalTransacoes} transações</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pendentes</p>
-          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight text-warning-600">{formatMoney(resumo.totalPendente)}</p>
+          <p data-numeric className="mt-1 text-2xl font-extrabold tracking-tight text-warning-600">{formatMoney(resumo.totalPendente)}</p>
           <p className="text-xs text-muted-foreground">{resumo.pendentes} transações</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Reconciliados</p>
-          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight text-success-600">{formatMoney(resumo.totalReconciliado)}</p>
+          <p data-numeric className="mt-1 text-2xl font-extrabold tracking-tight text-success-600">{formatMoney(resumo.totalReconciliado)}</p>
           <p className="text-xs text-muted-foreground">{resumo.reconciliados} transações</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taxa Média</p>
-          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight">
+          <p data-numeric className="mt-1 text-2xl font-extrabold tracking-tight">
             {resumo.taxaMedia != null ? `${resumo.taxaMedia.toFixed(2)}%` : "—"}
           </p>
           <p className="text-xs text-muted-foreground">

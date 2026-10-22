@@ -42,21 +42,21 @@ export default async function BoletoPage() {
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Boletos pendentes</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-warning-600">{emitidos.length}</p>
+            <p data-numeric className="mt-1 text-2xl font-bold text-warning-600">{emitidos.length}</p>
             <p className="mt-1 text-xs text-muted-foreground">Aguardando compensacao</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido por boleto</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(totalRecebido)}</p>
+            <p data-numeric className="mt-1 text-2xl font-bold text-success-600">{formatMoney(totalRecebido)}</p>
             <p className="mt-1 text-xs text-muted-foreground">{recebidos.length} pagamento(s) compensados</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Proximo vencimento</p>
-            <p className="mt-1 font-heading text-2xl font-bold">{proximoVencimento ? format(new Date(proximoVencimento), "dd/MM") : "—"}</p>
+            <p data-numeric className="mt-1 text-2xl font-bold">{proximoVencimento ? format(new Date(proximoVencimento), "dd/MM") : "—"}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {diasParaVencer === null ? "Nenhum boleto emitido" : diasParaVencer < 0 ? "Ja vencido" : `${diasParaVencer} dia(s) para vencer`}
             </p>

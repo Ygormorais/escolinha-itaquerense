@@ -69,7 +69,7 @@ export function CaixaClient({
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="font-heading text-lg font-bold tracking-tight text-foreground">{valor}</p>
+                <p data-numeric className="text-lg font-bold tracking-tight text-foreground">{valor}</p>
                 <p className="text-xs text-muted-foreground">{sub}</p>
               </CardContent>
             </Card>

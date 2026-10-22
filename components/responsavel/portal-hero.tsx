@@ -94,7 +94,7 @@ export function PortalHero({
                 <p className="font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">
                   {s.label}
                 </p>
-                <p className="mt-2 font-heading text-2xl font-extrabold tabular-nums">{s.value}</p>
+                <p data-numeric className="mt-2 text-2xl font-extrabold tabular-nums">{s.value}</p>
               </div>
             ))}
           </div>

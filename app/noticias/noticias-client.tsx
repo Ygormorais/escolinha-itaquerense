@@ -109,11 +109,11 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold font-heading">{noticias.length}</p></CardContent></Card>
+          <CardContent><p data-numeric className="text-2xl font-bold">{noticias.length}</p></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Publicadas</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold font-heading text-success-600">{publicadas}</p></CardContent></Card>
+          <CardContent><p data-numeric className="text-2xl font-bold text-success-600">{publicadas}</p></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground flex items-center gap-1"><Star className="size-3.5" />Destaques</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold font-heading text-warning-600">{destaques}</p></CardContent></Card>
+          <CardContent><p data-numeric className="text-2xl font-bold text-warning-600">{destaques}</p></CardContent></Card>
       </div>
 
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
