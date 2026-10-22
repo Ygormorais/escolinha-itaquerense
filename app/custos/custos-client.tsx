@@ -397,7 +397,7 @@ export function CustosClient({
                 <h3 className="truncate font-semibold">{c.descricao || c.categoria}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{c.categoria} · {format(new Date(c.data), "dd/MM/yyyy")}</p>
               </div>
-              <p data-numeric className="shrink-0 font-heading text-lg font-bold">{formatMoney(c.valor)}</p>
+              <p data-numeric className="shrink-0 text-lg font-bold">{formatMoney(c.valor)}</p>
             </div>
             <dl className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-sm">
               <div className="min-w-0">

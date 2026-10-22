@@ -42,21 +42,21 @@ export default async function PixPage() {
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Aguardando pagamento</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-warning-600">{emitidos.length}</p>
+            <p data-numeric className="mt-1 text-2xl font-bold text-warning-600">{emitidos.length}</p>
             <p className="mt-1 text-xs text-muted-foreground">Cobrancas PIX pendentes</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido via PIX</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(totalRecebido)}</p>
+            <p data-numeric className="mt-1 text-2xl font-bold text-success-600">{formatMoney(totalRecebido)}</p>
             <p className="mt-1 text-xs text-muted-foreground">{recebidos.length} baixa(s) confirmadas</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Proximo vencimento</p>
-            <p className="mt-1 font-heading text-2xl font-bold">{proximoVencimento ? format(new Date(proximoVencimento), "dd/MM") : "—"}</p>
+            <p data-numeric className="mt-1 text-2xl font-bold">{proximoVencimento ? format(new Date(proximoVencimento), "dd/MM") : "—"}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {diasParaVencer === null ? "Nenhuma cobranca emitida" : diasParaVencer < 0 ? "Ja vencido" : `${diasParaVencer} dia(s) para vencer`}
             </p>

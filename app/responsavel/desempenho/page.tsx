@@ -145,7 +145,7 @@ export default async function DesempenhoPage() {
                           <CalendarCheck className="size-4 text-brand-600" />
                           Frequência
                         </div>
-                        <p className="font-heading text-2xl font-extrabold tabular-nums text-[var(--color-ink-950)]">{perc}%</p>
+                        <p data-numeric className="text-2xl font-extrabold tabular-nums text-[var(--color-ink-950)]">{perc}%</p>
                         <p className="text-xs text-muted-foreground">{presentes}/{totalFreq} presenças</p>
                         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
                           <div
@@ -162,7 +162,7 @@ export default async function DesempenhoPage() {
                           <CreditCard className="size-4 text-brand-600" />
                           Pagamentos
                         </div>
-                        <p className="font-heading text-2xl font-extrabold tabular-nums text-[var(--color-ink-950)]">
+                        <p data-numeric className="text-2xl font-extrabold tabular-nums text-[var(--color-ink-950)]">
                           {aluno.pagamentos.filter((p) => p.dataPagamento).length}/{aluno.pagamentos.length}
                         </p>
                         <p className="text-xs text-muted-foreground">últimos meses</p>
@@ -173,7 +173,7 @@ export default async function DesempenhoPage() {
                           <Shirt className="size-4 text-brand-600" />
                           Uniforme
                         </div>
-                        <p className="font-heading text-2xl font-extrabold tabular-nums text-[var(--color-ink-950)]">
+                        <p data-numeric className="text-2xl font-extrabold tabular-nums text-[var(--color-ink-950)]">
                           {aluno.uniformes.filter((u) => u.entregue).length}/{aluno.uniformes.length}
                         </p>
                         <p className="text-xs text-muted-foreground">itens entregues</p>

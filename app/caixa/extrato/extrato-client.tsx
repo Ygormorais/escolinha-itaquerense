@@ -124,21 +124,21 @@ export function ExtratoClient({ lancamentos: initial, resumo: initialResumo, mes
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Entradas</p>
-          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight text-success-600">
+          <p data-numeric className="mt-1 text-2xl font-extrabold tracking-tight text-success-600">
             {formatMoney(resumo.totalEntradas)}
           </p>
           <p className="text-xs text-muted-foreground">{resumo.qtdEntradas} lançamentos</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saídas</p>
-          <p className="mt-1 font-heading text-2xl font-extrabold tracking-tight text-destructive">
+          <p data-numeric className="mt-1 text-2xl font-extrabold tracking-tight text-destructive">
             {formatMoney(resumo.totalSaidas)}
           </p>
           <p className="text-xs text-muted-foreground">{resumo.qtdSaidas} lançamentos</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saldo do período</p>
-          <p className={`mt-1 font-heading text-2xl font-extrabold tracking-tight ${saldoCor}`}>
+          <p data-numeric className={`mt-1 text-2xl font-extrabold tracking-tight ${saldoCor}`}>
             {formatMoney(resumo.saldo)}
           </p>
           <p className="text-xs text-muted-foreground">{resumo.total} lançamentos no total</p>

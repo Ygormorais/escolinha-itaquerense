@@ -101,7 +101,7 @@ export function PixModal({
 
           <div className="w-full space-y-1 text-center">
             <p className="text-sm font-semibold">{descricao}</p>
-            <p className="text-2xl font-extrabold font-heading text-brand-800">
+            <p data-numeric className="text-2xl font-extrabold text-brand-800">
               R$ {valor.toFixed(2).replace(".", ",")}
             </p>
             <p className="text-xs text-muted-foreground">Chave: {chave}</p>

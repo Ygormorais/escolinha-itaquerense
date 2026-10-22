@@ -191,22 +191,22 @@ export function RelatorioPagamentosClient({
           <CardContent className="grid grid-cols-1 gap-4 pt-5 sm:grid-cols-2 xl:grid-cols-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recebido</p>
-              <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(resumo.totalRecebido)}</p>
+              <p data-numeric className="mt-1 text-2xl font-bold text-success-600">{formatMoney(resumo.totalRecebido)}</p>
               <p className="mt-1 text-xs text-muted-foreground">{resumo.counts.pagos} pagamento(s) confirmados</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pendente</p>
-              <p className="mt-1 font-heading text-2xl font-bold text-warning-600">{formatMoney(resumo.totalPendente)}</p>
+              <p data-numeric className="mt-1 text-2xl font-bold text-warning-600">{formatMoney(resumo.totalPendente)}</p>
               <p className="mt-1 text-xs text-muted-foreground">{resumo.counts.pendentes} aguardando baixa</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Em atraso</p>
-              <p className="mt-1 font-heading text-2xl font-bold text-danger-600">{formatMoney(resumo.totalAtrasado)}</p>
+              <p data-numeric className="mt-1 text-2xl font-bold text-danger-600">{formatMoney(resumo.totalAtrasado)}</p>
               <p className="mt-1 text-xs text-muted-foreground">{resumo.counts.atrasados} vencido(s)</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taxa de recebimento</p>
-              <p className="mt-1 font-heading text-2xl font-bold">{resumo.taxaRecebimento.toFixed(1)}%</p>
+              <p data-numeric className="mt-1 text-2xl font-bold">{resumo.taxaRecebimento.toFixed(1)}%</p>
               <p className="mt-1 text-xs text-muted-foreground">Ticket médio: {formatMoney(resumo.ticketMedio)}</p>
             </div>
           </CardContent>
@@ -220,7 +220,7 @@ export function RelatorioPagamentosClient({
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-5">
-            <p className="font-heading text-2xl font-bold">{canalLider?.canal ?? "Sem dados"}</p>
+            <p data-numeric className="text-2xl font-bold">{canalLider?.canal ?? "Sem dados"}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {canalLider ? `${formatMoney(canalLider.total)} em ${canalLider.quantidade} registro(s)` : "Nenhum pagamento com canal identificado"}
             </p>

@@ -56,14 +56,14 @@ export default async function RecebimentosPage({
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total recebido</p>
-            <p className="mt-1 font-heading text-2xl font-bold text-success-600">{formatMoney(total)}</p>
+            <p data-numeric className="mt-1 text-2xl font-bold text-success-600">{formatMoney(total)}</p>
             <p className="mt-1 text-xs text-muted-foreground">{pagamentos.length} recebimento(s) no mes</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Canal lider</p>
-            <p className="mt-1 font-heading text-2xl font-bold">
+            <p data-numeric className="mt-1 text-2xl font-bold">
               {canaisOrdenados[0]?.[0] ?? "Sem dados"}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -101,7 +101,7 @@ export default async function RecebimentosPage({
                 </Link>
                 <p className="mt-1 text-sm text-muted-foreground">{p.aluno.turma} · {p.mesReferencia}</p>
               </div>
-              <p data-numeric className="shrink-0 font-heading text-lg font-bold text-success-600">
+              <p data-numeric className="shrink-0 text-lg font-bold text-success-600">
                 {formatMoney(p.valorRecebido ?? 0)}
               </p>
             </div>

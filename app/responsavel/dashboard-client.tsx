@@ -230,7 +230,7 @@ export function ResponsavelDashboardClient({
                         </p>
                       </div>
                     </div>
-                    <span className="shrink-0 font-heading text-base font-extrabold tabular-nums text-foreground">
+                    <span data-numeric className="shrink-0 text-base font-extrabold tabular-nums text-foreground">
                       {placarLabel(j)}
                     </span>
                   </div>

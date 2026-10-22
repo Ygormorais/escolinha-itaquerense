@@ -115,7 +115,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
             <CardTitle className="text-sm text-muted-foreground">Alunos com uniforme</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading">{alunos.filter((a) => a.uniformes.length > 0).length}</p>
+            <p data-numeric className="text-2xl font-bold">{alunos.filter((a) => a.uniformes.length > 0).length}</p>
           </CardContent>
         </Card>
         <Card>
@@ -123,7 +123,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
             <CardTitle className="text-sm text-success-600">Itens entregues</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading text-success-600">{totalEntregues}</p>
+            <p data-numeric className="text-2xl font-bold text-success-600">{totalEntregues}</p>
           </CardContent>
         </Card>
         <Card>
@@ -131,7 +131,7 @@ export function UniformesClient({ alunos }: { alunos: Aluno[] }) {
             <CardTitle className="text-sm text-warning-600">Itens pendentes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-heading text-warning-600">{totalPendentes}</p>
+            <p data-numeric className="text-2xl font-bold text-warning-600">{totalPendentes}</p>
           </CardContent>
         </Card>
       </div>

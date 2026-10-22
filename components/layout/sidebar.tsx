@@ -4,38 +4,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useId, useState } from "react"
-import {
-  LayoutDashboard,
-  Users,
-  Users2,
-  CreditCard,
-  CalendarCheck,
-  Calendar,
-  Send,
-  Shirt,
-  Receipt,
-  AlertTriangle,
-  Wallet,
-  FileText,
-  BarChart3,
-  History,
-  LogOut,
-  ClipboardList,
-  Trophy,
-  Newspaper,
-  UserCircle,
-  MessageSquareWarning,
-  Film,
-  ShoppingBag,
-  Award,
-  Activity,
-  ChevronRight,
-} from "lucide-react"
+import { BarChart3, ChevronRight, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { OnboardingRestart } from "@/components/onboarding/onboarding-restart"
-import { canAccessStaffPath, staffRoleLabel, type StaffRole } from "@/lib/permissions"
+import { staffRoleLabel, type StaffRole } from "@/lib/permissions"
+import { isNavItemActive, navGroupsFor, reportItemsFor } from "@/lib/navigation"
 
 function LogoutButton() {
   const router = useRouter()
@@ -56,91 +31,17 @@ function LogoutButton() {
   )
 }
 
-type NavItem = {
-  href: string
-  label: string
-  icon: React.ElementType
-  badge?: number
-}
-type NavGroup = {
-  label: string
-  items: NavItem[]
-  matchPrefixes?: string[]
-}
-
-function filterByRole(items: NavItem[], role: StaffRole): NavItem[] {
-  return items.filter((item) => canAccessStaffPath(item.href, role))
-}
-
-function isNavItemActive(pathname: string, href: string, allItems: NavItem[]): boolean {
-  return pathname === href || (
-    pathname.startsWith(`${href}/`) &&
-    !allItems.some((item) =>
-      item.href !== href &&
-      item.href.startsWith(`${href}/`) &&
-      pathname.startsWith(item.href)
-    )
-  )
-}
-
 export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0, pendingPendencias = 0 }: { onClose?: () => void; role?: StaffRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number; pendingPendencias?: number }) {
   const pathname = usePathname()
   const sidebarId = useId().replaceAll(":", "")
 
-  const reportItems = filterByRole([
-    { href: "/relatorio", label: "Financeiro", icon: BarChart3 },
-    { href: "/relatorio/turmas", label: "Por Turma", icon: Users2 },
-    { href: "/relatorio/alunos", label: "Alunos", icon: Users },
-    { href: "/relatorio/pagamentos", label: "Pagamentos", icon: CreditCard },
-    { href: "/relatorio/frequencia", label: "Frequência", icon: CalendarCheck },
-  ], role)
-
-  const navGroups: NavGroup[] = [
-    {
-      label: "Visão Geral",
-      items: filterByRole([
-        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/pendencias", label: "Pendências", icon: AlertTriangle, badge: pendingPendencias },
-        { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
-        { href: "/tecnico", label: "Painel Técnico", icon: Trophy },
-        { href: "/desenvolvimento", label: "Desenvolvimento", icon: Activity },
-      ], role),
-    },
-    {
-      label: "Operação",
-      items: filterByRole([
-        { href: "/alunos",        label: "Alunos",        icon: Users },
-        { href: "/turmas",        label: "Turmas",        icon: Users2 },
-        { href: "/pagamentos",    label: "Pagamentos",    icon: CreditCard },
-        { href: "/frequencia",    label: "Frequência",    icon: CalendarCheck },
-        { href: "/agenda",        label: "Agenda",         icon: Calendar },
-        { href: "/uniformes",     label: "Uniformes",     icon: Shirt },
-        { href: "/campeonatos",  label: "Campeonatos",  icon: Trophy },
-        { href: "/custos",        label: "Custos",        icon: Receipt },
-        { href: "/comunicados",   label: "Comunicados",   icon: Send },
-        { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
-        { href: "/caixa",         label: "Caixa",         icon: Wallet },
-        { href: "/produtos",      label: "Produtos",      icon: ShoppingBag },
-        { href: "/avaliacoes",    label: "Avaliações",    icon: Award },
-      ], role),
-    },
-    {
-      label: "Documentos & Gestão",
-      matchPrefixes: ["/relatorio"],
-      items: filterByRole([
-        { href: "/recibos",       label: "Recibos",       icon: FileText },
-        { href: "/configuracoes/documentos", label: "Documentos", icon: FileText },
-        { href: "/configuracoes/automacoes", label: "Automações", icon: History },
-        { href: "/historico",     label: "Histórico",     icon: History },
-        { href: "/noticias",      label: "Notícias",      icon: Newspaper },
-        { href: "/configuracoes/midia", label: "Mídia", icon: Film },
-        { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
-        { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badge: pendingEscalacoes },
-        { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning, badge: pendingSolicitacoes },
-        { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList, badge: pendingMatriculas },
-      ], role),
-    },
-  ]
+  const reportItems = reportItemsFor(role)
+  const navGroups = navGroupsFor(role, {
+    pendencias: pendingPendencias,
+    escalacoes: pendingEscalacoes,
+    solicitacoes: pendingSolicitacoes,
+    matriculas: pendingMatriculas,
+  })
 
   const allNavItems = navGroups.flatMap((group) => group.items)
   const activeGroup = navGroups.find((group) =>

@@ -66,25 +66,25 @@ export default async function CaixaPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Recebido (mês)</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-success-600">
+          <p data-numeric className="mt-1 text-3xl font-extrabold tracking-tight text-success-600">
             {formatMoney(totalRecebido)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Custos (mês)</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-danger-600">
+          <p data-numeric className="mt-1 text-3xl font-extrabold tracking-tight text-danger-600">
             {formatMoney(totalCustos)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saldo</p>
-          <p className={`mt-1 font-heading text-3xl font-extrabold tracking-tight ${totalRecebido - totalCustos >= 0 ? "text-success-600" : "text-danger-600"}`}>
+          <p data-numeric className={`mt-1 text-3xl font-extrabold tracking-tight ${totalRecebido - totalCustos >= 0 ? "text-success-600" : "text-danger-600"}`}>
             {formatMoney(totalRecebido - totalCustos)}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Maquininha (pendente)</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-warning-600">
+          <p data-numeric className="mt-1 text-3xl font-extrabold tracking-tight text-warning-600">
             {formatMoney(totalPendente)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">{plural(transacoesPendentes.length, "transação pendente", "transações pendentes")}</p>
