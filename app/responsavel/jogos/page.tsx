@@ -339,7 +339,7 @@ function MatchCard({
             </p>
           </div>
           {placar ? (
-            <p className="font-heading text-2xl font-extrabold tabular-nums tracking-tight text-foreground">
+            <p data-numeric className="text-2xl font-extrabold tabular-nums tracking-tight text-foreground">
               {placar}
             </p>
           ) : (

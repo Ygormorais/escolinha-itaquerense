@@ -123,7 +123,7 @@ export default async function FrequenciaPage() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-end gap-2">
-                    <span className="font-heading text-3xl font-extrabold text-[var(--color-ink-950)]">
+                    <span data-numeric className="text-3xl font-extrabold text-[var(--color-ink-950)]">
                       {percAtual !== null ? `${percAtual}%` : "—"}
                     </span>
                     {badgePresenca(percAtual)}
@@ -142,7 +142,7 @@ export default async function FrequenciaPage() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-end gap-2">
-                    <span className="font-heading text-3xl font-extrabold text-[var(--color-ink-950)]">
+                    <span data-numeric className="text-3xl font-extrabold text-[var(--color-ink-950)]">
                       {percAnterior !== null ? `${percAnterior}%` : "—"}
                     </span>
                     {badgePresenca(percAnterior)}
@@ -161,7 +161,7 @@ export default async function FrequenciaPage() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-end gap-2">
-                    <span className="font-heading text-3xl font-extrabold text-[var(--color-ink-950)]">
+                    <span data-numeric className="text-3xl font-extrabold text-[var(--color-ink-950)]">
                       {percGeral !== null ? `${percGeral}%` : "—"}
                     </span>
                     {badgePresenca(percGeral)}

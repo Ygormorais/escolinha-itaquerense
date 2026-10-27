@@ -95,7 +95,7 @@ export default async function LojinhaPage() {
                   <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{p.descricao}</p>
                 )}
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-heading text-lg font-extrabold tabular-nums text-brand-600">
+                  <span data-numeric className="text-lg font-extrabold tabular-nums text-brand-600">
                     {formatMoney(p.preco)}
                   </span>
                   {p.tamanhos && (

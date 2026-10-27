@@ -20,7 +20,7 @@ export function AniversariantesCard({ aniversariantes }: { aniversariantes: Aniv
             {aniversariantes.map((a) => (
               <li key={a.id} className={`flex items-center justify-between text-sm rounded-lg px-2 py-1 -mx-2 ${a.ehHoje ? "bg-brand-50" : a.ehEstaSemana ? "bg-muted/50" : ""}`}>
                 <span className="flex items-center gap-2">
-                  <span className={`w-10 font-heading font-bold tabular-nums ${a.ehHoje ? "text-brand-600" : a.ehEstaSemana ? "text-foreground" : "text-muted-foreground"}`}>
+                  <span data-numeric className={`w-10 font-bold tabular-nums ${a.ehHoje ? "text-brand-600" : a.ehEstaSemana ? "text-foreground" : "text-muted-foreground"}`}>
                     {String(a.dia).padStart(2, "0")}
                   </span>
                   <span className="font-medium">{a.nome}</span>

@@ -61,7 +61,7 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
         {children}
       </main>
 
-      <BottomNav role={role} />
+      <BottomNav role={role} pendingPendencias={pendingPendencias} />
     </div>
   )
 }

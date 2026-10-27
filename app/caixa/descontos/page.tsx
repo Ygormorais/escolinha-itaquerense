@@ -28,15 +28,15 @@ export default async function DescontosPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Alunos com Desconto</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-warning-600">{alunosComDesconto.length}</p>
+          <p data-numeric className="mt-1 text-3xl font-extrabold tracking-tight text-warning-600">{alunosComDesconto.length}</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Descontos</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-danger-600">{formatMoney(totalDescontos)}</p>
+          <p data-numeric className="mt-1 text-3xl font-extrabold tracking-tight text-danger-600">{formatMoney(totalDescontos)}</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">% Média Desconto</p>
-          <p className="mt-1 font-heading text-3xl font-extrabold tracking-tight text-foreground">
+          <p data-numeric className="mt-1 text-3xl font-extrabold tracking-tight text-foreground">
             {totalMensalidades > 0 ? ((totalDescontos / totalMensalidades) * 100).toFixed(1) : 0}%
           </p>
         </div>
