@@ -1,10 +1,11 @@
 "use client"
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Lock, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { NoticiasCarrossel } from "./noticias-carrossel"
 import { MateriasTabs } from "./materias-tabs"
-import { LandingHeader } from "./landing-header"
+import { SiteHeader } from "@/components/site/site-header"
+import { SiteFooter } from "@/components/site/site-footer"
 import { JogoStrip } from "./jogo-strip"
 import { HeroSlider } from "./hero-slider"
 import type { FaixaPartida, HeroSlide } from "@/lib/landing/hero"
@@ -13,6 +14,7 @@ import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { marcos } from "@/lib/landing/conteudo"
 import { publicFontClass } from "@/lib/public-fonts"
+import { TEXTO_CONTATO, whatsappUrl } from "@/lib/site/whatsapp"
 import "./landing.css"
 import "./landing-sections.css"
 
@@ -64,16 +66,13 @@ export function LandingClient({
     }
   }, [lbIndex, galeria.length])
 
-  const waNumber = whatsapp?.replace(/\D/g, "") || ""
-  const waUrl = waNumber.length >= 10
-    ? `https://wa.me/${waNumber}?text=${encodeURIComponent("Olá! Gostaria de mais informações sobre a Escolinha Itaquerense.")}`
-    : null
+  const waUrl = whatsappUrl(whatsapp, TEXTO_CONTATO)
 
   return (
     <div className={`${publicFontClass} lp`}>
       <a className="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
 
-      <LandingHeader temVoz={depoimentos.length > 0} whatsappUrl={waUrl} />
+      <SiteHeader whatsappUrl={waUrl} dentroDaLanding />
 
       <main id="conteudo-principal">
         {faixa && <JogoStrip faixa={faixa} />}
@@ -190,56 +189,7 @@ export function LandingClient({
         </section>
       </main>
 
-      <footer>
-        <div className="container foot-grid">
-          <div className="foot-brand">
-            <div className="foot-name">
-              <Image className="shield" src="/logo.png" alt="" width={68} height={68} />
-              <strong>Elite<br />Itaquerense</strong>
-            </div>
-            <p>Sociedade Esportiva Elite Itaquerense — tradição alvirrubra em Itaquera desde 1922. Formação esportiva e humana para as novas gerações.</p>
-          </div>
-          <div className="fcol">
-            <h4>Clube</h4>
-            <a href="#materias">Notícias</a>
-            <a href="#sobre">História</a>
-            <a href="#galeria">Galeria</a>
-            {depoimentos.length > 0 && <a href="#voz">Voz do clube</a>}
-            <a href="/resultados">Resultados</a>
-          </div>
-          <div className="fcol">
-            <h4>Escolinha</h4>
-            <a href="/horarios">Turmas e horários</a>
-            <a href="/matricula">Pré-matrícula</a>
-            <a href="/responsavel">Portal da família</a>
-          </div>
-          <div className="fcol">
-            <h4>Contato</h4>
-            <div className="foot-addr">
-              {endereco && <p>{endereco}</p>}
-              {cidade && <p>{cidade}</p>}
-              {waUrl && (
-                <a href={waUrl} className="foot-wa" target="_blank" rel="noopener noreferrer">
-                  Falar no WhatsApp
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <div className="container">
-            <span>© 2026 Sociedade Esportiva Elite Itaquerense. Todos os direitos reservados.</span>
-            <span className="flex items-center gap-3">
-              <a href="/privacidade">Privacidade</a>
-              <a href="/termos">Termos</a>
-            </span>
-            <a href="/login" className="foot-staff" title="Acesso restrito à equipe administrativa">
-              <Lock size={12} strokeWidth={2} aria-hidden />
-              Área da equipe
-            </a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter whatsapp={whatsapp} endereco={endereco} cidade={cidade} dentroDaLanding />
 
       {lbIndex !== null && galeria[lbIndex] && (
         <div className="lb" role="dialog" aria-modal="true" aria-label="Foto ampliada" onClick={closeLb}>

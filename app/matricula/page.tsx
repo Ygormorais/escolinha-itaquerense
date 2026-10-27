@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase, PUB_HDR_CSS } from "@/lib/public-css"
-import { PublicHeader } from "@/components/public/public-header"
+import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
 import { getConfig } from "@/lib/config"
 import { MatriculaForm } from "./matricula-form"
 
@@ -181,7 +181,7 @@ export default async function MatriculaPage() {
     <div className={`mat ${publicFontClass}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      <PublicHeader subtitle="Pré-Matrícula" />
+      <SiteTopo />
 
       <div className="mat-hero">
         <div className="inner">
@@ -215,13 +215,7 @@ export default async function MatriculaPage() {
         </div>
       </div>
 
-      <footer className="mat-foot">
-        <div className="inner">
-          <Link href="/horarios">Turmas e horários</Link>
-          <Link href="/responsavel">Portal da família</Link>
-          <Link href="/">← Voltar ao site</Link>
-        </div>
-      </footer>
+      <SiteRodape />
     </div>
   )
 }

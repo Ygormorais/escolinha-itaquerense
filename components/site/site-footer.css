@@ -1,0 +1,41 @@
+/* Rodapé do site público. Tokens do .lp (landing.css); vive dentro de .lp.lp-chrome. */
+
+.lp .site-foot{background:var(--brand-950);color:rgba(255,255,255,.78);border-top:4px solid var(--red);font-size:14px;line-height:1.6}
+.lp .site-foot a{color:inherit;transition:color .2s}
+.lp .site-foot a:hover{color:#fff}
+.lp .site-foot a:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+/* Faixa de novidades: única chamada do rodapé, separada do mapa por um filete. */
+.lp .foot-news{border-bottom:1px solid rgba(255,255,255,.12)}
+:is(.lp.lp-chrome,.lp .lp-chrome) .foot-news-row{display:flex;align-items:center;justify-content:space-between;gap:20px 40px;padding-block:32px}
+.lp .foot-news-txt h2{font-family:var(--font-heading),Georgia,serif;font-size:clamp(22px,2.6vw,28px);font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.2;margin-bottom:6px}
+.lp .foot-news-txt p{max-width:58ch;font-size:15px}
+.lp .site-foot a.foot-news-btn{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-height:48px;padding:0 28px;border-radius:var(--radius-pill);background:#25D366;color:#0B3B1F;font-weight:800;font-size:15px;transition:background .2s,transform .2s}
+.lp .site-foot a.foot-news-btn:hover{background:#3BE07A;color:#0B3B1F;transform:translateY(-1px)}
+
+/* Mapa do site: marca à esquerda, grupos de links à direita. */
+:is(.lp.lp-chrome,.lp .lp-chrome) .foot-main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr);gap:40px 64px;padding-block:52px 44px}
+.lp .foot-name{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.lp .foot-name img{width:64px;height:64px;object-fit:contain}
+.lp .foot-name strong{font-family:var(--font-heading),Georgia,serif;font-size:22px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.01em}
+.lp .foot-brand p{max-width:36ch;margin-bottom:16px}
+.lp .foot-brand address{display:flex;flex-direction:column;font-style:normal}
+.lp .foot-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+.lp .foot-col h3{font-family:var(--font-body),sans-serif;font-size:15px;font-weight:700;color:#fff;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.16)}
+.lp .foot-col li a{display:inline-block;padding:5px 0}
+
+.lp .site-foot .foot-bottom{border-top:1px solid rgba(255,255,255,.12);padding:18px 0;font-size:13px}
+.lp .foot-bottom-row{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap}
+.lp .foot-legal{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.lp .site-foot .foot-staff{display:inline-flex;align-items:center;gap:6px}
+
+@media(max-width:900px){
+  :is(.lp.lp-chrome,.lp .lp-chrome) .foot-main{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  :is(.lp.lp-chrome,.lp .lp-chrome) .foot-news-row{flex-direction:column;align-items:flex-start}
+  .lp .site-foot a.foot-news-btn{width:100%}
+  .lp .foot-map{grid-template-columns:1fr 1fr;gap:28px 20px}
+  .lp .foot-map > .foot-col:last-child{grid-column:1/-1}
+  .lp .foot-bottom-row{flex-direction:column;align-items:flex-start}
+}

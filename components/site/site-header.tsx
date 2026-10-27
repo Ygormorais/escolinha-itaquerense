@@ -5,16 +5,25 @@ import Image from "next/image"
 import Link from "next/link"
 import { Lock, Menu, Moon, Sun, X } from "lucide-react"
 import { useTheme } from "@/components/theme"
-import "./landing-top.css"
+import { depoimentos } from "@/lib/landing/conteudo"
+import "@/components/landing/landing.css"
+import "@/components/landing/landing-top.css"
+import "./site-chrome.css"
 
 const emptySubscribe = () => () => {}
 
 /**
- * Topo da landing: faixa institucional (acessos secundários) + cabeçalho com o escudo no
+ * Topo do site público (landing e páginas internas): faixa institucional (acessos secundários) + cabeçalho com o escudo no
  * centro e o menu dividido em dois lados. Abaixo de 1240px vira barra compacta com menu
  * em gaveta. O escudo encolhe quando a faixa sai da tela e o cabeçalho fica fixo.
+ *
+ * O wrapper `.lp.lp-chrome` usa display:contents: entrega os tokens e estilos da landing
+ * sem criar caixa, então o cabeçalho continua sticky em relação à página inteira.
+ * Na landing (que já é .lp) o wrapper fica só com .lp-chrome, para não repetir o escopo.
+ * Links de seção apontam para "/#..." para funcionar fora da landing também.
  */
-export function LandingHeader({ temVoz, whatsappUrl }: { temVoz: boolean; whatsappUrl: string | null }) {
+export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappUrl: string | null; dentroDaLanding?: boolean }) {
+  const temVoz = depoimentos.length > 0
   const [navOpen, setNavOpen] = useState(false)
   const [stuck, setStuck] = useState(false)
   const utilRef = useRef<HTMLDivElement>(null)
@@ -45,7 +54,7 @@ export function LandingHeader({ temVoz, whatsappUrl }: { temVoz: boolean; whatsa
   }, [navOpen])
 
   return (
-    <>
+    <div className={dentroDaLanding ? "lp-chrome" : "lp lp-chrome"}>
       <div className="util" ref={utilRef}>
         <div className="container util-row">
           <p className="util-id">Sociedade Esportiva Elite Itaquerense, desde 1922</p>
@@ -107,12 +116,12 @@ export function LandingHeader({ temVoz, whatsappUrl }: { temVoz: boolean; whatsa
             <ul className="nav-l">
               <li><a href="/horarios" onClick={closeNav}>Turmas</a></li>
               <li><a href="/resultados" onClick={closeNav}>Resultados</a></li>
-              <li><a href="#materias" onClick={closeNav}>Notícias</a></li>
+              <li><Link href="/#materias" onClick={closeNav}>Notícias</Link></li>
             </ul>
             <ul className="nav-r">
-              <li><a href="#sobre" onClick={closeNav}>História</a></li>
-              <li><a href="#galeria" onClick={closeNav}>Galeria</a></li>
-              {temVoz && <li><a href="#voz" onClick={closeNav}>Voz do clube</a></li>}
+              <li><Link href="/#sobre" onClick={closeNav}>História</Link></li>
+              <li><Link href="/#galeria" onClick={closeNav}>Galeria</Link></li>
+              {temVoz && <li><Link href="/#voz" onClick={closeNav}>Voz do clube</Link></li>}
               <li className="nav-access"><a href="/responsavel" onClick={closeNav}>Portal da família</a></li>
             </ul>
           </nav>
@@ -125,6 +134,6 @@ export function LandingHeader({ temVoz, whatsappUrl }: { temVoz: boolean; whatsa
         tabIndex={navOpen ? 0 : -1}
         onClick={closeNav}
       />
-    </>
+    </div>
   )
 }

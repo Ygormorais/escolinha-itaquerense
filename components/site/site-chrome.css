@@ -1,0 +1,7 @@
+/*
+ * Moldura do site público (cabeçalho e rodapé). O wrapper .lp.lp-chrome entrega os
+ * tokens da landing sem criar caixa, e o container ganha especificidade extra para não
+ * herdar a largura do .container de cada página interna (.hp, .np, .mat...).
+ */
+.lp-chrome{display:contents}
+.lp.lp-chrome .container{max-width:1200px;margin-inline:auto;padding-inline:clamp(16px,4vw,28px)}

@@ -39,6 +39,9 @@ export const PUB_TOKENS = `
   line-height:1.65;
   -webkit-font-smoothing:antialiased;
   min-height:100vh;
+  /* Filho de um flex em coluna com altura fixa: sem isto encolhe até 100vh e o
+     cabeçalho sticky perde o trilho no meio da página. */
+  flex-shrink:0;
   overflow-x:clip
 `
 
