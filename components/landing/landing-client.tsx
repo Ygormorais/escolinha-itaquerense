@@ -14,6 +14,7 @@ import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conte
 import { marcos } from "@/lib/landing/conteudo"
 import { publicFontClass } from "@/lib/public-fonts"
 import "./landing.css"
+import "./landing-sections.css"
 
 export function LandingClient({
   jogosPorCategoria,
