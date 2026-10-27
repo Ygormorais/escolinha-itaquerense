@@ -1,15 +1,16 @@
 import { describe, it, expect } from "vitest"
 import { renderToStaticMarkup } from "react-dom/server"
 import { LandingClient } from "@/components/landing/landing-client"
-import { heroView } from "@/lib/landing/jogos"
+import { faixaPartida, montarSlidesHero } from "@/lib/landing/hero"
 
 describe("landing publica", () => {
-  const hero = heroView({ tipo: "institucional" })
+  const slides = montarSlidesHero([])
   const html = renderToStaticMarkup(
     <LandingClient
       jogosPorCategoria={[]}
       noticiasClube={[]}
-      hero={hero}
+      faixa={null}
+      slides={slides}
       sobre={null}
       galeria={[]}
       depoimentos={[]}
@@ -26,7 +27,7 @@ describe("landing publica", () => {
   it("expoe a Matricula", () => {
     expect(html).toContain('href="/matricula"')
   })
-  it("renderiza o hero vindo do servidor", () => {
+  it("renderiza o hero institucional", () => {
     expect(html).toContain("Formação de base com paixão itaquerense")
   })
   it("nao repete faixas de navegacao/pitch (acesso-grid nem O que oferecemos)", () => {
@@ -41,8 +42,12 @@ describe("landing publica", () => {
     expect(html).not.toContain("Jogos na temporada")
     expect(html).not.toContain('class="stats"')
   })
-  it("hero de proximo jogo renderiza manchete e CTA FPFS", () => {
-    const proximo = heroView({
+  it("sem jogos nao renderiza a faixa da partida", () => {
+    expect(html).not.toContain('class="strip"')
+  })
+
+  it("faixa da proxima partida mostra o confronto, a data e o CTA FPFS", () => {
+    const faixa = faixaPartida({
       tipo: "proximo", id: 1, adversario: "Vila Real",
       data: new Date("2026-06-14T16:00:00"), local: "Casa", campeonato: "Sub-9 A3",
       sumulaUrl: null, fpfsEventoId: 920,
@@ -51,15 +56,71 @@ describe("landing publica", () => {
       <LandingClient
         jogosPorCategoria={[]}
         noticiasClube={[]}
-        hero={proximo}
+        faixa={faixa}
+        slides={slides}
         sobre={null}
         galeria={[]}
         depoimentos={[]}
       />
     )
-    expect(h).toContain("Próximo desafio: Itaquerense × Vila Real")
-    expect(h).toContain("eventos.admfutsal.com.br/evento/920/jogos")
-    expect(h).toContain('target="_blank"')
+    const strip = h.slice(h.indexOf('class="strip"'), h.indexOf('class="hs"'))
+    expect(strip).toContain("Próxima partida")
+    expect(strip).toContain("Sub-9 A3")
+    expect(strip).toContain("Vila Real")
+    expect(strip).toContain("14/06 às 16:00")
+    expect(strip).toContain("Jogo em casa")
+    expect(strip).toContain("eventos.admfutsal.com.br/evento/920/jogos")
+    expect(strip).toContain('target="_blank"')
+  })
+
+  it("faixa do ultimo resultado mostra o placar", () => {
+    const faixa = faixaPartida({
+      tipo: "resultado", id: 2, adversario: "Santo André",
+      data: new Date("2026-05-10T10:00:00"), local: "Fora", campeonato: "Sub-11 A3",
+      placar: "3 × 1", resultado: "Vitoria", sumulaUrl: null, fpfsEventoId: null,
+    })
+    const h = renderToStaticMarkup(
+      <LandingClient
+        jogosPorCategoria={[]}
+        noticiasClube={[]}
+        faixa={faixa}
+        slides={slides}
+        sobre={null}
+        galeria={[]}
+        depoimentos={[]}
+      />
+    )
+    const strip = h.slice(h.indexOf('class="strip"'), h.indexOf('class="hs"'))
+    expect(strip).toContain("Último resultado")
+    expect(strip).toContain("3 × 1")
+    expect(strip).toContain('href="/resultados"')
+    expect(strip).not.toContain('target="_blank"')
+  })
+
+  it("hero e um carrossel acessivel com um slide por destaque e so o primeiro com h1", () => {
+    expect(html).toContain('aria-roledescription="carousel"')
+    expect(html.match(/aria-roledescription="slide"/g)).toHaveLength(slides.length)
+    expect(html.match(/<h1/g)).toHaveLength(1)
+    expect(html).toContain("Campeões mundiais Sub-13 em 2012")
+  })
+
+  it("hero usa foto da publicacao como fundo quando existe", () => {
+    const h = renderToStaticMarkup(
+      <LandingClient
+        jogosPorCategoria={[]}
+        noticiasClube={[]}
+        faixa={null}
+        slides={montarSlidesHero([
+          { id: 5, titulo: "Convocação Sub-13", subtitulo: null, categoria: "Convocação", imagemUrl: "https://exemplo.test/foto.jpg" },
+        ])}
+        sobre={null}
+        galeria={[]}
+        depoimentos={[]}
+      />
+    )
+    expect(h).toContain("Convocação Sub-13")
+    expect(h).toContain("hs-photo")
+    expect(h).toContain("foto.jpg")
   })
 
   it("com noticias vazias nao renderiza carrossel de jogos", () => {
@@ -85,7 +146,8 @@ describe("landing publica", () => {
       <LandingClient
         jogosPorCategoria={[]}
         noticiasClube={[]}
-        hero={hero}
+        faixa={null}
+        slides={slides}
         sobre={null}
         galeria={[]}
         depoimentos={[
@@ -106,9 +168,9 @@ describe("landing publica", () => {
     expect(comVoz).toContain("fatopaulista.com.br")
   })
 
-  it("reserva controle de tema no header (dark mode)", () => {
+  it("reserva controle de tema na faixa do topo (dark mode)", () => {
     // No SSR o botão real só monta no client; placeholder evita layout shift
-    expect(html).toContain("btn-theme")
+    expect(html).toContain('class="util-icon" aria-hidden="true"')
   })
 
   it("hero institucional e carrossel de jogos nao repetem a mesma manchete", () => {
@@ -159,7 +221,8 @@ describe("landing publica", () => {
           },
         ]}
         noticiasClube={[]}
-        hero={hero}
+        faixa={null}
+        slides={slides}
         sobre={null}
         galeria={[]}
         depoimentos={[]}
@@ -175,7 +238,7 @@ describe("landing publica", () => {
     expect(comJogos).toContain('class="nc-feature')
     expect(comJogos).toContain('class="nc-scoreline"')
     const heroSlice = comJogos.slice(
-      comJogos.indexOf('class="hero"'),
+      comJogos.indexOf('class="hs"'),
       comJogos.indexOf('id="noticias"'),
     )
     expect(heroSlice).not.toContain("Vila Real")
@@ -190,7 +253,7 @@ describe("landing publica", () => {
     expect(header.match(/Matrícula/g)).toHaveLength(1)
   })
   it("hero institucional nao duplica o CTA do banner de matricula", () => {
-    const heroSection = html.slice(html.indexOf('class="hero"'), html.indexOf('id="noticias"'))
+    const heroSection = html.slice(html.indexOf('class="hs"'), html.indexOf('id="noticias"'))
     expect(heroSection).not.toContain("/matricula")
   })
   it("nao mostra WhatsApp flutuante sem numero", () => {
@@ -202,7 +265,8 @@ describe("landing publica", () => {
       <LandingClient
         jogosPorCategoria={[]}
         noticiasClube={[]}
-        hero={hero}
+        faixa={null}
+        slides={slides}
         sobre={null}
         galeria={[]}
         depoimentos={[]}

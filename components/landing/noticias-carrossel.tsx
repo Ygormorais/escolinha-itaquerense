@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
 import type { CategoriaNoticias, NoticiaCard } from "@/lib/landing/noticias"
+import { centralizarAba } from "./centralizar-aba"
 import "./noticias-carrossel.css"
 
 function statusMeta(r: NoticiaCard["resultado"]): { text: string; tone: string } {
@@ -114,12 +115,7 @@ export function NoticiasCarrossel({
     if (!root) return
     const active = root.querySelector<HTMLElement>(".nc-tab.active")
     if (!active) return
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    active.scrollIntoView({
-      inline: "center",
-      block: "nearest",
-      behavior: reduce ? "auto" : "smooth",
-    })
+    centralizarAba(root, active)
   }, [catSegura])
 
   const prev = useCallback(

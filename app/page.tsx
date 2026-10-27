@@ -1,4 +1,5 @@
-import { heroView } from "@/lib/landing/jogos"
+import { getHeroDestaque } from "@/lib/landing/jogos"
+import { faixaPartida, montarSlidesHero } from "@/lib/landing/hero"
 import { getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
 
 import { db } from "@/lib/db"
@@ -19,11 +20,12 @@ export const revalidate = 0
 
 /**
  * Separação de papéis (anti-redundância):
- * - Hero → institucional (marca / formação de base)
+ * - Faixa sob o cabeçalho → só a próxima partida (ou último resultado), em uma linha
+ * - Hero → institucional, matrícula, publicações do clube e história
  * - Carrossel → jogos/resultados com abas por categoria (Sub-7…Sub-18)
  */
 export default async function Page() {
-  const [jogosPorCategoria, noticiasClube, config] = await Promise.all([
+  const [jogosPorCategoria, noticiasClube, config, destaque] = await Promise.all([
     getNoticiasPorCategoriaCached(),
     db.noticia.findMany({
       where: { publicado: true },
@@ -32,13 +34,15 @@ export default async function Page() {
       select: { id: true, titulo: true, subtitulo: true, categoria: true, imagemUrl: true },
     }) as Promise<NoticiaClube[]>,
     getConfig(),
+    getHeroDestaque(),
   ])
   return (
     <LandingClient
       jogosPorCategoria={jogosPorCategoria}
       noticiasClube={noticiasClube}
       whatsapp={config.whatsapp}
-      hero={heroView({ tipo: "institucional" })}
+      faixa={faixaPartida(destaque)}
+      slides={montarSlidesHero(noticiasClube)}
       sobre={sobre}
       galeria={galeria}
       depoimentos={depoimentos}

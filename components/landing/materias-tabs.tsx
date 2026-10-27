@@ -11,6 +11,7 @@ import {
   type MateriaCard,
 } from "@/lib/landing/materias"
 import type { NoticiaClube } from "./noticias-clube-carrossel"
+import { centralizarAba } from "./centralizar-aba"
 import "./materias-tabs.css"
 
 function PublicacaoCard({ n }: { n: NoticiaClube }) {
@@ -129,12 +130,7 @@ export function MateriasTabs({
     if (!root) return
     const active = root.querySelector<HTMLElement>(".mt-tab.active")
     if (!active) return
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    active.scrollIntoView({
-      inline: "center",
-      block: "nearest",
-      behavior: reduce ? "auto" : "smooth",
-    })
+    centralizarAba(root, active)
   }, [abaAtiva])
 
   return (

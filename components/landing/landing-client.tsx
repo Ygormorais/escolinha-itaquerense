@@ -1,29 +1,26 @@
 "use client"
-import { useState, useEffect, useSyncExternalStore } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
-import Link from "next/link"
-import { Lock, Menu, X, ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react"
+import { Lock, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { NoticiasCarrossel } from "./noticias-carrossel"
 import { MateriasTabs } from "./materias-tabs"
-import type { HeroView } from "@/lib/landing/jogos"
+import { LandingHeader } from "./landing-header"
+import { JogoStrip } from "./jogo-strip"
+import { HeroSlider } from "./hero-slider"
+import type { FaixaPartida, HeroSlide } from "@/lib/landing/hero"
 import type { CategoriaNoticias } from "@/lib/landing/noticias"
 import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { marcos } from "@/lib/landing/conteudo"
 import { publicFontClass } from "@/lib/public-fonts"
-import { useTheme } from "@/components/theme"
 import "./landing.css"
-
-const emptySubscribe = () => () => {}
-
-/** Asset real do clube — hero com foto (não stock). */
-const HERO_BG = "/landing/galeria/sede-elite.webp"
 
 export function LandingClient({
   jogosPorCategoria,
   noticiasClube,
   whatsapp,
-  hero,
+  faixa,
+  slides,
   sobre,
   galeria,
   depoimentos,
@@ -34,25 +31,22 @@ export function LandingClient({
   jogosPorCategoria: CategoriaNoticias[]
   noticiasClube: NoticiaClube[]
   whatsapp?: string
-  hero: HeroView
+  /** Próxima partida ou último resultado; null quando o clube ainda não tem jogos. */
+  faixa: FaixaPartida | null
+  slides: HeroSlide[]
   sobre: SobreConteudo | null
   galeria: FotoGaleria[]
   depoimentos: Depoimento[]
   endereco?: string
   cidade?: string
 }) {
-  const [navOpen, setNavOpen] = useState(false)
   const [lbIndex, setLbIndex] = useState<number | null>(null)
-  const { theme, setTheme } = useTheme()
-  const themeMounted = useSyncExternalStore(emptySubscribe, () => true, () => false)
-  const closeNav = () => setNavOpen(false)
   const closeLb = () => setLbIndex(null)
 
   useEffect(() => {
-    if (!navOpen && lbIndex === null) return
+    if (lbIndex === null) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setNavOpen(false)
         setLbIndex(null)
       }
       if (lbIndex !== null && galeria.length > 0) {
@@ -67,7 +61,7 @@ export function LandingClient({
       document.removeEventListener("keydown", onKey)
       document.body.style.overflow = prev
     }
-  }, [navOpen, lbIndex, galeria.length])
+  }, [lbIndex, galeria.length])
 
   const waNumber = whatsapp?.replace(/\D/g, "") || ""
   const waUrl = waNumber.length >= 10
@@ -78,103 +72,12 @@ export function LandingClient({
     <div className={`${publicFontClass} lp`}>
       <a className="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
 
-      <header className="site">
-        <div className="container header-row">
-          <Link className="brand" href="/" onClick={closeNav}>
-            <Image className="shield" src="/logo.png" alt="E.C. Itaquerense" width={52} height={52} />
-            <span className="name"><b>E.C. Itaquerense</b><span>Site Oficial</span></span>
-          </Link>
-
-          <div className="access">
-            <a href="/matricula" className="btn-access primary">Matrícula</a>
-            <a href="/responsavel" className="btn-access">
-              <span className="btn-full">Portal da família</span>
-              <span className="btn-short">Portal</span>
-            </a>
-          </div>
-
-          {themeMounted ? (
-            <button
-              type="button"
-              className="btn-theme"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              title={theme === "dark" ? "Modo claro" : "Modo escuro"}
-              aria-label={theme === "dark" ? "Modo claro" : "Modo escuro"}
-            >
-              {theme === "dark" ? <Sun size={16} strokeWidth={2} aria-hidden /> : <Moon size={16} strokeWidth={2} aria-hidden />}
-            </button>
-          ) : (
-            <span className="btn-theme" aria-hidden style={{ visibility: "hidden" }} />
-          )}
-
-          <a
-            href="/login"
-            className="btn-staff"
-            aria-label="Área da equipe — painel administrativo"
-            title="Área da equipe"
-          >
-            <Lock size={16} strokeWidth={2} aria-hidden />
-          </a>
-
-          <button
-            className="burger"
-            aria-label={navOpen ? "Fechar menu" : "Menu"}
-            aria-expanded={navOpen}
-            aria-controls="nav"
-            onClick={() => setNavOpen((o) => !o)}
-          >
-            {navOpen ? <X size={26} strokeWidth={2} aria-hidden /> : <Menu size={26} strokeWidth={2} aria-hidden />}
-          </button>
-
-          <nav className={"main" + (navOpen ? " open" : "")} id="nav">
-            <ul>
-              <li><a href="/horarios" onClick={closeNav}>Turmas</a></li>
-              <li><a href="/resultados" onClick={closeNav}>Resultados</a></li>
-              <li><a href="#materias" onClick={closeNav}>Notícias</a></li>
-              <li><a href="#sobre" onClick={closeNav}>História</a></li>
-              <li><a href="#galeria" onClick={closeNav}>Galeria</a></li>
-              {depoimentos.length > 0 && (
-                <li><a href="#voz" onClick={closeNav}>Voz do clube</a></li>
-              )}
-              <li className="nav-access"><a href="/responsavel" onClick={closeNav}>Portal da família</a></li>
-            </ul>
-          </nav>
-        </div>
-      </header>
-      <button
-        type="button"
-        className={"nav-backdrop" + (navOpen ? " open" : "")}
-        aria-label="Fechar menu"
-        tabIndex={navOpen ? 0 : -1}
-        onClick={closeNav}
-      />
+      <LandingHeader temVoz={depoimentos.length > 0} whatsappUrl={waUrl} />
 
       <main id="conteudo-principal">
-        <div className="hero">
-          <Image
-            className="hero-bg"
-            src={HERO_BG}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            style={{ objectFit: "cover", objectPosition: "center" }}
-            aria-hidden
-          />
-          <div className="hero-overlay" aria-hidden />
-          <div className="container">
-            <span className="badge">{hero.badge}</span>
-            <h1>{hero.titulo}</h1>
-            <p>{hero.descricao}</p>
-            {hero.ctaExterno ? (
-              <a href={hero.ctaHref} className="btn btn-white" target="_blank" rel="noopener noreferrer">
-                {hero.ctaLabel}
-              </a>
-            ) : (
-              <a href={hero.ctaHref} className="btn btn-white">{hero.ctaLabel}</a>
-            )}
-          </div>
-        </div>
+        {faixa && <JogoStrip faixa={faixa} />}
+
+        <HeroSlider slides={slides} />
 
         {marcos.length > 0 && (
           <section className="marcos" aria-label="Marcos do clube">
