@@ -1,0 +1,43 @@
+/*
+ * Seções abaixo do hero: títulos, história, galeria, voz do clube e rodapé.
+ * Vem depois de landing.css e sobrescreve só o que mudou; tokens do .lp.
+ */
+
+/* ===== Títulos de seção: barra curta sob o título, sem filete lateral ===== */
+.lp .section-title{border-left:0;padding-left:0;position:relative;padding-bottom:16px;margin-bottom:36px;font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.02em}
+.lp .section-title::after{content:"";position:absolute;left:0;bottom:0;width:56px;height:4px;border-radius:2px;background:var(--red)}
+
+/* ===== História: faixa escura, texto claro, foto com moldura deslocada ===== */
+.lp .sobre{background:var(--brand-950);color:#fff}
+.lp .sobre .section-title{color:#fff}
+.lp .sobre .section-title::after{background:var(--brand-500)}
+.lp .sobre .txt p{color:rgba(255,255,255,.82);font-size:17px;line-height:1.75}
+.lp .sobre .foto{position:relative;border-radius:var(--radius-sm);overflow:visible;box-shadow:none}
+.lp .sobre .foto::before{content:"";position:absolute;inset:16px -16px -16px 16px;border:3px solid var(--brand-600);border-radius:var(--radius-sm);z-index:0}
+.lp .sobre .foto img{position:relative;z-index:1;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg)}
+
+/* ===== Galeria: mosaico com a primeira foto em destaque ===== */
+.lp .galeria .grid{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:clamp(140px,17vw,230px);gap:8px}
+.lp .galeria .item{position:relative;aspect-ratio:auto;height:100%;border-radius:var(--radius-sm);box-shadow:none}
+.lp .galeria .item:first-child{grid-column:span 2;grid-row:span 2}
+.lp .galeria .item:hover{transform:none;box-shadow:none}
+.lp .galeria .item img{transition:transform .5s ease}
+.lp .galeria .item:hover img{transform:scale(1.05)}
+.lp .galeria .item::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,color-mix(in srgb, var(--brand-950) 55%, transparent),transparent 45%);opacity:0;transition:opacity .3s}
+.lp .galeria .item:hover::after,.lp .galeria .item:focus-visible::after{opacity:1}
+
+/* ===== Voz do clube: cartões sem elevação, filete vermelho no topo ===== */
+.lp .depo .card{border-radius:var(--radius-sm);border-top:4px solid var(--red);box-shadow:none}
+.lp .depo .card:hover{transform:none;box-shadow:var(--shadow-sm);border-color:var(--border);border-top-color:var(--red)}
+
+/* ===== Rodapé: filete vermelho separa da chamada de matrícula ===== */
+.lp > footer{border-top:4px solid var(--red)}
+
+@media(max-width:900px){
+  .lp .sobre .foto::before{inset:12px -8px -12px 8px}
+  .lp .galeria .grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:clamp(120px,32vw,200px);gap:6px}
+}
+@media(max-width:600px){
+  .lp .galeria .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lp .galeria .item:first-child{grid-column:span 2;grid-row:span 1}
+}
