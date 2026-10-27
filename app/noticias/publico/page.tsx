@@ -5,7 +5,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase, PUB_HDR_CSS, PUB_FOOT_CSS } from "@/lib/public-css"
-import { PublicHeader } from "@/components/public/public-header"
+import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
 
 export const metadata = { title: "Notícias — E.C. Itaquerense" }
 
@@ -99,7 +99,7 @@ export default async function NoticiasPublicoPage() {
     <div className={`${publicFontClass} np`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      <PublicHeader subtitle="Notícias" />
+      <SiteTopo />
 
       <div className="hero">
         <div className="container hero-inner">
@@ -151,16 +151,7 @@ export default async function NoticiasPublicoPage() {
         </div>
       </section>
 
-      <footer className="pub-foot">
-        <div className="inner">
-          <span>© 2026 E.C. Itaquerense. Todos os direitos reservados.</span>
-          <div style={{ display: "flex", gap: 20 }}>
-            <Link href="/resultados">Resultados</Link>
-            <Link href="/horarios">Turmas &amp; Horários</Link>
-            <Link href="/matricula">Pré-Matrícula</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteRodape />
     </div>
   )
 }

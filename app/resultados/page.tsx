@@ -1,7 +1,6 @@
-import Link from "next/link"
 import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase, PUB_HDR_CSS } from "@/lib/public-css"
-import { PublicHeader } from "@/components/public/public-header"
+import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
 import {
   ResultadosClient,
   type ClassifCamp,
@@ -158,7 +157,7 @@ export default async function ResultadosPage() {
     <div className={`res ${publicFontClass}`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      <PublicHeader subtitle="Resultados & Classificação" />
+      <SiteTopo />
 
       <div className="res-hero">
         <div className="inner">
@@ -178,13 +177,7 @@ export default async function ResultadosPage() {
         />
       </div>
 
-      <footer className="res-ftr">
-        <div className="inner">
-          <Link href="/responsavel">Portal do Responsável</Link>
-          <Link href="/matricula">Pré-Matrícula</Link>
-          <Link href="/">← Voltar ao site</Link>
-        </div>
-      </footer>
+      <SiteRodape />
     </div>
   )
 }

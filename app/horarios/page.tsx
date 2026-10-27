@@ -1,10 +1,9 @@
-import Link from "next/link"
 import { CalendarClock } from "lucide-react"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 import { getConfig } from "@/lib/config"
 import { publicFontClass } from "@/lib/public-fonts"
 import { pubBase, PUB_HDR_CSS, PUB_FOOT_CSS } from "@/lib/public-css"
-import { PublicHeader } from "@/components/public/public-header"
+import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
 import HorariosClient from "./horarios-client"
 
 export const metadata = {
@@ -59,7 +58,7 @@ export default async function HorariosPage() {
     <div className={`${publicFontClass} hp`}>
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      <PublicHeader subtitle="Turmas & Horários" />
+      <SiteTopo />
 
       <div className="hero">
         <div className="hero-deco" />
@@ -83,16 +82,7 @@ export default async function HorariosPage() {
         </div>
       </section>
 
-      <footer className="pub-foot">
-        <div className="inner">
-          <span>© 2026 E.C. Itaquerense. Todos os direitos reservados.</span>
-          <div style={{ display: "flex", gap: 20 }}>
-            <Link href="/matricula">Pré-Matrícula</Link>
-            <Link href="/resultados">Resultados</Link>
-            <Link href="/responsavel">Portal do Responsável</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteRodape />
     </div>
   )
 }

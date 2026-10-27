@@ -131,7 +131,7 @@ describe("landing publica", () => {
     expect(html).toContain("Notícias e conquistas")
     expect(html).toContain("Mundial")
     expect(html).toContain("Campeão Mundial Sub-13 na França")
-    expect(html).toContain('href="#materias"')
+    expect(html).toContain('href="/#materias"')
   })
 
   it("exibe marcos reais do clube", () => {
@@ -163,7 +163,7 @@ describe("landing publica", () => {
     )
     expect(comVoz).toContain("Voz do clube")
     expect(comVoz).toContain("Simão")
-    expect(comVoz).toContain('href="#voz"')
+    expect(comVoz).toContain('href="/#voz"')
     expect(comVoz).toContain("Fonte: Fato Paulista")
     expect(comVoz).toContain("fatopaulista.com.br")
   })
