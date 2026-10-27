@@ -41,3 +41,55 @@
   .lp .galeria .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .lp .galeria .item:first-child{grid-column:span 2;grid-row:span 1}
 }
+
+/* ===== Jogos e notícias: mesmo título das outras seções, sem padding dobrado ===== */
+/* .lp section já dá respiro; .nc-inner/.mt-inner repetiam o mesmo espaço. */
+.lp .nc,.lp .mt{padding:0}
+.lp .nc .nc-header,.lp .mt .mt-header{align-items:flex-end;margin-bottom:12px}
+.lp .nc .nc-header h2,.lp .mt .mt-header h2{border-left:0;padding-left:0;position:relative;padding-bottom:16px;font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.02em}
+.lp .nc .nc-header h2::after,.lp .mt .mt-header h2::after{content:"";position:absolute;left:0;bottom:0;width:56px;height:4px;border-radius:2px;background:var(--red)}
+.lp .nc .nc-more,.lp .mt .mt-more{padding-bottom:20px}
+.lp .mt .mt-lead{margin-top:16px}
+/* O card inteiro é um link e o reset global deixa links sem quebra de linha. */
+.lp .mt .mt-card{white-space:normal}
+.lp .mt .mt-card-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ===== Voz do clube: primeira fala em destaque, demais em linha ===== */
+.lp .depo .grid:not(.depo-grid-single) > .card:first-child{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;column-gap:28px;padding:clamp(28px,4vw,44px)}
+.lp .depo .grid:not(.depo-grid-single) > .card:first-child .quote{grid-row:span 2;font-size:96px;line-height:.8}
+.lp .depo .grid:not(.depo-grid-single) > .card:first-child .texto{font-size:clamp(19px,2.2vw,24px);line-height:1.5;max-width:60ch}
+
+/* ===== Chamada de matrícula: texto à esquerda, ações à direita, escudo ao fundo ===== */
+.lp .membership{text-align:left;background:var(--brand-700)}
+.lp .membership::after{right:-60px;top:50%;width:420px;height:420px;border-radius:0;transform:translateY(-50%) rotate(-8deg);background:url(/logo.png) center/contain no-repeat;opacity:.09}
+.lp .membership .container{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px 56px}
+.lp .membership h2{margin-bottom:10px}
+.lp .membership p{margin:0;max-width:56ch}
+.lp .membership .btn-row{justify-content:flex-end}
+.lp .membership .btn{border-radius:var(--radius-pill)}
+
+/* ===== Rodapé ===== */
+.lp .foot-brand{display:flex;flex-direction:column;align-items:flex-start}
+.lp .foot-brand .foot-name{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.lp .foot-brand .foot-name .shield{margin:0}
+.lp .foot-brand .foot-name strong{font-family:var(--font-heading),Georgia,serif;font-size:22px;font-weight:800;line-height:1.15;letter-spacing:-.01em}
+.lp > footer h4{text-transform:none;letter-spacing:0;font-size:15px;color:#fff;font-weight:700}
+.lp > footer .fcol a,.lp .foot-addr{opacity:1;color:rgba(255,255,255,.78)}
+.lp > footer .fcol a:hover{color:#fff;padding-left:0;text-decoration:underline;text-underline-offset:3px}
+.lp > footer .fcol a.foot-wa{display:inline-flex;align-items:center;min-height:40px;margin-top:12px;padding:0 18px;border-radius:var(--radius-pill);background:#fff;color:var(--brand-800)!important;font-weight:700;font-size:14px}
+.lp > footer .fcol a.foot-wa:hover{background:var(--brand-50);text-decoration:none}
+.lp .foot-staff{text-transform:none;letter-spacing:0;font-size:12px}
+.lp > footer a:focus-visible{outline-color:#fff}
+
+@media(max-width:900px){
+  .lp .depo .grid:not(.depo-grid-single) > .card:first-child{grid-template-columns:1fr}
+  .lp .depo .grid:not(.depo-grid-single) > .card:first-child .quote{grid-row:auto;font-size:56px}
+  .lp .membership .container{grid-template-columns:1fr}
+  .lp .membership .btn-row{justify-content:flex-start;margin:0;max-width:360px}
+}
+@media(max-width:600px){
+  .lp .membership .btn-row .btn{width:100%}
+  /* Clube e Escolinha lado a lado; marca e contato ocupam a largura toda. */
+  .lp .foot-grid{grid-template-columns:1fr 1fr;column-gap:20px}
+  .lp .foot-brand,.lp .foot-grid > .fcol:last-child{grid-column:1/-1}
+}

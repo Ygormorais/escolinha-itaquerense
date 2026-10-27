@@ -138,7 +138,6 @@ export function MateriasTabs({
       <div className="container mt-inner">
         <div className="mt-header">
           <div>
-            <p className="mt-kicker">Clube &amp; base</p>
             <h2 id="mt-heading">Notícias e conquistas</h2>
             <p className="mt-lead">
               Mundial, títulos paulistas, participações e o legado de formação do Elite

@@ -174,8 +174,10 @@ export function LandingClient({
 
         <section className="membership" id="matricule-se">
           <div className="container">
-            <h2>Pronto para vestir o alvirrubro?</h2>
-            <p>Faça a pré-matrícula da escolinha e acompanhe tudo pelo portal da família. Vagas por categoria — fale conosco se tiver dúvidas.</p>
+            <div className="membership-txt">
+              <h2>Pronto para vestir o alvirrubro?</h2>
+              <p>Faça a pré-matrícula da escolinha e acompanhe tudo pelo portal da família. Vagas por categoria — fale conosco se tiver dúvidas.</p>
+            </div>
             <div className="btn-row">
               <a href="/matricula" className="btn btn-white">Fazer pré-matrícula</a>
               {waUrl && (
@@ -191,7 +193,10 @@ export function LandingClient({
       <footer>
         <div className="container foot-grid">
           <div className="foot-brand">
-            <Image className="shield" src="/logo.png" alt="E.C. Itaquerense" width={68} height={68} />
+            <div className="foot-name">
+              <Image className="shield" src="/logo.png" alt="" width={68} height={68} />
+              <strong>Elite<br />Itaquerense</strong>
+            </div>
             <p>Sociedade Esportiva Elite Itaquerense — tradição alvirrubra em Itaquera desde 1922. Formação esportiva e humana para as novas gerações.</p>
           </div>
           <div className="fcol">
@@ -214,9 +219,9 @@ export function LandingClient({
               {endereco && <p>{endereco}</p>}
               {cidade && <p>{cidade}</p>}
               {waUrl && (
-                <p style={{ marginTop: "8px" }}>
-                  <a href={waUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                </p>
+                <a href={waUrl} className="foot-wa" target="_blank" rel="noopener noreferrer">
+                  Falar no WhatsApp
+                </a>
               )}
             </div>
           </div>
