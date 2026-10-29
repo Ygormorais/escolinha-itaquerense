@@ -33,7 +33,7 @@ export const PUB_TOKENS = `
   --radius-xl:8px;
   --radius-pill:999px;
   --ease:cubic-bezier(.25,.46,.45,.94);
-  font-family:var(--font-body),var(--font-inter),Inter,system-ui,sans-serif;
+  font-family:var(--font-body),system-ui,sans-serif;
   color:var(--text);
   background:var(--bg);
   line-height:1.65;
@@ -70,6 +70,6 @@ export function pubBase(ns: string): string {
     `html.dark .${ns}{${PUB_TOKENS_DARK}}`,
     `.${ns} *{margin:0;padding:0;box-sizing:border-box}`,
     `.${ns} a{text-decoration:none;color:inherit}`,
-    `.${ns} h1,.${ns} h2,.${ns} h3,.${ns} h4{font-family:var(--font-heading),var(--font-playfair),Georgia,serif}`,
+    `.${ns} h1,.${ns} h2,.${ns} h3,.${ns} h4{font-family:var(--font-heading),system-ui,sans-serif}`,
   ].join("\n")
 }

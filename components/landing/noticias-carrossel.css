@@ -30,7 +30,7 @@
 
 .lp .nc .nc-header h2 {
   margin: 0;
-  font-family: var(--font-heading), Georgia, serif;
+  font-family: var(--font-heading),system-ui,sans-serif;
   font-size: clamp(24px, 3vw, 32px);
   font-weight: 700;
   color: var(--text, var(--ink-950));
@@ -299,7 +299,7 @@ a.nc-feature-link,
 }
 
 .nc-club-name {
-  font-family: var(--font-heading), Georgia, serif;
+  font-family: var(--font-heading),system-ui,sans-serif;
   font-size: clamp(15px, 2vw, 20px);
   font-weight: 700;
   color: var(--text, var(--ink-950));
@@ -337,7 +337,7 @@ a.nc-feature-link,
 }
 
 .nc-goal {
-  font-family: var(--font-heading), Georgia, serif;
+  font-family: var(--font-heading),system-ui,sans-serif;
   font-size: clamp(42px, 7vw, 64px);
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -357,7 +357,7 @@ a.nc-feature-link,
 }
 
 .nc-vs-badge {
-  font-family: var(--font-heading), Georgia, serif;
+  font-family: var(--font-heading),system-ui,sans-serif;
   font-size: clamp(18px, 2.5vw, 22px);
   font-weight: 800;
   letter-spacing: 0.12em;

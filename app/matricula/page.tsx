@@ -21,7 +21,7 @@ const css = `
 
   /* ── FORM HEADER ── */
   .mat .mat-form-hdr{margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--border)}
-  .mat .mat-form-title{font-family:var(--font-heading),Georgia,serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
+  .mat .mat-form-title{font-family:var(--font-heading),system-ui,sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
   .mat .mat-form-sub{font-size:13px;color:var(--text-muted)}
 
   /* ── SECTION HEADERS ── */
@@ -105,7 +105,7 @@ const css = `
     display:flex;align-items:center;justify-content:center
   }
   .mat .mat-success-icon svg{width:40px;height:40px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-  .mat .mat-success h2{font-family:var(--font-heading),Georgia,serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:10px}
+  .mat .mat-success h2{font-family:var(--font-heading),system-ui,sans-serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:10px}
   .mat .mat-success p{font-size:15px;color:var(--text-muted);line-height:1.65;max-width:400px;margin:0 auto 24px}
   .mat .mat-success-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
   .mat .mat-success-actions a{

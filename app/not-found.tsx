@@ -11,12 +11,12 @@ const css = `
   .nf-logo{width:64px;height:64px;object-fit:contain;margin-bottom:28px;
     filter:drop-shadow(0 4px 12px color-mix(in srgb, var(--brand-600) 25%, transparent))}
   .nf-code{
-    font-family:var(--font-heading),Georgia,serif;
+    font-family:var(--font-heading),system-ui,sans-serif;
     font-size:96px;font-weight:800;letter-spacing:-4px;line-height:1;
     color:var(--red);margin-bottom:12px;
     text-shadow:0 4px 24px color-mix(in srgb, var(--brand-600) 20%, transparent)
   }
-  .nf-title{font-family:var(--font-heading),Georgia,serif;font-size:24px;font-weight:700;
+  .nf-title{font-family:var(--font-heading),system-ui,sans-serif;font-size:24px;font-weight:700;
     color:var(--text);margin-bottom:10px}
   .nf-desc{font-size:14px;color:var(--text-muted);max-width:360px;line-height:1.65;margin-bottom:36px}
 

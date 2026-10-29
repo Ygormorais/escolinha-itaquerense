@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Playfair_Display } from "next/font/google"
+import { Barlow, Barlow_Condensed } from "next/font/google"
 
 import "./globals.css"
 import { Toaster } from "sonner"
@@ -11,18 +11,18 @@ import { ShellGate } from "@/components/layout/shell-gate"
 import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
 
-/** Canônico: Inter (corpo) + Playfair (títulos) — site, admin e portal. */
-const inter = Inter({
+/** Canônico: Barlow (corpo e UI) + Barlow Condensed (títulos) — site, admin e portal. */
+const barlow = Barlow({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
+  variable: "--font-barlow",
   display: "swap",
 })
 
-const playfair = Playfair_Display({
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-playfair",
+  weight: ["700", "800", "900"],
+  variable: "--font-barlow-condensed",
   display: "swap",
 })
 
@@ -101,7 +101,7 @@ export default async function RootLayout({
     : [0, 0, 0, 0]
 
   return (
-      <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <html lang="pt-BR" className={`h-full antialiased ${barlow.variable} ${barlowCondensed.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
         <script

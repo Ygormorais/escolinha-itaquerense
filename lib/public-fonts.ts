@@ -1,7 +1,7 @@
 /**
  * Fontes canônicas já são carregadas no root layout (`app/layout.tsx`):
- *   --font-inter   (Inter)
- *   --font-playfair (Playfair Display)
+ *   --font-barlow            (Barlow — corpo e UI)
+ *   --font-barlow-condensed  (Barlow Condensed — títulos)
  *   --font-body / --font-heading (mapeados em globals.css)
  *
  * NÃO chamar next/font de novo aqui — instanciar duas vezes quebra o HMR
@@ -10,8 +10,3 @@
 
 /** Classe no-op para wrappers de página pública (variáveis vêm do <html>). */
 export const publicFontClass = ""
-
-/** @deprecated Use publicFontClass — mantido para imports legados. */
-export const inter = { variable: "", className: "" }
-/** @deprecated Use publicFontClass — mantido para imports legados. */
-export const playfair = { variable: "", className: "" }

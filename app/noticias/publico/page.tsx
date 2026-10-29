@@ -37,7 +37,7 @@ const css = `
     background:color-mix(in srgb, var(--ink-950) 72%, transparent);color:#fff;font-size:12px;font-weight:700;
     padding:4px 10px;border-radius:var(--radius-pill);backdrop-filter:blur(6px)}
   .np .card-body{padding:20px 22px 22px;flex:1;display:flex;flex-direction:column;gap:10px}
-  .np .card-titulo{font-family:var(--font-heading),Georgia,serif;font-size:17px;font-weight:800;
+  .np .card-titulo{font-family:var(--font-heading),system-ui,sans-serif;font-size:17px;font-weight:800;
     color:var(--text);line-height:1.25;letter-spacing:-.2px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .np .card-sub{font-size:13px;color:var(--text-muted);line-height:1.55;

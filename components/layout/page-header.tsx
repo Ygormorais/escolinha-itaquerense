@@ -32,7 +32,7 @@ export function PageHeader({ title, description, action, back, badge, contextBar
           )}
           <div className="min-w-0 border-l-4 border-brand-600 pl-3.5">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h1 className="min-w-0 [overflow-wrap:anywhere] font-heading text-[1.75rem] font-extrabold leading-tight tracking-tight text-foreground md:text-3xl">
+              <h1 className="min-w-0 [overflow-wrap:anywhere] font-heading uppercase text-[1.75rem] font-extrabold leading-tight tracking-tight text-foreground md:text-3xl">
                 {title}
               </h1>
               {badge}
