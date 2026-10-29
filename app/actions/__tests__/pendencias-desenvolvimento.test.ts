@@ -25,8 +25,8 @@ describe("pendências registradas de desenvolvimento", () => {
   })
   it("recusa sessão expirada antes de consultar", async () => {
     mocks.session.mockResolvedValue({ authenticated: false })
-    await expect(encerrarPendenciaDesenvolvimento(input)).rejects.toThrow("Não autenticado")
-    await expect(listarPendenciasDesenvolvimento({})).rejects.toThrow("Não autenticado")
+    await expect(encerrarPendenciaDesenvolvimento(input)).rejects.toThrow("NEXT_REDIRECT")
+    await expect(listarPendenciasDesenvolvimento({})).rejects.toThrow("NEXT_REDIRECT")
     expect(mocks.find).not.toHaveBeenCalled()
   })
   it.each([{ observacao: "  " }, { observacao: "x".repeat(501) }, { versao: "inválida" }, { id: -1 }])("valida encerramento: %j", async (change) => {

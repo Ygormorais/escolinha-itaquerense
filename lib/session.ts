@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
-import { checkCredentialsFromEnv, getSessionSecret } from "@/lib/env"
+import { checkCredentialsFromEnv, getSessionSecret, isEnvAdminUsername } from "@/lib/env"
 import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
 import { db } from "@/lib/db"
 
@@ -48,13 +48,22 @@ export async function getSession(): Promise<SessionInfo> {
     where: { username },
     select: { ativo: true, role: true },
   })
-  if (!usuario?.ativo) return { authenticated: false }
+  // O administrador do .env não tem conta no banco; o login o aceita, então a sessão também.
+  // Só vale para sessão emitida pelo login do .env: um cookie de conta do banco que foi
+  // excluída não pode virar admin só por ter o mesmo nome. Conta existente prevalece.
+  if (!usuario) {
+    return parts[2] === "env" && isEnvAdminUsername(username)
+      ? { authenticated: true, user: username, role: "admin" }
+      : { authenticated: false }
+  }
+  if (!usuario.ativo) return { authenticated: false }
 
   return { authenticated: true, user: username, role: usuario.role }
 }
 
-export async function createSession(username: string, role = "admin"): Promise<string> {
-  return sign(`${SESSION_PREFIX}${username}:${role}`)
+/** origem "env": sessão do administrador do .env; "db": conta da tabela de usuários. */
+export async function createSession(username: string, role = "admin", origem: "db" | "env" = "db"): Promise<string> {
+  return sign(`${SESSION_PREFIX}${username}:${role}:${origem}`)
 }
 
 export function cookieName() { return COOKIE_NAME }

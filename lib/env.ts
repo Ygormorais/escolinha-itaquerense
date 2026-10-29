@@ -58,6 +58,14 @@ export const env = {
   FPFS_SYNC_TOKEN: process.env.FPFS_SYNC_TOKEN ?? "",
 }
 
+/** Usuário do administrador definido no .env (o mesmo que checkCredentialsFromEnv aceita). */
+export function isEnvAdminUsername(username: string): boolean {
+  const expectedUser = process.env.ADMIN_USERNAME?.trim()
+  const expectedPass = process.env.ADMIN_PASSWORD?.trim()
+  if (!expectedUser || !expectedPass) return !isProd() && username === "admin"
+  return username === expectedUser
+}
+
 export function checkCredentialsFromEnv(username: string, password: string): boolean {
   const expectedUser = process.env.ADMIN_USERNAME?.trim()
   const expectedPass = process.env.ADMIN_PASSWORD?.trim()
