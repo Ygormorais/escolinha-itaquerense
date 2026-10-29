@@ -20,7 +20,7 @@ describe("consultas locais autorizadas", () => {
   })
   it("exige login", async () => {
     m.session.mockResolvedValue({ authenticated: false })
-    await expect(consultarResultadosAcoes()).rejects.toThrow("Não autenticado")
+    await expect(consultarResultadosAcoes()).rejects.toThrow("NEXT_REDIRECT")
   })
   it.each(["Quem é melhor?", "x".repeat(201)])("recusa pergunta fora do escopo sem ler o banco", async (pergunta) => {
     expect(await perguntarDesenvolvimento({ pergunta })).toHaveProperty("error")

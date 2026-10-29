@@ -22,9 +22,10 @@ describe("requireAuth", () => {
     expect(result).toEqual({ user: "admin", role: "admin" })
   })
 
-  it("lança erro quando não autenticado", async () => {
+  it("manda para o login quando não autenticado, em vez de quebrar a página", async () => {
+    // Ex.: cookie assinado mas recusado pela sessão (conta excluída, formato antigo).
     mockGetSession.mockResolvedValue({ authenticated: false })
-    await expect(requireAuth()).rejects.toThrow("Não autenticado")
+    await expect(requireAuth()).rejects.toThrow("REDIRECT:/login")
   })
 
   it("lança erro quando role não está na lista permitida", async () => {

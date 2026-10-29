@@ -20,7 +20,7 @@ describe("consulta de frequência após conclusão", () => {
   })
   it("exige autenticação", async () => {
     mocks.session.mockResolvedValue({ authenticated: false })
-    await expect(consultarAcompanhamentoFrequencia(1)).rejects.toThrow("Não autenticado")
+    await expect(consultarAcompanhamentoFrequencia(1)).rejects.toThrow("NEXT_REDIRECT")
     expect(mocks.acao).not.toHaveBeenCalled()
   })
   it("recusa ID inválido", async () => {
