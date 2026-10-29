@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
 import { requireAuth } from "@/lib/auth"
 import { buildMaquinaWhere, MAQUINA_PAGE_SIZE, parseMaquinaFilters } from "@/lib/maquina-query"
+import { valorDevidoDoAluno } from "@/lib/valor-devido"
 
 type AlunoConciliacao = { id: number; nomeBusca: string; responsavelBusca: string }
 type ChaveTransacao = { dataTransacao: Date; valor: number; nomeNoCartao: string }
@@ -167,11 +168,15 @@ export async function reconciliarTransacao(
   }
   // upsert na unique (alunoId, mesReferencia): se a mensalidade do mês já existe,
   // marca como paga via cartão (não duplica); senão cria.
+  const alunoValores = await db.aluno.findUnique({ where: { id: alunoId }, select: { mensalidade: true, desconto: true } })
   await db.$transaction(async (tx) => {
     const pagamento = await tx.pagamento.upsert({
       where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
       update: dados,
-      create: { alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados },
+      create: {
+        alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados,
+        valorDevido: alunoValores ? valorDevidoDoAluno(alunoValores) : null,
+      },
     })
 
     await tx.transacaoMaquina.update({
@@ -191,10 +196,11 @@ export async function reconciliarAuto() {
     db.transacaoMaquina.findMany({ where: { status: "pendente" } }),
     db.aluno.findMany({
       where: { status: "Ativo" },
-      select: { id: true, nome: true, responsavel: true },
+      select: { id: true, nome: true, responsavel: true, mensalidade: true, desconto: true },
       orderBy: { id: "asc" },
     }),
   ])
+  const valorDevidoPorAluno = new Map(alunosAtivos.map((a) => [a.id, valorDevidoDoAluno(a)]))
   const indiceAlunos: AlunoConciliacao[] = alunosAtivos.map((aluno) => ({
     id: aluno.id,
     nomeBusca: normalizarNome(aluno.nome),
@@ -223,7 +229,7 @@ export async function reconciliarAuto() {
       const pagamento = await tx.pagamento.upsert({
         where: { alunoId_mesReferencia: { alunoId: aluno.id, mesReferencia: mes } },
         update: dadosAuto,
-        create: { alunoId: aluno.id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto },
+        create: { alunoId: aluno.id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto, valorDevido: valorDevidoPorAluno.get(aluno.id) ?? null },
       })
 
       await tx.transacaoMaquina.update({

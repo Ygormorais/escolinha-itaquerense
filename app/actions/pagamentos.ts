@@ -9,6 +9,7 @@ import { dataValida, plural } from "@/lib/utils"
 import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
 import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
+import { valorDevidoDoAluno } from "@/lib/valor-devido"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -135,7 +136,7 @@ export async function gerarMensalidadesAno(
   try {
     const rawDia = getConfig().diaVencimento
     const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
-    const alunos = await db.aluno.findMany({ where: { status: "Ativo" }, select: { id: true } })
+    const alunos = await db.aluno.findMany({ where: { status: "Ativo" }, select: { id: true, mensalidade: true, desconto: true } })
     let criados = 0
     let ignorados = 0
 
@@ -156,6 +157,7 @@ export async function gerarMensalidadesAno(
             dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
             canalPrevisto: null,
             statusCobranca: null,
+            valorDevido: valorDevidoDoAluno(a),
           })),
         })
         criados += novos.length

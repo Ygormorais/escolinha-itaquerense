@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
 import { logger } from "@/lib/logger"
+import { valorDevidoDoAluno } from "@/lib/valor-devido"
 
 export async function runGerarMensalidadesMes(
   mes: string
@@ -26,6 +27,7 @@ export async function runGerarMensalidadesMes(
         dataVencimento: new Date(ano, mesNum - 1, diaVencimento),
         canalPrevisto: null,
         statusCobranca: null,
+        valorDevido: valorDevidoDoAluno(a),
       })),
     })
   }

@@ -61,6 +61,12 @@ describe("importarAlunosCSV", () => {
     expect(segundaChamada[0].data).toHaveLength(12)
   })
 
+  it("grava o valor devido nas mensalidades importadas", async () => {
+    await importarAlunosCSV(toCsv([alunoValido]))
+    const { data } = m.pagamento.createMany.mock.calls[0][0]
+    for (const p of data) expect(p.valorDevido).toBe(150)
+  })
+
   it("linha com nome vazio — retorna erro na linha 2, zero importados", async () => {
     const resultado = await importarAlunosCSV(toCsv([{ ...alunoValido, nome: "" }]))
 

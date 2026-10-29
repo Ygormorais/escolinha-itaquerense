@@ -30,8 +30,8 @@ beforeEach(() => {
 describe("runGerarMensalidadesMes", () => {
   it("cria mensalidades para alunos ativos no mês", async () => {
     mockDb.aluno.findMany.mockResolvedValue([
-      { id: 1, nome: "João" },
-      { id: 2, nome: "Maria" },
+      { id: 1, nome: "João", mensalidade: 150, desconto: 30 },
+      { id: 2, nome: "Maria", mensalidade: 100, desconto: 0 },
     ])
     mockDb.pagamento.findMany.mockResolvedValue([])
 
@@ -39,8 +39,8 @@ describe("runGerarMensalidadesMes", () => {
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
       data: [
-        { alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null },
-        { alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null },
+        { alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null, valorDevido: 120 },
+        { alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null, valorDevido: 100 },
       ],
     })
     expect(result).toEqual({ criados: 2, ignorados: 0 })
@@ -48,45 +48,45 @@ describe("runGerarMensalidadesMes", () => {
 
   it("ignora alunos que já têm mensalidade no mês (idempotente)", async () => {
     mockDb.aluno.findMany.mockResolvedValue([
-      { id: 1, nome: "João" },
-      { id: 2, nome: "Maria" },
+      { id: 1, nome: "João", mensalidade: 100, desconto: 0 },
+      { id: 2, nome: "Maria", mensalidade: 100, desconto: 0 },
     ])
     mockDb.pagamento.findMany.mockResolvedValue([{ alunoId: 1 }])
 
     const result = await runGerarMensalidadesMes("2025-06")
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
-      data: [{ alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null }],
+      data: [{ alunoId: 2, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null, valorDevido: 100 }],
     })
     expect(result).toEqual({ criados: 1, ignorados: 1 })
   })
 
   it("usa diaVencimento da config", async () => {
     mockGetConfig.mockReturnValue({ diaVencimento: 15 })
-    mockDb.aluno.findMany.mockResolvedValue([{ id: 1, nome: "João" }])
+    mockDb.aluno.findMany.mockResolvedValue([{ id: 1, nome: "João", mensalidade: 100, desconto: 0 }])
     mockDb.pagamento.findMany.mockResolvedValue([])
 
     await runGerarMensalidadesMes("2025-06")
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
-      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 15), canalPrevisto: null, statusCobranca: null }],
+      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 15), canalPrevisto: null, statusCobranca: null, valorDevido: 100 }],
     })
   })
 
   it("cai para dia 10 quando diaVencimento inválido", async () => {
     mockGetConfig.mockReturnValue({ diaVencimento: 30 })
-    mockDb.aluno.findMany.mockResolvedValue([{ id: 1, nome: "João" }])
+    mockDb.aluno.findMany.mockResolvedValue([{ id: 1, nome: "João", mensalidade: 100, desconto: 0 }])
     mockDb.pagamento.findMany.mockResolvedValue([])
 
     await runGerarMensalidadesMes("2025-06")
 
     expect(mockDb.pagamento.createMany).toHaveBeenCalledWith({
-      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null }],
+      data: [{ alunoId: 1, mesReferencia: "2025-06", dataVencimento: new Date(2025, 5, 10), canalPrevisto: null, statusCobranca: null, valorDevido: 100 }],
     })
   })
 
   it("não chama createMany quando todos os alunos já têm mensalidade", async () => {
-    mockDb.aluno.findMany.mockResolvedValue([{ id: 1, nome: "João" }])
+    mockDb.aluno.findMany.mockResolvedValue([{ id: 1, nome: "João", mensalidade: 100, desconto: 0 }])
     mockDb.pagamento.findMany.mockResolvedValue([{ alunoId: 1 }])
 
     const result = await runGerarMensalidadesMes("2025-06")

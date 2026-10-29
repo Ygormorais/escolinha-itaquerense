@@ -98,6 +98,12 @@ describe("createAluno", () => {
     expect(callArg.data).toHaveLength(12)
   })
 
+  it("grava o valor devido (mensalidade − desconto) em cada mensalidade", async () => {
+    await createAluno({ ...dadosValidos, desconto: 30 })
+    const { data } = m.pagamento.createMany.mock.calls[0][0]
+    for (const p of data) expect(p.valorDevido).toBe(120)
+  })
+
   it("retorna { success: true }", async () => {
     const res = await createAluno(dadosValidos)
     expect(res).toEqual({ success: true })

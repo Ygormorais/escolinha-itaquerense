@@ -7,6 +7,7 @@ import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "./log"
 import { dataValida } from "@/lib/utils"
 import { deleteMatriculaDocuments } from "@/lib/matricula-files"
+import { valorDevidoDoAluno } from "@/lib/valor-devido"
 
 export type ActionResult = { success: true } | { error: string }
 export type AprovarResult = { success: true; alunoId: number } | { error: string }
@@ -127,6 +128,7 @@ export async function aprovarPreMatricula(
             alunoId: novo.id,
             mesReferencia: format(dataRef, "yyyy-MM"),
             dataVencimento: vencimento,
+            valorDevido: valorDevidoDoAluno({ mensalidade, desconto }),
           },
         })
       }
