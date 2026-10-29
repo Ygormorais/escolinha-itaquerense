@@ -1,3 +1,4 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
@@ -43,7 +44,7 @@ export default async function CarteirinhaPage() {
 
   if (alunos.length === 0) {
     return (
-      <div className="space-y-6">
+      <div className={PAGINA_PORTAL}>
         <PortalHero
           backHref="/responsavel"
           icon={IdCard}
@@ -62,7 +63,7 @@ export default async function CarteirinhaPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         backHref="/responsavel"
         icon={IdCard}

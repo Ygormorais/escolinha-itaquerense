@@ -1,3 +1,4 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
@@ -94,7 +95,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={PAGINA_PORTAL}>
       {/* Hero */}
       <PortalHero backHref="/responsavel" title={aluno.nome}>
         <div className="flex items-center gap-5">

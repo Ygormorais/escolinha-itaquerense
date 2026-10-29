@@ -1,5 +1,6 @@
 "use client"
 
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -55,7 +56,7 @@ export function SolicitacoesClient({ solicitacoes }: { solicitacoes: Solicitacao
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         backHref="/responsavel"
         title="Solicitações"

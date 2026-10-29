@@ -1,3 +1,4 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
@@ -72,7 +73,7 @@ export default async function FrequenciaPage() {
   const totalRegistros = responsavel.alunos.reduce((acc, a) => acc + a.frequencias.length, 0)
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         backHref="/responsavel"
         icon={CalendarCheck}

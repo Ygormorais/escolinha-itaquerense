@@ -1,5 +1,6 @@
 "use client"
 
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import Link from "next/link"
 import {
   User, CreditCard,
@@ -80,7 +81,7 @@ export function ResponsavelDashboardClient({
   const totalComunicados = comunicados.length
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         badge="Portal do Responsável"
         title={`Olá, ${responsavel.nome}`}

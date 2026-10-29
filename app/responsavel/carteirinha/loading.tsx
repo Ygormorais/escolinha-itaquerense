@@ -1,8 +1,9 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { ResponsavelHeroSkeleton } from "@/components/ui/skeleton"
 
 export default function CarteirinhaLoading() {
   return (
-    <div className="space-y-8">
+    <div className={PAGINA_PORTAL}>
       <ResponsavelHeroSkeleton />
       <div className="grid gap-6 md:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (

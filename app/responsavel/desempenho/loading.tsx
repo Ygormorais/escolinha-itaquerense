@@ -1,8 +1,9 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { ResponsavelHeroSkeleton, StatCardSkeleton } from "@/components/ui/skeleton"
 
 export default function DesempenhoLoading() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <ResponsavelHeroSkeleton />
       <div className="rounded-xl border bg-card p-4">
         <div className="h-5 w-36 animate-pulse rounded bg-muted mb-4" />

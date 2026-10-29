@@ -1,4 +1,6 @@
 "use client"
+
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { useEffect, useState, useTransition } from "react"
 import { Bell, Loader2 } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
@@ -67,7 +69,7 @@ export default function NotificacoesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         backHref="/responsavel"
         icon={Bell}

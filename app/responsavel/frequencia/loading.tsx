@@ -1,8 +1,9 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { ResponsavelHeroSkeleton } from "@/components/ui/skeleton"
 
 export default function FrequenciaLoading() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <ResponsavelHeroSkeleton />
       <div className="flex flex-col gap-4">
         <div className="h-7 w-48 animate-pulse rounded-md bg-muted" />

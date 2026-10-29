@@ -1,7 +1,8 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 
 export default function Loading() {
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_PORTAL}>
       <div className="space-y-1">
         <div className="h-7 w-36 animate-pulse rounded-md bg-muted" />
         <div className="h-4 w-48 animate-pulse rounded-md bg-muted" />

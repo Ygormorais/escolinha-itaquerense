@@ -1,3 +1,4 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ShoppingBag, Users } from "lucide-react"
@@ -48,7 +49,7 @@ export default async function UniformesPage() {
   const totalItens = alunos.flatMap((a) => a.uniformes).length
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         backHref="/responsavel"
         title="Uniformes"

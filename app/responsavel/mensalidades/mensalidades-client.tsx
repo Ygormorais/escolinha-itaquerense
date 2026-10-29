@@ -1,5 +1,6 @@
 "use client"
 
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { useState } from "react"
 import Link from "next/link"
 import { CheckCircle, AlertTriangle, Search, Wallet, Clock3, ReceiptText, Users } from "lucide-react"
@@ -53,7 +54,7 @@ export function MensalidadesClient({ responsavel }: { responsavel: { nome: strin
   )
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         backHref="/responsavel"
         title="Mensalidades"
