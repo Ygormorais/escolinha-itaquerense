@@ -2,7 +2,7 @@ import { canAccessStaffPath, isStaffRole, type StaffRole } from "@/lib/permissio
 
 const DEFAULT_DESTINATIONS: Record<StaffRole, string> = {
   admin: "/dashboard",
-  secretaria: "/secretaria",
+  secretaria: "/pagamentos",
   tecnico: "/desenvolvimento",
 }
 
