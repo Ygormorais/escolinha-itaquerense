@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { CustosClient } from "./custos-client"
@@ -34,7 +35,7 @@ export default async function CustosPage({
   const total = custos.reduce((sum, c) => sum + c.valor, 0)
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Custos"
         description={`Despesas operacionais — ${mes}`}

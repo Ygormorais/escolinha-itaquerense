@@ -36,7 +36,7 @@ export function EventoFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{editingEvento ? "Editar Evento" : "Novo Evento"}</DialogTitle>
+          <DialogTitle>{editingEvento ? "Editar evento" : "Novo evento"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
@@ -109,7 +109,7 @@ export function EventoFormDialog({
             </ConfirmDialog>
           )}
           <Button onClick={onSave} disabled={saving} className="gap-2">
-            {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : (editingEvento ? "Salvar" : "Criar Evento")}
+            {saving ? <><Loader2 className="size-4 animate-spin" /> Salvando...</> : (editingEvento ? "Salvar" : "Criar evento")}
           </Button>
         </DialogFooter>
       </DialogContent>

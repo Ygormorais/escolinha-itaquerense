@@ -1,9 +1,10 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
 import dynamic from "next/dynamic"
-import { ArrowLeft, IdCard, MessageCircle, Receipt, FileText, CreditCard, CalendarCheck } from "lucide-react"
+import { IdCard, MessageCircle, Receipt, FileText, CreditCard, CalendarCheck } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -116,29 +117,24 @@ export default async function AlunoDetailPage({
   const totalPagesPag = Math.max(1, Math.ceil(totalPagamentos / PAG_PAGE_SIZE))
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
-      <div>
-        <Link
-          href="/alunos"
-          className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Voltar para Alunos
-        </Link>
-        <PageHeader
-          title={aluno.nome}
-          description={`${aluno.turma} · ${aluno.horario}`}
-          action={
+    <div className={PAGINA_ADMIN}>
+      <PageHeader
+        title={aluno.nome}
+        description={`${aluno.turma} · ${aluno.horario}`}
+        back={{ href: "/alunos", label: "Voltar para alunos" }}
+        badge={
+          <Badge
+            className={
+              aluno.status === "Ativo"
+                ? "bg-success-50 text-success-600"
+                : "bg-danger-50 text-danger-600"
+            }
+          >
+            {aluno.status}
+          </Badge>
+        }
+        action={
             <div className="flex items-center gap-2">
-              <Badge
-                className={
-                  aluno.status === "Ativo"
-                    ? "bg-success-50 text-success-600"
-                    : "bg-danger-50 text-danger-600"
-                }
-              >
-                {aluno.status}
-              </Badge>
               <MatriculaButton
                 aluno={aluno}
                 nomeClube={config.nome}
@@ -163,9 +159,8 @@ export default async function AlunoDetailPage({
               <EditarAlunoButton aluno={aluno} />
               <AlunoPrintButton alunoId={aluno.id} />
             </div>
-          }
-        />
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>

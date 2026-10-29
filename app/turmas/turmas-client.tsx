@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
+import { useState, useMemo, type ReactNode } from "react"
 import { plural, formatMoney } from "@/lib/utils"
 import Link from "next/link"
 import { Phone, MessageCircle, TrendingUp, Search, Filter, Users } from "lucide-react"
@@ -26,10 +28,13 @@ export function TurmasClient({
   alunos,
   turmas,
   capacidade,
+  children,
 }: {
   alunos: Aluno[]
   turmas: readonly string[]
   capacidade: number
+  /** Blocos extras renderizados ao fim da tela, dentro do mesmo contêiner. */
+  children?: ReactNode
 }) {
   const [filtroStatus, setFiltroStatus] = useState<string>("Ativo")
   const [search, setSearch] = useState("")
@@ -55,7 +60,7 @@ export function TurmasClient({
   const totalExibidos = alunosFiltrados.length
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Turmas"
         description={`${plural(totalExibidos, "aluno", "alunos", "nenhum")} em ${plural(turmas.length, "turma", "turmas", "nenhuma")}`}
@@ -186,6 +191,7 @@ export function TurmasClient({
           </Card>
         ))}
       </div>
+      {children}
     </div>
   )
 }

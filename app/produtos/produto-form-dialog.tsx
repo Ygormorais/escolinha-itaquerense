@@ -68,7 +68,7 @@ export function ProdutoFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{editingId ? "Editar Produto" : "Novo Produto"}</DialogTitle>
+          <DialogTitle>{editingId ? "Editar produto" : "Novo produto"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

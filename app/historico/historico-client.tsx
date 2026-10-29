@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState, useMemo } from "react"
 import { sanitizeCSVCell, plural } from "@/lib/utils"
 import { format } from "date-fns"
@@ -109,7 +111,7 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Histórico de Atividades"
         description={`${plural(filtrados.length, "registro", "registros", "nenhum")}${logs.length >= 500 ? " · exibindo os 500 mais recentes" : ""}`}

@@ -51,7 +51,7 @@ export function EstatisticasFrequencia() {
   const baixaFrequencia = filtrarEmQueda(ranking)
 
   return (
-    <div className="space-y-4 p-6 lg:p-8">
+    <div className="space-y-4">
       <div className="flex items-end gap-3">
         <div>
           <Label htmlFor="estat-mes" className="text-muted-foreground">Mês</Label>
@@ -63,7 +63,7 @@ export function EstatisticasFrequencia() {
           />
         </div>
         <Button onClick={handleCarregar} disabled={loading} variant="outline" className="mt-[22px]">
-          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar Estatísticas"}
+          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar estatísticas"}
         </Button>
       </div>
 

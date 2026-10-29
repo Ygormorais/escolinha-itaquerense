@@ -81,12 +81,12 @@ export function NovoCampeonatoDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Button onClick={() => setOpen(true)}>
-        <Plus className="size-4" aria-hidden="true" /> Novo Campeonato
+        <Plus className="size-4" aria-hidden="true" /> Novo campeonato
       </Button>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto p-5 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-            <Trophy className="size-5 text-brand-600" aria-hidden="true" /> Novo Campeonato
+            <Trophy className="size-5 text-brand-600" aria-hidden="true" /> Novo campeonato
           </DialogTitle>
         </DialogHeader>
 
@@ -158,7 +158,7 @@ export function NovoCampeonatoDialog() {
           <DialogFooter className="mx-0 mb-0 rounded-b-none px-0 pb-0">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button type="submit" disabled={creating}>
-              {creating ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Criando...</> : "Criar Campeonato"}
+              {creating ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Criando...</> : "Criar campeonato"}
             </Button>
           </DialogFooter>
         </form>

@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { AlunosClient, NovoAlunoButton } from "./alunos-client"
@@ -84,7 +85,7 @@ export default async function AlunosPage({
   }
 
   return (
-    <div data-page="alunos" className="mx-auto flex w-full max-w-[var(--content-max)] min-w-0 flex-col gap-6 bg-[var(--color-paper-50)]/40 p-[var(--space-page)] dark:bg-transparent">
+    <div data-page="alunos" className={PAGINA_ADMIN}>
       <PageHeader
         title="Alunos"
         description={plural(totalAtivos, "aluno ativo", "alunos ativos")}

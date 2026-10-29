@@ -1,13 +1,14 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { requireAuth } from "@/lib/auth"
 import { ImportarExtratoClient } from "@/components/pagamentos/importar-extrato-client"
 import { PageHeader } from "@/components/layout/page-header"
 
-export const metadata = { title: "Importar Extrato OFX — Pagamentos" }
+export const metadata = { title: "Importar extrato OFX — Pagamentos" }
 
 export default async function ImportarExtratoPage() {
   await requireAuth()
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <div>
         <a
           href="/pagamentos"
@@ -16,7 +17,7 @@ export default async function ImportarExtratoPage() {
           ← Pagamentos
         </a>
         <PageHeader
-          title="Importar Extrato OFX"
+          title="Importar extrato OFX"
           description="Importe o arquivo OFX do banco e reconcilie com os pagamentos"
         />
       </div>

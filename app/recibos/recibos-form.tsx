@@ -1,5 +1,9 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
+import { cn } from "@/lib/utils"
+
 import { useState, useTransition } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
@@ -106,7 +110,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
         }
       `}</style>
 
-      <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 no-print dark:bg-transparent">
+      <div className={cn(PAGINA_ADMIN, "no-print")}>
         <PageHeader
           title="Recibos"
           description="Emissão de recibos numerados, verificáveis e auditáveis"

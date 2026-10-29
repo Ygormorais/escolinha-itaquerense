@@ -107,7 +107,7 @@ export function CustosClient({
             <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${plural(recorrentes.filter((r) => r.ativo).length, "custo recorrente", "custos recorrentes", "nenhum")} para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
               <Button variant="outline" disabled={gerando}>
                 <RefreshCw className="size-4" />
-                {gerando ? "Gerando..." : "Gerar Recorrentes"}
+                {gerando ? "Gerando..." : "Gerar recorrentes"}
               </Button>
             </ConfirmDialog>
             <Button
@@ -122,7 +122,7 @@ export function CustosClient({
               trigger={
                 <Button className="bg-brand-800 text-white hover:bg-brand-900">
                   <PlusIcon className="size-4" />
-                  Novo Custo
+                  Novo custo
                 </Button>
               }
             />

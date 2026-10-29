@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
 import { getConfig } from "@/lib/config"
@@ -51,7 +52,7 @@ export default async function CampeonatoDetailPage({
   const convocacoesMap = new Set(convocacoes.map((c) => c.partidaId))
 
   return (
-    <div className="mx-auto flex w-full max-w-[var(--content-max)] min-w-0 flex-col gap-6 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <CampeonatoDetailClient campeonato={campeonato} alunosDisponiveis={alunosDisponiveis} nomeClube={config.nome} convocacoesMap={convocacoesMap} />
     </div>
   )

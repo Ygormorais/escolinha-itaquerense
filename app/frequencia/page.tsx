@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import dynamic from "next/dynamic"
 import { PageHeader } from "@/components/layout/page-header"
 import { FrequenciaClient } from "./frequencia-client"
@@ -28,7 +29,7 @@ export default async function FrequenciaPage() {
   const turmaInicial = TURMAS.find((t) => presentes.has(t)) ?? TURMAS[0]
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Frequência"
         description="Registre e acompanhe a presença dos alunos"
@@ -37,7 +38,7 @@ export default async function FrequenciaPage() {
         <div className="overflow-x-auto">
           <TabsList className="w-max min-w-full">
             <TabsTrigger value="registro">Registro</TabsTrigger>
-            <TabsTrigger value="resumo">Resumo Mensal</TabsTrigger>
+            <TabsTrigger value="resumo">Resumo mensal</TabsTrigger>
             <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
           </TabsList>
         </div>

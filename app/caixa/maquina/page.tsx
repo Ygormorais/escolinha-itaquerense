@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { PageHeader } from "@/components/layout/page-header"
 import { MaquinaClient } from "./maquina-client"
 import { getTransacoes, getResumoMaquina } from "@/app/actions/maquina"
@@ -23,7 +24,7 @@ export default async function MaquinaPage({
   ])
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Maquininha"
         description="Importe o CSV da sua maquininha e reconcilie com os alunos"

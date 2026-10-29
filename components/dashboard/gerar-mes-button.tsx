@@ -37,7 +37,7 @@ export function GerarMesButton({ mes }: { mes: string }) {
       className="w-full gap-1.5 sm:w-auto"
     >
       {pending ? <Loader2 className="size-4 animate-spin" /> : <CalendarPlus className="size-4" />}
-      Gerar Mensalidades
+      Gerar mensalidades
     </Button>
   )
 }

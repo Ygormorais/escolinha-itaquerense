@@ -34,7 +34,7 @@ export function CustosTabela({ totalRegistros, custos, busca, onDelete }: ListaC
                 <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
                   <ReceiptText className="size-10 opacity-30" />
                   <p className="text-sm">Nenhum custo registrado neste mês.</p>
-                  <p className="text-xs">Use <strong className="text-foreground">Novo Custo</strong> ou <strong className="text-foreground">Gerar Recorrentes</strong> para começar.</p>
+                  <p className="text-xs">Use <strong className="text-foreground">Novo custo</strong> ou <strong className="text-foreground">Gerar recorrentes</strong> para começar.</p>
                 </div>
               </TableCell>
             </TableRow>

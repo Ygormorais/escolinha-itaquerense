@@ -62,7 +62,7 @@ export function PlacarDialog({
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={onSave} disabled={saving}>
-            {saving ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Salvando...</> : "Salvar Placar"}
+            {saving ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Salvando...</> : "Salvar placar"}
           </Button>
         </DialogFooter>
       </DialogContent>

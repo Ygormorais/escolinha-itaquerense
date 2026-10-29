@@ -147,7 +147,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
               <SelectItem value="destaques">Destaques</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={openCreate}><Plus className="size-4" /> Nova Notícia</Button>
+          <Button onClick={openCreate}><Plus className="size-4" /> Nova notícia</Button>
         </div>
         <p className="text-sm text-muted-foreground">
           {filtradas.length} de {noticias.length} noticia(s) visiveis
@@ -211,7 +211,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Newspaper className="size-4" />
-              {editTarget ? "Editar Notícia" : "Nova Notícia"}
+              {editTarget ? "Editar notícia" : "Nova notícia"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">

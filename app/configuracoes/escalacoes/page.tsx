@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · macrostructure: Index-First · tone: acolhedor e operacional · anchor hue: vermelho alvirrubro · slop: pass (58/58) */
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
@@ -30,7 +31,7 @@ export default async function ConvocacoesPage() {
 
   return (
     <div
-      className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-8 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent"
+      className={PAGINA_ADMIN}
       data-slot="convocacoes-index"
     >
       <PageHeader

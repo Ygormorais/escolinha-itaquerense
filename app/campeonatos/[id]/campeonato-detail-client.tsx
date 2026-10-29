@@ -291,7 +291,7 @@ export function CampeonatoDetailClient({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="size-4" aria-hidden="true" /> Registrar Pagamento
+              <CreditCard className="size-4" aria-hidden="true" /> Registrar pagamento
             </DialogTitle>
           </DialogHeader>
           {pagamentoOpen && (

@@ -83,12 +83,12 @@ export function NovaAvaliacaoDialog({ alunos }: { alunos: AlunoResumo[] }) {
       <div onClick={() => setOpen(true)}>
         <Button className="bg-brand-800 text-white hover:bg-brand-900">
           <Plus className="size-4" />
-          Nova Avaliação
+          Nova avaliação
         </Button>
       </div>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Nova Avaliação</DialogTitle>
+          <DialogTitle>Nova avaliação</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -219,7 +219,7 @@ export function EditarAvaliacaoDialog({ avaliacao }: { avaliacao: Avaliacao }) {
       </div>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Editar Avaliação — {avaliacao.aluno.nome}</DialogTitle>
+          <DialogTitle>Editar avaliação — {avaliacao.aluno.nome}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">

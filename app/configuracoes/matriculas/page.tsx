@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · macrostructure: Narrative Workflow · tone: acolhedor e operacional · anchor hue: vermelho alvirrubro */
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
@@ -29,7 +30,7 @@ export default async function MatriculasPage() {
   const pendentes = renovacoes.filter((r) => r.status === "pendente").length
 
   return (
-    <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-8 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader title="Matrículas" description="Pré-matrículas e renovações recebidas." />
 
       <div className="space-y-10" data-slot="matriculas-workflow">

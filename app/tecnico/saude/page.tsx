@@ -1,9 +1,10 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { TURMAS } from "@/lib/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Heart, AlertTriangle, Phone, ArrowLeft } from "lucide-react"
+import { Heart, AlertTriangle, Phone } from "lucide-react"
 import Link from "next/link"
 import { PageHeader } from "@/components/layout/page-header"
 import { ConfirmarLeituraFicha } from "./confirmar-leitura"
@@ -48,16 +49,12 @@ export default async function TecnicoSaudePage() {
   )
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
-      <div>
-        <Link href="/tecnico" className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4" /> Painel do Técnico
-        </Link>
-        <PageHeader
-          title="Fichas de Saúde"
-          description="Informações médicas e contatos de emergência dos alunos"
-        />
-      </div>
+    <div className={PAGINA_ADMIN}>
+      <PageHeader
+        title="Fichas de saúde"
+        description="Informações médicas e contatos de emergência dos alunos"
+        back={{ href: "/tecnico", label: "Voltar ao painel do técnico" }}
+      />
 
       {/* Resumo */}
       <div className="grid grid-cols-3 gap-4">

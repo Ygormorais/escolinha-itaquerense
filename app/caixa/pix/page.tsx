@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
@@ -32,7 +33,7 @@ export default async function PixPage() {
   const diasParaVencer = proximoVencimento ? differenceInDays(new Date(proximoVencimento), new Date()) : null
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="PIX"
         description={`${recebidos.length} recebidos · ${formatMoney(totalRecebido)}`}

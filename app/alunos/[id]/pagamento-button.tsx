@@ -55,7 +55,7 @@ export function PagamentoButton({ pagamentoId, mensalidade }: Props) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Registrar Pagamento</DialogTitle>
+            <DialogTitle>Registrar pagamento</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">

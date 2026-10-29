@@ -19,7 +19,7 @@ test.describe("Notícias (admin)", () => {
     await expect(btnNova).toBeVisible()
     await btnNova.click()
     const dialog = page.getByRole("dialog")
-    await expect(dialog.getByRole("heading", { name: "Nova Notícia", exact: true })).toBeVisible()
+    await expect(dialog.getByRole("heading", { name: "Nova notícia", exact: true })).toBeVisible()
     await dialog.getByRole("button", { name: "Cancelar", exact: true }).click()
     await expect(dialog).not.toBeVisible()
   })

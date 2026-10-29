@@ -1,3 +1,5 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+import { cn } from "@/lib/utils"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { formatMoney } from "@/lib/utils"
@@ -80,7 +82,7 @@ export default async function RelatorioPage({
     .sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="relatorio-print flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={cn(PAGINA_ADMIN, "relatorio-print")}>
       <RelatorioPrintStyle />
       <RelatorioNav role={role as "admin"} />
       <PageHeader

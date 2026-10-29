@@ -42,7 +42,7 @@ export function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimple
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Registrar Pagamento — {inadimplente.nome}</DialogTitle>
+        <DialogTitle>Registrar pagamento — {inadimplente.nome}</DialogTitle>
       </DialogHeader>
 
       <div className="space-y-4 py-2">
@@ -99,7 +99,7 @@ export function PagarDialog({ inadimplente, onClose }: { inadimplente: Inadimple
           className="bg-brand-800 text-white hover:bg-brand-900"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4" />}
-          {pending ? "Salvando..." : "Registrar Pagamento"}
+          {pending ? "Salvando..." : "Registrar pagamento"}
         </Button>
       </DialogFooter>
     </DialogContent>
