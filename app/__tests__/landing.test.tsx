@@ -34,7 +34,7 @@ describe("landing publica", () => {
     expect(html).not.toContain("acesso-grid")
     expect(html).not.toContain("O que oferecemos")
     expect(html).toContain('href="/horarios"')
-    expect(html).toContain('href="/resultados"')
+    expect(html).toContain('href="/partidas"')
     expect(html).toContain('href="/responsavel"')
   })
   it("nao exibe faixa de alunos/categorias/stats", () => {
@@ -93,7 +93,7 @@ describe("landing publica", () => {
     const strip = h.slice(h.indexOf('class="strip"'), h.indexOf('class="hs"'))
     expect(strip).toContain("Último resultado")
     expect(strip).toContain("3 × 1")
-    expect(strip).toContain('href="/resultados"')
+    expect(strip).toContain('href="/partidas"')
     expect(strip).not.toContain('target="_blank"')
   })
 
@@ -186,7 +186,7 @@ describe("landing publica", () => {
                 titulo: "Vitória! Itaquerense 7 × 4 Vila Real",
                 subtitulo: "11 de abril de 2026 · Jogo em casa",
                 resultado: "Vitoria",
-                href: "/resultados",
+                href: "/partidas",
                 externo: false,
                 casa: "Itaquerense",
                 fora: "Vila Real",
@@ -207,7 +207,7 @@ describe("landing publica", () => {
                 titulo: "Empate",
                 subtitulo: "1 de maio",
                 resultado: "Empate",
-                href: "/resultados",
+                href: "/partidas",
                 externo: false,
                 casa: "Itaquerense",
                 fora: "Palmeiras",

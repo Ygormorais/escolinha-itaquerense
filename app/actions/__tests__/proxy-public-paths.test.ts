@@ -23,6 +23,7 @@ describe("isPublicPath — rotas externas com auth própria", () => {
     "/horarios",
     "/matricula",
     "/resultados",
+    "/partidas",
     "/responsavel/login",
     "/responsavel/recuperar-senha",
     "/responsavel/redefinir-senha",

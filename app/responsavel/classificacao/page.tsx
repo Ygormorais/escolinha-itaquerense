@@ -191,7 +191,7 @@ export default async function ClassificacaoPage() {
           icon={Trophy}
           title="Nenhuma classificação ainda"
           description="Quando a sincronização FPFS trouxer a tabela, ela aparece aqui."
-          href="/resultados"
+          href="/partidas"
           hrefLabel="Ver no site público"
         />
       ) : (
@@ -244,7 +244,7 @@ export default async function ClassificacaoPage() {
 
       <p className="text-center text-xs text-muted-foreground">
         Também disponível no{" "}
-        <Link href="/resultados" className="font-semibold text-brand-600 hover:underline">
+        <Link href="/partidas" className="font-semibold text-brand-600 hover:underline">
           site público
         </Link>
         .

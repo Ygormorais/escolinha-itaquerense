@@ -116,7 +116,7 @@ export default async function NoticiasPublicoPage() {
               <div className="empty-icon">📰</div>
               <h2>Nenhuma publicação ainda</h2>
               <p>Em breve o clube vai publicar notícias, resultados e comunicados aqui. Volte em breve!</p>
-              <Link href="/resultados" className="empty-btn">Ver resultados dos jogos</Link>
+              <Link href="/partidas" className="empty-btn">Ver resultados dos jogos</Link>
             </div>
           ) : (
             <div className="grid">

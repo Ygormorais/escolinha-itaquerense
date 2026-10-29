@@ -132,7 +132,7 @@ describe("heroView", () => {
       sumulaUrl: null, fpfsEventoId: null,
     })
     expect(empate.titulo).toContain("empata")
-    expect(empate.ctaHref).toBe("/resultados")
+    expect(empate.ctaHref).toBe("/partidas")
     const derrota = heroView({
       tipo: "resultado", ...base, placar: "0 × 2", resultado: "Derrota",
       sumulaUrl: null, fpfsEventoId: null,

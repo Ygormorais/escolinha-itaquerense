@@ -64,9 +64,9 @@ describe("faixaPartida", () => {
 
   it("sem súmula nem evento na FPFS, aponta para a página interna de resultados", () => {
     const f = faixaPartida({ ...proximo, fpfsEventoId: null })!
-    expect(f).toMatchObject({ href: "/resultados", externo: false, ctaLabel: "Ver jogos" })
+    expect(f).toMatchObject({ href: "/partidas", externo: false, ctaLabel: "Ver jogos" })
     const r = faixaPartida({ ...resultado, sumulaUrl: null, fpfsEventoId: null })!
-    expect(r).toMatchObject({ href: "/resultados", externo: false, ctaLabel: "Ver resultados" })
+    expect(r).toMatchObject({ href: "/partidas", externo: false, ctaLabel: "Ver resultados" })
   })
 
   it("mantém o texto bruto do local quando não é Casa nem Fora", () => {

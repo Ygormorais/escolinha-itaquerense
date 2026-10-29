@@ -217,7 +217,7 @@ export function escudoConhecido(nomeAdversario: string): string | null {
 }
 
 /**
- * Resolução **síncrona/rápida** para SSR (landing, /resultados).
+ * Resolução **síncrona/rápida** para SSR (landing, /partidas).
  * Só manual + conhecidos + URL já salva no banco — sem fetch de rede.
  * O client tenta as demais candidatas (logodetimes) via onError.
  */

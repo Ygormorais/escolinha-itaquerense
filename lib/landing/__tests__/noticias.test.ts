@@ -62,9 +62,9 @@ describe("linkPartida", () => {
     })
   })
 
-  it("cai em /resultados sem dados FPFS", () => {
+  it("cai em /partidas sem dados FPFS", () => {
     expect(linkPartida({ sumulaUrl: null, campeonato: { fpfsEventoId: null } })).toEqual({
-      href: "/resultados",
+      href: "/partidas",
       externo: false,
     })
   })
