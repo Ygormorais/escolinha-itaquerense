@@ -3,6 +3,7 @@ import {
   verifyBearerSecret,
   verifyEvolutionAuth,
   checkCredentialsFromEnv,
+  isEnvAdminUsername,
 } from "../env"
 
 describe("env helpers", () => {
@@ -49,6 +50,22 @@ describe("env helpers", () => {
     delete process.env.ADMIN_USERNAME
     delete process.env.ADMIN_PASSWORD
     expect(checkCredentialsFromEnv("admin", "escolinha123")).toBe(false)
+    vi.unstubAllEnvs()
+  })
+
+  it("isEnvAdminUsername reconhece o ADMIN_USERNAME configurado", () => {
+    process.env.ADMIN_USERNAME = " gestor "
+    process.env.ADMIN_PASSWORD = "x"
+    expect(isEnvAdminUsername("gestor")).toBe(true)
+    expect(isEnvAdminUsername("admin")).toBe(false)
+  })
+
+  it("isEnvAdminUsername usa 'admin' só como fallback fora de produção", () => {
+    delete process.env.ADMIN_USERNAME
+    delete process.env.ADMIN_PASSWORD
+    expect(isEnvAdminUsername("admin")).toBe(true)
+    vi.stubEnv("NODE_ENV", "production")
+    expect(isEnvAdminUsername("admin")).toBe(false)
     vi.unstubAllEnvs()
   })
 })

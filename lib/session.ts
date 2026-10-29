@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
-import { checkCredentialsFromEnv, getSessionSecret } from "@/lib/env"
+import { checkCredentialsFromEnv, getSessionSecret, isEnvAdminUsername } from "@/lib/env"
 import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
 import { db } from "@/lib/db"
 
@@ -48,7 +48,14 @@ export async function getSession(): Promise<SessionInfo> {
     where: { username },
     select: { ativo: true, role: true },
   })
-  if (!usuario?.ativo) return { authenticated: false }
+  // O administrador do .env não tem conta no banco; o login o aceita, então a sessão também.
+  // Uma conta com o mesmo nome no banco prevalece (inclusive desativada).
+  if (!usuario) {
+    return isEnvAdminUsername(username)
+      ? { authenticated: true, user: username, role: "admin" }
+      : { authenticated: false }
+  }
+  if (!usuario.ativo) return { authenticated: false }
 
   return { authenticated: true, user: username, role: usuario.role }
 }

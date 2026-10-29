@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   getCookie: vi.fn(),
   findUsuario: vi.fn(),
   findResponsavel: vi.fn(),
+  isEnvAdminUsername: vi.fn(() => false),
 }))
 
 vi.mock("next/headers", () => ({
@@ -13,6 +14,7 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/env", () => ({
   getSessionSecret: () => "session-revocation-test-secret-with-enough-entropy",
   checkCredentialsFromEnv: vi.fn(),
+  isEnvAdminUsername: mocks.isEnvAdminUsername,
 }))
 
 vi.mock("@/lib/db", () => ({
@@ -28,6 +30,7 @@ import { createResponsavelSession, getResponsavelSession } from "@/lib/responsav
 describe("revogação de sessão", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.isEnvAdminUsername.mockReturnValue(false)
   })
 
   it("aceita usuário ativo e usa o perfil atual do banco", async () => {
@@ -57,5 +60,29 @@ describe("revogação de sessão", () => {
       where: { id: 7 },
       select: { ativo: true },
     })
+  })
+
+  it("aceita o administrador do .env, que não tem conta no banco", async () => {
+    // O login aceita ADMIN_USERNAME/ADMIN_PASSWORD; a sessão precisa reconhecer o mesmo usuário.
+    mocks.findUsuario.mockResolvedValue(null)
+    mocks.isEnvAdminUsername.mockReturnValue(true)
+    mocks.getCookie.mockReturnValue({ value: await createSession("admin", "admin") })
+
+    await expect(getSession()).resolves.toEqual({ authenticated: true, user: "admin", role: "admin" })
+  })
+
+  it("recusa nome sem conta no banco que não é o administrador do .env", async () => {
+    mocks.findUsuario.mockResolvedValue(null)
+    mocks.getCookie.mockReturnValue({ value: await createSession("fantasma", "admin") })
+
+    await expect(getSession()).resolves.toEqual({ authenticated: false })
+  })
+
+  it("conta desativada no banco prevalece sobre o administrador do .env", async () => {
+    mocks.findUsuario.mockResolvedValue({ ativo: false, role: "admin" })
+    mocks.isEnvAdminUsername.mockReturnValue(true)
+    mocks.getCookie.mockReturnValue({ value: await createSession("admin", "admin") })
+
+    await expect(getSession()).resolves.toEqual({ authenticated: false })
   })
 })
