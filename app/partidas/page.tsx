@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
 import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
 import { EscudoTime } from "@/components/site/escudo-time"
 import { ClassificacaoTabela } from "@/components/site/classificacao-tabela"
+import { AnuncioBanner } from "@/components/site/anuncio-banner"
+import { getAnuncio } from "@/lib/site/anuncios-dados"
 import { publicFontClass } from "@/lib/public-fonts"
 import { getPartidasPublicasCached } from "@/lib/site/partidas-dados"
 import { getClassificacoesPorCategoria } from "@/lib/site/classificacao"
@@ -132,7 +134,11 @@ export default async function PartidasPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const f = lerFiltros(await searchParams)
-  const [todas, classificacoes] = await Promise.all([getPartidasPublicasCached(), getClassificacoesPorCategoria()])
+  const [todas, classificacoes, anuncio] = await Promise.all([
+    getPartidasPublicasCached(),
+    getClassificacoesPorCategoria(),
+    getAnuncio("partidas"),
+  ])
 
   const categorias = [...new Set([...todas.map((p) => p.categoria), ...classificacoes.keys()])].sort(ordenarCategorias)
   const filtradas = filtrarPartidas(todas, f, new Date())
@@ -204,6 +210,8 @@ export default async function PartidasPage({
           )}
 
           <Paginacao f={f} pagina={pagina} total={totalPaginas} />
+
+          <AnuncioBanner anuncio={anuncio} dentroDeContainer />
 
           <section className="pt-classif" aria-labelledby="pt-classif-h">
             <h2 id="pt-classif-h">Classificação{f.categoria ? ` · ${f.categoria}` : ""}</h2>

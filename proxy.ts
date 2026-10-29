@@ -71,9 +71,11 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/api/sync/") ||       // fpfs (x-fpfs-token)
     hasPrefix(pathname, "/api/config/public") ||
     hasPrefix(pathname, "/api/escudo") || // escudos FPFS na landing (proxy anti-hotlink)
+    hasPrefix(pathname, "/api/anuncio") || // clique em banner de publicidade (conta e redireciona)
     hasPrefix(pathname, "/api/upload/matricula") ||
     pathname.startsWith("/uploads/fotos/") ||
     pathname.startsWith("/uploads/midia/") ||
+    pathname.startsWith("/uploads/publicidade/") || // banners públicos
     hasPrefix(pathname, "/matricula") ||
     pathname.startsWith("/qr/") ||
     hasPrefix(pathname, "/checkin") ||

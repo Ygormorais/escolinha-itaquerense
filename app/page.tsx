@@ -5,6 +5,7 @@ import { getNoticiasPorCategoriaCached } from "@/lib/landing/noticias"
 import { db } from "@/lib/db"
 import { sobre, galeria, depoimentos } from "@/lib/landing/conteudo"
 import { getConfig } from "@/lib/config"
+import { getAnuncio } from "@/lib/site/anuncios-dados"
 import { LandingClient } from "@/components/landing/landing-client"
 import type { NoticiaClube } from "@/components/landing/noticias-clube-carrossel"
 
@@ -25,7 +26,7 @@ export const revalidate = 0
  * - Carrossel → jogos/resultados com abas por categoria (Sub-7…Sub-18)
  */
 export default async function Page() {
-  const [jogosPorCategoria, noticiasClube, config, destaque] = await Promise.all([
+  const [jogosPorCategoria, noticiasClube, config, destaque, anuncio] = await Promise.all([
     getNoticiasPorCategoriaCached(),
     db.noticia.findMany({
       where: { publicado: true },
@@ -35,6 +36,7 @@ export default async function Page() {
     }) as Promise<NoticiaClube[]>,
     getConfig(),
     getHeroDestaque(),
+    getAnuncio("landing"),
   ])
   return (
     <LandingClient
@@ -48,6 +50,7 @@ export default async function Page() {
       depoimentos={depoimentos}
       endereco={config.endereco}
       cidade={config.cidade}
+      anuncio={anuncio}
     />
   )
 }

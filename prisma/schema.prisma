@@ -1127,3 +1127,24 @@ model Noticia {
   @@index([publicado])
   @@index([createdAt])
 }
+
+/// Banner de publicidade do site público (patrocinador local ou loja do clube).
+model Anuncio {
+  id              Int       @id @default(autoincrement())
+  anunciante      String
+  /// Texto alternativo do banner (lido por leitor de tela).
+  titulo          String
+  imagemUrl       String
+  /// Versão estreita opcional para celular; sem ela o banner usa imagemUrl.
+  imagemMobileUrl String?
+  link            String
+  posicao         String    @default("landing") // landing, partidas
+  ativo           Boolean   @default(true)
+  inicio          DateTime?
+  fim             DateTime?
+  cliques         Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([posicao, ativo])
+}
