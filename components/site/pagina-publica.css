@@ -8,7 +8,7 @@
 .lp .pg section{padding:0}
 
 /* ===== Faixa de título ===== */
-.lp .pg-hero{background:var(--brand-950);color:#fff;padding:40px 0 44px}
+.lp .pg-hero{background:#0B0B0B;color:#fff;padding:40px 0 44px}
 .lp .pg-trilha{display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.7);margin-bottom:18px}
 .lp .pg-trilha a:hover{color:#fff;text-decoration:underline;text-underline-offset:3px}
 .lp .pg-trilha a:focus-visible{outline-color:#fff}

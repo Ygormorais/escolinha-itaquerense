@@ -60,7 +60,7 @@ const css = `
   .hc .tab-btn .tab-label span{font-size:11px;font-weight:400;opacity:.7}
   .hc .tab-btn.active-escolinha{background:var(--red);color:#fff}
   .hc .tab-btn.active-escolinha .tab-label span{opacity:.85}
-  .hc .tab-btn.active-federado{background:var(--brand-950);color:#fff}
+  .hc .tab-btn.active-federado{background:#0B0B0B;color:#fff}
   .hc .tab-btn.active-federado .tab-label span{opacity:.85}
   .hc .tab-btn:not([class*="active"]):hover{background:var(--bg-muted);color:var(--text)}
   .hc .tab-btn:focus-visible{outline:3px solid var(--red);outline-offset:-3px;z-index:1}
@@ -79,13 +79,13 @@ const css = `
     color:var(--text);transition:all .18s var(--ease);min-height:40px}
   .hc .sub-chip:hover{border-color:var(--red);color:var(--red)}
   .hc .sub-chip.active{background:var(--red);border-color:var(--red);color:#fff}
-  .hc .sub-chip.active-fed{background:var(--brand-950);border-color:var(--brand-950);color:#fff}
+  .hc .sub-chip.active-fed{background:#0B0B0B;border-color:var(--brand-950);color:#fff}
   .hc .sub-chip.active-fed:hover{background:var(--red-darker)}
   .hc .sub-chip:focus-visible,.hc .sub-chip-all:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 
   /* Aviso federado */
   .hc .fed-notice{margin:28px 0 0;padding:22px 24px;border-radius:var(--radius-sm);
-    background:var(--brand-950);color:#fff}
+    background:#0B0B0B;color:#fff}
   .hc .fed-notice h3{font-family:var(--font-heading),system-ui,sans-serif;font-size:18px;
     font-weight:800;margin:0 0 12px;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
   .hc .fed-notice h3 svg{flex-shrink:0;opacity:.95}
@@ -105,7 +105,7 @@ const css = `
   .hc .tcard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);
     overflow:hidden;position:relative}
   .hc .tcard-accent-red{height:4px;background:var(--red)}
-  .hc .tcard-accent-dark{height:4px;background:var(--brand-950)}
+  .hc .tcard-accent-dark{height:4px;background:#0B0B0B}
   .hc .tcard-body{padding:26px 24px 24px}
   .hc .tcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
   .hc .tcard-cat{font-family:var(--font-heading),system-ui,sans-serif;font-size:28px;font-weight:800;
@@ -145,7 +145,7 @@ const css = `
   .hc .strip-icon{width:48px;height:48px;border-radius:12px;flex-shrink:0;
     display:flex;align-items:center;justify-content:center;color:#fff}
   .hc .strip-icon-red{background:var(--red)}
-  .hc .strip-icon-dark{background:var(--brand-950)}
+  .hc .strip-icon-dark{background:#0B0B0B}
   .hc .strip-text b{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
   .hc .strip-text p{font-size:13px;color:var(--text-muted);line-height:1.55}
   @media(max-width:560px){.hc .info-strip{flex-direction:column;text-align:center;padding:20px}}
@@ -155,7 +155,7 @@ const css = `
     position:relative;overflow:hidden;margin-top:40px}
   /* Mesma linguagem da chamada de matrícula da landing: cor chapada e escudo ao fundo. */
   .hc .cta-red{background:var(--brand-700)}
-  .hc .cta-dark{background:var(--brand-950)}
+  .hc .cta-dark{background:#0B0B0B}
   .hc .cta::after{content:'';position:absolute;right:-40px;top:50%;width:300px;height:300px;
     transform:translateY(-50%) rotate(-8deg);background:url(/logo.png) center/contain no-repeat;opacity:.08}
   .hc .cta-inner{position:relative;z-index:1}

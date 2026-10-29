@@ -43,6 +43,10 @@ describe("identidade visual", () => {
     expect(arquivosCom(/bg-gradient-to-\w+[^"]*from-(brand-|\[var\(--red)/)).toEqual([])
   })
 
+  it("não usa vinho escuro como fundo de superfície", () => {
+    expect(arquivosCom(/background(-color)?:\s*var\(--(brand-950|red-deep)\)/)).toEqual([])
+  })
+
   it("tokens primitivos têm cantos retos", () => {
     const t = ler("tokens.css")
     expect(t).toContain("--radius-control: 0.25rem")

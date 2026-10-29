@@ -79,7 +79,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
           aria-hidden="true"
         />
         <div className="min-w-0">
-          <p className="font-heading text-[15px] font-extrabold leading-tight tracking-tight text-brand-600">
+          <p className="font-heading text-[15px] font-extrabold leading-tight tracking-tight text-white">
             Escolinha
           </p>
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">

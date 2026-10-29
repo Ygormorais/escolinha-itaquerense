@@ -8,7 +8,7 @@
 .lp .section-title::after{content:"";position:absolute;left:0;bottom:0;width:56px;height:4px;border-radius:2px;background:var(--red)}
 
 /* ===== História: faixa escura, texto claro, foto com moldura deslocada ===== */
-.lp .sobre{background:var(--brand-950);color:#fff}
+.lp .sobre{background:#0B0B0B;color:#fff}
 .lp .sobre .section-title{color:#fff}
 .lp .sobre .section-title::after{background:var(--brand-500)}
 .lp .sobre .txt p{color:rgba(255,255,255,.82);font-size:17px;line-height:1.75}

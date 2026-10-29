@@ -5,7 +5,7 @@
  */
 
 /* ===== Faixa institucional ===== */
-.lp .util{background:var(--brand-950);color:rgba(255,255,255,.88);font-size:13px;line-height:1}
+.lp .util{background:#0B0B0B;color:rgba(255,255,255,.88);font-size:13px;line-height:1}
 .lp .util-row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:36px}
 .lp .util-id{min-width:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lp .util-tools{display:flex;align-items:center;margin-left:auto;flex-shrink:0}
@@ -82,7 +82,7 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
 }
 
 /* ===== Hero ===== */
-.lp section.hs{position:relative;padding:0;background:var(--brand-950);color:#fff}
+.lp section.hs{position:relative;padding:0;background:#0B0B0B;color:#fff}
 .lp .hs-viewport{overflow:hidden}
 .lp .hs-track{display:flex;transition:transform .55s cubic-bezier(.22,.7,.2,1)}
 .lp .hs-slide{--w:clamp(56px,7vw,104px);position:relative;flex:0 0 100%;min-width:0;min-height:clamp(480px,calc(100svh - 230px),740px);display:flex;align-items:flex-end;overflow:hidden;isolation:isolate}
@@ -103,7 +103,7 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
 .lp .hs-cta:hover{background:var(--brand-100);transform:translateY(-1px)}
 .lp .hs a:focus-visible,.lp .hs button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 
-.lp .hs-bar{background:var(--brand-950);border-top:1px solid rgba(255,255,255,.14)}
+.lp .hs-bar{background:#0B0B0B;border-top:1px solid rgba(255,255,255,.14)}
 .lp .hs-bar-row{display:flex;align-items:stretch;min-height:56px}
 .lp .hs-tabs{display:flex;flex:1;min-width:0}
 .lp .hs-tab{position:relative;flex:1 1 0;min-width:0;padding:0 18px;border:0;background:none;color:rgba(255,255,255,.74);font-size:14px;font-weight:600;text-align:left;cursor:pointer;transition:color .2s,background .2s}

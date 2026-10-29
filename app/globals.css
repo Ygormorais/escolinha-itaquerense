@@ -223,6 +223,26 @@
   --sidebar-ring: #E53935;
 }
 
+/*
+ * Tema escuro: os tons de texto vermelho, laranja, verde e azul do tema claro não têm
+ * contraste AA sobre superfícies quase pretas. Dentro de .dark, o texto usa tons claros
+ * da mesma cor; fundos (bg-*) não mudam.
+ */
+@layer utilities {
+  .dark :is(.text-brand-600, .text-brand-700, .text-brand-800, .text-brand-900) { color: var(--brand-300); }
+  .dark .text-danger-600 { color: #F28B82; }
+  .dark :is(.text-warning-600, .text-warning-700) { color: #F2B866; }
+  .dark .text-success-600 { color: #5FD3A6; }
+  .dark .text-info-600 { color: #8AB4F8; }
+  .dark [data-slot="badge"][data-variant="destructive"] { color: #FCA5A5; }
+  /* Fundos claros de destaque (bg-*-50, inclusive com opacidade /N) viram tons escuros. */
+  .dark :is([class~="bg-brand-50"], [class*="bg-brand-50/"], [class~="bg-brand-100"], [class*="bg-brand-100/"]) { background-color: rgb(198 40 40 / 0.14); }
+  .dark :is([class~="bg-danger-50"], [class*="bg-danger-50/"]) { background-color: rgb(179 38 30 / 0.18); }
+  .dark :is([class~="bg-warning-50"], [class*="bg-warning-50/"]) { background-color: rgb(152 90 19 / 0.2); }
+  .dark :is([class~="bg-success-50"], [class*="bg-success-50/"]) { background-color: rgb(15 122 90 / 0.2); }
+  .dark :is([class~="bg-info-50"], [class*="bg-info-50/"]) { background-color: rgb(34 94 168 / 0.2); }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
