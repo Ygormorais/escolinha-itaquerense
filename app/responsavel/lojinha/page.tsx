@@ -111,7 +111,7 @@ export default async function LojinhaPage() {
         </div>
       )}
 
-      <Card className="overflow-hidden border-0 bg-[linear-gradient(135deg,_#4A0B0B_0%,_#C62828_55%,_#D84040_100%)] text-white shadow-lg">
+      <Card className="overflow-hidden border-0 bg-[#0B0B0B] text-white shadow-lg">
         <CardContent className="p-6 text-center sm:p-8">
           <div className="mb-2 flex items-center justify-center gap-2">
             <Phone className="size-5 opacity-90" />

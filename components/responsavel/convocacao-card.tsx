@@ -31,7 +31,7 @@ export function ConvocacaoCard({ convocacao }: { convocacao: ConvocacaoPendente 
 
   return (
     <Card className="overflow-hidden border-brand-100 shadow-sm">
-      <div className="h-1 bg-gradient-to-r from-brand-950 via-brand-600 to-brand-500" aria-hidden />
+      <div className="h-1 bg-brand-600" aria-hidden />
       <CardHeader className="pb-2">
         <CardTitle className="font-heading text-base font-extrabold tracking-tight">
           {convocacao.alunoNome} foi convocado(a)

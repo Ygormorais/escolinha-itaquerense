@@ -184,7 +184,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
       </div>
 
       {/* Printable Receipt */}
-      <div id="recibo-print" className="mx-auto mt-8 w-full max-w-[680px] overflow-x-auto border border-border shadow-md print:shadow-none print:border-none">
+      <div id="recibo-print" tabIndex={0} role="region" aria-label="Recibo" className="superficie-clara mx-auto mt-8 w-full max-w-[680px] overflow-x-auto border border-border shadow-md print:shadow-none print:border-none">
         {/* Header */}
         <div className="bg-brand-800 px-8 py-6 text-white">
           <div className="flex items-start justify-between">
@@ -195,7 +195,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-white/60 uppercase tracking-wide">Recibo Nº</p>
+              <p className="text-xs text-white/80 uppercase tracking-wide">Recibo Nº</p>
               <p className="text-lg font-bold">{form.numero}</p>
             </div>
           </div>

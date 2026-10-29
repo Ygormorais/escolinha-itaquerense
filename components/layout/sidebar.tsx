@@ -64,9 +64,9 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
     : pathname.startsWith("/relatorio")
 
   return (
-    <aside className="flex h-full min-h-screen w-64 flex-col border-r border-border bg-[var(--color-paper-50)] dark:bg-card md:h-screen">
-      {/* faixa de marca alvirrubra */}
-      <div className="h-1 w-full bg-gradient-to-r from-brand-950 via-brand-600 to-brand-500" aria-hidden />
+    <aside className="dark flex h-full min-h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:h-screen">
+      {/* Escopo "dark": a sidebar usa sempre o tema escuro, como o topo do site. */}
+      <div className="h-1 w-full bg-brand-600" aria-hidden />
 
       <div className="flex h-16 items-center gap-3 border-b border-border px-4">
         <Image
@@ -79,7 +79,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
           aria-hidden="true"
         />
         <div className="min-w-0">
-          <p className="font-heading text-[15px] font-extrabold leading-tight tracking-tight text-brand-600">
+          <p className="font-heading text-[15px] font-extrabold leading-tight tracking-tight text-white">
             Escolinha
           </p>
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">

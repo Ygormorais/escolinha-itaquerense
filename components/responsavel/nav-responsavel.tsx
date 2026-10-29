@@ -58,8 +58,8 @@ export function NavResponsavel() {
         className={cn(
           "relative shrink-0 px-3.5 py-3 font-body text-[13px] font-semibold tracking-[0.02em] whitespace-nowrap transition-colors sm:text-[14px]",
           active
-            ? "text-[var(--red)]"
-            : "text-[var(--text)] hover:text-[var(--red)]",
+            ? "text-white"
+            : "text-[var(--text-light)] hover:text-white",
         )}
         aria-current={active ? "page" : undefined}
       >
@@ -78,14 +78,14 @@ export function NavResponsavel() {
   return (
     <nav
       className={cn(
-        "-mx-4 mb-8 sticky top-0 z-30 overflow-visible rounded-2xl border border-[var(--border)]",
-        "bg-[rgba(255,252,249,0.96)] shadow-[0_1px_0_var(--border),0_2px_8px_rgba(74,11,11,0.06)] backdrop-blur-md",
+        // Barra escura: redefine os tokens públicos só dentro dela.
+        "-mx-4 mb-8 sticky top-0 z-30 overflow-visible rounded-[var(--radius-lg)] border border-[var(--border)]",
+        "[--text:#F5F5F5] [--text-light:#A3A3A3] [--border:#262626] bg-[#0B0B0B] shadow-md",
         "sm:-mx-6 lg:-mx-8 print:hidden",
       )}
     >
-      {/* Faixa alvirrubra — mesma linguagem da landing */}
       <div
-        className="h-1 w-full rounded-t-2xl bg-gradient-to-r from-[var(--red-deep)] via-[var(--red)] to-[var(--red-warm)]"
+        className="h-1 w-full rounded-t-[var(--radius-lg)] bg-[var(--red)]"
         aria-hidden
       />
 
@@ -104,7 +104,7 @@ export function NavResponsavel() {
               aria-hidden
             />
             <div className="min-w-0">
-              <p className="font-body text-[17px] font-bold leading-tight tracking-[0.2px] text-[var(--red)]">
+              <p className="font-body text-[17px] font-bold leading-tight tracking-[0.2px] text-white">
                 Portal da família
               </p>
               <p className="truncate text-[10px] font-medium uppercase tracking-[2px] text-[var(--text-light)]">
@@ -118,7 +118,7 @@ export function NavResponsavel() {
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="border-[var(--red)] bg-transparent font-semibold text-[var(--red)] hover:bg-[var(--red)] hover:text-white"
+              className="border-[var(--red)] bg-transparent font-semibold text-white hover:bg-[var(--red)] hover:text-white"
             >
               <LogOut className="size-4" />
               <span className="hidden sm:inline">Sair</span>

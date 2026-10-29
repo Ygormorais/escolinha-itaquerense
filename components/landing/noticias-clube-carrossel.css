@@ -4,7 +4,7 @@
 
   .ncc-header{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;padding-bottom:24px;flex-wrap:wrap}
   .ncc-header h2{
-    font-family:var(--font-heading),Georgia,serif;
+    font-family:var(--font-heading),system-ui,sans-serif;
     font-size:clamp(24px,3vw,32px);font-weight:700;color:var(--text,var(--ink-950));
     letter-spacing:-.015em;border-left:4px solid var(--red,var(--brand-600));padding-left:14px;line-height:1.2;
     margin:0;flex:1 1 auto;min-width:min(100%,200px)
@@ -39,7 +39,7 @@
     background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);
     font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
     padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.2);margin-bottom:8px}
-  .ncc-titulo{font-family:var(--font-heading),Georgia,serif;font-size:16px;font-weight:800;
+  .ncc-titulo{font-family:var(--font-heading),system-ui,sans-serif;font-size:16px;font-weight:800;
     color:#fff;line-height:1.2;letter-spacing:-.015em;
     text-shadow:0 1px 4px rgba(0,0,0,.35);margin-bottom:4px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}

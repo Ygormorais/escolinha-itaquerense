@@ -80,4 +80,21 @@ test.describe("Design system administrativo", () => {
     await page.goto("/pagamentos", { waitUntil: "networkidle" })
     await expectNoSeriousAccessibilityViolations(page, '[data-page="pagamentos"]')
   })
+
+  test("sidebar escura não tem violações críticas ou sérias", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 })
+    await page.goto("/dashboard", { waitUntil: "networkidle" })
+    await expectNoSeriousAccessibilityViolations(page, "aside")
+  })
+
+  test("dashboard e pagamentos sem violações críticas ou sérias no tema escuro", async ({ page }) => {
+    // O tema escuro do admin vem do localStorage (components/theme-script.tsx).
+    await page.addInitScript(() => localStorage.setItem("theme", "dark"))
+    await page.goto("/dashboard", { waitUntil: "networkidle" })
+    await expect(page.locator("html")).toHaveClass(/dark/)
+    await expectNoSeriousAccessibilityViolations(page, '[data-page="dashboard"]')
+
+    await page.goto("/pagamentos", { waitUntil: "networkidle" })
+    await expectNoSeriousAccessibilityViolations(page, '[data-page="pagamentos"]')
+  })
 })

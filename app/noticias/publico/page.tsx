@@ -9,11 +9,11 @@ export const metadata = { title: "Notícias — E.C. Itaquerense" }
 
 const CORES: Record<string, string> = {
   "Resultado":  "linear-gradient(140deg,var(--success-600) 0%,#1FA87A 100%)",
-  "Conquista":  "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 55%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
-  "Convocação": "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-800) 100%)",
-  "Evento":     "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 60%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
-  "Comunicado": "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-900) 100%)",
-  "Notícia":    "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 60%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
+  "Conquista":  "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Convocação": "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Evento":     "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Comunicado": "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Notícia":    "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
 }
 
 const css = `
@@ -37,7 +37,7 @@ const css = `
     background:color-mix(in srgb, var(--ink-950) 72%, transparent);color:#fff;font-size:12px;font-weight:700;
     padding:4px 10px;border-radius:var(--radius-pill);backdrop-filter:blur(6px)}
   .np .card-body{padding:20px 22px 22px;flex:1;display:flex;flex-direction:column;gap:10px}
-  .np .card-titulo{font-family:var(--font-heading),Georgia,serif;font-size:17px;font-weight:800;
+  .np .card-titulo{font-family:var(--font-heading),system-ui,sans-serif;font-size:17px;font-weight:800;
     color:var(--text);line-height:1.25;letter-spacing:-.2px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .np .card-sub{font-size:13px;color:var(--text-muted);line-height:1.55;

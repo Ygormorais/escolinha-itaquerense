@@ -21,19 +21,19 @@ export const PUB_TOKENS = `
   --text-light:var(--ink-500);
   --border:var(--ink-200);
   --border-strong:var(--ink-300);
-  --shadow-sm:0 2px 8px color-mix(in srgb, var(--brand-950) 6%, transparent);
-  --shadow-md:0 8px 28px color-mix(in srgb, var(--brand-950) 10%, transparent);
-  --shadow-lg:0 24px 60px color-mix(in srgb, var(--brand-950) 12%, transparent);
-  --shadow-hover:0 14px 40px color-mix(in srgb, var(--brand-600) 16%, transparent);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 6px 20px rgba(0,0,0,.10);
+  --shadow-lg:0 18px 48px rgba(0,0,0,.14);
+  --shadow-hover:0 10px 28px rgba(0,0,0,.12);
   --shadow-focus:0 0 0 4px color-mix(in srgb, var(--brand-600) 15%, transparent);
   --shadow-red:0 8px 28px color-mix(in srgb, var(--brand-600) 22%, transparent);
-  --radius-sm:10px;
-  --radius-md:16px;
-  --radius-lg:20px;
-  --radius-xl:24px;
+  --radius-sm:4px;
+  --radius-md:6px;
+  --radius-lg:8px;
+  --radius-xl:8px;
   --radius-pill:999px;
   --ease:cubic-bezier(.25,.46,.45,.94);
-  font-family:var(--font-body),var(--font-inter),Inter,system-ui,sans-serif;
+  font-family:var(--font-body),system-ui,sans-serif;
   color:var(--text);
   background:var(--bg);
   line-height:1.65;
@@ -70,6 +70,6 @@ export function pubBase(ns: string): string {
     `html.dark .${ns}{${PUB_TOKENS_DARK}}`,
     `.${ns} *{margin:0;padding:0;box-sizing:border-box}`,
     `.${ns} a{text-decoration:none;color:inherit}`,
-    `.${ns} h1,.${ns} h2,.${ns} h3,.${ns} h4{font-family:var(--font-heading),var(--font-playfair),Georgia,serif}`,
+    `.${ns} h1,.${ns} h2,.${ns} h3,.${ns} h4{font-family:var(--font-heading),system-ui,sans-serif}`,
   ].join("\n")
 }

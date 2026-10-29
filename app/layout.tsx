@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Playfair_Display } from "next/font/google"
+import { Raleway } from "next/font/google"
 
 import "./globals.css"
 import { Toaster } from "sonner"
@@ -11,18 +11,10 @@ import { ShellGate } from "@/components/layout/shell-gate"
 import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
 
-/** Canônico: Inter (corpo) + Playfair (títulos) — site, admin e portal. */
-const inter = Inter({
+/** Canônico: Raleway (variável, 100–900) em todo o sistema — site, admin e portal. */
+const raleway = Raleway({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
-  display: "swap",
-})
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-playfair",
+  variable: "--font-raleway",
   display: "swap",
 })
 
@@ -31,8 +23,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF8F5" },
-    { media: "(prefers-color-scheme: dark)", color: "#1C1412" },
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0B0B" },
   ],
 }
 
@@ -101,7 +93,7 @@ export default async function RootLayout({
     : [0, 0, 0, 0]
 
   return (
-      <html lang="pt-BR" className={`h-full antialiased ${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <html lang="pt-BR" className={`h-full antialiased ${raleway.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
         <script

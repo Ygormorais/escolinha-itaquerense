@@ -5,6 +5,8 @@ import { EscudoTime } from "@/components/site/escudo-time"
 import { ClassificacaoTabela } from "@/components/site/classificacao-tabela"
 import { AnuncioBanner } from "@/components/site/anuncio-banner"
 import { getAnuncio } from "@/lib/site/anuncios-dados"
+import { getConfig } from "@/lib/config"
+import { TEXTO_ANUNCIAR, whatsappUrl } from "@/lib/site/whatsapp"
 import { getPartidasPublicasCached } from "@/lib/site/partidas-dados"
 import { getClassificacoesPorCategoria } from "@/lib/site/classificacao"
 import {
@@ -197,7 +199,7 @@ export default async function PartidasPage({
 
           <Paginacao f={f} pagina={pagina} total={totalPaginas} />
 
-          <AnuncioBanner anuncio={anuncio} dentroDeContainer />
+          <AnuncioBanner anuncio={anuncio} dentroDeContainer contratarUrl={whatsappUrl(getConfig().whatsapp, TEXTO_ANUNCIAR)} />
 
           <section className="pt-classif" aria-labelledby="pt-classif-h">
             <h2 id="pt-classif-h" className="pg-secao">Classificação{f.categoria ? ` · ${f.categoria}` : ""}</h2>
