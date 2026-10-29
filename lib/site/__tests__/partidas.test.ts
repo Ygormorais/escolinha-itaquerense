@@ -104,6 +104,9 @@ describe("formatação", () => {
   it("mostra horário só quando a partida tem hora definida", () => {
     expect(formatarDataHora("2026-11-04T21:30:00")).toEqual({ dia: "04/11/2026", hora: "21h30" })
     expect(formatarDataHora("2026-11-04T00:00:00")).toEqual({ dia: "04/11/2026", hora: null })
+    // 12:00 é o valor que o sync FPFS grava quando a federação não informa horário
+    expect(formatarDataHora("2026-11-04T12:00:00")).toEqual({ dia: "04/11/2026", hora: null })
+    expect(formatarDataHora("2026-11-04T12:30:00")).toEqual({ dia: "04/11/2026", hora: "12h30" })
   })
 
   it("traduz campeonatos FPFS e limpa o sufixo do evento", () => {

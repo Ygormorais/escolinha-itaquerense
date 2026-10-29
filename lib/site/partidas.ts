@@ -113,11 +113,16 @@ export function janelaPaginas(atual: number, total: number): (number | null)[] {
 
 const dois = (n: number) => String(n).padStart(2, "0")
 
-/** "04/11/2026" e, quando a FPFS informou horário, "21h30". */
+/**
+ * "04/11/2026" e, quando há horário real, "21h30". Sem hora, o sync FPFS grava 12:00
+ * (dataPartidaLocal) e o cadastro manual grava 00:00: os dois ficam sem horário na tela.
+ * O custo é esconder um jogo marcado de fato ao meio-dia, raro na base.
+ */
 export function formatarDataHora(iso: string): { dia: string; hora: string | null } {
   const d = new Date(iso)
   const dia = `${dois(d.getDate())}/${dois(d.getMonth() + 1)}/${d.getFullYear()}`
-  const temHora = d.getHours() !== 0 || d.getMinutes() !== 0
+  const semHora = d.getMinutes() === 0 && (d.getHours() === 0 || d.getHours() === 12)
+  const temHora = !semHora
   return { dia, hora: temHora ? `${dois(d.getHours())}h${dois(d.getMinutes())}` : null }
 }
 
