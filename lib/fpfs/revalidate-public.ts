@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache"
 /** Invalida páginas públicas e portal que mostram jogos/classificação FPFS. */
 export function revalidateFpfsPublico() {
   revalidatePath("/")
-  revalidatePath("/resultados")
+  revalidatePath("/partidas")
   revalidatePath("/agenda")
   revalidatePath("/responsavel/jogos")
   revalidatePath("/responsavel/classificacao")

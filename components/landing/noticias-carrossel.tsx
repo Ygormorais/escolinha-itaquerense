@@ -246,7 +246,7 @@ export function NoticiasCarrossel({
           <div>
             <h2 id="nc-heading">Jogos e resultados</h2>
           </div>
-          <Link href="/resultados" className="nc-more">
+          <Link href="/partidas" className="nc-more">
             Ver todos
             <ArrowRight size={14} aria-hidden />
           </Link>

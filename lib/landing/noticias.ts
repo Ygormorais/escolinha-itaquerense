@@ -61,7 +61,7 @@ export function resolveFpfsUrl(raw: string | null | undefined): string | null {
  * Link real do card:
  * 1) súmula do jogo na FPFS (quando o sync trouxe sumulaUrl)
  * 2) página de jogos do evento FPFS do campeonato
- * 3) fallback interno /resultados
+ * 3) fallback interno /partidas
  */
 export function linkPartida(p: {
   sumulaUrl: string | null
@@ -72,7 +72,7 @@ export function linkPartida(p: {
   if (p.campeonato.fpfsEventoId != null) {
     return { href: urlJogos(p.campeonato.fpfsEventoId), externo: true }
   }
-  return { href: "/resultados", externo: false }
+  return { href: "/partidas", externo: false }
 }
 
 function localLabel(local: string): string {

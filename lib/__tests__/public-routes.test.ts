@@ -9,6 +9,7 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/termos")).toBe(true)
     expect(isPublicRoute("/horarios")).toBe(true)
     expect(isPublicRoute("/resultados")).toBe(true)
+    expect(isPublicRoute("/partidas")).toBe(true)
     expect(isPublicRoute("/frequencia/scanner")).toBe(true)
   })
 

@@ -47,7 +47,7 @@ export function SiteFooter({
       links: [
         { href: "/horarios", rotulo: "Turmas e horários" },
         { href: "/matricula", rotulo: "Pré-matrícula" },
-        { href: "/resultados", rotulo: "Jogos e resultados" },
+        { href: "/partidas", rotulo: "Partidas" },
       ],
     },
     {

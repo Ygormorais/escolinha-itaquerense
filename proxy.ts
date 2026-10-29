@@ -79,6 +79,7 @@ export function isPublicPath(pathname: string): boolean {
     hasPrefix(pathname, "/checkin") ||
     pathname.startsWith("/api/checkin") ||
     hasPrefix(pathname, "/resultados") ||
+    hasPrefix(pathname, "/partidas") ||
     hasPrefix(pathname, "/horarios") ||
     hasPrefix(pathname, "/noticias/publico") ||
     hasPrefix(pathname, "/responsavel/login") ||
