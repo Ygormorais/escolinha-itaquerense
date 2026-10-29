@@ -7,4 +7,4 @@ export function whatsappUrl(numero: string | null | undefined, texto: string): s
 
 export const TEXTO_CONTATO = "Olá! Gostaria de mais informações sobre a Escolinha Itaquerense."
 export const TEXTO_NOVIDADES = "Olá! Quero receber as novidades do E.C. Itaquerense pelo WhatsApp."
-export const TEXTO_ANUNCIAR = "Olá! Tenho interesse em anunciar no site do E.C. Itaquerense."
+export const TEXTO_ANUNCIAR = "Olá! Tenho interesse em patrocinar o E.C. Itaquerense e anunciar no site do clube."

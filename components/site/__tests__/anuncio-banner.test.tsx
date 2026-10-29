@@ -8,6 +8,8 @@ describe("AnuncioBanner sem anúncio ativo", () => {
   it("oferece o espaço com link para contratar pelo WhatsApp", () => {
     const html = renderToStaticMarkup(<AnuncioBanner anuncio={null} contratarUrl={WA} />)
     expect(html).toContain("Anuncie aqui")
+    expect(html).toContain("Espaço aberto para patrocinadores")
+    expect(html).toContain("Seja patrocinador")
     expect(html).toContain(`href="${WA}"`)
     expect(html).toContain('target="_blank"')
   })

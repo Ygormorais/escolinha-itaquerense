@@ -27,11 +27,12 @@ export function AnuncioBanner({
             <div>
               <p className="anuncio-vago-titulo">Anuncie aqui</p>
               <p className="anuncio-vago-texto">
-                Sua marca para as famílias e a torcida do Itaquerense, na página do clube.
+                Espaço aberto para patrocinadores: sua marca para as famílias e a torcida do
+                Itaquerense, na página do clube.
               </p>
             </div>
             <a href={contratarUrl} target="_blank" rel="noopener" className="anuncio-vago-cta">
-              Quero anunciar
+              Seja patrocinador
               <span className="sr-only"> (abre o WhatsApp do clube em nova aba)</span>
             </a>
           </div>
