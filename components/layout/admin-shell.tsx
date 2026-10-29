@@ -28,8 +28,8 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:m-2 focus:rounded-lg focus:bg-brand-800 focus:p-3 focus:text-white">
         Pular para o conteúdo principal
       </a>
-      <header className="relative flex h-14 items-center gap-3 border-b border-border bg-[var(--color-paper-50)] px-4 md:hidden dark:bg-card">
-        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-brand-950 via-brand-600 to-brand-500" aria-hidden />
+      <header className="dark relative flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground md:hidden">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-brand-600" aria-hidden />
         <button
           onClick={() => setSidebarOpen(true)}
           className="flex size-10 items-center justify-center rounded-xl text-brand-700 hover:bg-brand-50"

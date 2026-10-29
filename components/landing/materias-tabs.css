@@ -193,7 +193,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, var(--brand-950) 0%, var(--brand-600) 55%, color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%);
+  background: linear-gradient(145deg, #0B0B0B 0%, #262626 100%);
 }
 
 .lp .mt .mt-card-fallback img {

@@ -39,6 +39,10 @@ describe("identidade visual", () => {
     ).toEqual([])
   })
 
+  it("não usa gradiente vermelho do Tailwind", () => {
+    expect(arquivosCom(/bg-gradient-to-\w+[^"]*from-(brand-|\[var\(--red)/)).toEqual([])
+  })
+
   it("tokens primitivos têm cantos retos", () => {
     const t = ler("tokens.css")
     expect(t).toContain("--radius-control: 0.25rem")

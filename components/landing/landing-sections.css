@@ -23,7 +23,7 @@
 .lp .galeria .item:hover{transform:none;box-shadow:none}
 .lp .galeria .item img{transition:transform .5s ease}
 .lp .galeria .item:hover img{transform:scale(1.05)}
-.lp .galeria .item::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,color-mix(in srgb, var(--brand-950) 55%, transparent),transparent 45%);opacity:0;transition:opacity .3s}
+.lp .galeria .item::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),transparent 45%);opacity:0;transition:opacity .3s}
 .lp .galeria .item:hover::after,.lp .galeria .item:focus-visible::after{opacity:1}
 
 /* ===== Voz do clube: cartões sem elevação, filete vermelho no topo ===== */

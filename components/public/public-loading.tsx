@@ -29,7 +29,7 @@ export function PublicLoading({ label = "Carregando…" }: { label?: string }) {
           animation:pub-pulse 1.2s ease-in-out infinite
         }
         .pub-loading-hero{
-          height:min(42vh,280px);background:linear-gradient(135deg,#4A0B0B 0%,#C62828 55%,#9F1D1D 100%);
+          height:min(42vh,280px);background:linear-gradient(135deg,#0B0B0B 0%,#1F1F1F 100%);
           opacity:.92
         }
         .pub-loading-body{

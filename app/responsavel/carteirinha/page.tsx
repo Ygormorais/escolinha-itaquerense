@@ -87,7 +87,7 @@ export default async function CarteirinhaPage() {
               {/* Header brand */}
               <div
                 className="relative flex items-center gap-3 px-5 py-4"
-                style={{ background: "linear-gradient(135deg, #C62828 0%, #e53935 100%)" }}
+                style={{ background: "#0B0B0B" }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/20">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">

@@ -21,9 +21,9 @@ interface PortalHeroProps {
   className?: string
 }
 
-/** Mesmo gradiente alvirrubro do hero da landing (red-deep → red → warm) */
-const GRADIENT =
-  "bg-[linear-gradient(135deg,_var(--red-deep,#4A0B0B)_0%,_var(--red,#C62828)_52%,_var(--red-warm,#D84040)_100%)]"
+/** Fundo escuro com filete vermelho embaixo — vermelho só como destaque */
+const FUNDO =
+  "bg-[#0B0B0B] border-b-4 border-b-[var(--red,#C62828)]"
 
 export function PortalHero({
   title,
@@ -41,8 +41,8 @@ export function PortalHero({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-3xl border border-black/5 px-6 py-7 text-white shadow-[0_14px_40px_rgba(198,40,40,0.16)] sm:px-8 sm:py-8",
-        GRADIENT,
+        "overflow-hidden rounded-[var(--radius-hero)] px-6 py-7 text-white shadow-md sm:px-8 sm:py-8",
+        FUNDO,
         className,
       )}
     >

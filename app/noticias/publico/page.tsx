@@ -9,11 +9,11 @@ export const metadata = { title: "Notícias — E.C. Itaquerense" }
 
 const CORES: Record<string, string> = {
   "Resultado":  "linear-gradient(140deg,var(--success-600) 0%,#1FA87A 100%)",
-  "Conquista":  "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 55%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
-  "Convocação": "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-800) 100%)",
-  "Evento":     "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 60%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
-  "Comunicado": "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-900) 100%)",
-  "Notícia":    "linear-gradient(140deg,var(--brand-950) 0%,var(--brand-600) 60%,color-mix(in oklab, var(--brand-600) 50%, var(--brand-500)) 100%)",
+  "Conquista":  "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Convocação": "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Evento":     "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Comunicado": "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Notícia":    "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
 }
 
 const css = `
