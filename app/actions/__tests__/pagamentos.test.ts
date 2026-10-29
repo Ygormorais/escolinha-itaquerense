@@ -24,6 +24,11 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
+vi.mock("@/lib/baixa", () => ({
+  emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
+  cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(1),
+}))
+
 vi.mock("@/app/actions/cobranca", () => ({
   cancelarCobranca: vi.fn().mockResolvedValue({ success: true }),
 }))
@@ -37,6 +42,7 @@ import {
 } from "@/app/actions/pagamentos"
 import { db } from "@/lib/db"
 import { cancelarCobranca } from "@/app/actions/cobranca"
+import { cancelarRecibosDoPagamento, emitirReciboSeguro } from "@/lib/baixa"
 
 const m = db as unknown as {
   pagamento: {
@@ -68,7 +74,7 @@ describe("registrarPagamento", () => {
       formaPagamento: "PIX",
       valorRecebido: 200,
     })
-    expect(res).toEqual({ success: true })
+    expect(res).toMatchObject({ success: true })
     const data = m.pagamento.update.mock.calls[0][0].data
     expect(data).toMatchObject({
       formaPagamento: "PIX",
@@ -114,7 +120,7 @@ describe("marcarComoPago", () => {
       formaPagamento: "PIX",
       valorRecebido: 150,
     })
-    expect(res).toEqual({ success: true })
+    expect(res).toMatchObject({ success: true })
     expect(m.pagamento.update.mock.calls[0][0].data.valorRecebido).toBe(150)
     expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
     expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
@@ -122,10 +128,10 @@ describe("marcarComoPago", () => {
 })
 
 describe("registrarPagamentosLote", () => {
-  it("usa a mensalidade de cada aluno como valor recebido", async () => {
+  it("usa o valor devido (com desconto) de cada mensalidade como valor recebido", async () => {
     m.pagamento.findMany.mockResolvedValue([
-      { id: 1, dataPagamento: null, aluno: { nome: "A", mensalidade: 150 } },
-      { id: 2, dataPagamento: null, aluno: { nome: "B", mensalidade: 220 } },
+      { id: 1, dataPagamento: null, valorDevido: 150, aluno: { nome: "A", mensalidade: 180, desconto: 30 } },
+      { id: 2, dataPagamento: null, valorDevido: null, aluno: { nome: "B", mensalidade: 220, desconto: 0 } },
     ])
     const res = await registrarPagamentosLote([1, 2], { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro" })
     expect(res).toEqual({ atualizados: 2 })
@@ -228,7 +234,7 @@ describe("marcarComoPago", () => {
 
   it("marca como pago com valor válido", async () => {
     const res = await marcarComoPago(1, base)
-    expect(res).toEqual({ success: true })
+    expect(res).toMatchObject({ success: true })
     expect(m.pagamento.update).toHaveBeenCalled()
     expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
     expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
@@ -244,5 +250,48 @@ describe("marcarComoPago", () => {
     const res = await marcarComoPago(1, { ...base, valorRecebido })
     expect(res).toEqual({ error: "Valor inválido" })
     expect(m.pagamento.update).not.toHaveBeenCalled()
+  })
+})
+
+describe("recibo da baixa", () => {
+  const emitir = emitirReciboSeguro as unknown as ReturnType<typeof vi.fn>
+  const cancelar = cancelarRecibosDoPagamento as unknown as ReturnType<typeof vi.fn>
+
+  it("registrar pagamento emite recibo com o valor recebido e devolve o código", async () => {
+    const res = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
+    expect(emitir).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 5, valor: 200, formaPagamento: "PIX", emitidoPor: "secretaria" }))
+    expect(res).toEqual({ success: true, recibo: { numero: "REC-1", codigoVerificacao: "COD1" } })
+  })
+
+  it("marcar como pago emite recibo", async () => {
+    await marcarComoPago(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 150 })
+    expect(emitir).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 5, valor: 150 }))
+  })
+
+  it("lote emite um recibo por mensalidade baixada, com o valor devido", async () => {
+    m.pagamento.findMany.mockResolvedValue([
+      { id: 1, dataPagamento: null, valorDevido: 150, aluno: { nome: "A", mensalidade: 180, desconto: 30 } },
+      { id: 2, dataPagamento: null, valorDevido: 220, aluno: { nome: "B", mensalidade: 220, desconto: 0 } },
+    ])
+    m.pagamento.updateMany.mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 0 })
+    await registrarPagamentosLote([1, 2], { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro" })
+    expect(emitir).toHaveBeenCalledTimes(1)
+    expect(emitir).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 1, valor: 150, formaPagamento: "Dinheiro" }))
+  })
+
+  it("falha ao emitir recibo não desfaz a baixa", async () => {
+    emitir.mockResolvedValueOnce(null)
+    const res = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
+    expect(m.pagamento.update).toHaveBeenCalled()
+    expect(res).toEqual({ success: true, recibo: null })
+  })
+
+  it("excluir pagamento cancela os recibos dele antes de excluir", async () => {
+    const ordem: string[] = []
+    cancelar.mockImplementationOnce(async () => { ordem.push("cancelar"); return 1 })
+    m.pagamento.delete.mockImplementationOnce(async () => { ordem.push("excluir"); return {} })
+    await deletePagamento(9)
+    expect(cancelar).toHaveBeenCalledWith(expect.anything(), 9, "secretaria")
+    expect(ordem).toEqual(["cancelar", "excluir"])
   })
 })

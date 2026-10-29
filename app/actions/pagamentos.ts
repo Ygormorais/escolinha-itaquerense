@@ -9,9 +9,12 @@ import { dataValida, plural } from "@/lib/utils"
 import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
 import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
-import { valorDevidoDoAluno } from "@/lib/valor-devido"
+import { valorDevidoDoAluno, valorDevidoDoPagamento } from "@/lib/valor-devido"
+import { cancelarRecibosDoPagamento, emitirReciboSeguro } from "@/lib/baixa"
 
 type ActionResult = { success: true } | { error: string }
+type ReciboEmitido = { numero: string; codigoVerificacao: string } | null
+type BaixaResult = { success: true; recibo: ReciboEmitido } | { error: string }
 
 export async function registrarPagamento(
   id: number,
@@ -21,8 +24,8 @@ export async function registrarPagamento(
     valorRecebido: number
     observacoes?: string
   }
-): Promise<ActionResult> {
-  await requireAuth(["admin", "secretaria"])
+): Promise<BaixaResult> {
+  const session = await requireAuth(["admin", "secretaria"])
   const valor = Number(data.valorRecebido)
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
@@ -39,11 +42,15 @@ export async function registrarPagamento(
         observacoes: data.observacoes ?? null,
       },
     })
+    const recibo = await emitirReciboSeguro(db, {
+      pagamentoId: id, valor, formaPagamento: data.formaPagamento,
+      dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
+    })
     const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
     await registrarLog("pagamento", `Pagamento registrado — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: data.valorRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), forma: data.formaPagamento })
     // Os clientes atualizam a rota depois de concluir o próprio fluxo.
     // Revalidar dentro da action desmonta o diálogo antes de exibir o recibo.
-    return { success: true }
+    return { success: true, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
   }
@@ -67,12 +74,12 @@ export async function registrarPagamentosLote(
   ids: number[],
   data: { dataPagamento: string; formaPagamento: string }
 ): Promise<{ atualizados: number } | { error: string }> {
-  await requireAuth(["admin", "secretaria"])
+  const session = await requireAuth(["admin", "secretaria"])
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
     const pagamentos = await db.pagamento.findMany({
       where: { id: { in: ids } },
-      include: { aluno: { select: { nome: true, mensalidade: true } } },
+      include: { aluno: { select: { nome: true, mensalidade: true, desconto: true } } },
     })
 
     // Trava server-side: o client já esconde linhas pagas via isRowSelectable, mas
@@ -90,7 +97,7 @@ export async function registrarPagamentosLote(
           data: {
             dataPagamento: new Date(data.dataPagamento),
             formaPagamento: data.formaPagamento,
-            valorRecebido: p.aluno.mensalidade,
+            valorRecebido: valorDevidoDoPagamento(p),
             canalPrevisto: data.formaPagamento,
             statusCobranca: "pago",
           },
@@ -98,6 +105,15 @@ export async function registrarPagamentosLote(
       )
     )
     const atualizados = resultados.reduce((soma, r) => soma + r.count, 0)
+
+    // Um recibo por mensalidade efetivamente baixada (count 0 = outro processo baixou antes).
+    for (const [i, p] of pendentes.entries()) {
+      if (resultados[i]?.count !== 1) continue
+      await emitirReciboSeguro(db, {
+        pagamentoId: p.id, valor: valorDevidoDoPagamento(p), formaPagamento: data.formaPagamento,
+        dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
+      })
+    }
 
     await registrarLog("pagamento", `Lote: ${plural(atualizados, "pagamento registrado", "pagamentos registrados", "nenhum")}`, { forma: data.formaPagamento, data: data.dataPagamento })
     revalidatePath("/pagamentos")
@@ -174,7 +190,7 @@ export async function gerarMensalidadesAno(
 }
 
 export async function deletePagamento(id: number): Promise<ActionResult> {
-  await requireAuth(["admin", "secretaria"])
+  const session = await requireAuth(["admin", "secretaria"])
   try {
     const pag = await db.pagamento.findUnique({
       where: { id },
@@ -187,6 +203,8 @@ export async function deletePagamento(id: number): Promise<ActionResult> {
       if ("error" in cancelResult) return cancelResult
     }
 
+    // O recibo fica, cancelado: a validação pública passa a mostrar "Recibo cancelado".
+    await cancelarRecibosDoPagamento(db, id, session.user)
     await db.pagamento.delete({ where: { id } })
     await registrarLog("pagamento_excluido", `Pagamento excluído — ${pag?.aluno.nome ?? ""}`, {
       mes: pag?.mesReferencia ?? "",
@@ -203,8 +221,8 @@ export async function deletePagamento(id: number): Promise<ActionResult> {
 export async function marcarComoPago(
   id: number,
   data: { dataPagamento: string; formaPagamento: string; valorRecebido: number }
-): Promise<ActionResult> {
-  await requireAuth(["admin", "secretaria"])
+): Promise<BaixaResult> {
+  const session = await requireAuth(["admin", "secretaria"])
   const valor = Number(data.valorRecebido)
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
@@ -218,6 +236,11 @@ export async function marcarComoPago(
         canalPrevisto: data.formaPagamento,
         statusCobranca: "pago",
       },
+    })
+
+    const recibo = await emitirReciboSeguro(db, {
+      pagamentoId: id, valor, formaPagamento: data.formaPagamento,
+      dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
     })
 
     const pag = await db.pagamento.findUnique({
@@ -240,7 +263,7 @@ export async function marcarComoPago(
     revalidatePath("/pagamentos")
     revalidatePath("/dashboard")
     if (pag) revalidatePath(`/alunos/${pag.aluno.id}`)
-    return { success: true }
+    return { success: true, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao marcar como pago" }
   }

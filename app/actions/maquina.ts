@@ -6,6 +6,7 @@ import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
 import { requireAuth } from "@/lib/auth"
 import { buildMaquinaWhere, MAQUINA_PAGE_SIZE, parseMaquinaFilters } from "@/lib/maquina-query"
 import { valorDevidoDoAluno } from "@/lib/valor-devido"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 type AlunoConciliacao = { id: number; nomeBusca: string; responsavelBusca: string }
 type ChaveTransacao = { dataTransacao: Date; valor: number; nomeNoCartao: string }
@@ -153,7 +154,7 @@ export async function reconciliarTransacao(
   dataVencimento: string,
   observacoes?: string
 ) {
-  await requireAuth(["admin", "secretaria"])
+  const session = await requireAuth(["admin", "secretaria"])
   const transacao = await db.transacaoMaquina.findUnique({ where: { id } })
   if (!transacao) return { error: "Transação não encontrada" }
   // Idempotência: não reconciliar de novo (o upsert já evita duplicar, mas o guard é explícito).
@@ -183,6 +184,10 @@ export async function reconciliarTransacao(
       where: { id },
       data: { status: "reconciliado", alunoId, pagamentoId: pagamento.id },
     })
+    await emitirReciboSeguro(tx, {
+      pagamentoId: pagamento.id, valor: dados.valorRecebido, formaPagamento: dados.formaPagamento,
+      dataPagamento: dados.dataPagamento, emitidoPor: session?.user ?? null,
+    })
   })
 
   revalidatePath("/caixa/maquina")
@@ -191,7 +196,7 @@ export async function reconciliarTransacao(
 }
 
 export async function reconciliarAuto() {
-  await requireAuth(["admin", "secretaria"])
+  const session = await requireAuth(["admin", "secretaria"])
   const [pendentes, alunosAtivos] = await Promise.all([
     db.transacaoMaquina.findMany({ where: { status: "pendente" } }),
     db.aluno.findMany({
@@ -235,6 +240,10 @@ export async function reconciliarAuto() {
       await tx.transacaoMaquina.update({
         where: { id: t.id },
         data: { status: "reconciliado", alunoId: aluno.id, pagamentoId: pagamento.id },
+      })
+      await emitirReciboSeguro(tx, {
+        pagamentoId: pagamento.id, valor: dadosAuto.valorRecebido, formaPagamento: dadosAuto.formaPagamento,
+        dataPagamento: dadosAuto.dataPagamento, emitidoPor: session?.user ?? null,
       })
     })
     reconciliados++

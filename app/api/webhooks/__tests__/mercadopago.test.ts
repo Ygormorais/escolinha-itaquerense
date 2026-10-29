@@ -21,6 +21,10 @@ vi.mock("@/lib/db", () => ({
   },
 }))
 
+vi.mock("@/lib/baixa", () => ({
+  emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
+  cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(0),
+}))
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 vi.mock("@/lib/mercadopago", () => ({
@@ -40,6 +44,7 @@ import { db } from "@/lib/db"
 import { mpPayment } from "@/lib/mercadopago"
 import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
 import { notificarPagamentoConfirmadoEmail } from "@/lib/email-jobs"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 const notificar = notificarPagamentoConfirmado as unknown as ReturnType<typeof vi.fn>
 const notificarEmail = notificarPagamentoConfirmadoEmail as unknown as ReturnType<typeof vi.fn>
@@ -213,5 +218,29 @@ describe("POST /api/webhooks/mercadopago", () => {
 
     const res = await POST(makeRequest({ type: "payment", data: { id: "mp-666" } }))
     expect(res.status).toBe(200)
+  })
+})
+
+describe("recibo do Mercado Pago", () => {
+  it("emite recibo na primeira confirmação", async () => {
+    mp.get.mockResolvedValue({ id: "mp-777", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 9, canalPrevisto: "PIX", dataPagamento: null,
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    m.pagamento.update.mockResolvedValue({})
+    await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
+    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 9, valor: 150, formaPagamento: "PIX" }))
+  })
+
+  it("webhook repetido não emite segundo recibo", async () => {
+    mp.get.mockResolvedValue({ id: "mp-777", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 9, canalPrevisto: "PIX", dataPagamento: new Date("2026-06-10T10:00:00Z"),
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    m.pagamento.update.mockResolvedValue({})
+    await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
   })
 })

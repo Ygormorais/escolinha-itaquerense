@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client"
 import type { db } from "@/lib/db"
+import { logger } from "@/lib/logger"
 import { calcularHashRecibo, gerarCodigoVerificacao, gerarNumeroRecibo } from "@/lib/recibos"
 
 /** Cliente do Prisma: o próprio `db` ou o `tx` de uma transação. */
@@ -54,6 +55,22 @@ export async function emitirReciboDaBaixa(
     select: { id: true },
   })
   return { id: recibo.id, numero, codigoVerificacao }
+}
+
+/**
+ * Como emitirReciboDaBaixa, mas nunca lança: a baixa já foi gravada e não pode ser desfeita
+ * por falha no recibo. Devolve null e registra o erro.
+ */
+export async function emitirReciboSeguro(
+  client: ClienteRecibo,
+  dados: DadosBaixa,
+): Promise<{ id: number; numero: string; codigoVerificacao: string } | null> {
+  try {
+    return await emitirReciboDaBaixa(client, dados)
+  } catch (e) {
+    logger.error("recibo: falha ao emitir recibo da baixa", { pagamentoId: dados.pagamentoId, error: String(e) })
+    return null
+  }
 }
 
 /** Cancela (sem apagar) os recibos ativos de um pagamento; devolve quantos foram cancelados. */

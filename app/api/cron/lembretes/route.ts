@@ -13,6 +13,7 @@ import { runPushVencimento, runPushInadimplentes } from "@/lib/push-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
 import { format } from "date-fns"
 import { logger } from "@/lib/logger"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
   const pendentes = await db.pagamento.findMany({
@@ -51,6 +52,15 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
               : {}),
           },
         })
+        if (statusLocal === "pago") {
+          await emitirReciboSeguro(db, {
+            pagamentoId: p.id,
+            valor: Number(mpData.transaction_amount ?? 0),
+            formaPagamento: p.canalPrevisto ?? "Mercado Pago",
+            dataPagamento: new Date(mpData.date_approved as string),
+            emitidoPor: "Mercado Pago",
+          })
+        }
         if (statusLocal === "pago" && p.aluno.responsavelId) {
           await sendPushToResponsavel(p.aluno.responsavelId, "pagamentoConfirmado", {
             title: "Pagamento confirmado!",

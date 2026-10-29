@@ -29,6 +29,10 @@ vi.mock("@/lib/mercadopago", () => ({
 vi.mock("@/lib/db", () => ({
   db: { pagamento: { findMany: vi.fn().mockResolvedValue([]), update: vi.fn() } },
 }))
+vi.mock("@/lib/baixa", () => ({
+  emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
+  cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(0),
+}))
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 vi.mock("@/lib/env", () => ({
   getCronSecret: vi.fn().mockReturnValue("cron-secret"),
@@ -37,6 +41,9 @@ vi.mock("@/lib/env", () => ({
 
 import { GET } from "../route"
 import { verifyBearerSecret } from "@/lib/env"
+import { db } from "@/lib/db"
+import { mpPayment, mpStatusToLocal } from "@/lib/mercadopago"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 const mockVerify = verifyBearerSecret as ReturnType<typeof vi.fn>
 
@@ -67,5 +74,17 @@ describe("GET /api/cron/lembretes", () => {
     expect(body).toHaveProperty("executadoEm")
     expect(body).toHaveProperty("durMs")
     expect(typeof body.durMs).toBe("number")
+  })
+})
+
+describe("cron: recibo das cobranças confirmadas no Mercado Pago", () => {
+  it("emite recibo quando a cobrança pendente passa a paga", async () => {
+    ;(db.pagamento.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      { id: 4, externalId: "mp-1", canalPrevisto: "PIX", mesReferencia: "2026-06", aluno: { nome: "Ana", responsavelId: null } },
+    ])
+    ;(mpPayment.get as ReturnType<typeof vi.fn>).mockResolvedValue({ status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 120 })
+    ;(mpStatusToLocal as ReturnType<typeof vi.fn>).mockReturnValue("pago")
+    await GET(makeRequest())
+    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 4, valor: 120, formaPagamento: "PIX" }))
   })
 })

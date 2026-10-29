@@ -10,6 +10,10 @@ vi.mock("@/lib/db", () => {
   return { db }
 })
 
+vi.mock("@/lib/baixa", () => ({
+  emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
+  cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(0),
+}))
 vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn().mockResolvedValue({ user: "secretaria", role: "secretaria" }),
 }))
@@ -25,6 +29,7 @@ vi.mock("@/lib/maquina-csv", () => ({
 import { importarCSV, reconciliarTransacao, reconciliarAuto, getResumoMaquina, getTransacoes } from "@/app/actions/maquina"
 import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes } from "@/lib/maquina-csv"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 const m = db as unknown as {
   $transaction: ReturnType<typeof vi.fn>
@@ -238,5 +243,13 @@ describe("getResumoMaquina", () => {
       reconciliados: 1,
       totalTransacoes: 3,
     })
+  })
+})
+
+describe("recibo da reconciliação", () => {
+  it("reconciliar transação emite recibo com o valor do cartão", async () => {
+    ;(db.aluno as unknown as { findUnique: ReturnType<typeof vi.fn> }).findUnique.mockResolvedValue({ mensalidade: 200, desconto: 0 })
+    await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 99, valor: 200, formaPagamento: "Cartão Crédito (Visa)" }))
   })
 })
