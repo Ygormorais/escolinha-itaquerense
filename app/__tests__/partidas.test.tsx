@@ -68,7 +68,7 @@ describe("PartidasPage", () => {
     const html = await render({ categoria: "Sub-9" })
     expect(html).toContain("Outro Time")
     expect(html).not.toContain("Vila Real")
-    expect(html).toContain('class="pt-pill is-on" aria-current="page" href="/partidas?categoria=Sub-9"')
+    expect(html).toContain('class="pg-pill is-on" aria-current="page" href="/partidas?categoria=Sub-9"')
     expect(html).toContain("Ainda não há classificação publicada para o Sub-9")
   })
 

@@ -82,6 +82,8 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/api/checkin") ||
     hasPrefix(pathname, "/resultados") ||
     hasPrefix(pathname, "/partidas") ||
+    pathname === "/termos" ||          // termos e política de privacidade: linkados no rodapé e no aceite da pré-matrícula
+    pathname === "/privacidade" ||
     hasPrefix(pathname, "/horarios") ||
     hasPrefix(pathname, "/noticias/publico") ||
     hasPrefix(pathname, "/responsavel/login") ||

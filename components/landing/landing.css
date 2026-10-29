@@ -28,6 +28,7 @@
     --radius-xl:24px;
     --radius-pill:999px;
     --transition:all .25s ease;
+    --ease:cubic-bezier(.25,.46,.45,.94);
     --hdr-bg:rgba(255,252,249,.96);
     --nav-drawer-bg:var(--bg-elevated);
     --lb-scrim:color-mix(in srgb, var(--ink-950) 88%, transparent);
