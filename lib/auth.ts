@@ -4,7 +4,9 @@ import { redirect } from "next/navigation"
 export async function requireAuth(allowedRoles?: string[]): Promise<{ user: string; role: string }> {
   const session = await getSession()
   if (!session.authenticated || !session.user) {
-    throw new Error("Não autenticado. Faça login primeiro.")
+    // O proxy só confere a assinatura do cookie; a sessão ainda pode ser recusada aqui
+    // (conta excluída ou desativada, cookie de formato antigo). Volta para o login.
+    redirect("/login")
   }
   if (allowedRoles && !allowedRoles.includes(session.role ?? "")) {
     throw new Error("Acesso não autorizado para esta função.")

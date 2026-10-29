@@ -38,9 +38,9 @@ describe("histórico interno de pautas", () => {
 
   it("bloqueia sessão expirada", async () => {
     mocks.session.mockResolvedValue({ authenticated: false })
-    await expect(salvarPautaSemanal(input)).rejects.toThrow("Não autenticado")
-    await expect(listarPautasSemanais()).rejects.toThrow("Não autenticado")
-    await expect(consultarPautaSemanal(1)).rejects.toThrow("Não autenticado")
+    await expect(salvarPautaSemanal(input)).rejects.toThrow("NEXT_REDIRECT")
+    await expect(listarPautasSemanais()).rejects.toThrow("NEXT_REDIRECT")
+    await expect(consultarPautaSemanal(1)).rejects.toThrow("NEXT_REDIRECT")
     expect(mocks.find).not.toHaveBeenCalled()
     expect(mocks.turmas).not.toHaveBeenCalled()
   })

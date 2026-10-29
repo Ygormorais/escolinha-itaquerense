@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   }
 
   const role = dbResult.ok ? dbResult.role : "admin"
-  const token = await createSession(username, role)
+  const token = await createSession(username, role, dbResult.ok ? "db" : "env")
   const response = NextResponse.json({ ok: true, role })
   response.cookies.set(cookieName(), token, {
     httpOnly: true,

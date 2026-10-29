@@ -22,7 +22,7 @@ describe("prepararResumoFamiliar", () => {
   })
   it("bloqueia sessão expirada", async () => {
     mocks.session.mockResolvedValue({ authenticated: false })
-    await expect(prepararResumoFamiliar({ alunoId: 12, mes: "2026-08" })).rejects.toThrow("Não autenticado")
+    await expect(prepararResumoFamiliar({ alunoId: 12, mes: "2026-08" })).rejects.toThrow("NEXT_REDIRECT")
     expect(mocks.aluno).not.toHaveBeenCalled()
   })
   it.each([{ alunoId: 0, mes: "2026-08" }, { alunoId: 12, mes: "2026-13" }, { alunoId: 12, mes: "2026-09" }])("valida entrada antes da consulta: %j", async (input) => {
@@ -75,8 +75,8 @@ describe("versões revisadas do resumo familiar", () => {
   })
   it("exige sessão também na consulta de versões antigas", async () => {
     mocks.session.mockResolvedValue({ authenticated: false })
-    await expect(listarResumosFamiliares({ alunoId: 12 })).rejects.toThrow("Não autenticado")
-    await expect(salvarResumoFamiliar(input)).rejects.toThrow("Não autenticado")
+    await expect(listarResumosFamiliares({ alunoId: 12 })).rejects.toThrow("NEXT_REDIRECT")
+    await expect(salvarResumoFamiliar(input)).rejects.toThrow("NEXT_REDIRECT")
     expect(mocks.listar).not.toHaveBeenCalled()
     expect(mocks.salvar).not.toHaveBeenCalled()
   })

@@ -60,7 +60,7 @@ describe("POST /api/auth/login", () => {
     mockCheckDb.mockResolvedValue({ ok: true, role: "secretaria" })
     const res = await POST(makeRequest({ username: "sec", password: "pass" }))
     expect(res.status).toBe(200)
-    expect(mockCreateSession).toHaveBeenCalledWith("sec", "secretaria")
+    expect(mockCreateSession).toHaveBeenCalledWith("sec", "secretaria", "db")
     const body = await res.json()
     expect(body.ok).toBe(true)
   })
@@ -70,7 +70,7 @@ describe("POST /api/auth/login", () => {
     mockCheckCredentials.mockReturnValue(true)
     const res = await POST(makeRequest({ username: "admin", password: "secret" }))
     expect(res.status).toBe(200)
-    expect(mockCreateSession).toHaveBeenCalledWith("admin", "admin")
+    expect(mockCreateSession).toHaveBeenCalledWith("admin", "admin", "env")
   })
 
   it("retorna 429 quando rate limit excedido", async () => {
