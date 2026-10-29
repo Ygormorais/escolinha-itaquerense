@@ -66,7 +66,7 @@ describe("revogação de sessão", () => {
     // O login aceita ADMIN_USERNAME/ADMIN_PASSWORD; a sessão precisa reconhecer o mesmo usuário.
     mocks.findUsuario.mockResolvedValue(null)
     mocks.isEnvAdminUsername.mockReturnValue(true)
-    mocks.getCookie.mockReturnValue({ value: await createSession("admin", "admin") })
+    mocks.getCookie.mockReturnValue({ value: await createSession("admin", "admin", "env") })
 
     await expect(getSession()).resolves.toEqual({ authenticated: true, user: "admin", role: "admin" })
   })
@@ -82,6 +82,15 @@ describe("revogação de sessão", () => {
     mocks.findUsuario.mockResolvedValue({ ativo: false, role: "admin" })
     mocks.isEnvAdminUsername.mockReturnValue(true)
     mocks.getCookie.mockReturnValue({ value: await createSession("admin", "admin") })
+
+    await expect(getSession()).resolves.toEqual({ authenticated: false })
+  })
+
+  it("conta do banco excluída com o nome do admin do .env não vira admin", async () => {
+    // Cookie emitido pelo login do banco (perfil secretaria); a conta foi excluída depois.
+    mocks.findUsuario.mockResolvedValue(null)
+    mocks.isEnvAdminUsername.mockReturnValue(true)
+    mocks.getCookie.mockReturnValue({ value: await createSession("admin", "secretaria") })
 
     await expect(getSession()).resolves.toEqual({ authenticated: false })
   })
