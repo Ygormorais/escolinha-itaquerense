@@ -13,7 +13,7 @@ type Notificacao = {
 
 /** Classe fixa — evita mismatch se o bundler/HMR reordenar utilities. */
 const BTN_CLASS =
-  "relative flex size-9 items-center justify-center rounded-md transition-colors hover:bg-muted"
+  "relative flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/10"
 
 export function NotificacaoBell() {
   const mounted = useSyncExternalStore(
@@ -106,7 +106,7 @@ export function NotificacaoBell() {
             </span>
           </>
         ) : (
-          <Bell className="size-5 text-muted-foreground" aria-hidden />
+          <Bell className="size-5 text-[var(--text-light)]" aria-hidden />
         )}
       </button>
 

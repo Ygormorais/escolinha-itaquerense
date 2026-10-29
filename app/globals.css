@@ -23,7 +23,7 @@
   --color-ink-950: #111111;
   --color-ink-900: #111111;
   --color-ink-700: #555555;
-  --color-ink-500: #8A8A8A;
+  --color-ink-500: #737373;
   --color-ink-300: #D4D4D4;
   --color-paper-100: #F4F4F4;
   --color-paper-50: #FFFFFF;
@@ -224,23 +224,41 @@
 }
 
 /*
- * Tema escuro: os tons de texto vermelho, laranja, verde e azul do tema claro não têm
- * contraste AA sobre superfícies quase pretas. Dentro de .dark, o texto usa tons claros
- * da mesma cor; fundos (bg-*) não mudam.
+ * Tema escuro do admin: os tons de texto vermelho, laranja, verde e azul do tema claro não
+ * têm contraste AA sobre superfícies quase pretas, e os fundos claros de destaque (*-50/100)
+ * viram manchas claras. Fundos: redefinem-se as variáveis (vale também para hover:, /N etc.).
+ * Texto: só a cor de texto muda, porque os mesmos tons servem de fundo de botão com texto
+ * branco. Portal e login são sempre claros e ficam fora dos dois ajustes.
  */
+.dark {
+  --color-brand-50: rgb(198 40 40 / 0.14);
+  --color-brand-100: rgb(198 40 40 / 0.2);
+  --color-danger-50: rgb(179 38 30 / 0.18);
+  --color-warning-50: rgb(152 90 19 / 0.2);
+  --color-success-50: rgb(15 122 90 / 0.2);
+  --color-info-50: rgb(34 94 168 / 0.2);
+}
+/* Portal e login são sempre claros: o fundo branco deles termina na altura da tela, então
+   o body por trás também precisa ficar claro quando há tema escuro salvo no aparelho. */
+.dark body:has(.portal-familia, .auth-experience) {
+  background-color: var(--paper-50);
+  color-scheme: light;
+}
+.dark :is(.portal-familia, .auth-experience) {
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-danger-50: var(--danger-50);
+  --color-warning-50: var(--warning-50);
+  --color-success-50: var(--success-50);
+  --color-info-50: var(--info-50);
+}
 @layer utilities {
-  .dark :is(.text-brand-600, .text-brand-700, .text-brand-800, .text-brand-900) { color: var(--brand-300); }
-  .dark .text-danger-600 { color: #F28B82; }
-  .dark :is(.text-warning-600, .text-warning-700) { color: #F2B866; }
-  .dark .text-success-600 { color: #5FD3A6; }
-  .dark .text-info-600 { color: #8AB4F8; }
-  .dark [data-slot="badge"][data-variant="destructive"] { color: #FCA5A5; }
-  /* Fundos claros de destaque (bg-*-50, inclusive com opacidade /N) viram tons escuros. */
-  .dark :is([class~="bg-brand-50"], [class*="bg-brand-50/"], [class~="bg-brand-100"], [class*="bg-brand-100/"]) { background-color: rgb(198 40 40 / 0.14); }
-  .dark :is([class~="bg-danger-50"], [class*="bg-danger-50/"]) { background-color: rgb(179 38 30 / 0.18); }
-  .dark :is([class~="bg-warning-50"], [class*="bg-warning-50/"]) { background-color: rgb(152 90 19 / 0.2); }
-  .dark :is([class~="bg-success-50"], [class*="bg-success-50/"]) { background-color: rgb(15 122 90 / 0.2); }
-  .dark :is([class~="bg-info-50"], [class*="bg-info-50/"]) { background-color: rgb(34 94 168 / 0.2); }
+  .dark :is(.text-brand-600, .text-brand-700, .text-brand-800, .text-brand-900):not(:is(.portal-familia, .auth-experience) *) { color: var(--brand-300); }
+  .dark .text-danger-600:not(:is(.portal-familia, .auth-experience) *) { color: #F28B82; }
+  .dark :is(.text-warning-600, .text-warning-700):not(:is(.portal-familia, .auth-experience) *) { color: #F2B866; }
+  .dark .text-success-600:not(:is(.portal-familia, .auth-experience) *) { color: #5FD3A6; }
+  .dark .text-info-600:not(:is(.portal-familia, .auth-experience) *) { color: #8AB4F8; }
+  .dark [data-slot="badge"][data-variant="destructive"]:not(:is(.portal-familia, .auth-experience) *) { color: #FCA5A5; }
 }
 
 @layer base {
@@ -328,7 +346,7 @@
   --text-light: var(--ink-500);
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-body), var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -354,5 +372,5 @@
 
 .portal-familia .font-body,
 .auth-experience .font-body {
-  font-family: var(--font-body), var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
 }
