@@ -4,7 +4,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Portal, login e documentos impressos são sempre claros: dark: não vale dentro deles. */
+@custom-variant dark (&:is(.dark *):not(:is(.portal-familia, .auth-experience, .superficie-clara) *));
 
 @theme {
   /* Brand — vermelho alvirrubro (mesmo do site público) */

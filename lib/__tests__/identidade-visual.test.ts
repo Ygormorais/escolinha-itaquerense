@@ -47,6 +47,13 @@ describe("identidade visual", () => {
     expect(arquivosCom(/background(-color)?:\s*var\(--(brand-950|red-deep)\)/)).toEqual([])
   })
 
+  it("variante dark: não vale dentro de portal, login e recibo", () => {
+    // Essas telas são sempre claras; um dark:text-warning-50 lá dentro fica ilegível.
+    expect(ler("app/globals.css")).toContain(
+      "@custom-variant dark (&:is(.dark *):not(:is(.portal-familia, .auth-experience, .superficie-clara) *));",
+    )
+  })
+
   it("tokens primitivos têm cantos retos", () => {
     const t = ler("tokens.css")
     expect(t).toContain("--radius-control: 0.25rem")
