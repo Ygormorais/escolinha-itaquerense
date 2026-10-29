@@ -26,15 +26,32 @@ interface Vigencia {
   fim: Date | null
 }
 
-/** No ar: ativo e dentro do período (início e fim são opcionais; o fim vale o dia todo). */
+/**
+ * O clube é de São Paulo e o servidor roda em UTC: as datas do período são gravadas
+ * como instantes no horário de Brasília (sem horário de verão desde 2019, então -03:00).
+ * O início vale a partir de 00:00 e o fim até 23:59:59.999 do dia escolhido.
+ */
+export const FUSO_CLUBE = "America/Sao_Paulo"
+const OFFSET_CLUBE = "-03:00"
+
+export function inicioDoDiaNoClube(ymd: string): Date {
+  return new Date(`${ymd}T00:00:00.000${OFFSET_CLUBE}`)
+}
+
+export function fimDoDiaNoClube(ymd: string): Date {
+  return new Date(`${ymd}T23:59:59.999${OFFSET_CLUBE}`)
+}
+
+/** Data (YYYY-MM-DD) de um instante no calendário do clube; para inputs type=date. */
+export function diaNoClube(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: FUSO_CLUBE, year: "numeric", month: "2-digit", day: "2-digit" }).format(d)
+}
+
+/** No ar: ativo e dentro do período (início e fim são opcionais e já gravados como instantes). */
 export function anuncioNoAr(a: Vigencia, agora: Date): boolean {
   if (!a.ativo) return false
   if (a.inicio && agora < a.inicio) return false
-  if (a.fim) {
-    const fimDoDia = new Date(a.fim)
-    fimDoDia.setHours(23, 59, 59, 999)
-    if (agora > fimDoDia) return false
-  }
+  if (a.fim && agora > a.fim) return false
   return true
 }
 
@@ -69,12 +86,15 @@ const imagem = z
   .max(500)
   .refine((v) => v.startsWith("/uploads/publicidade/") || linkSeguro(v) !== null, "Imagem inválida")
 
-const dataOpcional = z
-  .string()
-  .trim()
-  .optional()
-  .transform((v) => (v ? new Date(`${v}T00:00:00`) : null))
-  .refine((d) => d === null || !Number.isNaN(d.getTime()), "Data inválida")
+function dataOpcional(converter: (ymd: string) => Date) {
+  return z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v), "Data inválida")
+    .transform((v) => (v ? converter(v) : null))
+    .refine((d) => d === null || !Number.isNaN(d.getTime()), "Data inválida")
+}
 
 export const AnuncioSchema = z
   .object({
@@ -85,8 +105,8 @@ export const AnuncioSchema = z
     link: z.string().trim().max(500).refine((v) => linkSeguro(v) !== null, "Use um link que comece com https://"),
     posicao: z.enum(Object.keys(POSICOES_ANUNCIO) as [PosicaoAnuncio, ...PosicaoAnuncio[]]),
     ativo: z.boolean(),
-    inicio: dataOpcional,
-    fim: dataOpcional,
+    inicio: dataOpcional(inicioDoDiaNoClube),
+    fim: dataOpcional(fimDoDiaNoClube),
   })
   .refine((a) => !a.inicio || !a.fim || a.fim >= a.inicio, { message: "O fim precisa ser depois do início", path: ["fim"] })
 

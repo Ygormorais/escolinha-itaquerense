@@ -14,7 +14,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { alternarAnuncio, removerAnuncio, salvarAnuncio } from "@/app/actions/anuncios"
-import { POSICOES_ANUNCIO, statusAnuncio, type PosicaoAnuncio } from "@/lib/site/anuncios"
+import { FUSO_CLUBE, POSICOES_ANUNCIO, diaNoClube, statusAnuncio, type PosicaoAnuncio } from "@/lib/site/anuncios"
 
 export interface AnuncioLinha {
   id: number
@@ -49,15 +49,13 @@ const vazio = {
   fim: "",
 }
 
-/** "2026-11-30T00:00:00.000Z" → "2026-11-30" no fuso local, para o input type=date. */
+/** Instante gravado → "2026-11-30" no calendário do clube, para o input type=date. */
 function paraInputData(iso: string | null): string {
-  if (!iso) return ""
-  const d = new Date(iso)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+  return iso ? diaNoClube(new Date(iso)) : ""
 }
 
 function periodo(a: AnuncioLinha): string {
-  const f = (iso: string) => new Date(iso).toLocaleDateString("pt-BR")
+  const f = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { timeZone: FUSO_CLUBE })
   if (a.inicio && a.fim) return `${f(a.inicio)} a ${f(a.fim)}`
   if (a.inicio) return `A partir de ${f(a.inicio)}`
   if (a.fim) return `Até ${f(a.fim)}`

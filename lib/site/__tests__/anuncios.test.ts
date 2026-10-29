@@ -1,13 +1,22 @@
 import { describe, expect, it } from "vitest"
-import { AnuncioSchema, anuncioNoAr, linkSeguro, sortearAnuncio, statusAnuncio } from "../anuncios"
+import { AnuncioSchema, anuncioNoAr, diaNoClube, linkSeguro, sortearAnuncio, statusAnuncio } from "../anuncios"
 
-const agora = new Date("2026-10-28T15:00:00")
+const agora = new Date("2026-10-28T15:00:00-03:00")
 const vig = (extra: Partial<{ ativo: boolean; inicio: Date | null; fim: Date | null }> = {}) => ({
   ativo: true,
   inicio: null,
   fim: null,
   ...extra,
 })
+
+const baseSchema = {
+  anunciante: "Padaria do Bairro",
+  titulo: "Pão quentinho todo dia",
+  imagemUrl: "/uploads/publicidade/banner.jpg",
+  link: "https://padaria.example",
+  posicao: "landing",
+  ativo: true,
+}
 
 describe("vigência", () => {
   it("fica no ar sem período e respeita início e fim", () => {
@@ -17,8 +26,16 @@ describe("vigência", () => {
     expect(anuncioNoAr(vig({ fim: new Date("2026-10-27T00:00:00") }), agora)).toBe(false)
   })
 
-  it("o último dia do período vale inteiro", () => {
-    expect(anuncioNoAr(vig({ fim: new Date("2026-10-28T00:00:00") }), new Date("2026-10-28T23:30:00"))).toBe(true)
+  it("o período segue o calendário de São Paulo, não o fuso do servidor", () => {
+    const { inicio, fim } = AnuncioSchema.parse({ ...baseSchema, inicio: "2026-10-28", fim: "2026-10-28" })
+    // 23:30 em São Paulo já é dia 29 em UTC, mas o banner ainda está no ar
+    expect(anuncioNoAr(vig({ inicio, fim }), new Date("2026-10-28T23:30:00-03:00"))).toBe(true)
+    expect(anuncioNoAr(vig({ inicio, fim }), new Date("2026-10-29T00:00:01-03:00"))).toBe(false)
+    // 22:00 do dia anterior em São Paulo é 01:00 UTC do dia 28: ainda não começou
+    expect(anuncioNoAr(vig({ inicio, fim }), new Date("2026-10-27T22:00:00-03:00"))).toBe(false)
+    // ida e volta para o input type=date não desloca o dia
+    expect(diaNoClube(inicio!)).toBe("2026-10-28")
+    expect(diaNoClube(fim!)).toBe("2026-10-28")
   })
 
   it("status para o admin", () => {
@@ -62,8 +79,8 @@ describe("AnuncioSchema", () => {
   it("normaliza datas e imagem móvel vazia", () => {
     const r = AnuncioSchema.parse(base)
     expect(r.imagemMobileUrl).toBeNull()
-    expect(r.inicio?.getDate()).toBe(1)
-    expect(r.fim?.getMonth()).toBe(10)
+    expect(r.inicio?.toISOString()).toBe("2026-11-01T03:00:00.000Z")
+    expect(r.fim?.toISOString()).toBe("2026-12-01T02:59:59.999Z")
   })
 
   it("recusa link sem https, posição desconhecida e período invertido", () => {

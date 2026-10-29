@@ -5,9 +5,14 @@ import { sortearAnuncio, type AnuncioPublico, type PosicaoAnuncio } from "./anun
 export async function getAnuncio(posicao: PosicaoAnuncio, agora: Date = new Date()): Promise<AnuncioPublico | null> {
   try {
     const candidatos = await db.anuncio.findMany({
-      where: { posicao, ativo: true },
+      // Filtra o período no banco: assim o limite nunca corta um banner vigente.
+      where: {
+        posicao,
+        ativo: true,
+        AND: [{ OR: [{ inicio: null }, { inicio: { lte: agora } }] }, { OR: [{ fim: null }, { fim: { gte: agora } }] }],
+      },
       select: { id: true, anunciante: true, titulo: true, imagemUrl: true, imagemMobileUrl: true, ativo: true, inicio: true, fim: true },
-      take: 20,
+      take: 50,
     })
     const a = sortearAnuncio(candidatos, agora)
     return a ? { id: a.id, anunciante: a.anunciante, titulo: a.titulo, imagemUrl: a.imagemUrl, imagemMobileUrl: a.imagemMobileUrl } : null
