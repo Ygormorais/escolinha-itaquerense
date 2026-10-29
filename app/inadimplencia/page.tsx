@@ -6,6 +6,7 @@ import { AlertTriangle, DollarSign } from "lucide-react"
 import { InadimplenciaClient } from "./inadimplencia-client"
 import { getConfig } from "@/lib/config"
 import { formatMoney } from "@/lib/utils"
+import { valorTotalEmAberto } from "@/lib/inicio"
 
 export const metadata = { title: "Inadimplência — Escolinha Itaquerense" }
 
@@ -21,7 +22,7 @@ export default async function InadimplenciaPage() {
     },
     include: {
       aluno: {
-        select: { nome: true, turma: true, telefone: true, mensalidade: true },
+        select: { nome: true, turma: true, telefone: true, mensalidade: true, desconto: true },
       },
     },
     orderBy: { dataVencimento: "asc" },
@@ -35,6 +36,7 @@ export default async function InadimplenciaPage() {
       turma: string
       telefone: string
       mensalidade: number
+      desconto: number
       pagamentos: { id: number; mesReferencia: string; dataVencimento: Date; externalId: string | null; statusCobranca: string | null; canalPrevisto: string | null }[]
     }
   >()
@@ -47,6 +49,7 @@ export default async function InadimplenciaPage() {
         turma: p.aluno.turma,
         telefone: p.aluno.telefone,
         mensalidade: p.aluno.mensalidade,
+        desconto: p.aluno.desconto,
         pagamentos: [],
       })
     }
@@ -64,10 +67,7 @@ export default async function InadimplenciaPage() {
   const config = getConfig()
 
   const totalInadimplentes = inadimplentes.length
-  const valorTotalAberto = inadimplentes.reduce(
-    (sum, a) => sum + a.mensalidade * a.pagamentos.length,
-    0
-  )
+  const valorTotalAberto = valorTotalEmAberto(inadimplentes)
   const mesesMedios =
     totalInadimplentes > 0
       ? Math.round(

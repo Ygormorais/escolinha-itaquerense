@@ -11,7 +11,8 @@ import {
   Megaphone,
   FileText,
   History,
-  LayoutDashboard,
+  Home,
+  Settings,
   MessageSquareWarning,
   Newspaper,
   Receipt,
@@ -28,7 +29,7 @@ import {
 import { canAccessStaffPath, type StaffRole } from "@/lib/permissions"
 
 /** Contadores que a navegação mostra como badge (vêm do layout). */
-export type NavBadges = Partial<Record<"pendencias" | "escalacoes" | "solicitacoes" | "matriculas", number>>
+export type NavBadges = Partial<Record<"atraso" | "escalacoes" | "solicitacoes" | "matriculas", number>>
 
 export type NavItem = {
   href: string
@@ -38,68 +39,112 @@ export type NavItem = {
   badge?: number
 }
 
-export type NavGroup = {
+export type NavSection = {
+  href: string
   label: string
-  items: NavItem[]
-  matchPrefixes?: string[]
+  icon: LucideIcon
+  badgeKey?: keyof NavBadges
+  badge?: number
+  children: NavItem[]
 }
 
-/** Fonte única de rótulos e ícones: Sidebar (desktop/menu) e BottomNav (mobile). */
-export const NAV_GROUPS: NavGroup[] = [
+/** Menu do admin: 10 seções por tarefa; sub-itens aparecem dentro da seção ativa. */
+export const NAV_SECTIONS: NavSection[] = [
   {
-    label: "Visão Geral",
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/pendencias", label: "Pendências", icon: AlertTriangle, badgeKey: "pendencias" },
-      { href: "/secretaria", label: "Secretaria", icon: ClipboardList },
-      { href: "/tecnico", label: "Painel Técnico", icon: Trophy },
-      { href: "/desenvolvimento", label: "Desenvolvimento", icon: Activity },
+    href: "/dashboard", label: "Início", icon: Home,
+    children: [
+      { href: "/pendencias", label: "Pendências", icon: AlertTriangle },
+      { href: "/secretaria", label: "Painel da secretaria", icon: ClipboardList },
     ],
   },
   {
-    label: "Operação",
-    items: [
-      { href: "/alunos", label: "Alunos", icon: Users },
+    href: "/pagamentos", label: "Pagamentos", icon: CreditCard, badgeKey: "atraso",
+    children: [{ href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle }],
+  },
+  {
+    href: "/alunos", label: "Alunos", icon: Users,
+    children: [
       { href: "/turmas", label: "Turmas", icon: Users2 },
-      { href: "/pagamentos", label: "Pagamentos", icon: CreditCard },
-      { href: "/frequencia", label: "Frequência", icon: CalendarCheck },
-      { href: "/agenda", label: "Agenda", icon: Calendar },
-      { href: "/uniformes", label: "Uniformes", icon: Shirt },
-      { href: "/campeonatos", label: "Campeonatos", icon: Trophy },
-      { href: "/custos", label: "Custos", icon: Receipt },
-      { href: "/comunicados", label: "Comunicados", icon: Send },
-      { href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle },
-      { href: "/caixa", label: "Caixa", icon: Wallet },
-      { href: "/produtos", label: "Produtos", icon: ShoppingBag },
-      { href: "/avaliacoes", label: "Avaliações", icon: Award },
+      { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
+      { href: "/configuracoes/matriculas", label: "Pré-matrículas", icon: ClipboardList, badgeKey: "matriculas" },
+      { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning, badgeKey: "solicitacoes" },
     ],
   },
   {
-    label: "Documentos & Gestão",
-    matchPrefixes: ["/relatorio"],
-    items: [
-      { href: "/recibos", label: "Recibos", icon: FileText },
-      { href: "/configuracoes/documentos", label: "Documentos", icon: FileText },
-      { href: "/configuracoes/automacoes", label: "Automações", icon: History },
-      { href: "/historico", label: "Histórico", icon: History },
+    href: "/frequencia", label: "Frequência", icon: CalendarCheck,
+    children: [{ href: "/relatorio/frequencia", label: "Relatório de frequência", icon: BarChart3 }],
+  },
+  {
+    href: "/agenda", label: "Jogos e agenda", icon: Calendar,
+    children: [
+      { href: "/campeonatos", label: "Campeonatos", icon: Trophy },
+      { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badgeKey: "escalacoes" },
+    ],
+  },
+  {
+    href: "/desenvolvimento", label: "Desenvolvimento", icon: Activity,
+    children: [
+      { href: "/avaliacoes", label: "Avaliações", icon: Award },
+      { href: "/tecnico", label: "Painel técnico", icon: ClipboardList },
+    ],
+  },
+  {
+    href: "/comunicados", label: "Comunicação", icon: Send,
+    children: [
       { href: "/noticias", label: "Notícias", icon: Newspaper },
       { href: "/configuracoes/midia", label: "Mídia", icon: Film },
       { href: "/configuracoes/publicidade", label: "Publicidade", icon: Megaphone },
-      { href: "/configuracoes/responsaveis", label: "Responsáveis", icon: UserCircle },
-      { href: "/configuracoes/escalacoes", label: "Convocações", icon: MessageSquareWarning, badgeKey: "escalacoes" },
-      { href: "/configuracoes/solicitacoes", label: "Solicitações", icon: MessageSquareWarning, badgeKey: "solicitacoes" },
-      { href: "/configuracoes/matriculas", label: "Pré-Matrículas", icon: ClipboardList, badgeKey: "matriculas" },
+    ],
+  },
+  {
+    href: "/uniformes", label: "Loja", icon: ShoppingBag,
+    children: [{ href: "/produtos", label: "Produtos", icon: Shirt }],
+  },
+  {
+    href: "/caixa", label: "Financeiro", icon: Wallet,
+    children: [
+      { href: "/custos", label: "Custos", icon: Receipt },
+      { href: "/recibos", label: "Recibos", icon: FileText },
+      { href: "/relatorio", label: "Relatório financeiro", icon: BarChart3 },
+      { href: "/relatorio/turmas", label: "Relatório por turma", icon: Users2 },
+      { href: "/relatorio/alunos", label: "Relatório de alunos", icon: Users },
+      { href: "/relatorio/pagamentos", label: "Relatório de pagamentos", icon: CreditCard },
+    ],
+  },
+  {
+    href: "/configuracoes/documentos", label: "Configurações", icon: Settings,
+    children: [
+      { href: "/configuracoes/automacoes", label: "Automações", icon: History },
+      { href: "/historico", label: "Histórico", icon: History },
     ],
   },
 ]
 
-export const REPORT_ITEMS: NavItem[] = [
-  { href: "/relatorio", label: "Financeiro", icon: BarChart3 },
-  { href: "/relatorio/turmas", label: "Por Turma", icon: Users2 },
-  { href: "/relatorio/alunos", label: "Alunos", icon: Users },
-  { href: "/relatorio/pagamentos", label: "Pagamentos", icon: CreditCard },
-  { href: "/relatorio/frequencia", label: "Frequência", icon: CalendarCheck },
-]
+/**
+ * Seções visíveis para o papel. Sub-item sem acesso sai; se a rota principal não é
+ * permitida, a seção leva ao primeiro sub-item permitido; sem nenhuma rota, a seção sai.
+ */
+export function navSectionsFor(role: StaffRole, badges: NavBadges = {}): NavSection[] {
+  return NAV_SECTIONS.flatMap((secao) => {
+    let children = secao.children.filter((c) => canAccessStaffPath(c.href, role)).map((c) => withBadge(c, badges))
+    let href = secao.href
+    if (!canAccessStaffPath(href, role)) {
+      if (children.length === 0) return []
+      href = children[0].href
+      children = children.slice(1)
+    }
+    const badge = secao.badgeKey ? badges[secao.badgeKey] ?? 0 : undefined
+    return [{ ...secao, href, children, badge }]
+  })
+}
+
+/** Seção que contém a rota atual (pela rota principal ou por um sub-item). */
+export function secaoAtiva(pathname: string, sections: NavSection[]): NavSection | undefined {
+  const itens = sections.flatMap((s) => [{ href: s.href, label: s.label, icon: s.icon }, ...s.children])
+  return sections.find((s) =>
+    isNavItemActive(pathname, s.href, itens) || s.children.some((c) => isNavItemActive(pathname, c.href, itens)),
+  )
+}
 
 /**
  * Atalhos da BottomNav por papel, na ordem em que aparecem na Sidebar.
@@ -107,32 +152,21 @@ export const REPORT_ITEMS: NavItem[] = [
  * pagamentos/caixa, então não pode herdar a lista do admin).
  */
 const BOTTOM_NAV_PRIORITY: Record<StaffRole, string[]> = {
-  admin: ["/dashboard", "/pendencias", "/alunos", "/pagamentos"],
-  secretaria: ["/dashboard", "/pendencias", "/alunos", "/pagamentos"],
-  tecnico: ["/tecnico", "/frequencia", "/campeonatos", "/alunos"],
+  admin: ["/dashboard", "/pagamentos", "/alunos", "/frequencia"],
+  secretaria: ["/pagamentos", "/alunos", "/frequencia", "/comunicados"],
+  tecnico: ["/desenvolvimento", "/frequencia", "/agenda", "/alunos"],
 }
 
 function withBadge(item: NavItem, badges: NavBadges): NavItem {
   return item.badgeKey ? { ...item, badge: badges[item.badgeKey] ?? 0 } : item
 }
 
-export function navGroupsFor(role: StaffRole, badges: NavBadges = {}): NavGroup[] {
-  return NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => canAccessStaffPath(item.href, role)).map((item) => withBadge(item, badges)),
-  }))
-}
-
-export function reportItemsFor(role: StaffRole): NavItem[] {
-  return REPORT_ITEMS.filter((item) => canAccessStaffPath(item.href, role))
-}
-
 export function bottomNavItems(role: StaffRole, badges: NavBadges = {}): NavItem[] {
-  const all = NAV_GROUPS.flatMap((group) => group.items)
+  const secoes = navSectionsFor(role, badges)
+  const itens: NavItem[] = secoes.flatMap((s) => [{ href: s.href, label: s.label, icon: s.icon, badge: s.badge }, ...s.children])
   return BOTTOM_NAV_PRIORITY[role]
-    .map((href) => all.find((item) => item.href === href))
-    .filter((item): item is NavItem => item !== undefined && canAccessStaffPath(item.href, role))
-    .map((item) => withBadge(item, badges))
+    .map((href) => itens.find((item) => item.href === href))
+    .filter((item): item is NavItem => item !== undefined)
 }
 
 /** Ativo na própria rota ou em sub-rota, salvo se um item mais específico casar. */

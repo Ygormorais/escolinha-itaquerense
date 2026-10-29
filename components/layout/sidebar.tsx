@@ -3,14 +3,22 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useId, useState } from "react"
-import { BarChart3, ChevronRight, LogOut } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BuscaGlobal } from "@/components/ui/busca-global"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { OnboardingRestart } from "@/components/onboarding/onboarding-restart"
 import { staffRoleLabel, type StaffRole } from "@/lib/permissions"
-import { isNavItemActive, navGroupsFor, reportItemsFor } from "@/lib/navigation"
+import { isNavItemActive, navSectionsFor, secaoAtiva } from "@/lib/navigation"
+
+function Contador({ valor }: { valor?: number }) {
+  if (!valor) return null
+  return (
+    <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-semibold text-white">
+      {valor > 99 ? "99+" : valor}
+    </span>
+  )
+}
 
 function LogoutButton() {
   const router = useRouter()
@@ -31,37 +39,16 @@ function LogoutButton() {
   )
 }
 
-export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0, pendingPendencias = 0 }: { onClose?: () => void; role?: StaffRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number; pendingPendencias?: number }) {
+export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0, pendingAtraso = 0 }: { onClose?: () => void; role?: StaffRole; pendingEscalacoes?: number; pendingMatriculas?: number; pendingSolicitacoes?: number; pendingAtraso?: number }) {
   const pathname = usePathname()
-  const sidebarId = useId().replaceAll(":", "")
-
-  const reportItems = reportItemsFor(role)
-  const navGroups = navGroupsFor(role, {
-    pendencias: pendingPendencias,
+  const secoes = navSectionsFor(role, {
+    atraso: pendingAtraso,
     escalacoes: pendingEscalacoes,
     solicitacoes: pendingSolicitacoes,
     matriculas: pendingMatriculas,
   })
-
-  const allNavItems = navGroups.flatMap((group) => group.items)
-  const activeGroup = navGroups.find((group) =>
-    group.items.some((item) => isNavItemActive(pathname, item.href, allNavItems)) ||
-    group.matchPrefixes?.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
-  )?.label
-  const [groupPreference, setGroupPreference] = useState(() => ({
-    pathname,
-    value: activeGroup ?? "Visão Geral",
-  }))
-  const [reportPreference, setReportPreference] = useState(() => ({
-    pathname,
-    value: pathname.startsWith("/relatorio"),
-  }))
-  const openGroup = groupPreference.pathname === pathname
-    ? groupPreference.value
-    : activeGroup ?? "Visão Geral"
-  const relOpen = reportPreference.pathname === pathname
-    ? reportPreference.value
-    : pathname.startsWith("/relatorio")
+  const ativa = secaoAtiva(pathname, secoes)
+  const todosItens = secoes.flatMap((s) => [{ href: s.href, label: s.label, icon: s.icon }, ...s.children])
 
   return (
     <aside className="dark flex h-full min-h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:h-screen">
@@ -75,7 +62,7 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
           width={40}
           height={40}
           priority
-          className="rounded-xl object-contain shadow-sm ring-1 ring-brand-100"
+          className="rounded-[var(--radius-control)] object-contain"
           aria-hidden="true"
         />
         <div className="min-w-0">
@@ -92,109 +79,56 @@ export function Sidebar({ onClose, role = "admin", pendingEscalacoes = 0, pendin
         <BuscaGlobal />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-2 overflow-y-auto p-3 pt-4" aria-label="Navegação principal">
-        {navGroups.map((group, groupIndex) => {
-          const isOpen = openGroup === group.label
-          const groupId = `${sidebarId}-nav-group-${groupIndex}`
-          const pendingCount = group.items.reduce((total, item) => total + (item.badge ?? 0), 0)
-
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto py-3" aria-label="Navegação principal">
+        {secoes.map((secao) => {
+          const secaoEhAtiva = ativa?.label === secao.label
+          const paginaAtual = isNavItemActive(pathname, secao.href, todosItens)
+          const Icon = secao.icon
           return (
-            <div key={group.label} className="rounded-xl border border-transparent data-[open=true]:border-border data-[open=true]:bg-white/60 dark:data-[open=true]:bg-muted/30" data-open={isOpen}>
-              <button
-                type="button"
-                onClick={() => setGroupPreference({
-                  pathname,
-                  value: openGroup === group.label ? "" : group.label,
-                })}
-                aria-expanded={isOpen}
-                aria-controls={groupId}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-brand-900/80 transition-colors hover:bg-white hover:text-brand-900 dark:text-brand-200/80 dark:hover:bg-muted"
-              >
-                <span className="flex-1">{group.label}</span>
-                {pendingCount > 0 && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] tracking-normal text-white" aria-label={`${pendingCount} pendências`}>
-                    {pendingCount > 99 ? "99+" : pendingCount}
-                  </span>
+            <div key={secao.label}>
+              <Link
+                href={secao.href}
+                onClick={onClose}
+                aria-current={paginaAtual ? "page" : undefined}
+                className={cn(
+                  "flex items-center gap-3 border-l-2 px-4 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/60",
+                  secaoEhAtiva
+                    ? "border-brand-600 bg-white/5 font-bold text-white"
+                    : "border-transparent font-medium text-white/70 hover:bg-white/5 hover:text-white",
                 )}
-                <ChevronRight className={cn("size-3.5 shrink-0 transition-transform", isOpen && "rotate-90")} aria-hidden />
-              </button>
-              {isOpen && <div id={groupId} className="flex flex-col gap-0.5 px-1 pb-1.5">
-              {group.items.map(({ href, label, icon: Icon, badge }) => {
-                const isActive = isNavItemActive(pathname, href, allNavItems)
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={onClose}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-brand-50 text-brand-800 font-semibold shadow-sm ring-1 ring-brand-100 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r-full before:bg-brand-600"
-                        : "text-muted-foreground hover:bg-white hover:text-foreground hover:shadow-sm dark:hover:bg-muted"
-                    )}
-                  >
-                    <Icon className={cn("size-4 shrink-0", isActive && "text-brand-600")} />
-                    <span className="flex-1 truncate">{label}</span>
-                    {badge != null && badge > 0 && (
-                      <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-semibold text-white">
-                        {badge > 99 ? "99+" : badge}
-                      </span>
-                    )}
-                  </Link>
-                )
-              })}
-              {group.label === "Documentos & Gestão" && (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setReportPreference({ pathname, value: !relOpen })}
-                    aria-expanded={relOpen}
-                    aria-controls={`${sidebarId}-reports`}
-                    className={cn(
-                      "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                      pathname.startsWith("/relatorio")
-                        ? "bg-brand-50 text-brand-800 font-semibold ring-1 ring-brand-100"
-                        : "text-muted-foreground hover:bg-white hover:text-foreground dark:hover:bg-muted"
-                    )}
-                  >
-                    <BarChart3 className="size-4 shrink-0" />
-                    <span className="flex-1 truncate text-left">Relatórios</span>
-                    <ChevronRight className={cn("size-3.5 shrink-0 transition-transform", relOpen && "rotate-90")} />
-                  </button>
-                  {relOpen && (
-                    <div id={`${sidebarId}-reports`} className="ml-4 flex flex-col gap-0.5 border-l-2 border-brand-100 pl-3 dark:border-brand-900">
-                      {reportItems.map(({ href, label, icon: Icon }) => {
-                        const isActive = pathname === href || (href !== "/relatorio" && pathname.startsWith(href))
-                        return (
-                          <Link
-                            key={href}
-                            href={href}
-                            onClick={onClose}
-                            aria-current={isActive ? "page" : undefined}
-                            className={cn(
-                              "flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors",
-                              isActive
-                                ? "text-brand-800 font-semibold"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            )}
-                          >
-                            <Icon className="size-3.5 shrink-0" />
-                            <span className="truncate">{label}</span>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )}
+              >
+                <Icon className="size-4 shrink-0" aria-hidden />
+                <span className="flex-1 truncate">{secao.label}</span>
+                <Contador valor={secao.badge} />
+              </Link>
+              {secaoEhAtiva && secao.children.length > 0 && (
+                <div className="flex flex-col pb-1">
+                  {secao.children.map((item) => {
+                    const ativo = isNavItemActive(pathname, item.href, todosItens)
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onClose}
+                        aria-current={ativo ? "page" : undefined}
+                        className={cn(
+                          "flex items-center gap-2 py-1.5 pl-11 pr-4 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/60",
+                          ativo ? "font-semibold text-white" : "text-white/60 hover:text-white",
+                        )}
+                      >
+                        <span className="flex-1 truncate">{item.label}</span>
+                        <Contador valor={item.badge} />
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
-              </div>}
             </div>
           )
         })}
       </nav>
 
-      <div className="border-t border-border bg-white/60 px-4 py-3 flex items-center justify-between dark:bg-card">
+      <div className="flex items-center justify-between border-t border-border px-4 py-3">
         <p className="text-[10px] font-medium text-muted-foreground">E.C. Itaquerense</p>
         <div className="flex items-center gap-1">
           <OnboardingRestart />
