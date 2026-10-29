@@ -15,7 +15,7 @@ test.describe("Mídia — upload", () => {
     })
 
     await page.goto("/configuracoes/midia")
-    await page.getByRole("button", { name: "Nova Mídia" }).click()
+    await page.getByRole("button", { name: "Nova mídia" }).click()
 
     const arquivo = page.getByLabel("Arquivo")
     await arquivo.setInputFiles({

@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { TURMAS } from "@/lib/constants"
@@ -91,7 +92,7 @@ export default async function RelatorioTurmasPage() {
   const mesLabel = format(now, "MMMM yyyy", { locale: ptBR })
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Relatório por Turma"
         description={mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1)}

@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -150,7 +152,7 @@ export function RelatorioPagamentosClient({
   }
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <RelatorioNav role={role} />
       <PageHeader
         title="Relatório de Pagamentos"

@@ -1,8 +1,9 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Loading() {
   return (
-    <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-8 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <div className="space-y-1">
         <div className="h-7 w-36 animate-pulse rounded-md bg-muted" />
         <div className="h-4 w-52 animate-pulse rounded-md bg-muted" />

@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { notFound } from "next/navigation"
 import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
@@ -43,7 +44,7 @@ export default async function EscalacaoPage({
   ])
 
   return (
-    <div className="mx-auto w-full max-w-[var(--content-max)] min-w-0 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <EscalacaoBoard
         campeonatoId={Number(id)}
         partida={{ id: partida.id, adversario: partida.adversario, rodada: partida.rodada, data: partida.data }}

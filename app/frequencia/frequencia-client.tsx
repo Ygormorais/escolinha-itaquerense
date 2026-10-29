@@ -169,7 +169,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
   }
 
   return (
-    <div className="space-y-4 p-6 lg:p-8">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <Label className="block text-muted-foreground">Turma</Label>
@@ -263,7 +263,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                 className="bg-brand-800 text-white hover:bg-brand-900"
               >
                 {saving ? <Loader2 className="size-4 animate-spin" /> : <SaveIcon className="size-4" />}
-                {saving ? "Salvando..." : "Salvar Frequência"}
+                {saving ? "Salvando..." : "Salvar frequência"}
               </Button>
             </div>
           </div>

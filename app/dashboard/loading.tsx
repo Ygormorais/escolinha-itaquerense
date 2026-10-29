@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { Skeleton, StatCardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
 
 function QuickActionsSkeleton() {
@@ -63,7 +64,7 @@ export default function DashboardLoading() {
   return (
     <div role="status" aria-live="polite" aria-busy="true">
       <span className="sr-only">Carregando visão geral do dashboard</span>
-      <div aria-hidden="true" className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+      <div aria-hidden="true" className={PAGINA_ADMIN}>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-2">
             <Skeleton className="h-8 w-40" />

@@ -79,7 +79,7 @@ export function CustoFormDialog({
       <div onClick={() => setOpen(true)}>{trigger}</div>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{custo ? "Editar Custo" : "Registrar Custo"}</DialogTitle>
+          <DialogTitle>{custo ? "Editar custo" : "Registrar custo"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">

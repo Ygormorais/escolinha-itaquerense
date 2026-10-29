@@ -35,7 +35,7 @@ export function AvaliacoesTabela({ avaliacoes: listaFiltrada, onDelete: handleDe
                 <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
                   <ClipboardX className="size-10 opacity-30" />
                   <p className="text-sm">Nenhuma avaliação registrada ainda.</p>
-                  <p className="text-xs">Use o botão <strong className="text-foreground">+ Nova Avaliação</strong> acima para começar.</p>
+                  <p className="text-xs">Use o botão <strong className="text-foreground">+ Nova avaliação</strong> acima para começar.</p>
                 </div>
               </TableCell>
             </TableRow>

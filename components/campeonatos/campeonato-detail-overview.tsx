@@ -1,9 +1,8 @@
-import Link from "next/link"
+import { PageHeader } from "@/components/layout/page-header"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
   AlertTriangle,
-  ArrowLeft,
   Calendar,
   CircleDollarSign,
   Loader2,
@@ -56,34 +55,22 @@ export function CampeonatoDetailOverview({
 }: CampeonatoDetailOverviewProps) {
   return (
     <>
-      <header className="flex min-w-0 flex-col gap-4 border-b border-border/80 pb-5 xl:flex-row xl:items-start xl:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
-          <Link
-            href="/campeonatos"
-            aria-label="Voltar para campeonatos"
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/15"
-          >
-            <ArrowLeft className="size-5" aria-hidden="true" />
-          </Link>
-          <div className="min-w-0">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h1 className="min-w-0 [overflow-wrap:anywhere] font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                {campeonato.nome}
-              </h1>
-              <Badge variant={status.variant}>{status.label}</Badge>
-            </div>
-            {campeonato.descricao && (
-              <p className="mt-1 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">{campeonato.descricao}</p>
-            )}
-            {campeonato.fpfsSyncEm && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                FPFS atualizada em {format(new Date(campeonato.fpfsSyncEm), "dd/MM/yyyy HH:mm")}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap xl:justify-end">
+      <PageHeader
+        title={campeonato.nome}
+        back={{ href: "/campeonatos", label: "Voltar para campeonatos" }}
+        badge={<Badge variant={status.variant}>{status.label}</Badge>}
+        description={
+          campeonato.descricao || campeonato.fpfsSyncEm ? (
+            <>
+              {campeonato.descricao && <p className="max-w-[65ch]">{campeonato.descricao}</p>}
+              {campeonato.fpfsSyncEm && (
+                <p className="mt-1 text-xs">FPFS atualizada em {format(new Date(campeonato.fpfsSyncEm), "dd/MM/yyyy HH:mm")}</p>
+              )}
+            </>
+          ) : undefined
+        }
+        action={
+          <>
           <Button variant="outline" onClick={onSincronizar} disabled={sincronizando}>
             {sincronizando ? (
               <><Loader2 className="size-4 animate-spin" aria-hidden="true" /> Sincronizando...</>
@@ -97,8 +84,9 @@ export function CampeonatoDetailOverview({
               <Trash2 className="size-4" aria-hidden="true" /> Deletar
             </Button>
           </ConfirmDialog>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <section aria-label="Visão geral do campeonato" data-slot="campeonato-detail-bento" className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-12">
         <Card className="min-w-0 border-border/80 shadow-sm lg:col-span-7">

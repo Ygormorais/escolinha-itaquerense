@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import Link from "next/link"
 import { useMemo, useRef, useState, useTransition } from "react"
 import { Activity, CheckCircle2, ChevronRight, CircleAlert, Clock3, Copy, LoaderCircle, Search, Sparkles, Users, WandSparkles } from "lucide-react"
@@ -249,7 +251,7 @@ export function DesenvolvimentoClient({ cicloInicio, insights, acoes, historico,
   const completed = actionable.filter((item) => getAction(item)?.status === "concluida").length
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-4 sm:p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader title="Desenvolvimento" description="Indicadores explicáveis para orientar o acompanhamento semanal da comissão técnica." />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

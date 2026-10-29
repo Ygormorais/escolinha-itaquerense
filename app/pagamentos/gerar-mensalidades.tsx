@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { gerarMensalidadesMes } from "@/app/actions/pagamentos"
 
-/** Botão "Gerar Mensalidades" e o diálogo de confirmação do mês. */
+/** Botão "Gerar mensalidades" e o diálogo de confirmação do mês. */
 export function GerarMensalidades({ mes }: { mes: string }) {
   const router = useRouter()
   const [gerando, startGerando] = useTransition()
@@ -41,7 +41,7 @@ export function GerarMensalidades({ mes }: { mes: string }) {
         className="w-full lg:w-auto"
       >
         <PlusCircleIcon className="size-4" />
-        Gerar Mensalidades
+        Gerar mensalidades
       </Button>
 
       <Dialog
@@ -53,7 +53,7 @@ export function GerarMensalidades({ mes }: { mes: string }) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Gerar Mensalidades</DialogTitle>
+            <DialogTitle>Gerar mensalidades</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             Criar mensalidades de <strong>{mes}</strong> para todos os alunos ativos que ainda não têm registro neste mês?

@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { Metadata } from "next"
 import { ComunicadoMassa } from "@/components/whatsapp/comunicado-massa"
 import { PageHeader } from "@/components/layout/page-header"
@@ -41,7 +42,7 @@ export default async function ComunicadosPage() {
   }
 
   return (
-    <div className="space-y-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Comunicados"
         description="Abra o WhatsApp com o aviso pronto para enviar a um grupo ou lista de transmissão"

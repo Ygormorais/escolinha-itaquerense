@@ -58,7 +58,7 @@ test.describe("Agenda", () => {
     await expect(btn).toBeVisible()
     await btn.click()
     const dialog = page.getByRole("dialog")
-    await expect(dialog.getByRole("heading", { name: "Novo Evento", exact: true })).toBeVisible()
+    await expect(dialog.getByRole("heading", { name: "Novo evento", exact: true })).toBeVisible()
     await dialog.getByRole("button", { name: /Close|Fechar/i }).first().click()
     await expect(dialog).not.toBeVisible()
   })

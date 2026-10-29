@@ -89,7 +89,7 @@ export function ResumoFrequenciaClient() {
   }
 
   return (
-    <div className="space-y-4 p-6 lg:p-8">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <Label className="text-muted-foreground">Turma</Label>
@@ -112,7 +112,7 @@ export function ResumoFrequenciaClient() {
           />
         </div>
         <Button onClick={handleCarregar} disabled={loading} variant="outline" className="mt-[22px]">
-          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar Resumo"}
+          {loading ? <><Loader2 className="size-4 animate-spin" /> Carregando...</> : "Gerar resumo"}
         </Button>
         {loaded && resumo.length > 0 && (
           <Button variant="outline" onClick={() => exportarCSV(resumo, turma, mes)}>

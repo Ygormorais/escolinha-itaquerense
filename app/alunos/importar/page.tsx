@@ -1,13 +1,14 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { PageHeader } from "@/components/layout/page-header"
 import { ImportarAlunosClient } from "./importar-client"
 
-export const metadata = { title: "Importar Alunos — Escolinha Itaquerense" }
+export const metadata = { title: "Importar alunos — Escolinha Itaquerense" }
 
 export default function ImportarPage() {
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
-        title="Importar Alunos"
+        title="Importar alunos"
         description="Faça upload de um arquivo CSV para cadastrar vários alunos de uma vez"
       />
       <ImportarAlunosClient />

@@ -6,6 +6,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Download, Printer, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { gerarTokenCheckin } from "@/app/actions/frequencia-qr"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
@@ -64,9 +65,9 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6 lg:p-8">
+    <div className={`${PAGINA_ADMIN} items-center`}>
       <div className="w-full max-w-md space-y-4">
-        <h1 className="font-heading text-xl font-semibold">QR Code de Presença</h1>
+        <h1 className="font-heading text-xl font-semibold">QR code de presença</h1>
         <p className="text-sm text-muted-foreground">
           Projete o QR Code; cada aluno confirma com matrícula e data de nascimento, sem exibir a lista da turma.
         </p>

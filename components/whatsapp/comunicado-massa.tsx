@@ -36,7 +36,7 @@ export function ComunicadoMassa() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Enviar Comunicado</CardTitle>
+        <CardTitle>Enviar comunicado</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">

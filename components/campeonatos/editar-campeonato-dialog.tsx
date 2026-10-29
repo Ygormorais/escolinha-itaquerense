@@ -89,7 +89,7 @@ export function EditarCampeonatoDialog({
       <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto p-5 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Pencil className="size-4" aria-hidden="true" /> Editar Campeonato
+            <Pencil className="size-4" aria-hidden="true" /> Editar campeonato
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleEdit} className="space-y-6">

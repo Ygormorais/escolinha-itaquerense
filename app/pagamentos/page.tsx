@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { PagamentosClient } from "./pagamentos-client"
@@ -25,7 +26,7 @@ export default async function PagamentosPage({
   const config = getConfig()
 
   return (
-    <div data-page="pagamentos" className="mx-auto flex w-full max-w-[var(--content-max)] flex-col gap-6 bg-[var(--color-paper-50)]/40 p-[var(--space-page)] dark:bg-transparent">
+    <div data-page="pagamentos" className={PAGINA_ADMIN}>
       <PageHeader
         title="Pagamentos"
         description={`Controle de mensalidades — ${mes}`}

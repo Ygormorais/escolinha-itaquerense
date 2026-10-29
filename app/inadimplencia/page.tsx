@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { StatCard } from "@/components/ui/stat-card"
@@ -76,7 +77,7 @@ export default async function InadimplenciaPage() {
       : 0
 
   return (
-    <div data-page="inadimplencia" className="mx-auto flex w-full max-w-[var(--content-max)] min-w-0 flex-col gap-6 bg-[var(--color-paper-50)]/40 p-[var(--space-page)] dark:bg-transparent">
+    <div data-page="inadimplencia" className={PAGINA_ADMIN}>
       <PageHeader
         title="Inadimplência"
         description="Mensalidades vencidas e não pagas"

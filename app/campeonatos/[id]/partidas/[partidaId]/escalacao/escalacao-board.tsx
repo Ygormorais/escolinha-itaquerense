@@ -1,11 +1,12 @@
 /* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V5 · macrostructure: Control Room · theme: Escolinha Orgânico / Humano · knobs: court-first stage + unified operational rail + touch fallback · contrast: pass (40–41) · slop: pass (42–45) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50–57) */
 "use client"
 
+import { PageHeader } from "@/components/layout/page-header"
+
 import { useMemo, useState, useTransition, type ReactNode } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { ArrowLeft, Shirt, X, Save, Eraser, Wand2 } from "lucide-react"
+import { Shirt, X, Save, Eraser, Wand2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -172,19 +173,12 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
 
   return (
     <div className="flex min-w-0 flex-col gap-6" data-slot="escalacao-control-room">
-      <div className="flex min-w-0 flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
-          <Link href={`/campeonatos/${campeonatoId}`}>
-            <Button variant="outline" size="icon-lg" aria-label="Voltar ao campeonato"><ArrowLeft className="size-4" aria-hidden="true" /></Button>
-          </Link>
-          <div className="min-w-0">
-            <h1 className="min-w-0 font-heading text-2xl font-bold tracking-tight break-words sm:text-3xl">Convocação</h1>
-            <p className="mt-1 text-sm text-muted-foreground break-words">
-              Itaquerense x {partida.adversario} · Rodada {partida.rodada} · {format(new Date(partida.data), "dd/MM/yyyy")}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+      <PageHeader
+        title="Convocação"
+        back={{ href: `/campeonatos/${campeonatoId}`, label: "Voltar ao campeonato" }}
+        description={`Itaquerense x ${partida.adversario} · Rodada ${partida.rodada} · ${format(new Date(partida.data), "dd/MM/yyyy")}`}
+        action={
+          <>
           <Button variant="outline" onClick={sugerirEscalacao} disabled={salvando}>
             <Wand2 className="size-4" aria-hidden="true" /> Sugerir
           </Button>
@@ -194,8 +188,9 @@ export function EscalacaoBoard({ campeonatoId, partida, inscritos, escalacaoInic
           <Button onClick={handleSalvar} disabled={salvando}>
             <Save className="size-4" aria-hidden="true" /> {salvando ? "Salvando..." : "Salvar convocação"}
           </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         {/* Quadra */}

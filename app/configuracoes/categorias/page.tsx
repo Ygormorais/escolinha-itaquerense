@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { extrairCategorias, calcularViradas } from "@/lib/categorias"
@@ -22,7 +23,7 @@ export default async function CategoriasPage() {
   }))
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Virada de categoria"
         description={`Categorias propostas pela idade que o aluno completa em ${anoRef}`}

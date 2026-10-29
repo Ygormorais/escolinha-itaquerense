@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { ExternalLink, Loader2, Megaphone, Pause, Pencil, Play, Plus, Trash2 } from "lucide-react"
@@ -142,7 +144,7 @@ export function PublicidadeClient({ anuncios }: { anuncios: AnuncioLinha[] }) {
   }
 
   return (
-    <div className="space-y-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Publicidade"
         description="Banners de patrocinadores e da loja do clube no site público. Cada clique é contado."

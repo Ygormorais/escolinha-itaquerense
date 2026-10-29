@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
@@ -150,18 +152,18 @@ export function MidiaClient({
   }
 
   return (
-    <div className="space-y-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Mídia"
         description="Fotos e vídeos das partidas e do clube"
         action={
         <Dialog open={open} onOpenChange={setOpen}>
           <Button size="sm" onClick={() => setOpen(true)}>
-            <Plus className="size-4 mr-1" /> Nova Mídia
+            <Plus className="size-4 mr-1" /> Nova mídia
           </Button>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Adicionar Mídia</DialogTitle>
+              <DialogTitle>Adicionar mídia</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">

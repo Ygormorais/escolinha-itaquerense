@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { redirectIfNotAuthenticated } from "@/lib/auth"
 import { carregarPainelDesenvolvimento } from "@/lib/desenvolvimento-data"
 import { listarTurmasAtivasDesenvolvimento } from "@/lib/desenvolvimento-turmas"
@@ -12,4 +13,4 @@ import { RiscoParticipacao } from "@/components/desenvolvimento/risco-participac
 import { ResumoSemanalLocal } from "@/components/desenvolvimento/resumo-semanal-local"
 
 export const metadata = { title: "Inteligência local — Desenvolvimento" }
-export default async function InteligenciaDesenvolvimentoPage() { await redirectIfNotAuthenticated(["admin", "tecnico"])(); const [turmas, painel] = await Promise.all([listarTurmasAtivasDesenvolvimento(), carregarPainelDesenvolvimento()]); return <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8"><PageHeader title="Inteligência local" description="Consultas explicáveis, comparativos coletivos e sugestões sem API paga." /><ResumoSemanalLocal insights={painel.insights} acoes={painel.acoes} oportunidades={painel.oportunidades} /><RiscoParticipacao insights={painel.insights} /><BuscaOperacionalLocal /><EvolucaoColetiva turmas={turmas} /><ComparativoDesenvolvimento /><SugestoesLocaisTreino turmas={turmas} /><RelatorioGerencial turmas={turmas} /><OportunidadesPainel atletas={painel.oportunidades} /></div> }
+export default async function InteligenciaDesenvolvimentoPage() { await redirectIfNotAuthenticated(["admin", "tecnico"])(); const [turmas, painel] = await Promise.all([listarTurmasAtivasDesenvolvimento(), carregarPainelDesenvolvimento()]); return <div className={PAGINA_ADMIN}><PageHeader title="Inteligência local" description="Consultas explicáveis, comparativos coletivos e sugestões sem API paga." /><ResumoSemanalLocal insights={painel.insights} acoes={painel.acoes} oportunidades={painel.oportunidades} /><RiscoParticipacao insights={painel.insights} /><BuscaOperacionalLocal /><EvolucaoColetiva turmas={turmas} /><ComparativoDesenvolvimento /><SugestoesLocaisTreino turmas={turmas} /><RelatorioGerencial turmas={turmas} /><OportunidadesPainel atletas={painel.oportunidades} /></div> }

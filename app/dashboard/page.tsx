@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
 import { PageHeader, PageHeaderDateNav } from "@/components/layout/page-header"
@@ -219,7 +220,7 @@ export default async function DashboardPage({
     .reduce((sum, custo) => sum + custo.valor, 0)
 
   return (
-    <div data-page="dashboard" className="mx-auto flex w-full max-w-[var(--content-max)] flex-col gap-6 bg-[var(--color-paper-50)]/40 p-[var(--space-page)] dark:bg-transparent">
+    <div data-page="dashboard" className={PAGINA_ADMIN}>
       <PageHeader
         title="Dashboard"
         description={`Visão geral — ${format(dataRef, "MMMM yyyy", { locale: ptBR })}`}

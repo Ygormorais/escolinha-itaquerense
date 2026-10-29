@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState, useMemo } from "react"
 import { CalendarCheck, Download, Printer, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -140,7 +142,7 @@ export function RelatorioFrequenciaClient({
   const thClass = "cursor-pointer select-none hover:text-foreground transition-colors"
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <RelatorioNav role={role} />
       <PageHeader
         title="Relatório de Frequência"

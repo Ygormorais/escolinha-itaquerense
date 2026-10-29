@@ -1,5 +1,9 @@
 "use client"
 
+import { PageHeader } from "@/components/layout/page-header"
+
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -49,16 +53,16 @@ export function ProdutosClient({ produtos }: { produtos: Produto[] }) {
   }
 
   return (
-    <div className="space-y-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold tracking-tight flex items-center gap-2">
-          <ShoppingBag className="size-6 text-brand-600" />
-          Produtos
-        </h1>
-        <Button size="sm" onClick={openNew}>
-          <Plus className="size-4" /> Novo Produto
-        </Button>
-      </div>
+    <div className={PAGINA_ADMIN}>
+      <PageHeader
+        title="Produtos"
+        description="Uniformes e acessórios vendidos pelo clube, com preço e estoque."
+        action={
+          <Button size="sm" onClick={openNew}>
+            <Plus className="size-4" /> Novo produto
+          </Button>
+        }
+      />
 
       <ProdutoFormDialog key={sessao} open={open} onOpenChange={setOpen} produto={editando} />
 

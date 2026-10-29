@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { PageHeader } from "@/components/layout/page-header"
@@ -54,7 +55,7 @@ export default async function AgendaPage({
   }))
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Agenda"
         description="Calendário de treinos, jogos, eventos e reuniões"

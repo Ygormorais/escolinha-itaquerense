@@ -1,8 +1,9 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { StatCardSkeleton } from "@/components/ui/skeleton"
 
 export default function AlunoDetailLoading() {
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <div className="flex items-center gap-4">
         <div className="h-20 w-20 animate-pulse rounded-full bg-muted" />
         <div className="space-y-2 flex-1">

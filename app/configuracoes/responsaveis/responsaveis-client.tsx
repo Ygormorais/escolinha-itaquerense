@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -142,14 +144,14 @@ export function ResponsaveisClient({
   }
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Responsáveis"
         description="Gerencie contas de acesso dos pais/responsáveis"
         action={
         <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
           <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="size-4" /> Novo Responsável
+            <Plus className="size-4" /> Novo responsável
           </Button>
           <DialogContent>
             <DialogHeader>

@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { formatMoney } from "@/lib/utils"
 import { Inbox } from "lucide-react"
@@ -45,7 +46,7 @@ export default async function RecebimentosPage({
   const canaisOrdenados = Object.entries(porCanal).sort((a, b) => b[1].total - a[1].total)
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Recebimentos"
         description={`${pagamentos.length} recebimentos · Total: ${formatMoney(total)} · ${labelMes}`}

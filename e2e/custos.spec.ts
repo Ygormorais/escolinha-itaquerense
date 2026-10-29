@@ -121,11 +121,11 @@ test.describe("Custos — aba Recorrentes CRUD", () => {
   test("botão 'Novo Modelo' abre dialog de custo recorrente", async ({ page }) => {
     await page.goto("/custos")
     await page.getByRole("tab", { name: /Recorrentes/i }).click()
-    const btnNovo = page.getByRole("button", { name: "Novo Modelo", exact: true })
+    const btnNovo = page.getByRole("button", { name: "Novo modelo", exact: true })
     await expect(btnNovo).toBeVisible()
     await btnNovo.click()
     const dialog = page.getByRole("dialog")
-    await expect(dialog.getByRole("heading", { name: "Novo Custo Recorrente" })).toBeVisible()
+    await expect(dialog.getByRole("heading", { name: "Novo custo recorrente" })).toBeVisible()
     await dialog.getByRole("button", { name: /Cancelar|Fechar|Close/i }).first().click()
     await expect(dialog).not.toBeVisible()
   })

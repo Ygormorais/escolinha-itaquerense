@@ -86,7 +86,7 @@ function RecorrenteFormDialog({ recorrente, trigger }: { recorrente?: Recorrente
       <div onClick={() => setOpen(true)}>{trigger}</div>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{recorrente ? "Editar Recorrente" : "Novo Custo Recorrente"}</DialogTitle>
+          <DialogTitle>{recorrente ? "Editar recorrente" : "Novo custo recorrente"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -194,7 +194,7 @@ export function RecorrentesClient({ recorrentes }: { recorrentes: Recorrente[] }
           trigger={
             <Button className="bg-brand-800 text-white hover:bg-brand-900">
               <PlusIcon className="size-4" />
-              Novo Modelo
+              Novo modelo
             </Button>
           }
         />

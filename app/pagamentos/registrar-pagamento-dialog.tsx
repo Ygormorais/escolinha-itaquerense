@@ -78,7 +78,7 @@ export function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }
       </Button>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Registrar Pagamento</DialogTitle>
+          <DialogTitle>Registrar pagamento</DialogTitle>
         </DialogHeader>
         {done ? (
           <div className="flex flex-col items-center gap-4 py-4">

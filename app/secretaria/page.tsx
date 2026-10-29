@@ -1,3 +1,4 @@
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { SecretariaClient } from "./secretaria-client"
@@ -76,7 +77,7 @@ export default async function SecretariaPage() {
     .sort((a, b) => a.dataNascimento.getDate() - b.dataNascimento.getDate())
 
   return (
-    <div data-page="secretaria" className="mx-auto flex w-full max-w-[var(--content-max)] min-w-0 flex-col gap-6 bg-[var(--color-paper-50)]/40 p-[var(--space-page)] dark:bg-transparent">
+    <div data-page="secretaria" className={PAGINA_ADMIN}>
       <PageHeader
         title="Secretaria"
         description="Visão geral do dia para a secretaria"

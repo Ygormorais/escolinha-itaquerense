@@ -96,7 +96,7 @@ export function AlunoFormDialog({
       <div onClick={() => setOpen(true)}>{trigger}</div>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{aluno ? "Editar Aluno" : "Novo Aluno"}</DialogTitle>
+          <DialogTitle>{aluno ? "Editar aluno" : "Novo aluno"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -266,7 +266,7 @@ export function NovoAlunoButton() {
       trigger={
         <Button className="bg-brand-800 text-white hover:bg-brand-900">
           <PlusIcon className="size-4" />
-          Novo Aluno
+          Novo aluno
         </Button>
       }
     />

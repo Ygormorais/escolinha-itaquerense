@@ -41,7 +41,7 @@ test.describe("Fichas de Saúde (Técnico)", () => {
 
   test("link voltar para o painel técnico", async ({ page }) => {
     await page.goto("/tecnico/saude")
-    const btnVoltar = page.getByRole("link", { name: "Painel do Técnico", exact: true })
+    const btnVoltar = page.getByRole("link", { name: "Voltar ao painel do técnico", exact: true })
     await expect(btnVoltar).toBeVisible()
     await btnVoltar.click()
     await expect(page).toHaveURL("/tecnico")

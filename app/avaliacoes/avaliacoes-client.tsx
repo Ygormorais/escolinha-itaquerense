@@ -1,5 +1,7 @@
 "use client"
 
+import { PAGINA_ADMIN } from "@/components/layout/pagina"
+
 import { useState, useMemo } from "react"
 import { plural } from "@/lib/utils"
 import { PageHeader } from "@/components/layout/page-header"
@@ -67,7 +69,7 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
   }
 
   return (
-    <div className="flex flex-col gap-6 bg-[var(--color-paper-50)]/40 p-6 lg:p-8 dark:bg-transparent">
+    <div className={PAGINA_ADMIN}>
       <PageHeader
         title="Avaliações"
         description={plural(listaFiltrada.length, "avaliação registrada", "avaliações registradas", "nenhuma")}
