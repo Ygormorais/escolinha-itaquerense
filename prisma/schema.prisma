@@ -30,6 +30,7 @@ model Aluno {
   contatoEmergenciaTel      String?
   contatoEmergenciaParentesco String?
   pagamentos     Pagamento[]
+  recibos        Recibo[]
   frequencias    Frequencia[]
   uniformes      Uniforme[]
   whatsapp       WhatsAppMensagem[]
@@ -66,8 +67,11 @@ model Pagamento {
   dataPagamento  DateTime?
   formaPagamento String?
   valorRecebido  Float?
+  /// Valor da mensalidade (mensalidade − desconto do aluno) quando foi gerada.
+  valorDevido    Float?
   observacoes    String?
   transacoes     TransacaoMaquina[]
+  recibos        Recibo[]
   canalPrevisto  String?
   statusCobranca String?
   externalId     String?
@@ -236,7 +240,15 @@ model Recibo {
   emitidoPor     String?
   canceladoAt    DateTime?
   canceladoPor   String?
+  /// Baixa que gerou o recibo (null em recibo avulso ou se o pagamento foi excluído).
+  pagamentoId    Int?
+  pagamento      Pagamento? @relation(fields: [pagamentoId], references: [id], onDelete: SetNull)
+  alunoId        Int?
+  aluno          Aluno?     @relation(fields: [alunoId], references: [id], onDelete: SetNull)
   createdAt      DateTime @default(now())
+
+  @@index([pagamentoId])
+  @@index([alunoId])
 }
 
 model Campeonato {
