@@ -44,10 +44,13 @@ describe("navSectionsFor", () => {
     expect(alunos.children.find((c) => c.href === "/configuracoes/matriculas")?.badge).toBe(3)
   })
 
-  it("Pendências e Secretaria não estão no menu", () => {
-    const hrefs = navSectionsFor("admin").flatMap((s) => [s.href, ...s.children.map((c) => c.href)])
-    expect(hrefs).not.toContain("/pendencias")
-    expect(hrefs).not.toContain("/secretaria")
+  it("Pendências e Secretaria continuam alcançáveis, como sub-itens do Início", () => {
+    for (const role of ["admin", "secretaria", "tecnico"] as const) {
+      const inicio = navSectionsFor(role).find((s) => s.label === "Início")!
+      expect(inicio.children.map((c) => c.href)).toContain("/pendencias")
+    }
+    const inicioSec = navSectionsFor("secretaria").find((s) => s.label === "Início")!
+    expect(inicioSec.children.map((c) => c.href)).toContain("/secretaria")
   })
 })
 

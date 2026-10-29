@@ -6,9 +6,11 @@ test.describe("Alerta de frequência — dashboard", () => {
     await loginAsAdmin(page)
   })
 
-  test("dashboard exibe StatCard 'Frequência em queda'", async ({ page }) => {
+  test("Início mostra a presença média do mês", async ({ page }) => {
+    // O cartão 'Frequência em queda' saiu do Início; quem cai abaixo de 60% com atraso
+    // aparece em "Precisa de você".
     await page.goto("/dashboard")
-    await expect(page.getByText("Frequência em queda").first()).toBeVisible({ timeout: 8000 })
+    await expect(page.getByText("Presença média", { exact: true })).toBeVisible({ timeout: 8000 })
   })
 })
 

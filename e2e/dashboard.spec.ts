@@ -26,7 +26,7 @@ test.describe("Início", () => {
 
   test("mensalidades vencidas levam à inadimplência", async ({ page }) => {
     await page.goto("/dashboard")
-    await page.locator('[data-slot="precisa-de-voce"]').getByRole("link", { name: /mensalidades vencidas/ }).first().click()
+    await page.locator('[data-slot="precisa-de-voce"]').getByRole("link", { name: /mensalidades vencidas/i }).first().click()
     await expect(page).toHaveURL(/\/inadimplencia/)
   })
 

@@ -4,13 +4,8 @@ import type { PendenciaGrupo } from "@/lib/pendencias-data"
 
 type ValorAluno = { mensalidade: number; desconto: number }
 
-function valorDevido({ mensalidade, desconto }: ValorAluno): number {
+export function valorDevido({ mensalidade, desconto }: ValorAluno): number {
   return Math.max(0, mensalidade - desconto)
-}
-
-/** Previsto do mês: soma do que cada aluno ativo paga (mensalidade − desconto). */
-export function previstoDoMes(alunos: ValorAluno[]): number {
-  return alunos.reduce((total, aluno) => total + valorDevido(aluno), 0)
 }
 
 /** Mensalidades vencidas e não pagas — mesma regra da tela de Inadimplência. */
@@ -26,7 +21,26 @@ export function resumoAtraso(vencidas: (ValorAluno & { alunoId: number })[]): {
   }
 }
 
-export type AcaoInicio = { texto: string; href: string; quantidade: number; prioridade: "alta" | "normal" }
+/** Total em aberto da tela de Inadimplência — mesma conta do "Em atraso" do Início. */
+export function valorTotalEmAberto(alunos: (ValorAluno & { pagamentos: unknown[] })[]): number {
+  return alunos.reduce((total, aluno) => total + valorDevido(aluno) * aluno.pagamentos.length, 0)
+}
+
+export type AcaoInicio = {
+  /** Agrupa e ordena: "atraso", "vencendo", "prematriculas", "solicitacoes" ou o título do grupo. */
+  chave: string
+  texto: string
+  href: string
+  quantidade: number
+  prioridade: "alta" | "normal"
+}
+
+const ORDEM_FIXA = ["atraso", "vencendo", "prematriculas", "solicitacoes"]
+
+const CHAVE_DO_GRUPO: Record<string, string> = {
+  "Mensalidades vencidas": "atraso",
+  "Solicitações": "solicitacoes",
+}
 
 const LIMITE_ACOES = 5
 
@@ -38,18 +52,29 @@ function telaDaArea(href: string): string {
   return `/${partes.join("/")}`
 }
 
-/** "Precisa de você": uma ação por grupo de pendências, as mais urgentes primeiro. */
-export function acoesDoInicio(grupos: PendenciaGrupo[]): { acoes: AcaoInicio[]; total: number } {
-  const acoes: AcaoInicio[] = grupos
+/**
+ * "Precisa de você": uma ação por grupo de pendências mais os alertas do Início.
+ * Ordem: atraso, vencendo, pré-matrículas, solicitações; depois urgência e quantidade.
+ */
+export function acoesDoInicio(grupos: PendenciaGrupo[], alertas: AcaoInicio[] = []): { acoes: AcaoInicio[]; total: number } {
+  const daPendencia: AcaoInicio[] = grupos
     .filter((g) => g.itens.length > 0)
     .map((g) => ({
-      texto: `${g.itens.length} ${g.titulo.toLowerCase()}`,
+      chave: CHAVE_DO_GRUPO[g.titulo] ?? g.titulo,
+      texto: `${g.titulo} · ${g.itens.length}`,
       href: g.titulo === "Mensalidades vencidas" ? "/inadimplencia" : telaDaArea(g.itens[0].href),
       quantidade: g.itens.length,
       prioridade: g.itens.some((i) => i.prioridade === "alta") ? "alta" : "normal",
     }))
+  const acoes = [...daPendencia, ...alertas.filter((a) => a.quantidade > 0)]
+  const posicao = (a: AcaoInicio) => {
+    const i = ORDEM_FIXA.indexOf(a.chave)
+    return i === -1 ? ORDEM_FIXA.length : i
+  }
   acoes.sort((a, b) =>
-    a.prioridade === b.prioridade ? b.quantidade - a.quantidade : a.prioridade === "alta" ? -1 : 1,
+    posicao(a) - posicao(b) ||
+    (a.prioridade === b.prioridade ? 0 : a.prioridade === "alta" ? -1 : 1) ||
+    b.quantidade - a.quantidade,
   )
   return { acoes: acoes.slice(0, LIMITE_ACOES), total: acoes.length }
 }

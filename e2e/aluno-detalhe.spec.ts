@@ -33,8 +33,13 @@ test.describe("Detalhe do Aluno", () => {
     await link.click()
 
     // a página de detalhe é scroll único com seções (sem tabs desde o redesign)
-    await expect(page.getByText("Financeiro", { exact: true }).first()).toBeVisible()
-    await expect(page.getByText(/Adimplência/i).first()).toBeVisible()
+    // "Financeiro" também é seção do menu; procura só no conteúdo da página. O gráfico de
+    // adimplência só aparece com pagamentos (este aluno não tem); antes o teste passava
+    // achando "Inadimplência" no menu antigo.
+    const main = page.locator("main")
+    await expect(main.getByText("Financeiro", { exact: true }).first()).toBeVisible()
+    await expect(main.getByText("Pendências", { exact: true }).first()).toBeVisible()
+    await expect(main.getByText("Total Pago", { exact: true }).first()).toBeVisible()
   })
 })
 

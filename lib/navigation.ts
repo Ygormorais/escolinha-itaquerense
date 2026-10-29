@@ -50,7 +50,13 @@ export type NavSection = {
 
 /** Menu do admin: 10 seções por tarefa; sub-itens aparecem dentro da seção ativa. */
 export const NAV_SECTIONS: NavSection[] = [
-  { href: "/dashboard", label: "Início", icon: Home, children: [] },
+  {
+    href: "/dashboard", label: "Início", icon: Home,
+    children: [
+      { href: "/pendencias", label: "Pendências", icon: AlertTriangle },
+      { href: "/secretaria", label: "Painel da secretaria", icon: ClipboardList },
+    ],
+  },
   {
     href: "/pagamentos", label: "Pagamentos", icon: CreditCard, badgeKey: "atraso",
     children: [{ href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle }],

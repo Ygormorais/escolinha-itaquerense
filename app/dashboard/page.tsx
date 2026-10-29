@@ -1,4 +1,4 @@
-import { endOfMonth, startOfMonth, subMonths, format } from "date-fns"
+import { addDays, endOfMonth, startOfMonth, subMonths, format } from "date-fns"
 import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { PageHeader, PageHeaderDateNav } from "@/components/layout/page-header"
 import { MonthPicker } from "@/app/caixa/month-picker"
@@ -8,9 +8,9 @@ import { GraficoRecebidoPrevisto } from "@/components/inicio/grafico-recebido-pr
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { normalizeDashboardMonth } from "@/lib/dashboard-query"
-import { summarizeFrequency } from "@/lib/dashboard-metrics"
+import { alunosEmRiscoDeEvasao, summarizeFrequency } from "@/lib/dashboard-metrics"
 import { carregarPendencias } from "@/lib/pendencias-data"
-import { acoesDoInicio, previstoDoMes, resumoAtraso, serieRecebidoPrevisto } from "@/lib/inicio"
+import { acoesDoInicio, resumoAtraso, serieRecebidoPrevisto, type AcaoInicio } from "@/lib/inicio"
 import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
 import { formatMoney, plural } from "@/lib/utils"
 
@@ -34,8 +34,11 @@ export default async function DashboardPage({
   const dataRef = new Date(ano, mes - 1, 1)
   const ultimos6Meses = Array.from({ length: 6 }, (_, i) => format(subMonths(dataRef, 5 - i), "yyyy-MM"))
 
-  const [alunosAtivos, vencidas, pagamentos6Meses, frequencias, preMatriculas, pendencias] = await Promise.all([
-    db.aluno.findMany({ where: { status: "Ativo" }, select: { mensalidade: true, desconto: true } }),
+  const inicioMes = startOfMonth(dataRef)
+  const fimMes = endOfMonth(dataRef)
+
+  const [alunosAtivos, vencidas, pagamentos6Meses, frequencias, preMatriculas, pendencias, vencendoSemana, inadimplentesComFrequencia] = await Promise.all([
+    db.aluno.count({ where: { status: "Ativo" } }),
     verDinheiro
       ? db.pagamento.findMany({
           // Mesma regra da tela de Inadimplência.
@@ -51,14 +54,28 @@ export default async function DashboardPage({
       : Promise.resolve([]),
     db.frequencia.groupBy({
       by: ["presenca"],
-      where: { data: { gte: startOfMonth(dataRef), lte: endOfMonth(dataRef) } },
+      where: { data: { gte: inicioMes, lte: fimMes } },
       _count: { _all: true },
     }),
     db.preMatricula.count({ where: { status: "pendente" } }),
     carregarPendencias(role, user),
+    verDinheiro
+      ? db.pagamento.count({ where: { dataPagamento: null, dataVencimento: { gte: now, lte: addDays(now, 7) }, aluno: { status: "Ativo" } } })
+      : Promise.resolve(0),
+    verDinheiro
+      ? db.aluno.findMany({
+          where: { status: "Ativo", pagamentos: { some: { dataPagamento: null, dataVencimento: { lt: now } } } },
+          select: {
+            id: true,
+            nome: true,
+            turma: true,
+            frequencias: { where: { data: { gte: inicioMes, lte: fimMes } }, select: { presenca: true } },
+            pagamentos: { where: { dataPagamento: null, dataVencimento: { lt: now } }, select: { id: true } },
+          },
+        })
+      : Promise.resolve([]),
   ])
 
-  const previsto = previstoDoMes(alunosAtivos)
   const atraso = resumoAtraso(vencidas.map((v) => ({ alunoId: v.alunoId, ...v.aluno })))
   const serie = serieRecebidoPrevisto(
     ultimos6Meses,
@@ -68,9 +85,16 @@ export default async function DashboardPage({
       previsto: Math.max(0, p.aluno.mensalidade - p.aluno.desconto),
     })),
   )
-  const recebidoNoMes = serie[serie.length - 1]?.recebido ?? 0
+  // Recebido e previsto na mesma base do gráfico: mensalidades geradas para o mês.
+  const doMes = serie[serie.length - 1] ?? { recebido: 0, previsto: 0 }
   const presenca = summarizeFrequency(frequencias)
-  const { acoes, total } = acoesDoInicio(pendencias)
+  const riscoEvasao = alunosEmRiscoDeEvasao(inadimplentesComFrequencia).length
+  const alertas: AcaoInicio[] = [
+    { chave: "vencendo", texto: `Vencem nos próximos 7 dias · ${vencendoSemana}`, href: "/pagamentos", quantidade: vencendoSemana, prioridade: "normal" },
+    { chave: "prematriculas", texto: `Pré-matrículas aguardando · ${preMatriculas}`, href: "/configuracoes/matriculas", quantidade: canAccessStaffPath("/configuracoes/matriculas", role) ? preMatriculas : 0, prioridade: "normal" },
+    { chave: "risco", texto: `Em atraso e com pouca presença · ${riscoEvasao}`, href: "/inadimplencia", quantidade: riscoEvasao, prioridade: "alta" },
+  ]
+  const { acoes, total } = acoesDoInicio(pendencias, alertas)
 
   return (
     <div data-page="dashboard" className={PAGINA_ADMIN}>
@@ -83,8 +107,8 @@ export default async function DashboardPage({
         {verDinheiro && (
           <NumeroInicio
             rotulo="Recebido no mês"
-            valor={formatMoney(recebidoNoMes)}
-            detalhe={`de ${formatMoney(previsto)} previstos`}
+            valor={formatMoney(doMes.recebido)}
+            detalhe={`de ${formatMoney(doMes.previsto)} previstos`}
             href="/pagamentos"
           />
         )}
@@ -101,8 +125,7 @@ export default async function DashboardPage({
         )}
         <NumeroInicio
           rotulo="Alunos ativos"
-          valor={String(alunosAtivos.length)}
-          detalhe={preMatriculas > 0 ? `${plural(preMatriculas, "pré-matrícula nova", "pré-matrículas novas")}` : undefined}
+          valor={String(alunosAtivos)}
           href="/alunos"
         />
         <NumeroInicio
