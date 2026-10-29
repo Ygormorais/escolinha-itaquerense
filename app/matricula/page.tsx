@@ -1,7 +1,6 @@
 import Link from "next/link"
-import { publicFontClass } from "@/lib/public-fonts"
-import { pubBase, PUB_HDR_CSS } from "@/lib/public-css"
-import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
+import { Check } from "lucide-react"
+import { PaginaPublica } from "@/components/site/pagina-publica"
 import { getConfig } from "@/lib/config"
 import { MatriculaForm } from "./matricula-form"
 
@@ -12,76 +11,58 @@ export const metadata = {
 }
 
 const css = `
-  ${pubBase("mat")}
-  ${PUB_HDR_CSS}
-  .mat .pub-hdr .inner{max-width:740px}
+  /* ── GARANTIAS (faixa de título) ── */
+  .mat .mat-trust{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:20px}
+  .mat .mat-trust-item{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:rgba(255,255,255,.9)}
+  .mat .mat-trust-item svg{flex-shrink:0;color:#fff}
 
-  /* ── HERO ── */
-  .mat-hero{
-    background:linear-gradient(135deg,var(--brand-950) 0%,var(--brand-600) 55%,var(--brand-800) 100%);
-    color:#fff;padding:60px 24px 52px;position:relative;overflow:hidden
-  }
-  .mat-hero::before{
-    content:'';position:absolute;inset:0;pointer-events:none;opacity:.06;
-    background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3Cline x1='0' y1='30' x2='60' y2='30'/%3E%3Cline x1='30' y1='0' x2='30' y2='60'/%3E%3C/g%3E%3C/svg%3E");
-    background-size:60px 60px
-  }
-  .mat-hero .inner{max-width:740px;margin:0 auto;position:relative;z-index:1}
-  .mat-season{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:5px 14px;margin-bottom:20px;backdrop-filter:blur(4px)}
-  .mat-hero h1{font-family:var(--font-heading),Georgia,serif;font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-1.5px;color:#fff;margin-bottom:12px;line-height:1.05}
-  .mat-hero p{font-size:clamp(15px,2.2vw,16px);color:rgba(255,255,255,.82);line-height:1.65;max-width:560px;margin-bottom:32px}
-  .mat-trust{display:flex;flex-wrap:wrap;gap:22px}
-  .mat-trust-item{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,.9)}
-  .mat-trust-item::before{content:'';display:inline-block;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);flex-shrink:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");background-size:12px;background-repeat:no-repeat;background-position:center}
-
-  /* ── BODY ── */
-  .mat-body{max-width:740px;margin:0 auto;padding:40px 24px 80px}
-  .mat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg,20px);padding:48px;box-shadow:var(--shadow-md)}
+  /* ── FORMULÁRIO ── */
+  .mat .mat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:48px}
 
   /* ── FORM HEADER ── */
-  .mat-form-hdr{margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--border)}
-  .mat-form-title{font-family:var(--font-heading),Georgia,serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
-  .mat-form-sub{font-size:13px;color:var(--text-muted)}
+  .mat .mat-form-hdr{margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+  .mat .mat-form-title{font-family:var(--font-heading),Georgia,serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
+  .mat .mat-form-sub{font-size:13px;color:var(--text-muted)}
 
   /* ── SECTION HEADERS ── */
-  .mat-sec{margin-bottom:28px}
-  .mat-sec + .mat-sec{margin-top:36px;padding-top:36px;border-top:1px solid var(--border)}
-  .mat-sec-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
-  .mat-sec-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand-600),var(--brand-800));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 4px 12px color-mix(in srgb, var(--brand-600) 30%, transparent)}
-  .mat-sec-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .mat-sec-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.2px}
-  .mat-sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+  .mat .mat-sec{margin-bottom:28px}
+  .mat .mat-sec + .mat-sec{margin-top:36px;padding-top:36px;border-top:1px solid var(--border)}
+  .mat .mat-sec-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .mat .mat-sec-icon{width:36px;height:36px;border-radius:10px;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+  .mat .mat-sec-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .mat .mat-sec-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.2px}
+  .mat .mat-sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
 
   /* ── FIELD GROUP ── */
-  .mat-field{display:flex;flex-direction:column;gap:6px}
-  .mat-field label{font-size:13px;font-weight:600;color:var(--text-muted);letter-spacing:.2px}
-  .mat-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .mat-fields{display:flex;flex-direction:column;gap:18px}
+  .mat .mat-field{display:flex;flex-direction:column;gap:6px}
+  .mat .mat-field label{font-size:13px;font-weight:600;color:var(--text-muted);letter-spacing:.2px}
+  .mat .mat-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .mat .mat-fields{display:flex;flex-direction:column;gap:18px}
 
   /* ── INPUTS (tokens — dark mode amigável) ── */
-  .mat-input{
+  .mat .mat-input{
     width:100%;height:48px;padding:0 14px;
     border:1.5px solid var(--border-strong,#E0D9D0);border-radius:var(--radius-sm,10px);
     background:var(--bg-muted,#FAFAF8);color:var(--text);
     font-family:var(--font-body),Arial,sans-serif;font-size:15px;
     transition:border-color .2s,box-shadow .2s,background .2s;outline:none;display:block
   }
-  .mat-input::placeholder{color:var(--text-light,#B0A9A2)}
-  .mat-input:hover{border-color:var(--text-light,#C4B9B0)}
-  .mat-input:focus{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb, var(--brand-600) 12%, transparent);background:var(--bg-card,#fff)}
-  .mat-textarea{
+  .mat .mat-input::placeholder{color:var(--text-light,#B0A9A2)}
+  .mat .mat-input:hover{border-color:var(--text-light,#C4B9B0)}
+  .mat .mat-input:focus{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb, var(--brand-600) 12%, transparent);background:var(--bg-card,#fff)}
+  .mat .mat-textarea{
     width:100%;padding:12px 14px;min-height:96px;resize:vertical;
     border:1.5px solid var(--border-strong,#E0D9D0);border-radius:var(--radius-sm,10px);
     background:var(--bg-muted,#FAFAF8);color:var(--text);
     font-family:var(--font-body),Arial,sans-serif;font-size:15px;line-height:1.55;
     transition:border-color .2s,box-shadow .2s,background .2s;outline:none;display:block
   }
-  .mat-textarea::placeholder{color:var(--text-light,#B0A9A2)}
-  .mat-textarea:hover{border-color:var(--text-light,#C4B9B0)}
-  .mat-textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb, var(--brand-600) 12%, transparent);background:var(--bg-card,#fff)}
-  .mat-input-wrap{position:relative}
-  .mat-input-wrap .mat-input{padding-left:40px}
-  .mat-input-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-light,#B0A9A2);pointer-events:none}
+  .mat .mat-textarea::placeholder{color:var(--text-light,#B0A9A2)}
+  .mat .mat-textarea:hover{border-color:var(--text-light,#C4B9B0)}
+  .mat .mat-textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb, var(--brand-600) 12%, transparent);background:var(--bg-card,#fff)}
+  .mat .mat-input-wrap{position:relative}
+  .mat .mat-input-wrap .mat-input{padding-left:40px}
+  .mat .mat-input-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-light,#B0A9A2);pointer-events:none}
 
   /* ── SELECT OVERRIDE ── */
   .mat [role=combobox]{
@@ -95,69 +76,57 @@ const css = `
   .mat [role=combobox]:focus{border-color:var(--red) !important;box-shadow:0 0 0 3px color-mix(in srgb, var(--brand-600) 12%, transparent) !important;background:var(--bg-card,#fff) !important}
 
   /* ── UPLOAD ── */
-  .mat-upload{margin-top:4px;border:2px dashed var(--border-strong,#DDD6CE);border-radius:var(--radius-md,14px);padding:36px 24px;text-align:center;cursor:pointer;background:var(--bg-muted,#FAFAF8);transition:all .2s;display:block}
-  .mat-upload:hover{border-color:var(--red);background:color-mix(in srgb, var(--brand-600) 6%, transparent)}
-  .mat-upload.uploading{opacity:.6;cursor:not-allowed}
-  .mat-upload-icon{font-size:28px;margin-bottom:10px}
-  .mat-upload-main{font-size:14px;font-weight:700;color:var(--red);margin-bottom:4px}
-  .mat-upload-sub{font-size:12px;color:var(--text-muted)}
-  .mat-docs{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-  .mat-doc{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm,10px);background:var(--bg-muted,#FAFAF8);font-size:13px;color:var(--text-muted)}
+  .mat .mat-upload{margin-top:4px;border:2px dashed var(--border-strong,#DDD6CE);border-radius:var(--radius-md,14px);padding:36px 24px;text-align:center;cursor:pointer;background:var(--bg-muted,#FAFAF8);transition:all .2s;display:block}
+  .mat .mat-upload:hover{border-color:var(--red);background:color-mix(in srgb, var(--brand-600) 6%, transparent)}
+  .mat .mat-upload.uploading{opacity:.6;cursor:not-allowed}
+  .mat .mat-upload-icon{font-size:28px;margin-bottom:10px}
+  .mat .mat-upload-main{font-size:14px;font-weight:700;color:var(--red);margin-bottom:4px}
+  .mat .mat-upload-sub{font-size:12px;color:var(--text-muted)}
+  .mat .mat-docs{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .mat .mat-doc{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm,10px);background:var(--bg-muted,#FAFAF8);font-size:13px;color:var(--text-muted)}
 
   /* ── SUBMIT ── */
-  .mat-submit{
+  .mat .mat-submit{
     width:100%;margin-top:8px;
-    background:linear-gradient(135deg,var(--brand-600) 0%,var(--brand-800) 100%);
-    color:#fff;border:none;border-radius:12px;height:54px;
-    font-family:var(--font-body),Arial,sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;
-    cursor:pointer;transition:all .25s;box-shadow:0 4px 18px color-mix(in srgb, var(--brand-600) 38%, transparent);
+    background:var(--red);
+    color:#fff;border:none;border-radius:var(--radius-pill);height:54px;
+    font-family:var(--font-body),Arial,sans-serif;font-size:16px;font-weight:700;
+    cursor:pointer;transition:background .2s;
     display:flex;align-items:center;justify-content:center;gap:10px
   }
-  .mat-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px color-mix(in srgb, var(--brand-600) 48%, transparent)}
-  .mat-submit:active:not(:disabled){transform:translateY(0)}
-  .mat-submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
+  .mat .mat-submit:hover:not(:disabled){background:var(--red-dark)}
+  .mat .mat-submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
 
   /* ── SUCCESS STATE ── */
-  .mat-success{text-align:center;padding:56px 24px}
-  .mat-success-icon{
+  .mat .mat-success{text-align:center;padding:56px 24px}
+  .mat .mat-success-icon{
     width:84px;height:84px;border-radius:50%;margin:0 auto 24px;
-    background:linear-gradient(135deg,#22c55e,#16a34a);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 8px 28px rgba(34,197,94,.3)
+    background:var(--success-600);
+    display:flex;align-items:center;justify-content:center
   }
-  .mat-success-icon svg{width:40px;height:40px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-  .mat-success h2{font-family:var(--font-heading),Georgia,serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:10px}
-  .mat-success p{font-size:15px;color:var(--text-muted);line-height:1.65;max-width:400px;margin:0 auto 24px}
-  .mat-success-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-  .mat-success-actions a{
+  .mat .mat-success-icon svg{width:40px;height:40px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+  .mat .mat-success h2{font-family:var(--font-heading),Georgia,serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:10px}
+  .mat .mat-success p{font-size:15px;color:var(--text-muted);line-height:1.65;max-width:400px;margin:0 auto 24px}
+  .mat .mat-success-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .mat .mat-success-actions a{
     display:inline-flex;align-items:center;justify-content:center;gap:6px;
-    min-height:44px;padding:10px 18px;border-radius:var(--radius-sm,10px);
-    font-size:14px;font-weight:700;text-decoration:none;transition:transform .15s,box-shadow .15s
+    min-height:44px;padding:10px 18px;border-radius:var(--radius-pill);
+    font-size:14px;font-weight:700;text-decoration:none;transition:background .15s,border-color .15s,color .15s
   }
-  .mat-success-primary{background:var(--red);color:#fff;box-shadow:0 4px 14px color-mix(in srgb, var(--brand-600) 30%, transparent)}
-  .mat-success-primary:hover{transform:translateY(-1px)}
-  .mat-success-secondary{border:1.5px solid var(--border);color:var(--text);background:var(--bg-elevated,var(--paper-raised))}
-  .mat-success-secondary:hover{border-color:var(--red);color:var(--red)}
-  .mat-hint{font-size:12px;color:var(--text-muted);margin-top:8px;line-height:1.5}
-  .mat-hint a{color:var(--red);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-
-  /* ── FOOTER ── */
-  .mat-foot{border-top:1px solid var(--border);padding:24px}
-  .mat-foot .inner{max-width:740px;margin:0 auto;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
-  .mat-foot a{font-size:13px;font-weight:600;color:var(--red);opacity:.8;transition:opacity .2s}
-  .mat-foot a:hover{opacity:1}
+  .mat .mat-success-primary{background:var(--red);color:#fff}
+  .mat .mat-success-primary:hover{background:var(--red-dark)}
+  .mat .mat-success-secondary{border:1.5px solid var(--border);color:var(--text);background:var(--bg-elevated,var(--paper-raised))}
+  .mat .mat-success-secondary:hover{border-color:var(--red);color:var(--red)}
+  .mat .mat-hint{font-size:12px;color:var(--text-muted);margin-top:8px;line-height:1.5}
+  .mat .mat-hint a{color:var(--red);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 
   @media(max-width:640px){
-    .mat-hero{padding:44px 20px 40px}
-    .mat-body{padding:28px 16px 60px}
-    .mat-card{padding:24px 16px}
-    .mat-row{grid-template-columns:1fr}
-    .mat-trust{gap:14px}
-    .mat-upload{padding:28px 16px}
+    .mat .mat-card{padding:24px 16px}
+    .mat .mat-row{grid-template-columns:1fr}
+    .mat .mat-upload{padding:28px 16px}
   }
   @media(prefers-reduced-motion:reduce){
-    .mat-submit,.mat-success-actions a{transition:none}
-    .mat-submit:hover:not(:disabled),.mat-success-primary:hover{transform:none}
+    .mat .mat-submit,.mat .mat-success-actions a{transition:none}
   }
 `
 
@@ -178,28 +147,23 @@ export default async function MatriculaPage() {
       : null
 
   return (
-    <div className={`mat ${publicFontClass}`}>
+    <PaginaPublica
+      titulo="Pré-matrícula"
+      descricao="Reserve a vaga do seu filho na escolinha. Em até 48h a equipe confirma a vaga e explica mensalidade, horários e documentos."
+      largura="leitura"
+      className="mat"
+      complemento={
+        <ul className="mat-trust">
+          {TRUST.map((t) => (
+            <li key={t} className="mat-trust-item">
+              <Check size={16} strokeWidth={2.5} aria-hidden />
+              {t}
+            </li>
+          ))}
+        </ul>
+      }
+    >
       <style dangerouslySetInnerHTML={{ __html: css }} />
-
-      <SiteTopo />
-
-      <div className="mat-hero">
-        <div className="inner">
-          <div className="mat-season">Temporada 2026 · Futsal de base</div>
-          <h1>Pré-Matrícula</h1>
-          <p>
-            Reserve o interesse do seu filho na escolinha alvirrubra. Preencha o formulário —
-            em até 48h a equipe confirma a vaga e explica mensalidade, horários e documentos.
-          </p>
-          <div className="mat-trust">
-            {TRUST.map((t) => (
-              <span key={t} className="mat-trust-item">{t}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mat-body">
         <div className="mat-card">
           <div className="mat-form-hdr">
             <div className="mat-form-title">Dados para a inscrição</div>
@@ -213,9 +177,6 @@ export default async function MatriculaPage() {
           </div>
           <MatriculaForm whatsappUrl={whatsappUrl} />
         </div>
-      </div>
-
-      <SiteRodape />
-    </div>
+    </PaginaPublica>
   )
 }

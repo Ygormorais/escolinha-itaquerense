@@ -3,9 +3,7 @@ import Link from "next/link"
 import { db } from "@/lib/db"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { publicFontClass } from "@/lib/public-fonts"
-import { pubBase, PUB_HDR_CSS, PUB_FOOT_CSS } from "@/lib/public-css"
-import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
+import { PaginaPublica } from "@/components/site/pagina-publica"
 
 export const metadata = { title: "Notícias — E.C. Itaquerense" }
 
@@ -19,41 +17,14 @@ const CORES: Record<string, string> = {
 }
 
 const css = `
-  ${pubBase("np")}
-  ${PUB_HDR_CSS}
-  ${PUB_FOOT_CSS}
-
-  /* HERO */
-  .np .hero{background:linear-gradient(135deg,var(--red-deep) 0%,var(--red) 55%,var(--red-dark) 100%);
-    color:#fff;padding:72px 0 80px;position:relative;overflow:hidden}
-  .np .hero::before{content:'';position:absolute;inset:0;
-    background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,.06)' stroke-width='1'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3Cline x1='0' y1='30' x2='60' y2='30'/%3E%3Cline x1='30' y1='0' x2='30' y2='60'/%3E%3C/g%3E%3C/svg%3E");
-    background-size:60px 60px}
-  .np .hero-inner{position:relative;z-index:1}
-  .np .hero-badge{display:inline-flex;align-items:center;gap:7px;
-    background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:700;
-    letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;
-    border:1px solid rgba(255,255,255,.3);margin-bottom:20px}
-  .np .hero h1{font-family:var(--font-heading),Georgia,serif;font-size:52px;font-weight:800;
-    line-height:1.05;letter-spacing:-1px;margin-bottom:12px}
-  .np .hero p{font-size:17px;opacity:.88;max-width:480px;line-height:1.65}
-  @media(max-width:600px){
-    .np .hero{padding:52px 0 60px}
-    .np .hero h1{font-size:34px;letter-spacing:-.5px}
-  }
-
   /* GRID */
-  .np .container{max-width:1060px;margin:0 auto;padding:0 24px}
-  .np .section{padding:56px 0 80px}
   .np .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
   @media(max-width:900px){.np .grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.np .grid{grid-template-columns:1fr}}
 
   /* CARD */
-  .np .card{border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);
-    border:1px solid var(--border);box-shadow:var(--shadow-sm);
-    transition:transform .25s,box-shadow .25s;display:flex;flex-direction:column}
-  .np .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+  .np .card{border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-card);
+    border:1px solid var(--border);display:flex;flex-direction:column}
   .np .card-img{position:relative;height:180px;flex-shrink:0}
   .np .card-img img{width:100%;height:100%;object-fit:cover}
   .np .card-img-grad{position:absolute;inset:0}
@@ -62,30 +33,17 @@ const css = `
     background-size:40px 40px}
   .np .card-logo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
   .np .card-logo img{width:52px;height:52px;object-fit:contain;opacity:.18}
-  .np .card-badge{position:absolute;top:14px;left:14px;
-    background:rgba(255,255,255,.15);color:#fff;font-size:10px;font-weight:700;
-    letter-spacing:1px;text-transform:uppercase;padding:4px 10px;
-    border-radius:100px;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px)}
+  .np .card-badge{position:absolute;top:12px;left:12px;
+    background:color-mix(in srgb, var(--ink-950) 72%, transparent);color:#fff;font-size:12px;font-weight:700;
+    padding:4px 10px;border-radius:var(--radius-pill);backdrop-filter:blur(6px)}
   .np .card-body{padding:20px 22px 22px;flex:1;display:flex;flex-direction:column;gap:10px}
   .np .card-titulo{font-family:var(--font-heading),Georgia,serif;font-size:17px;font-weight:800;
     color:var(--text);line-height:1.25;letter-spacing:-.2px;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .np .card-sub{font-size:13px;color:var(--text-muted);line-height:1.55;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
-  .np .card-date{font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:.3px}
+  .np .card-date{font-size:13px;color:var(--text-muted)}
 
-  /* EMPTY */
-  .np .empty{text-align:center;padding:80px 24px}
-  .np .empty-icon{width:80px;height:80px;border-radius:20px;
-    background:color-mix(in srgb, var(--brand-600) 8%, transparent);display:flex;align-items:center;justify-content:center;
-    margin:0 auto 24px;font-size:36px}
-  .np .empty h2{font-family:var(--font-heading),Georgia,serif;font-size:24px;font-weight:800;
-    color:var(--text);margin-bottom:8px}
-  .np .empty p{font-size:14px;color:var(--text-muted);max-width:400px;margin:0 auto 28px;line-height:1.65}
-  .np .empty-btn{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;
-    font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.7px;
-    padding:13px 28px;border-radius:100px;transition:background .2s,transform .2s}
-  .np .empty-btn:hover{background:var(--red-dark);transform:translateY(-1px)}
 `
 
 export default async function NoticiasPublicoPage() {
@@ -96,27 +54,17 @@ export default async function NoticiasPublicoPage() {
   })
 
   return (
-    <div className={`${publicFontClass} np`}>
+    <PaginaPublica
+      titulo="Notícias"
+      descricao="Resultados, convocações, eventos e comunicados do E.C. Itaquerense."
+      className="np"
+    >
       <style dangerouslySetInnerHTML={{ __html: css }} />
-
-      <SiteTopo />
-
-      <div className="hero">
-        <div className="container hero-inner">
-          <div className="hero-badge">📰 Clube</div>
-          <h1>Notícias do Clube</h1>
-          <p>Fique por dentro de tudo que acontece no E.C. Itaquerense — resultados, convocações, eventos e muito mais.</p>
-        </div>
-      </div>
-
-      <section className="section">
-        <div className="container">
           {noticias.length === 0 ? (
-            <div className="empty">
-              <div className="empty-icon">📰</div>
+            <div className="pg-vazio">
               <h2>Nenhuma publicação ainda</h2>
-              <p>Em breve o clube vai publicar notícias, resultados e comunicados aqui. Volte em breve!</p>
-              <Link href="/partidas" className="empty-btn">Ver resultados dos jogos</Link>
+              <p>As notícias, convocações e comunicados do clube aparecem aqui assim que forem publicados.</p>
+              <Link href="/partidas" className="pg-btn pg-btn-primario">Ver as partidas</Link>
             </div>
           ) : (
             <div className="grid">
@@ -148,10 +96,6 @@ export default async function NoticiasPublicoPage() {
               })}
             </div>
           )}
-        </div>
-      </section>
-
-      <SiteRodape />
-    </div>
+    </PaginaPublica>
   )
 }
