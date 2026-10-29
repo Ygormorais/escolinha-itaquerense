@@ -6,6 +6,8 @@ import { NoticiasCarrossel } from "./noticias-carrossel"
 import { MateriasTabs } from "./materias-tabs"
 import { SiteHeader } from "@/components/site/site-header"
 import { SiteFooter } from "@/components/site/site-footer"
+import { AnuncioBanner } from "@/components/site/anuncio-banner"
+import type { AnuncioPublico } from "@/lib/site/anuncios"
 import { JogoStrip } from "./jogo-strip"
 import { HeroSlider } from "./hero-slider"
 import type { FaixaPartida, HeroSlide } from "@/lib/landing/hero"
@@ -29,6 +31,7 @@ export function LandingClient({
   depoimentos,
   endereco,
   cidade,
+  anuncio = null,
 }: {
   /** Jogos/resultados agrupados por Sub (abas no carrossel). */
   jogosPorCategoria: CategoriaNoticias[]
@@ -42,6 +45,8 @@ export function LandingClient({
   depoimentos: Depoimento[]
   endereco?: string
   cidade?: string
+  /** Banner de publicidade da posição "landing", quando houver um no ar. */
+  anuncio?: AnuncioPublico | null
 }) {
   const [lbIndex, setLbIndex] = useState<number | null>(null)
   const closeLb = () => setLbIndex(null)
@@ -97,6 +102,8 @@ export function LandingClient({
         </div>
 
         <MateriasTabs publicacoes={noticiasClube} />
+
+        <AnuncioBanner anuncio={anuncio} />
 
         {sobre && sobre.paragrafos.length > 0 && (
           <section className="sobre" id="sobre">

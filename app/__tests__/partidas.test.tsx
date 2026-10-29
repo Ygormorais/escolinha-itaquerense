@@ -30,6 +30,9 @@ vi.mock("@/lib/site/partidas-dados", () => ({
 vi.mock("@/lib/site/classificacao", () => ({
   getClassificacoesPorCategoria: vi.fn(async () => new Map()),
 }))
+vi.mock("@/lib/site/anuncios-dados", () => ({
+  getAnuncio: vi.fn(async () => null),
+}))
 vi.mock("@/components/site/site-chrome", () => ({
   SiteTopo: () => null,
   SiteRodape: () => null,

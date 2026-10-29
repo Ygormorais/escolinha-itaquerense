@@ -24,6 +24,8 @@ describe("isPublicPath — rotas externas com auth própria", () => {
     "/matricula",
     "/resultados",
     "/partidas",
+    "/api/anuncio/1",
+    "/uploads/publicidade/banner.png",
     "/responsavel/login",
     "/responsavel/recuperar-senha",
     "/responsavel/redefinir-senha",

@@ -5,6 +5,6 @@ export function resolveUploadsBaseDir(): string {
     ?? path.join(/* turbopackIgnore: true */ process.cwd(), "uploads")
 }
 
-export function resolveUploadsDir(subdir: "fotos" | "matriculas" | "midia"): string {
+export function resolveUploadsDir(subdir: "fotos" | "matriculas" | "midia" | "publicidade"): string {
   return path.join(/* turbopackIgnore: true */ resolveUploadsBaseDir(), subdir)
 }

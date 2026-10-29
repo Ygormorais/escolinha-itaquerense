@@ -346,3 +346,24 @@ export async function resetCheckinE2E() {
     select: { id: true, nome: true },
   })
 }
+
+export const ANUNCIANTE_E2E = "E2E Anunciante"
+
+/** Um banner no ar na página inicial, com imagem pública já existente e zero cliques. */
+export async function resetAnunciosE2E() {
+  await db.anuncio.deleteMany({ where: { anunciante: { startsWith: ANUNCIANTE_E2E } } })
+  return db.anuncio.create({
+    data: {
+      anunciante: `${ANUNCIANTE_E2E} Fixture`,
+      titulo: "Banner de teste do patrocinador",
+      imagemUrl: "/landing/sobre.png",
+      link: "https://example.com/e2e-patrocinador",
+      posicao: "landing",
+      ativo: true,
+    },
+  })
+}
+
+export async function cliquesAnuncio(id: number) {
+  return (await db.anuncio.findUnique({ where: { id }, select: { cliques: true } }))?.cliques ?? null
+}

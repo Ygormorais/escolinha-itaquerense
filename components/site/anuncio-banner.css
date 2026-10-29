@@ -1,0 +1,7 @@
+/* Banner de publicidade. Usa os tokens do .lp; a altura acompanha a imagem (formato livre, ideal 1200×200). */
+.lp .anuncio{padding:28px 0}
+.lp .anuncio-inner{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.lp .anuncio-rotulo{font-size:12px;color:var(--text-muted)}
+.lp .anuncio-link{display:block;width:100%;border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-muted);transition:opacity .2s}
+.lp .anuncio-link:hover{opacity:.92}
+.lp .anuncio-link img{display:block;width:100%;height:auto;max-height:240px;object-fit:cover}
