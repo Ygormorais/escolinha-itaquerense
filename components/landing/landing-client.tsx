@@ -16,7 +16,7 @@ import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { marcos } from "@/lib/landing/conteudo"
 import { publicFontClass } from "@/lib/public-fonts"
-import { TEXTO_CONTATO, whatsappUrl } from "@/lib/site/whatsapp"
+import { TEXTO_ANUNCIAR, TEXTO_CONTATO, whatsappUrl } from "@/lib/site/whatsapp"
 import "./landing.css"
 import "./landing-sections.css"
 
@@ -103,7 +103,7 @@ export function LandingClient({
 
         <MateriasTabs publicacoes={noticiasClube} />
 
-        <AnuncioBanner anuncio={anuncio} />
+        <AnuncioBanner anuncio={anuncio} contratarUrl={whatsappUrl(whatsapp, TEXTO_ANUNCIAR)} />
 
         {sobre && sobre.paragrafos.length > 0 && (
           <section className="sobre" id="sobre">

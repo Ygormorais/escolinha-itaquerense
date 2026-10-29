@@ -46,11 +46,11 @@
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.14);
   --shadow-hover: 0 10px 28px rgba(0, 0, 0, 0.12);
 
-  /* next/font no <html> define --font-barlow e --font-barlow-condensed.
+  /* next/font no <html> define --font-raleway.
      Aqui só criamos aliases semânticos (sem auto-referência circular). */
-  --font-heading: var(--font-barlow-condensed), system-ui, sans-serif;
-  --font-body: var(--font-barlow), system-ui, sans-serif;
-  --font-nunito: var(--font-barlow-condensed), system-ui, sans-serif;
+  --font-heading: var(--font-raleway), system-ui, sans-serif;
+  --font-body: var(--font-raleway), system-ui, sans-serif;
+  --font-nunito: var(--font-raleway), system-ui, sans-serif;
 }
 
 @media print {
@@ -281,6 +281,8 @@
   }
   body {
     font-family: var(--font-body), system-ui, sans-serif;
+    /* Raleway traz algarismos de estilo antigo por padrão; valores precisam ficar alinhados. */
+    font-variant-numeric: lining-nums;
     background-color: var(--background);
     color: var(--foreground);
     text-rendering: optimizeLegibility;
@@ -291,7 +293,7 @@
   }
   :where([data-numeric]) {
     font-family: var(--font-body), system-ui, sans-serif;
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: lining-nums tabular-nums;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading), system-ui, sans-serif;
@@ -300,7 +302,7 @@
 
 /**
  * Portal da família — mesma identidade visual da landing pública (.lp / PUB_TOKENS):
- * papel, tinta e vermelho dos primitivos de tokens.css, Barlow + Barlow Condensed.
+ * papel, tinta e vermelho dos primitivos de tokens.css, Raleway.
  * Força tema claro localmente (site público não usa dark).
  */
 .portal-familia,

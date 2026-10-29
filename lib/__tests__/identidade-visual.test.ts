@@ -62,7 +62,12 @@ describe("identidade visual", () => {
     expect(t).toContain("--radius-hero: 0.5rem")
   })
 
-  it("fonte de títulos é Barlow Condensed", () => {
-    expect(ler("app/globals.css")).toMatch(/--font-heading:\s*var\(--font-barlow-condensed\)/)
+  it("fonte do sistema é Raleway, com números alinhados", () => {
+    const css = ler("app/globals.css")
+    expect(css).toMatch(/--font-heading:\s*var\(--font-raleway\)/)
+    expect(css).toMatch(/--font-body:\s*var\(--font-raleway\)/)
+    // Raleway usa algarismos de estilo antigo por padrão; valores e tabelas precisam de lining.
+    expect(css).toContain("font-variant-numeric: lining-nums")
+    expect(arquivosCom(/[Bb]arlow/)).toEqual([])
   })
 })

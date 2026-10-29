@@ -8,15 +8,40 @@ import "./anuncio-banner.css"
 export function AnuncioBanner({
   anuncio,
   dentroDeContainer = false,
+  contratarUrl = null,
 }: {
   anuncio: AnuncioPublico | null
   /** true quando a página já envolve o banner num .container. */
   dentroDeContainer?: boolean
+  /** Link (WhatsApp) para contratar o espaço; sem anúncio ativo, o espaço é oferecido. */
+  contratarUrl?: string | null
 }) {
-  if (!anuncio) return null
+  const inner = dentroDeContainer ? "anuncio-inner" : "container anuncio-inner"
+  if (!anuncio) {
+    if (!contratarUrl) return null
+    return (
+      <aside className="anuncio" aria-label="Espaço publicitário disponível">
+        <div className={inner}>
+          <span className="anuncio-rotulo">Publicidade</span>
+          <div className="anuncio-vago">
+            <div>
+              <p className="anuncio-vago-titulo">Anuncie aqui</p>
+              <p className="anuncio-vago-texto">
+                Sua marca para as famílias e a torcida do Itaquerense, na página do clube.
+              </p>
+            </div>
+            <a href={contratarUrl} target="_blank" rel="noopener" className="anuncio-vago-cta">
+              Quero anunciar
+              <span className="sr-only"> (abre o WhatsApp do clube em nova aba)</span>
+            </a>
+          </div>
+        </div>
+      </aside>
+    )
+  }
   return (
     <aside className="anuncio" aria-label={`Publicidade: ${anuncio.anunciante}`}>
-      <div className={dentroDeContainer ? "anuncio-inner" : "container anuncio-inner"}>
+      <div className={inner}>
         <span className="anuncio-rotulo">Publicidade</span>
         <a href={`/api/anuncio/${anuncio.id}`} target="_blank" rel="sponsored noopener" className="anuncio-link">
           <picture>

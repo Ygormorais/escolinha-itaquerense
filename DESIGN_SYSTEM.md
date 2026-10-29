@@ -15,8 +15,8 @@ referência de **lógica visual** (não de marca, layout ou conteúdo):
   barras de navegação quase pretos (`#0B0B0B`).
 - **Vermelho do clube como destaque, nunca como fundo extenso.** Botões primários, selos,
   filetes, sublinhado de item ativo, chamada de matrícula. Sem gradientes vermelhos.
-- **Uma família sem serifa.** Barlow no corpo e na interface; Barlow Condensed pesada nos
-  títulos, em caixa alta nos títulos de seção e no título das telas do admin.
+- **Uma família sem serifa: Raleway** em tudo. Pesada (800–900) e em caixa alta nos
+  títulos de seção, no menu do site e no título das telas do admin.
 - **Cantos retos** (4–8px) e sombras neutras.
 - O admin e o portal herdam a mesma identidade, sem fotos grandes nem títulos gigantes em
   telas operacionais.
@@ -97,14 +97,16 @@ Neutras, sem tom vermelho:
 
 ## 5. Tipografia
 
-- **Barlow** (`--font-barlow`, pesos 400–700) — corpo, controles, navegação, tabelas,
-  rótulos e todo número/KPI, com `font-variant-numeric: tabular-nums` via `[data-numeric]`.
-- **Barlow Condensed** (`--font-barlow-condensed`, pesos 700–900) — `h1`–`h4`, títulos de
-  seção do site (`.section-title`, `.pg-secao`, `.pg-hero h1`, `.hs-title`, em caixa alta) e
-  título do `PageHeader` (caixa alta).
+- **Raleway** (`--font-raleway`, fonte variável 100–900), carregada uma única vez em
+  `app/layout.tsx` (`next/font/google`), para corpo, interface e títulos.
+- **Títulos:** `h1`–`h4`, títulos de seção do site (`.section-title`, `.pg-secao`,
+  `.pg-hero h1`, `.hs-title`), menu principal do site e título do `PageHeader`, com peso
+  800 e caixa alta onde indicado.
+- **Números:** a Raleway usa algarismos de estilo antigo por padrão. O `body` força
+  `font-variant-numeric: lining-nums`, e `[data-numeric]` usa `lining-nums tabular-nums`
+  para valores, KPIs e tabelas.
 - Aliases: `--font-heading` e `--font-body` em `app/globals.css`. Fallback sempre
   `system-ui, sans-serif` — nunca serifa.
-- As fontes são carregadas uma única vez em `app/layout.tsx` (`next/font/google`).
 
 ## 6. Espaçamento
 

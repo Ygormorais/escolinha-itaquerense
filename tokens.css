@@ -30,8 +30,8 @@
   --info-50: #EFF5FD;
   --info-600: #225EA8;
 
-  --font-display: var(--font-barlow-condensed), system-ui, sans-serif;
-  --font-body-ui: var(--font-barlow), system-ui, sans-serif;
+  --font-display: var(--font-raleway), system-ui, sans-serif;
+  --font-body-ui: var(--font-raleway), system-ui, sans-serif;
 
   --space-3xs: 0.125rem;
   --space-2xs: 0.25rem;

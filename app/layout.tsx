@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Barlow, Barlow_Condensed } from "next/font/google"
+import { Raleway } from "next/font/google"
 
 import "./globals.css"
 import { Toaster } from "sonner"
@@ -11,18 +11,10 @@ import { ShellGate } from "@/components/layout/shell-gate"
 import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
 
-/** Canônico: Barlow (corpo e UI) + Barlow Condensed (títulos) — site, admin e portal. */
-const barlow = Barlow({
+/** Canônico: Raleway (variável, 100–900) em todo o sistema — site, admin e portal. */
+const raleway = Raleway({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-barlow",
-  display: "swap",
-})
-
-const barlowCondensed = Barlow_Condensed({
-  subsets: ["latin"],
-  weight: ["700", "800", "900"],
-  variable: "--font-barlow-condensed",
+  variable: "--font-raleway",
   display: "swap",
 })
 
@@ -101,7 +93,7 @@ export default async function RootLayout({
     : [0, 0, 0, 0]
 
   return (
-      <html lang="pt-BR" className={`h-full antialiased ${barlow.variable} ${barlowCondensed.variable}`} suppressHydrationWarning>
+      <html lang="pt-BR" className={`h-full antialiased ${raleway.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
         <script

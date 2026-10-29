@@ -30,7 +30,7 @@
 .lp nav.main>ul{display:flex;align-items:center;min-width:0}
 .lp nav.main>ul.nav-l{justify-content:flex-end;padding-right:64px}
 .lp nav.main>ul.nav-r{justify-content:flex-start;padding-left:64px;padding-right:128px}
-.lp nav.main a{position:relative;display:flex;align-items:center;height:76px;padding:0 14px;font-size:15px;font-weight:600;color:var(--text);transition:color .2s}
+.lp nav.main a{position:relative;display:flex;align-items:center;height:76px;padding:0 14px;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.01em;color:var(--text);transition:color .2s}
 .lp nav.main a::after{content:"";position:absolute;left:14px;right:14px;bottom:20px;height:3px;border-radius:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .2s ease}
 .lp nav.main a:hover{color:var(--red)}
 .lp nav.main a:hover::after,.lp nav.main a:focus-visible::after{transform:scaleX(1)}

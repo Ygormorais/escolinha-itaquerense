@@ -1,7 +1,6 @@
 /**
- * Fontes canônicas já são carregadas no root layout (`app/layout.tsx`):
- *   --font-barlow            (Barlow — corpo e UI)
- *   --font-barlow-condensed  (Barlow Condensed — títulos)
+ * Fonte canônica já carregada no root layout (`app/layout.tsx`):
+ *   --font-raleway  (Raleway, variável 100–900 — corpo, UI e títulos)
  *   --font-body / --font-heading (mapeados em globals.css)
  *
  * NÃO chamar next/font de novo aqui — instanciar duas vezes quebra o HMR

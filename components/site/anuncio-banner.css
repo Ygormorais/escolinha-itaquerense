@@ -5,3 +5,10 @@
 .lp .anuncio-link{display:block;width:100%;border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-muted);transition:opacity .2s}
 .lp .anuncio-link:hover{opacity:.92}
 .lp .anuncio-link img{display:block;width:100%;height:auto;max-height:240px;object-fit:cover}
+/* Espaço sem anúncio ativo: oferece o espaço para contratação. */
+.lp .anuncio-vago{width:100%;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#0B0B0B;color:#fff;border-left:4px solid var(--red);border-radius:var(--radius-sm);padding:28px 32px}
+.lp .anuncio-vago-titulo{font-family:var(--font-heading),system-ui,sans-serif;font-size:clamp(26px,3.4vw,40px);font-weight:800;text-transform:uppercase;line-height:1;letter-spacing:.01em}
+.lp .anuncio-vago-texto{margin-top:8px;font-size:15px;color:rgba(255,255,255,.78)}
+.lp .anuncio-vago-cta{display:inline-flex;align-items:center;min-height:44px;padding:0 22px;border-radius:var(--radius-sm);background:var(--red);color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:14px;text-decoration:none;transition:background .2s}
+.lp .anuncio-vago-cta:hover{background:var(--red-dark)}
+.lp .anuncio-vago-cta:focus-visible{outline:3px solid #fff;outline-offset:2px}
