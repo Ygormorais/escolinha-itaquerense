@@ -1,8 +1,9 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { ResponsavelHeroSkeleton } from "@/components/ui/skeleton"
 
 export default function CalendarioLoading() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className={PAGINA_PORTAL}>
       <ResponsavelHeroSkeleton />
       <div className="flex gap-2">
         {Array.from({ length: 3 }).map((_, i) => (

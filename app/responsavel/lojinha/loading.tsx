@@ -1,8 +1,9 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { ResponsavelHeroSkeleton } from "@/components/ui/skeleton"
 
 export default function LojinhaLoading() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <ResponsavelHeroSkeleton />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (

@@ -1,3 +1,4 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
@@ -35,5 +36,5 @@ export default async function DocumentosFamiliaPage() {
       aceite: versao.aceites.find((item) => item.alunoId === aluno.id)?.aceitoEm ?? null,
     }))
   })
-  return <div className="flex flex-col gap-8"><PortalHero backHref="/responsavel" title="Documentos" description="Consulte a versão vigente de cada documento e registre o aceite quando solicitado." stats={[{ label: "Disponíveis", value: itens.length }, { label: "Pendentes", value: itens.filter((item) => item.obrigatorio && !item.aceite).length }]} /><DocumentosFamilia itens={itens} /></div>
+  return <div className={PAGINA_PORTAL}><PortalHero backHref="/responsavel" title="Documentos" description="Consulte a versão vigente de cada documento e registre o aceite quando solicitado." stats={[{ label: "Disponíveis", value: itens.length }, { label: "Pendentes", value: itens.filter((item) => item.obrigatorio && !item.aceite).length }]} /><DocumentosFamilia itens={itens} /></div>
 }

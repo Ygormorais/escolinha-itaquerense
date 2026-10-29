@@ -1,8 +1,9 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { ResponsavelHeroSkeleton, StatCardSkeleton } from "@/components/ui/skeleton"
 
 export default function BoletimLoading() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <ResponsavelHeroSkeleton />
       <div className="space-y-6">
         {Array.from({ length: 2 }).map((_, i) => (

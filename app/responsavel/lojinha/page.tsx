@@ -1,3 +1,4 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { Card, CardContent } from "@/components/ui/card"
@@ -46,7 +47,7 @@ export default async function LojinhaPage() {
   )
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className={PAGINA_PORTAL}>
       <PortalHero
         backHref="/responsavel"
         title="Lojinha"

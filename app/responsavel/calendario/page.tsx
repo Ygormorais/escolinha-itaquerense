@@ -1,3 +1,4 @@
+import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -75,7 +76,7 @@ export default async function CalendarioPage({
 
   if (alunos.length === 0) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className={PAGINA_PORTAL}>
         <PortalHero backHref="/responsavel" title={tituloMes} />
         <p className="text-muted-foreground">Nenhum aluno ativo vinculado.</p>
       </div>
@@ -125,7 +126,7 @@ export default async function CalendarioPage({
   const q = (mes: string, alunoId: number) => `?aluno=${alunoId}&mes=${mes}`
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={PAGINA_PORTAL}>
       <PortalHero backHref="/responsavel" title={tituloMes} />
 
       {alunos.length > 1 && (
