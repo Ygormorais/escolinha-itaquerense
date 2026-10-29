@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { PendenciaGrupo } from "@/lib/pendencias-data"
-import { acoesDoInicio, formatarMesAno, previstoDoMes, resumoAtraso, serieRecebidoPrevisto } from "@/lib/inicio"
+import { acoesDoInicio, previstoDoMes, resumoAtraso, serieRecebidoPrevisto } from "@/lib/inicio"
 
 function grupo(titulo: string, quantidade: number, href: string, prioridade: "alta" | "normal" = "normal"): PendenciaGrupo {
   return {
@@ -80,11 +80,5 @@ describe("serieRecebidoPrevisto", () => {
       { mes: "2026-09", recebido: 0, previsto: 0 },
       { mes: "2026-10", recebido: 100, previsto: 240 },
     ])
-  })
-})
-
-describe("formatarMesAno", () => {
-  it("mês com inicial maiúscula e 'de' minúsculo", () => {
-    expect(formatarMesAno(new Date(2026, 9, 1))).toBe("Outubro de 2026")
   })
 })

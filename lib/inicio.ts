@@ -67,10 +67,3 @@ export function serieRecebidoPrevisto(
     }
   })
 }
-
-const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-
-/** "Outubro de 2026". */
-export function formatarMesAno(data: Date): string {
-  return `${MESES[data.getMonth()]} de ${data.getFullYear()}`
-}

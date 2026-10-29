@@ -78,7 +78,7 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
         )}
       >
         <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
-        <span className="min-w-0 flex-1 truncate text-left font-medium capitalize">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-left font-medium">{label}</span>
       </button>
 
       {open && (
