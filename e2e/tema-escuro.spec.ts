@@ -42,6 +42,15 @@ test.describe("Tema escuro salvo — telas sempre claras", () => {
   })
 })
 
+test.describe("Tema escuro do admin — recibo", () => {
+  test("recibo continua claro e legível", async ({ page }) => {
+    await loginAsAdmin(page)
+    await salvarTemaEscuro(page)
+    await page.goto("/recibos", { waitUntil: "networkidle" })
+    expect(await violacoesSerias(page, "#recibo-print")).toEqual([])
+  })
+})
+
 test.describe("Tema escuro do admin — tabelas", () => {
   test("linha de tabela não fica avermelhada fora do hover", async ({ page }) => {
     await loginAsAdmin(page)

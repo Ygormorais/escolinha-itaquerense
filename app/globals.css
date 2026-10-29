@@ -244,7 +244,7 @@
   background-color: var(--paper-50);
   color-scheme: light;
 }
-.dark :is(.portal-familia, .auth-experience) {
+.dark :is(.portal-familia, .auth-experience, .superficie-clara) {
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-danger-50: var(--danger-50);
@@ -252,13 +252,22 @@
   --color-success-50: var(--success-50);
   --color-info-50: var(--info-50);
 }
+/* Documento impresso (recibo): sempre claro, inclusive com o admin no tema escuro. */
+.superficie-clara {
+  color-scheme: light;
+  --foreground: var(--ink-950);
+  --muted-foreground: var(--ink-700);
+  --border: var(--ink-200);
+  --card: #FFFFFF;
+  --card-foreground: var(--ink-950);
+}
 @layer utilities {
-  .dark :is(.text-brand-600, .text-brand-700, .text-brand-800, .text-brand-900):not(:is(.portal-familia, .auth-experience) *) { color: var(--brand-300); }
-  .dark .text-danger-600:not(:is(.portal-familia, .auth-experience) *) { color: #F28B82; }
-  .dark :is(.text-warning-600, .text-warning-700):not(:is(.portal-familia, .auth-experience) *) { color: #F2B866; }
-  .dark .text-success-600:not(:is(.portal-familia, .auth-experience) *) { color: #5FD3A6; }
-  .dark .text-info-600:not(:is(.portal-familia, .auth-experience) *) { color: #8AB4F8; }
-  .dark [data-slot="badge"][data-variant="destructive"]:not(:is(.portal-familia, .auth-experience) *) { color: #FCA5A5; }
+  .dark :is(.text-brand-600, .text-brand-700, .text-brand-800, .text-brand-900):not(:is(.portal-familia, .auth-experience, .superficie-clara) *) { color: var(--brand-300); }
+  .dark .text-danger-600:not(:is(.portal-familia, .auth-experience, .superficie-clara) *) { color: #F28B82; }
+  .dark :is(.text-warning-600, .text-warning-700):not(:is(.portal-familia, .auth-experience, .superficie-clara) *) { color: #F2B866; }
+  .dark .text-success-600:not(:is(.portal-familia, .auth-experience, .superficie-clara) *) { color: #5FD3A6; }
+  .dark .text-info-600:not(:is(.portal-familia, .auth-experience, .superficie-clara) *) { color: #8AB4F8; }
+  .dark [data-slot="badge"][data-variant="destructive"]:not(:is(.portal-familia, .auth-experience, .superficie-clara) *) { color: #FCA5A5; }
 }
 
 @layer base {
