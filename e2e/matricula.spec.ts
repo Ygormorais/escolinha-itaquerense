@@ -5,7 +5,7 @@ import { resetPreMatriculaPendenteE2E } from "./fixtures"
 test.describe("Pré-Matrícula Pública", () => {
   test("página pública carrega sem autenticação", async ({ page }) => {
     await page.goto("/matricula")
-    await expect(page.locator("h1")).toContainText("Pré-Matrícula")
+    await expect(page.locator("h1")).toContainText("Pré-matrícula")
     await expect(page.locator('input[id="aluno"]')).toBeVisible()
   })
 

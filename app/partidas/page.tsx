@@ -1,11 +1,10 @@
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
-import { SiteRodape, SiteTopo } from "@/components/site/site-chrome"
+import { PaginaPublica } from "@/components/site/pagina-publica"
 import { EscudoTime } from "@/components/site/escudo-time"
 import { ClassificacaoTabela } from "@/components/site/classificacao-tabela"
 import { AnuncioBanner } from "@/components/site/anuncio-banner"
 import { getAnuncio } from "@/lib/site/anuncios-dados"
-import { publicFontClass } from "@/lib/public-fonts"
 import { getPartidasPublicasCached } from "@/lib/site/partidas-dados"
 import { getClassificacoesPorCategoria } from "@/lib/site/classificacao"
 import {
@@ -146,38 +145,25 @@ export default async function PartidasPage({
   const classificacao = f.categoria ? classificacoes.get(f.categoria) : undefined
 
   return (
-    <div className={`${publicFontClass} lp pt`}>
-      <a className="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
-      <SiteTopo dentroDaLanding />
-
-      <main id="conteudo-principal">
-        <div className="pt-hero">
-          <div className="container">
-            <nav className="pt-trilha" aria-label="Você está em">
-              <Link href="/">Início</Link>
-              <ChevronRight size={14} aria-hidden />
-              <span aria-current="page">Partidas</span>
-            </nav>
-            <h1>Partidas</h1>
-            <p>Agenda e resultados das categorias de base do Elite Itaquerense, com a classificação de cada categoria.</p>
-          </div>
-        </div>
-
-        <div className="container pt-corpo">
+    <PaginaPublica
+      titulo="Partidas"
+      descricao="Agenda e resultados das categorias de base do Elite Itaquerense, com a classificação de cada categoria."
+      className="pt"
+    >
           <div className="pt-filtros">
             <nav className="pt-cats" aria-label="Categoria">
-              <Link href={hrefPartidas(f, { categoria: null })} className={"pt-pill" + (!f.categoria ? " is-on" : "")} aria-current={!f.categoria ? "page" : undefined}>
+              <Link href={hrefPartidas(f, { categoria: null })} className={"pg-pill" + (!f.categoria ? " is-on" : "")} aria-current={!f.categoria ? "page" : undefined}>
                 Todas as categorias
               </Link>
               {categorias.map((c) => (
-                <Link key={c} href={hrefPartidas(f, { categoria: c })} className={"pt-pill" + (f.categoria === c ? " is-on" : "")} aria-current={f.categoria === c ? "page" : undefined}>
+                <Link key={c} href={hrefPartidas(f, { categoria: c })} className={"pg-pill" + (f.categoria === c ? " is-on" : "")} aria-current={f.categoria === c ? "page" : undefined}>
                   {c}
                 </Link>
               ))}
             </nav>
-            <nav className="pt-sit" aria-label="Situação">
+            <nav className="pg-seg" aria-label="Situação">
               {SITUACOES.map((s) => (
-                <Link key={s.valor} href={hrefPartidas(f, { situacao: s.valor })} className={"pt-seg" + (f.situacao === s.valor ? " is-on" : "")} aria-current={f.situacao === s.valor ? "page" : undefined}>
+                <Link key={s.valor} href={hrefPartidas(f, { situacao: s.valor })} className={f.situacao === s.valor ? "is-on" : undefined} aria-current={f.situacao === s.valor ? "page" : undefined}>
                   {s.rotulo}
                 </Link>
               ))}
@@ -202,10 +188,10 @@ export default async function PartidasPage({
               </ol>
             </>
           ) : (
-            <div className="pt-vazio">
+            <div className="pg-vazio">
               <h2>Nenhuma partida com esses filtros</h2>
               <p>Troque a categoria ou a situação para ver outros jogos.</p>
-              <Link href="/partidas" className="pt-pill is-on">Ver todas as partidas</Link>
+              <Link href="/partidas" className="pg-btn pg-btn-primario">Ver todas as partidas</Link>
             </div>
           )}
 
@@ -214,7 +200,7 @@ export default async function PartidasPage({
           <AnuncioBanner anuncio={anuncio} dentroDeContainer />
 
           <section className="pt-classif" aria-labelledby="pt-classif-h">
-            <h2 id="pt-classif-h">Classificação{f.categoria ? ` · ${f.categoria}` : ""}</h2>
+            <h2 id="pt-classif-h" className="pg-secao">Classificação{f.categoria ? ` · ${f.categoria}` : ""}</h2>
             {classificacao ? (
               <ClassificacaoTabela camp={classificacao} />
             ) : f.categoria ? (
@@ -223,10 +209,6 @@ export default async function PartidasPage({
               <p className="pt-nota">Escolha uma categoria acima para ver a tabela de classificação.</p>
             )}
           </section>
-        </div>
-      </main>
-
-      <SiteRodape dentroDaLanding />
-    </div>
+    </PaginaPublica>
   )
 }

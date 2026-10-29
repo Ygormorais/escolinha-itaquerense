@@ -40,8 +40,8 @@ export default function NotFound() {
         O endereço que você acessou não existe ou foi removido. Verifique o link ou volte ao início.
       </p>
       <div className="nf-links">
-        <Link href="/" className="nf-btn primary">← Voltar ao início</Link>
-        <Link href="/horarios" className="nf-btn secondary">Ver turmas &amp; horários</Link>
+        <Link href="/" className="nf-btn primary">Voltar ao início</Link>
+        <Link href="/horarios" className="nf-btn secondary">Ver turmas e horários</Link>
       </div>
     </div>
   )

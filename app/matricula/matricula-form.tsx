@@ -135,13 +135,13 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
           <div className="mat-sec-icon">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
           </div>
-          <span className="mat-sec-title">Dados do Aluno</span>
+          <span className="mat-sec-title">Dados do aluno</span>
           <div className="mat-sec-line" />
         </div>
 
         <div className="mat-fields">
           <div className="mat-field">
-            <label htmlFor="aluno">Nome do Aluno *</label>
+            <label htmlFor="aluno">Nome do aluno *</label>
             <input
               id="aluno"
               className="mat-input"
@@ -153,7 +153,7 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
           </div>
 
           <div className="mat-field">
-            <label htmlFor="dataNasc">Data de Nascimento *</label>
+            <label htmlFor="dataNasc">Data de nascimento *</label>
             <div className="mat-input-wrap">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
@@ -209,13 +209,13 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
           <div className="mat-sec-icon">
             <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .92h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" /></svg>
           </div>
-          <span className="mat-sec-title">Dados do Responsável</span>
+          <span className="mat-sec-title">Dados do responsável</span>
           <div className="mat-sec-line" />
         </div>
 
         <div className="mat-fields">
           <div className="mat-field">
-            <label htmlFor="responsavel">Nome do Responsável *</label>
+            <label htmlFor="responsavel">Nome do responsável *</label>
             <input
               id="responsavel"
               className="mat-input"
