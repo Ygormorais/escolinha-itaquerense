@@ -6,7 +6,6 @@ import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
-import { contarPendencias } from "@/lib/pendencias-data"
 import { ShellGate } from "@/components/layout/shell-gate"
 import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
@@ -83,12 +82,21 @@ export default async function RootLayout({
   const session = await getSession()
   // A decisão de mostrar o shell do admin é feita no cliente (ShellGate), porque
   // o root layout não re-renderiza em navegação client-side.
-  const [pendingEscalacoes, pendingMatriculas, pendingSolicitacoes, pendingPendencias] = session.authenticated
+  const [pendingEscalacoes, pendingMatriculas, pendingSolicitacoes, pendingAtraso] = session.authenticated
     ? await Promise.all([
         db.chatSession.count({ where: { bloqueado: true } }),
         db.preMatricula.count({ where: { status: "pendente" } }),
         db.solicitacao.count({ where: { status: "pendente" } }),
-        contarPendencias((session.role ?? "admin") as "admin" | "secretaria" | "tecnico", session.user ?? ""),
+        // Alunos com mensalidade vencida e não paga — mesma regra da tela de Inadimplência.
+        session.role === "tecnico"
+          ? Promise.resolve(0)
+          : db.pagamento
+              .findMany({
+                where: { dataPagamento: null, dataVencimento: { lt: new Date() }, aluno: { status: "Ativo" } },
+                select: { alunoId: true },
+                distinct: ["alunoId"],
+              })
+              .then((linhas) => linhas.length),
       ])
     : [0, 0, 0, 0]
 
@@ -124,7 +132,7 @@ export default async function RootLayout({
             pendingEscalacoes={pendingEscalacoes}
             pendingMatriculas={pendingMatriculas}
             pendingSolicitacoes={pendingSolicitacoes}
-            pendingPendencias={pendingPendencias}
+            pendingAtraso={pendingAtraso}
           >
             {children}
           </ShellGate>

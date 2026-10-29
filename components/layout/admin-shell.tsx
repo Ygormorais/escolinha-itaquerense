@@ -14,10 +14,10 @@ interface AdminShellProps {
   pendingEscalacoes?: number
   pendingMatriculas?: number
   pendingSolicitacoes?: number
-  pendingPendencias?: number
+  pendingAtraso?: number
 }
 
-export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0, pendingPendencias = 0 }: AdminShellProps) {
+export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pendingMatriculas = 0, pendingSolicitacoes = 0, pendingAtraso = 0 }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -48,11 +48,11 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
       </header>
 
       <div className="hidden md:flex">
-        <Sidebar role={role} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} pendingPendencias={pendingPendencias} />
+        <Sidebar role={role} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} pendingAtraso={pendingAtraso} />
       </div>
 
       <Sheet open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-        <Sidebar role={role} onClose={() => setSidebarOpen(false)} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} pendingPendencias={pendingPendencias} />
+        <Sidebar role={role} onClose={() => setSidebarOpen(false)} pendingEscalacoes={pendingEscalacoes} pendingMatriculas={pendingMatriculas} pendingSolicitacoes={pendingSolicitacoes} pendingAtraso={pendingAtraso} />
       </Sheet>
 
       {/* relative mantém elementos absolutos (inclusive sr-only) dentro da área
@@ -61,7 +61,7 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
         {children}
       </main>
 
-      <BottomNav role={role} pendingPendencias={pendingPendencias} />
+      <BottomNav role={role} pendingAtraso={pendingAtraso} />
     </div>
   )
 }
