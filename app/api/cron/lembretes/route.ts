@@ -13,6 +13,7 @@ import { runPushVencimento, runPushInadimplentes } from "@/lib/push-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
 import { format } from "date-fns"
 import { logger } from "@/lib/logger"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
   const pendentes = await db.pagamento.findMany({
@@ -26,6 +27,7 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
       externalId: true,
       canalPrevisto: true,
       mesReferencia: true,
+      valorDevido: true,
       aluno: { select: { nome: true, responsavelId: true } },
     },
   })
@@ -38,8 +40,10 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
       const statusLocal = mpStatusToLocal(mpData.status as MpPaymentStatus)
 
       if (statusLocal !== "pendente") {
-        await db.pagamento.update({
-          where: { id: p.id },
+        // Baixa só com a mensalidade ainda em aberto: o webhook pode ter baixado enquanto o
+        // cron consultava o Mercado Pago.
+        const { count } = await db.pagamento.updateMany({
+          where: statusLocal === "pago" ? { id: p.id, dataPagamento: null } : { id: p.id },
           data: {
             statusCobranca: statusLocal,
             ...(statusLocal === "pago"
@@ -51,7 +55,16 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
               : {}),
           },
         })
-        if (statusLocal === "pago" && p.aluno.responsavelId) {
+        if (statusLocal === "pago" && count === 1) {
+          await emitirReciboSeguro(db, {
+            pagamentoId: p.id,
+            valor: Number(mpData.transaction_amount ?? p.valorDevido ?? 0),
+            formaPagamento: p.canalPrevisto ?? "Mercado Pago",
+            dataPagamento: new Date(mpData.date_approved as string),
+            emitidoPor: "Mercado Pago",
+          })
+        }
+        if (statusLocal === "pago" && count === 1 && p.aluno.responsavelId) {
           await sendPushToResponsavel(p.aluno.responsavelId, "pagamentoConfirmado", {
             title: "Pagamento confirmado!",
             body: `Mensalidade de ${p.aluno.nome} (${p.mesReferencia}) recebida com sucesso.`,

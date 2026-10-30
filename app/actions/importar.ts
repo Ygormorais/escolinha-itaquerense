@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { addMonths, setDate } from "date-fns"
 import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
+import { valorDevidoDoAluno } from "@/lib/valor-devido"
 
 type AlunoCSV = {
   nome: string
@@ -88,6 +89,7 @@ export async function importarAlunosCSV(csvText: string): Promise<ImportResult |
           const month = addMonths(baseDate, idx)
           return {
             alunoId: aluno.id,
+            valorDevido: valorDevidoDoAluno({ mensalidade: Number(a.mensalidade), desconto: 0 }),
             mesReferencia: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`,
             dataVencimento: setDate(month, 10),
           }

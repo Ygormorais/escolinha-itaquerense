@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  urlImpressaoRecibo,
   filtrarPagamentos,
   gerarCSVPagamentos,
   getPagamentoStatus,
@@ -126,5 +127,22 @@ describe("gerarCSVPagamentos", () => {
   it("neutraliza nomes que o Excel interpretaria como fórmula", () => {
     const csv = gerarCSVPagamentos([pagamento(9, { nome: "=HYPERLINK(1)" })], AGORA)
     expect(csv).toContain(`"'=HYPERLINK(1)"`)
+  })
+})
+
+describe("urlImpressaoRecibo", () => {
+  const dados = { aluno: "Ana Souza", referencia: "2026-06", valor: "120", forma: "PIX", data: "2026-06-10" }
+
+  it("com recibo emitido, leva só o código (os dados vêm do banco)", () => {
+    const url = new URL(urlImpressaoRecibo(dados, { numero: "REC-2026-AB", codigoVerificacao: "COD9" }), "http://x")
+    expect(url.pathname).toBe("/recibos")
+    expect(url.searchParams.get("codigo")).toBe("COD9")
+    expect(url.searchParams.has("aluno")).toBe(false)
+    expect(url.searchParams.has("valor")).toBe(false)
+  })
+
+  it("sem recibo emitido, só preenche os dados", () => {
+    const url = new URL(urlImpressaoRecibo(dados, null), "http://x")
+    expect(url.searchParams.has("codigo")).toBe(false)
   })
 })

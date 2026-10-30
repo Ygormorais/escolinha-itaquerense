@@ -9,6 +9,10 @@ vi.mock("@/lib/db", () => {
   return { db }
 })
 
+vi.mock("@/lib/baixa", () => ({
+  emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
+  cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(0),
+}))
 vi.mock("@/lib/auth", () => ({ requireAuth: vi.fn().mockResolvedValue({}) }))
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 vi.mock("@/lib/ofx-parser", () => ({ parseOFX: vi.fn() }))
@@ -19,6 +23,7 @@ import { db } from "@/lib/db"
 import { parseOFX } from "@/lib/ofx-parser"
 import { matchTransactions } from "@/lib/ofx-matcher"
 import { revalidatePath } from "next/cache"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 const m = db as unknown as {
   aluno: { findMany: ReturnType<typeof vi.fn> }
@@ -247,5 +252,24 @@ describe("previewOFX - limite de tamanho", () => {
     const res = await previewOFX(conteudoGrande)
     expect(res).toEqual({ error: "Arquivo excede o limite de 5MB." })
     expect(parseOFX).not.toHaveBeenCalled()
+  })
+})
+
+describe("recibo das baixas pelo extrato", () => {
+  beforeEach(() => {
+    vi.mocked(parseOFX).mockReturnValue([{ fitid: "F1", date: new Date("2026-06-05"), amount: 150, memo: "PIX Lucas" }] as never)
+  })
+
+  it("emite um recibo por pagamento baixado, com o valor e a data do extrato", async () => {
+    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    await confirmarImportacaoOFX([{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }], "<OFX>...</OFX>")
+    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 10, valor: 150, formaPagamento: "Importação OFX" }))
+  })
+
+  it("não emite recibo quando outro processo baixou antes (updateMany 0)", async () => {
+    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
+    await confirmarImportacaoOFX([{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }], "<OFX>...</OFX>")
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
   })
 })

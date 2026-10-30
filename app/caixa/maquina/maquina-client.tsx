@@ -123,7 +123,7 @@ export function MaquinaClient({
   function handleReconcileAuto() {
     start(async () => {
       const result = await reconciliarAuto()
-      toast.success(`${result.reconciliados} reconciliados, ${result.naoEncontrados} não encontrados`)
+      toast.success(`${result.reconciliados} reconciliados, ${result.naoEncontrados} não encontrados${result.jaPagos ? `, ${result.jaPagos} em meses já pagos (ficaram pendentes)` : ""}`)
       router.refresh()
     })
   }

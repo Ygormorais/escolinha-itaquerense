@@ -159,6 +159,15 @@ describe("aprovarPreMatricula", () => {
     mesesRef.forEach((m: string) => expect(m).toMatch(/^\d{4}-\d{2}$/))
   })
 
+  it("grava o valor devido com desconto nas mensalidades da matrícula", async () => {
+    const createSpy = vi.fn().mockResolvedValue({ id: 5 })
+    ;(db as unknown as Record<string, unknown>).pagamento = { create: createSpy }
+
+    await aprovarPreMatricula(1, { mensalidade: 200, desconto: 30, meses: 2 })
+
+    for (const c of createSpy.mock.calls) expect((c[0] as { data: { valorDevido: number } }).data.valorDevido).toBe(170)
+  })
+
   it("nao gera mensalidades quando meses = 0", async () => {
     const createSpy = vi.fn().mockResolvedValue({ id: 5 })
     ;(db as unknown as Record<string, unknown>).pagamento = { create: createSpy }

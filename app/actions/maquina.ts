@@ -5,6 +5,8 @@ import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
 import { requireAuth } from "@/lib/auth"
 import { buildMaquinaWhere, MAQUINA_PAGE_SIZE, parseMaquinaFilters } from "@/lib/maquina-query"
+import { valorDevidoDoAluno } from "@/lib/valor-devido"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 type AlunoConciliacao = { id: number; nomeBusca: string; responsavelBusca: string }
 type ChaveTransacao = { dataTransacao: Date; valor: number; nomeNoCartao: string }
@@ -152,7 +154,7 @@ export async function reconciliarTransacao(
   dataVencimento: string,
   observacoes?: string
 ) {
-  await requireAuth(["admin", "secretaria"])
+  const session = await requireAuth(["admin", "secretaria"])
   const transacao = await db.transacaoMaquina.findUnique({ where: { id } })
   if (!transacao) return { error: "Transação não encontrada" }
   // Idempotência: não reconciliar de novo (o upsert já evita duplicar, mas o guard é explícito).
@@ -167,18 +169,41 @@ export async function reconciliarTransacao(
   }
   // upsert na unique (alunoId, mesReferencia): se a mensalidade do mês já existe,
   // marca como paga via cartão (não duplica); senão cria.
-  await db.$transaction(async (tx) => {
+  const alunoValores = await db.aluno.findUnique({ where: { id: alunoId }, select: { mensalidade: true, desconto: true } })
+  // Mês já pago (em dinheiro, Pix etc.) não é sobrescrito pelo cartão nem ganha segundo recibo.
+  const existente = await db.pagamento.findUnique({
+    where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
+    select: { dataPagamento: true },
+  })
+  if (existente?.dataPagamento) return { error: "A mensalidade desse mês já está paga" }
+  const reservada = await db.$transaction(async (tx) => {
+    // Reserva atômica: duas conciliações simultâneas da mesma transação passam pela checagem
+    // de status acima, mas só uma consegue marcar a transação; a outra não baixa nem emite recibo.
+    const { count } = await tx.transacaoMaquina.updateMany({
+      where: { id, status: "pendente" },
+      data: { status: "reconciliado", alunoId },
+    })
+    if (count === 0) return false
     const pagamento = await tx.pagamento.upsert({
       where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
       update: dados,
-      create: { alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados },
+      create: {
+        alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados,
+        valorDevido: alunoValores ? valorDevidoDoAluno(alunoValores) : null,
+      },
     })
 
     await tx.transacaoMaquina.update({
       where: { id },
       data: { status: "reconciliado", alunoId, pagamentoId: pagamento.id },
     })
+    await emitirReciboSeguro(tx, {
+      pagamentoId: pagamento.id, valor: dados.valorRecebido, formaPagamento: dados.formaPagamento,
+      dataPagamento: dados.dataPagamento, emitidoPor: session?.user ?? null,
+    })
+    return true
   })
+  if (!reservada) return { error: "Transação já reconciliada" }
 
   revalidatePath("/caixa/maquina")
   revalidatePath("/caixa/recebimentos")
@@ -186,15 +211,16 @@ export async function reconciliarTransacao(
 }
 
 export async function reconciliarAuto() {
-  await requireAuth(["admin", "secretaria"])
+  const session = await requireAuth(["admin", "secretaria"])
   const [pendentes, alunosAtivos] = await Promise.all([
     db.transacaoMaquina.findMany({ where: { status: "pendente" } }),
     db.aluno.findMany({
       where: { status: "Ativo" },
-      select: { id: true, nome: true, responsavel: true },
+      select: { id: true, nome: true, responsavel: true, mensalidade: true, desconto: true },
       orderBy: { id: "asc" },
     }),
   ])
+  const valorDevidoPorAluno = new Map(alunosAtivos.map((a) => [a.id, valorDevidoDoAluno(a)]))
   const indiceAlunos: AlunoConciliacao[] = alunosAtivos.map((aluno) => ({
     id: aluno.id,
     nomeBusca: normalizarNome(aluno.nome),
@@ -203,6 +229,7 @@ export async function reconciliarAuto() {
 
   let reconciliados = 0
   let naoEncontrados = 0
+  let jaPagos = 0
   let invalidos = 0
 
   for (const t of pendentes) {
@@ -213,30 +240,48 @@ export async function reconciliarAuto() {
     const mes = `${t.dataTransacao.getFullYear()}-${String(t.dataTransacao.getMonth() + 1).padStart(2, "0")}`
     const dataVenc = new Date(t.dataTransacao.getFullYear(), t.dataTransacao.getMonth(), 10)
 
+    // Mês já pago fica de fora; a transação continua pendente para conferência manual.
+    const existente = await db.pagamento.findUnique({
+      where: { alunoId_mesReferencia: { alunoId: aluno.id, mesReferencia: mes } },
+      select: { dataPagamento: true },
+    })
+    if (existente?.dataPagamento) { jaPagos++; continue }
+
     const dadosAuto = {
       dataPagamento: t.dataTransacao,
       formaPagamento: `Cartão ${t.tipo} (${t.bandeira})`,
       valorRecebido: t.valor,
       observacoes: `Reconciliado automático - ${t.nomeNoCartao}`,
     }
-    await db.$transaction(async (tx) => {
+    const reservada = await db.$transaction(async (tx) => {
+      const { count } = await tx.transacaoMaquina.updateMany({
+        where: { id: t.id, status: "pendente" },
+        data: { status: "reconciliado", alunoId: aluno.id },
+      })
+      if (count === 0) return false
       const pagamento = await tx.pagamento.upsert({
         where: { alunoId_mesReferencia: { alunoId: aluno.id, mesReferencia: mes } },
         update: dadosAuto,
-        create: { alunoId: aluno.id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto },
+        create: { alunoId: aluno.id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto, valorDevido: valorDevidoPorAluno.get(aluno.id) ?? null },
       })
 
       await tx.transacaoMaquina.update({
         where: { id: t.id },
         data: { status: "reconciliado", alunoId: aluno.id, pagamentoId: pagamento.id },
       })
+      await emitirReciboSeguro(tx, {
+        pagamentoId: pagamento.id, valor: dadosAuto.valorRecebido, formaPagamento: dadosAuto.formaPagamento,
+        dataPagamento: dadosAuto.dataPagamento, emitidoPor: session?.user ?? null,
+      })
+      return true
     })
+    if (!reservada) continue
     reconciliados++
   }
 
   revalidatePath("/caixa/maquina")
   revalidatePath("/caixa/recebimentos")
-  return { reconciliados, naoEncontrados, invalidos }
+  return { reconciliados, naoEncontrados, invalidos, jaPagos }
 }
 
 export async function ignorarTransacao(id: number) {

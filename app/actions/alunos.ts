@@ -8,6 +8,7 @@ import { requireAuth } from "@/lib/auth"
 import { getConfig } from "@/lib/config"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
 import { AlunoSchema } from "@/lib/schemas"
+import { valorDevidoDoAluno } from "@/lib/valor-devido"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -50,10 +51,12 @@ export async function createAluno(data: {
     })
 
     const baseDate = new Date(d.dataMatricula)
+    const valorDevido = valorDevidoDoAluno({ mensalidade: d.mensalidade, desconto: data.desconto ?? 0 })
     const pagamentos = Array.from({ length: 12 }, (_, i) => {
       const month = addMonths(baseDate, i)
       return {
         alunoId: aluno.id,
+        valorDevido,
         mesReferencia: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`,
         dataVencimento: setDate(month, 10),
       }

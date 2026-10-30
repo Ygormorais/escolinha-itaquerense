@@ -104,3 +104,16 @@ export function gerarCSVPagamentos(pagamentos: Pagamento[], agora: Date = new Da
   ]
   return linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
 }
+
+/**
+ * Endereço da tela de impressão do recibo. Com o recibo já emitido pela baixa, leva só o
+ * código: a tela carrega o recibo registrado e só imprime (sem emitir um segundo avulso).
+ */
+export function urlImpressaoRecibo(
+  dados: { aluno: string; referencia: string; valor: string; forma: string; data: string },
+  recibo: { numero: string; codigoVerificacao: string } | null,
+): string {
+  // Com recibo emitido, a tela carrega o registro pelo código; os dados não vão na URL.
+  if (recibo) return `/recibos?${new URLSearchParams({ codigo: recibo.codigoVerificacao }).toString()}`
+  return `/recibos?${new URLSearchParams(dados).toString()}`
+}

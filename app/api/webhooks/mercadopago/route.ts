@@ -7,6 +7,7 @@ import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadop
 import { revalidatePath } from "next/cache"
 import { requireEnv } from "@/lib/env"
 import { logger } from "@/lib/logger"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 function verifyMpSignature(req: Request, paymentId: string, rawTs: string): boolean {
   const secret = requireEnv("MERCADOPAGO_WEBHOOK_SECRET", "")
@@ -84,7 +85,18 @@ export async function POST(req: Request) {
       updateData.formaPagamento = pagamento.canalPrevisto
     }
 
-    await db.pagamento.update({ where: { id: pagamento.id }, data: updateData })
+    // Baixa só com a mensalidade ainda em aberto: notificações simultâneas do Mercado Pago
+    // passam juntas pela checagem de jaPago, mas só uma consegue gravar.
+    let primeiraBaixa = false
+    if (statusLocal === "pago") {
+      const { count } = await db.pagamento.updateMany({
+        where: { id: pagamento.id, dataPagamento: null },
+        data: updateData,
+      })
+      primeiraBaixa = count === 1
+    } else {
+      await db.pagamento.update({ where: { id: pagamento.id }, data: updateData })
+    }
 
     revalidatePath("/pagamentos")
     revalidatePath("/caixa/pix")
@@ -92,7 +104,14 @@ export async function POST(req: Request) {
     revalidatePath("/inadimplencia")
     revalidatePath("/")
 
-    if (statusLocal === "pago" && !jaPago) {
+    if (primeiraBaixa) {
+      await emitirReciboSeguro(db, {
+        pagamentoId: pagamento.id,
+        valor: Number(mpData.transaction_amount ?? pagamento.valorDevido ?? 0),
+        formaPagamento: pagamento.canalPrevisto ?? "Mercado Pago",
+        dataPagamento: updateData.dataPagamento as Date,
+        emitidoPor: "Mercado Pago",
+      })
       const { notificarPagamentoConfirmado } = await import("@/lib/whatsapp-jobs")
       const { notificarPagamentoConfirmadoEmail } = await import("@/lib/email-jobs")
       void notificarPagamentoConfirmado(pagamento.id).catch((e) =>

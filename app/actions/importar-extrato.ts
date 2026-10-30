@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { parseOFX } from "@/lib/ofx-parser"
 import { matchTransactions, type MatchResult } from "@/lib/ofx-matcher"
 import { revalidatePath } from "next/cache"
+import { emitirReciboSeguro } from "@/lib/baixa"
 
 // Arquivo é lido no client como latin1 (1 byte = 1 char), então content.length
 // bate com o tamanho em bytes do arquivo original.
@@ -51,7 +52,7 @@ export async function confirmarImportacaoOFX(
   selecoes: { pagamentoId: number; valor: number; dataPagamento: string; fitid: string }[],
   ofxContent: string
 ): Promise<{ atualizados: number } | { error: string }> {
-  await requireAuth(["admin", "secretaria"])
+  const session = await requireAuth(["admin", "secretaria"])
 
   if (ofxContent.length > MAX_OFX_SIZE_BYTES) {
     return { error: "Arquivo excede o limite de 5MB." }
@@ -109,6 +110,16 @@ export async function confirmarImportacaoOFX(
       })
     )
     const atualizados = resultados.reduce((soma, r) => soma + r.count, 0)
+
+    // Um recibo por pagamento efetivamente baixado (count 0 = outro processo baixou antes).
+    for (const [i, s] of validas.entries()) {
+      if (resultados[i]?.count !== 1) continue
+      const tx = txPorFitid.get(s.fitid)!
+      await emitirReciboSeguro(db, {
+        pagamentoId: s.pagamentoId, valor: tx.amount, formaPagamento: "Importação OFX",
+        dataPagamento: tx.date, emitidoPor: session?.user ?? null,
+      })
+    }
 
     revalidatePath("/pagamentos")
     revalidatePath("/inadimplencia")
