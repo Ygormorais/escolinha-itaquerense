@@ -9,7 +9,7 @@ import { dataValida, plural } from "@/lib/utils"
 import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
 import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
-import { valorDevidoDoAluno, valorDevidoDoPagamento } from "@/lib/valor-devido"
+import { restanteDoPagamento, valorDevidoDoAluno, valorDevidoDoPagamento } from "@/lib/valor-devido"
 import { cancelarRecibosDoPagamento, emitirReciboSeguro } from "@/lib/baixa"
 
 type ActionResult = { success: true } | { error: string }
@@ -59,6 +59,70 @@ export async function registrarPagamento(
   }
 }
 
+/**
+ * Baixa da central de pagamentos. Aceita valor parcial: a mensalidade fica "parcial" e em
+ * aberto até o acumulado alcançar o devido. Valor diferente do restante exige motivo.
+ */
+export async function registrarBaixa(
+  pagamentoId: number,
+  dados: { valor: number; formaPagamento: string; dataPagamento: string; observacao?: string },
+): Promise<{ success: true; quitada: boolean; recibo: ReciboEmitido } | { error: string }> {
+  const session = await requireAuth(["admin", "secretaria"])
+  const valor = Number(dados.valor)
+  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
+  if (!dados.formaPagamento) return { error: "Informe a forma de pagamento" }
+  if (!dataValida(dados.dataPagamento)) return { error: "Data de pagamento inválida" }
+  try {
+    const pag = await db.pagamento.findUnique({
+      where: { id: pagamentoId },
+      select: {
+        id: true, dataPagamento: true, valorRecebido: true, valorDevido: true, observacoes: true, mesReferencia: true,
+        aluno: { select: { nome: true, mensalidade: true, desconto: true } },
+      },
+    })
+    if (!pag) return { error: "Mensalidade não encontrada" }
+    if (pag.dataPagamento) return { error: "Esta mensalidade já está paga" }
+
+    const restante = restanteDoPagamento(pag)
+    const motivo = dados.observacao?.trim() ?? ""
+    if (Math.abs(valor - restante) > 0.005 && !motivo) {
+      return { error: "Informe o motivo para um valor diferente do devido" }
+    }
+    const acumulado = (pag.valorRecebido ?? 0) + valor
+    const quitada = acumulado + 0.005 >= valorDevidoDoPagamento(pag)
+    const data = new Date(dados.dataPagamento)
+    const nota = motivo
+      ? `${dados.dataPagamento} ${dados.formaPagamento} ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}: ${motivo}`
+      : null
+
+    // Gravação condicional pelo acumulado lido: duas baixas parciais simultâneas não se sobrescrevem.
+    const { count } = await db.pagamento.updateMany({
+      where: { id: pagamentoId, dataPagamento: null, valorRecebido: pag.valorRecebido },
+      data: {
+        valorRecebido: acumulado,
+        formaPagamento: dados.formaPagamento,
+        canalPrevisto: dados.formaPagamento,
+        statusCobranca: quitada ? "pago" : "parcial",
+        ...(quitada ? { dataPagamento: data } : {}),
+        ...(nota ? { observacoes: pag.observacoes ? `${pag.observacoes}\n${nota}` : nota } : {}),
+      },
+    })
+    if (count === 0) return { error: "A mensalidade mudou; recarregue e tente de novo" }
+
+    const recibo = await emitirReciboSeguro(db, {
+      pagamentoId, valor, formaPagamento: dados.formaPagamento, dataPagamento: data, emitidoPor: session.user,
+    })
+    await registrarLog("pagamento", `${quitada ? "Pagamento registrado" : "Pagamento parcial registrado"} — ${pag.aluno.nome}`, {
+      mes: pag.mesReferencia,
+      valor: valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+      forma: dados.formaPagamento,
+    })
+    return { success: true, quitada, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
+  }
+}
+
 export async function getPagamentosPendentes(alunoId: number) {
   await requireAuth(["admin", "secretaria"])
   return db.pagamento.findMany({
@@ -76,7 +140,7 @@ export async function getPagamentosPendentes(alunoId: number) {
 export async function registrarPagamentosLote(
   ids: number[],
   data: { dataPagamento: string; formaPagamento: string }
-): Promise<{ atualizados: number } | { error: string }> {
+): Promise<{ atualizados: number; recibos: { pagamentoId: number; numero: string; codigoVerificacao: string }[] } | { error: string }> {
   const session = await requireAuth(["admin", "secretaria"])
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
@@ -109,13 +173,16 @@ export async function registrarPagamentosLote(
     )
     const atualizados = resultados.reduce((soma, r) => soma + r.count, 0)
 
-    // Um recibo por mensalidade efetivamente baixada (count 0 = outro processo baixou antes).
+    // Um recibo por mensalidade efetivamente baixada (count 0 = outro processo baixou antes),
+    // com o valor desta baixa: o restante, se a mensalidade já tinha pagamento parcial.
+    const recibos: { pagamentoId: number; numero: string; codigoVerificacao: string }[] = []
     for (const [i, p] of pendentes.entries()) {
       if (resultados[i]?.count !== 1) continue
-      await emitirReciboSeguro(db, {
-        pagamentoId: p.id, valor: valorDevidoDoPagamento(p), formaPagamento: data.formaPagamento,
+      const recibo = await emitirReciboSeguro(db, {
+        pagamentoId: p.id, valor: restanteDoPagamento(p), formaPagamento: data.formaPagamento,
         dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
       })
+      if (recibo) recibos.push({ pagamentoId: p.id, numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao })
     }
 
     await registrarLog("pagamento", `Lote: ${plural(atualizados, "pagamento registrado", "pagamentos registrados", "nenhum")}`, { forma: data.formaPagamento, data: data.dataPagamento })
@@ -124,7 +191,7 @@ export async function registrarPagamentosLote(
     revalidatePath("/caixa")
     revalidatePath("/caixa/recebimentos")
     revalidatePath("/dashboard")
-    return { atualizados }
+    return { atualizados, recibos }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamentos em lote" }
   }
