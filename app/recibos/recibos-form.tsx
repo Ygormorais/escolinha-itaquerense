@@ -47,21 +47,44 @@ interface ReciboData {
   codigoVerificacao: string
 }
 
-export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; config: ClubConfig }) {
+/** Dados do formulário a partir de um recibo já registrado (impressão de uma baixa). */
+function formularioDoRecibo(recibo: Recibo): ReciboData {
+  return {
+    numero: recibo.numero,
+    aluno: recibo.alunoNome,
+    responsavel: recibo.responsavel,
+    referencia: recibo.mesReferencia,
+    valor: String(recibo.valor),
+    forma: recibo.formaPagamento,
+    dataPagamento: new Date(recibo.dataPagamento).toISOString().slice(0, 10),
+    codigoVerificacao: recibo.codigoVerificacao ?? "",
+  }
+}
+
+export default function RecibosForm({
+  recibos,
+  config,
+  reciboSalvo = null,
+}: {
+  recibos: Recibo[]
+  config: ClubConfig
+  /** Recibo emitido por uma baixa, carregado do banco pelo código: a tela só imprime. */
+  reciboSalvo?: Recibo | null
+}) {
   const searchParams = useSearchParams()
   const today = new Date().toISOString().split("T")[0]
 
-  // Vindo de uma baixa, o recibo já foi emitido e registrado: a tela só imprime.
-  const reciboEmitido = Boolean(searchParams.get("codigo"))
-  const [form, setForm] = useState<ReciboData>({
-    numero: searchParams.get("numero") ?? "001",
+  // Os dados vêm do banco, nunca da URL: imprimir não pode alterar um recibo já registrado.
+  const reciboEmitido = reciboSalvo !== null
+  const [form, setForm] = useState<ReciboData>(() => reciboSalvo ? formularioDoRecibo(reciboSalvo) : {
+    numero: "001",
     aluno: searchParams.get("aluno") ?? "",
     responsavel: searchParams.get("responsavel") ?? "",
     referencia: searchParams.get("referencia") ?? "",
     valor: searchParams.get("valor") ?? "",
     forma: searchParams.get("forma") ?? "PIX",
     dataPagamento: searchParams.get("data") ?? today,
-    codigoVerificacao: searchParams.get("codigo") ?? "",
+    codigoVerificacao: "",
   })
 
   const [salvando, startSalvando] = useTransition()
@@ -145,23 +168,23 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="rec-referencia">Referência</Label>
-                <Input id="rec-referencia" name="referencia" placeholder="Ex: Abril/2025" value={form.referencia} onChange={handleChange} />
+                <Input id="rec-referencia" name="referencia" placeholder="Ex: Abril/2025" value={form.referencia} onChange={handleChange} readOnly={reciboEmitido} />
               </div>
               <div className="col-span-2 flex flex-col gap-1">
                 <Label htmlFor="rec-aluno">Aluno</Label>
-                <Input id="rec-aluno" name="aluno" value={form.aluno} onChange={handleChange} />
+                <Input id="rec-aluno" name="aluno" value={form.aluno} onChange={handleChange} readOnly={reciboEmitido} />
               </div>
               <div className="col-span-2 flex flex-col gap-1">
                 <Label htmlFor="rec-responsavel">Responsável</Label>
-                <Input id="rec-responsavel" name="responsavel" value={form.responsavel} onChange={handleChange} />
+                <Input id="rec-responsavel" name="responsavel" value={form.responsavel} onChange={handleChange} readOnly={reciboEmitido} />
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="rec-valor">Valor (R$)</Label>
-                <Input id="rec-valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} />
+                <Input id="rec-valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} readOnly={reciboEmitido} />
               </div>
               <div className="flex flex-col gap-1">
                 <Label>Forma de Pagamento</Label>
-                <Select value={form.forma} onValueChange={(v) => { if (v) setForm((prev) => ({ ...prev, forma: v })) }}>
+                <Select disabled={reciboEmitido} value={form.forma} onValueChange={(v) => { if (v) setForm((prev) => ({ ...prev, forma: v })) }}>
                   <SelectTrigger aria-label="Forma de Pagamento">
                     <SelectValue />
                   </SelectTrigger>
@@ -182,6 +205,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                   type="date"
                   value={form.dataPagamento}
                   onChange={handleChange}
+                  readOnly={reciboEmitido}
                 />
               </div>
             </div>

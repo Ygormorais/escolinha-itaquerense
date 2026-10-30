@@ -176,7 +176,14 @@ export async function reconciliarTransacao(
     select: { dataPagamento: true },
   })
   if (existente?.dataPagamento) return { error: "A mensalidade desse mês já está paga" }
-  await db.$transaction(async (tx) => {
+  const reservada = await db.$transaction(async (tx) => {
+    // Reserva atômica: duas conciliações simultâneas da mesma transação passam pela checagem
+    // de status acima, mas só uma consegue marcar a transação; a outra não baixa nem emite recibo.
+    const { count } = await tx.transacaoMaquina.updateMany({
+      where: { id, status: "pendente" },
+      data: { status: "reconciliado", alunoId },
+    })
+    if (count === 0) return false
     const pagamento = await tx.pagamento.upsert({
       where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
       update: dados,
@@ -194,7 +201,9 @@ export async function reconciliarTransacao(
       pagamentoId: pagamento.id, valor: dados.valorRecebido, formaPagamento: dados.formaPagamento,
       dataPagamento: dados.dataPagamento, emitidoPor: session?.user ?? null,
     })
+    return true
   })
+  if (!reservada) return { error: "Transação já reconciliada" }
 
   revalidatePath("/caixa/maquina")
   revalidatePath("/caixa/recebimentos")
@@ -244,7 +253,12 @@ export async function reconciliarAuto() {
       valorRecebido: t.valor,
       observacoes: `Reconciliado automático - ${t.nomeNoCartao}`,
     }
-    await db.$transaction(async (tx) => {
+    const reservada = await db.$transaction(async (tx) => {
+      const { count } = await tx.transacaoMaquina.updateMany({
+        where: { id: t.id, status: "pendente" },
+        data: { status: "reconciliado", alunoId: aluno.id },
+      })
+      if (count === 0) return false
       const pagamento = await tx.pagamento.upsert({
         where: { alunoId_mesReferencia: { alunoId: aluno.id, mesReferencia: mes } },
         update: dadosAuto,
@@ -259,7 +273,9 @@ export async function reconciliarAuto() {
         pagamentoId: pagamento.id, valor: dadosAuto.valorRecebido, formaPagamento: dadosAuto.formaPagamento,
         dataPagamento: dadosAuto.dataPagamento, emitidoPor: session?.user ?? null,
       })
+      return true
     })
+    if (!reservada) continue
     reconciliados++
   }
 

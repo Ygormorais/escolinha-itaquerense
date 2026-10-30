@@ -133,12 +133,12 @@ describe("gerarCSVPagamentos", () => {
 describe("urlImpressaoRecibo", () => {
   const dados = { aluno: "Ana Souza", referencia: "2026-06", valor: "120", forma: "PIX", data: "2026-06-10" }
 
-  it("leva o número e o código do recibo já emitido pela baixa", () => {
+  it("com recibo emitido, leva só o código (os dados vêm do banco)", () => {
     const url = new URL(urlImpressaoRecibo(dados, { numero: "REC-2026-AB", codigoVerificacao: "COD9" }), "http://x")
     expect(url.pathname).toBe("/recibos")
-    expect(url.searchParams.get("numero")).toBe("REC-2026-AB")
     expect(url.searchParams.get("codigo")).toBe("COD9")
-    expect(url.searchParams.get("aluno")).toBe("Ana Souza")
+    expect(url.searchParams.has("aluno")).toBe(false)
+    expect(url.searchParams.has("valor")).toBe(false)
   })
 
   it("sem recibo emitido, só preenche os dados", () => {

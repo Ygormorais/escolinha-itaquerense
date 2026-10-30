@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 vi.mock("@/lib/db", () => {
   const db = {
     $transaction: vi.fn(),
-    transacaoMaquina: { createMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn(), groupBy: vi.fn() },
+    transacaoMaquina: { createMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn(), aggregate: vi.fn(), count: vi.fn(), groupBy: vi.fn() },
     pagamento: { create: vi.fn(), upsert: vi.fn(), findUnique: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn() },
   }
@@ -60,6 +60,7 @@ beforeEach(() => {
   m.transacaoMaquina.findUnique.mockResolvedValue(tx())
   m.transacaoMaquina.findMany.mockResolvedValue([])
   m.transacaoMaquina.update.mockResolvedValue({})
+  ;(m.transacaoMaquina as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany.mockResolvedValue({ count: 1 })
   m.transacaoMaquina.aggregate.mockResolvedValue({ _sum: { valor: 0 } })
   m.transacaoMaquina.count.mockResolvedValue(0)
   m.transacaoMaquina.groupBy.mockResolvedValue([])
@@ -271,6 +272,28 @@ describe("maquininha em mês já pago", () => {
     await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 0, naoEncontrados: 0, invalidos: 0, jaPagos: 1 })
     expect(m.pagamento.upsert).not.toHaveBeenCalled()
     expect(m.transacaoMaquina.update).not.toHaveBeenCalled()
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
+  })
+})
+
+describe("conciliação simultânea da mesma transação", () => {
+  const updateMany = () => (m.transacaoMaquina as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany
+
+  it("manual: só quem reserva a transação baixa e emite recibo", async () => {
+    updateMany().mockResolvedValueOnce({ count: 0 })
+    const res = await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(res).toEqual({ error: "Transação já reconciliada" })
+    expect(updateMany()).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 1, status: "pendente" } }))
+    expect(m.pagamento.upsert).not.toHaveBeenCalled()
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
+  })
+
+  it("automática: transação reservada por outro processo é pulada", async () => {
+    m.transacaoMaquina.findMany.mockResolvedValue([tx({ nomeNoCartao: "JOAO DA SILVA" })])
+    m.aluno.findMany.mockResolvedValue([{ id: 10, nome: "João da Silva", responsavel: "Carlos", mensalidade: 200, desconto: 0 }])
+    updateMany().mockResolvedValueOnce({ count: 0 })
+    await reconciliarAuto()
+    expect(m.pagamento.upsert).not.toHaveBeenCalled()
     expect(emitirReciboSeguro).not.toHaveBeenCalled()
   })
 })
