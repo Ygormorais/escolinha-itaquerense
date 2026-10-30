@@ -27,7 +27,7 @@ vi.mock("@/lib/mercadopago", () => ({
   mpStatusToLocal: vi.fn(),
 }))
 vi.mock("@/lib/db", () => ({
-  db: { pagamento: { findMany: vi.fn().mockResolvedValue([]), update: vi.fn() } },
+  db: { pagamento: { findMany: vi.fn().mockResolvedValue([]), update: vi.fn(), updateMany: vi.fn().mockResolvedValue({ count: 1 }) } },
 }))
 vi.mock("@/lib/baixa", () => ({
   emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
@@ -86,5 +86,16 @@ describe("cron: recibo das cobranças confirmadas no Mercado Pago", () => {
     ;(mpStatusToLocal as ReturnType<typeof vi.fn>).mockReturnValue("pago")
     await GET(makeRequest())
     expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 4, valor: 120, formaPagamento: "PIX" }))
+  })
+
+  it("não emite recibo se o webhook baixou a mensalidade enquanto o cron rodava", async () => {
+    ;(db.pagamento.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      { id: 4, externalId: "mp-1", canalPrevisto: "PIX", mesReferencia: "2026-06", valorDevido: 120, aluno: { nome: "Ana", responsavelId: null } },
+    ])
+    ;(mpPayment.get as ReturnType<typeof vi.fn>).mockResolvedValue({ status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 120 })
+    ;(mpStatusToLocal as ReturnType<typeof vi.fn>).mockReturnValue("pago")
+    ;(db.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany.mockResolvedValueOnce({ count: 0 })
+    await GET(makeRequest())
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
   })
 })

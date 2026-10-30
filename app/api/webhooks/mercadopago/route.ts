@@ -85,7 +85,18 @@ export async function POST(req: Request) {
       updateData.formaPagamento = pagamento.canalPrevisto
     }
 
-    await db.pagamento.update({ where: { id: pagamento.id }, data: updateData })
+    // Baixa só com a mensalidade ainda em aberto: notificações simultâneas do Mercado Pago
+    // passam juntas pela checagem de jaPago, mas só uma consegue gravar.
+    let primeiraBaixa = false
+    if (statusLocal === "pago") {
+      const { count } = await db.pagamento.updateMany({
+        where: { id: pagamento.id, dataPagamento: null },
+        data: updateData,
+      })
+      primeiraBaixa = count === 1
+    } else {
+      await db.pagamento.update({ where: { id: pagamento.id }, data: updateData })
+    }
 
     revalidatePath("/pagamentos")
     revalidatePath("/caixa/pix")
@@ -93,10 +104,10 @@ export async function POST(req: Request) {
     revalidatePath("/inadimplencia")
     revalidatePath("/")
 
-    if (statusLocal === "pago" && !jaPago) {
+    if (primeiraBaixa) {
       await emitirReciboSeguro(db, {
         pagamentoId: pagamento.id,
-        valor: Number(mpData.transaction_amount ?? 0),
+        valor: Number(mpData.transaction_amount ?? pagamento.valorDevido ?? 0),
         formaPagamento: pagamento.canalPrevisto ?? "Mercado Pago",
         dataPagamento: updateData.dataPagamento as Date,
         emitidoPor: "Mercado Pago",

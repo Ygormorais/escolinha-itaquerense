@@ -18,7 +18,7 @@ import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { registrarPagamento } from "@/app/actions/pagamentos"
-import { FORMAS_PAGAMENTO, type Pagamento } from "./pagamentos-utils"
+import { FORMAS_PAGAMENTO, urlImpressaoRecibo, type Pagamento } from "./pagamentos-utils"
 
 export function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }) {
   const [open, setOpen] = useState(false)
@@ -55,14 +55,13 @@ export function RegistrarPagamentoDialog({ pagamento }: { pagamento: Pagamento }
           toast.error(result.error)
           return
         }
-        const params = new URLSearchParams({
+        setReciboUrl(urlImpressaoRecibo({
           aluno: pagamento.aluno.nome,
           referencia: pagamento.mesReferencia,
           valor: String(values.valorRecebido),
           forma: values.formaPagamento,
           data: values.dataPagamento,
-        })
-        setReciboUrl(`/recibos?${params.toString()}`)
+        }, result.recibo))
         setDone(true)
       } catch {
         toast.error("Erro ao registrar pagamento")

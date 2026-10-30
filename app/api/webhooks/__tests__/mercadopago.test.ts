@@ -17,6 +17,7 @@ vi.mock("@/lib/db", () => ({
     pagamento: {
       findFirst: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
   },
 }))
@@ -115,9 +116,9 @@ describe("POST /api/webhooks/mercadopago", () => {
     const res = await POST(req)
 
     expect(res.status).toBe(200)
-    expect(m.pagamento.update).toHaveBeenCalledWith(
+    expect((m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 7 },
+        where: { id: 7, dataPagamento: null },
         data: expect.objectContaining({
           statusCobranca: "pago",
           valorRecebido: 150,
@@ -144,6 +145,7 @@ describe("POST /api/webhooks/mercadopago", () => {
       id: 9, canalPrevisto: "PIX", dataPagamento: new Date("2026-06-10T10:00:00Z"),
       aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
     })
+    ;(m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany.mockResolvedValueOnce({ count: 0 })
     m.pagamento.update.mockResolvedValue({})
     await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
     expect(notificar).not.toHaveBeenCalled()
@@ -239,8 +241,32 @@ describe("recibo do Mercado Pago", () => {
       id: 9, canalPrevisto: "PIX", dataPagamento: new Date("2026-06-10T10:00:00Z"),
       aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
     })
+    ;(m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany.mockResolvedValueOnce({ count: 0 })
     m.pagamento.update.mockResolvedValue({})
     await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
     expect(emitirReciboSeguro).not.toHaveBeenCalled()
+  })
+
+  it("duas notificações simultâneas: só a que baixa de fato emite recibo e notifica", async () => {
+    mp.get.mockResolvedValue({ id: "mp-777", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 9, canalPrevisto: "PIX", dataPagamento: null, valorDevido: 150,
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    // A outra notificação baixou entre a leitura e a gravação.
+    ;(m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany.mockResolvedValueOnce({ count: 0 })
+    await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
+    expect(notificar).not.toHaveBeenCalled()
+  })
+
+  it("sem valor informado pelo Mercado Pago, o recibo usa o valor devido", async () => {
+    mp.get.mockResolvedValue({ id: "mp-778", status: "approved", date_approved: "2026-06-10T10:00:00Z" })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 9, canalPrevisto: "PIX", dataPagamento: null, valorDevido: 130,
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    await POST(makeRequest({ type: "payment", data: { id: "mp-778" } }))
+    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 9, valor: 130 }))
   })
 })

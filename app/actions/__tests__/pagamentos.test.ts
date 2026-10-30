@@ -75,7 +75,7 @@ describe("registrarPagamento", () => {
       valorRecebido: 200,
     })
     expect(res).toMatchObject({ success: true })
-    const data = m.pagamento.update.mock.calls[0][0].data
+    const data = m.pagamento.updateMany.mock.calls[0][0].data
     expect(data).toMatchObject({
       formaPagamento: "PIX",
       valorRecebido: 200,
@@ -87,7 +87,7 @@ describe("registrarPagamento", () => {
   })
 
   it("retorna erro amigável quando o update falha", async () => {
-    m.pagamento.update.mockRejectedValueOnce(new Error("constraint"))
+    m.pagamento.updateMany.mockRejectedValueOnce(new Error("constraint"))
     const res = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
     expect(res).toEqual({ error: "constraint" })
   })
@@ -101,7 +101,7 @@ describe("marcarComoPago", () => {
       valorRecebido: 0,
     })
     expect(res).toEqual({ error: "Valor inválido" })
-    expect(m.pagamento.update).not.toHaveBeenCalled()
+    expect(m.pagamento.updateMany).not.toHaveBeenCalled()
   })
 
   it("rejeita valor não-finito (NaN) sem tocar no banco", async () => {
@@ -111,7 +111,7 @@ describe("marcarComoPago", () => {
       valorRecebido: Number.NaN,
     })
     expect(res).toEqual({ error: "Valor inválido" })
-    expect(m.pagamento.update).not.toHaveBeenCalled()
+    expect(m.pagamento.updateMany).not.toHaveBeenCalled()
   })
 
   it("registra quando o valor é válido", async () => {
@@ -121,9 +121,9 @@ describe("marcarComoPago", () => {
       valorRecebido: 150,
     })
     expect(res).toMatchObject({ success: true })
-    expect(m.pagamento.update.mock.calls[0][0].data.valorRecebido).toBe(150)
-    expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
-    expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.valorRecebido).toBe(150)
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.statusCobranca).toBe("pago")
   })
 })
 
@@ -235,21 +235,21 @@ describe("marcarComoPago", () => {
   it("marca como pago com valor válido", async () => {
     const res = await marcarComoPago(1, base)
     expect(res).toMatchObject({ success: true })
-    expect(m.pagamento.update).toHaveBeenCalled()
-    expect(m.pagamento.update.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
-    expect(m.pagamento.update.mock.calls[0][0].data.statusCobranca).toBe("pago")
+    expect(m.pagamento.updateMany).toHaveBeenCalled()
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.statusCobranca).toBe("pago")
   })
 
   it("rejeita data inválida sem gravar", async () => {
     const res = await marcarComoPago(1, { ...base, dataPagamento: "2026-13-99" })
     expect(res).toEqual({ error: "Data de pagamento inválida" })
-    expect(m.pagamento.update).not.toHaveBeenCalled()
+    expect(m.pagamento.updateMany).not.toHaveBeenCalled()
   })
 
   it.each([0, -10, NaN, Infinity])("rejeita valorRecebido inválido (%s) sem gravar", async (valorRecebido) => {
     const res = await marcarComoPago(1, { ...base, valorRecebido })
     expect(res).toEqual({ error: "Valor inválido" })
-    expect(m.pagamento.update).not.toHaveBeenCalled()
+    expect(m.pagamento.updateMany).not.toHaveBeenCalled()
   })
 })
 
@@ -282,7 +282,7 @@ describe("recibo da baixa", () => {
   it("falha ao emitir recibo não desfaz a baixa", async () => {
     emitir.mockResolvedValueOnce(null)
     const res = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
-    expect(m.pagamento.update).toHaveBeenCalled()
+    expect(m.pagamento.updateMany).toHaveBeenCalled()
     expect(res).toEqual({ success: true, recibo: null })
   })
 
@@ -293,5 +293,20 @@ describe("recibo da baixa", () => {
     await deletePagamento(9)
     expect(cancelar).toHaveBeenCalledWith(expect.anything(), 9, "secretaria")
     expect(ordem).toEqual(["cancelar", "excluir"])
+  })
+
+  it("segunda baixa da mesma mensalidade é recusada, sem sobrescrever nem emitir recibo", async () => {
+    m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
+    const res = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
+    expect(res).toEqual({ error: "Esta mensalidade já está paga" })
+    expect(m.pagamento.update).not.toHaveBeenCalled()
+    expect(emitir).not.toHaveBeenCalled()
+  })
+
+  it("marcar como pago também recusa mensalidade já paga", async () => {
+    m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
+    const res = await marcarComoPago(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 150 })
+    expect(res).toEqual({ error: "Esta mensalidade já está paga" })
+    expect(emitir).not.toHaveBeenCalled()
   })
 })

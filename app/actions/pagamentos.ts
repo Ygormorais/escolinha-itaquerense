@@ -31,8 +31,10 @@ export async function registrarPagamento(
   if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
-    await db.pagamento.update({
-      where: { id },
+    // Só baixa mensalidade em aberto: duas abas ou lista desatualizada não sobrescrevem a
+    // baixa anterior nem geram segundo recibo.
+    const { count } = await db.pagamento.updateMany({
+      where: { id, dataPagamento: null },
       data: {
         dataPagamento: new Date(data.dataPagamento),
         formaPagamento: data.formaPagamento,
@@ -42,6 +44,7 @@ export async function registrarPagamento(
         observacoes: data.observacoes ?? null,
       },
     })
+    if (count === 0) return { error: "Esta mensalidade já está paga" }
     const recibo = await emitirReciboSeguro(db, {
       pagamentoId: id, valor, formaPagamento: data.formaPagamento,
       dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
@@ -227,8 +230,8 @@ export async function marcarComoPago(
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
-    await db.pagamento.update({
-      where: { id },
+    const { count } = await db.pagamento.updateMany({
+      where: { id, dataPagamento: null },
       data: {
         dataPagamento: new Date(data.dataPagamento),
         formaPagamento: data.formaPagamento,
@@ -237,6 +240,7 @@ export async function marcarComoPago(
         statusCobranca: "pago",
       },
     })
+    if (count === 0) return { error: "Esta mensalidade já está paga" }
 
     const recibo = await emitirReciboSeguro(db, {
       pagamentoId: id, valor, formaPagamento: data.formaPagamento,

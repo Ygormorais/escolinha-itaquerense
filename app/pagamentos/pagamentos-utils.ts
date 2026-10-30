@@ -104,3 +104,19 @@ export function gerarCSVPagamentos(pagamentos: Pagamento[], agora: Date = new Da
   ]
   return linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
 }
+
+/**
+ * Endereço da tela de impressão do recibo. Com o recibo já emitido pela baixa, leva número e
+ * código para a tela só imprimir (sem emitir um segundo recibo avulso).
+ */
+export function urlImpressaoRecibo(
+  dados: { aluno: string; referencia: string; valor: string; forma: string; data: string },
+  recibo: { numero: string; codigoVerificacao: string } | null,
+): string {
+  const params = new URLSearchParams(dados)
+  if (recibo) {
+    params.set("numero", recibo.numero)
+    params.set("codigo", recibo.codigoVerificacao)
+  }
+  return `/recibos?${params.toString()}`
+}

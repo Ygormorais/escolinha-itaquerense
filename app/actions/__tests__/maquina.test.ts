@@ -4,7 +4,7 @@ vi.mock("@/lib/db", () => {
   const db = {
     $transaction: vi.fn(),
     transacaoMaquina: { createMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), aggregate: vi.fn(), count: vi.fn(), groupBy: vi.fn() },
-    pagamento: { create: vi.fn(), upsert: vi.fn() },
+    pagamento: { create: vi.fn(), upsert: vi.fn(), findUnique: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn() },
   }
   return { db }
@@ -42,7 +42,7 @@ const m = db as unknown as {
     count: ReturnType<typeof vi.fn>
     groupBy: ReturnType<typeof vi.fn>
   }
-  pagamento: { create: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn> }
+  pagamento: { create: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn> }
   aluno: { findMany: ReturnType<typeof vi.fn>; findFirst: ReturnType<typeof vi.fn> }
 }
 const mParseCSV = parseCSV as unknown as ReturnType<typeof vi.fn>
@@ -65,6 +65,7 @@ beforeEach(() => {
   m.transacaoMaquina.groupBy.mockResolvedValue([])
   m.pagamento.create.mockResolvedValue({ id: 99 })
   m.pagamento.upsert.mockResolvedValue({ id: 99 })
+  m.pagamento.findUnique.mockResolvedValue(null)
   m.aluno.findMany.mockResolvedValue([])
   m.$transaction.mockImplementation(async (callback: (client: typeof m) => unknown) => callback(m))
 })
@@ -201,7 +202,7 @@ describe("reconciliarAuto", () => {
       { id: 11, nome: "Ana Souza", responsavel: "Maria Souza" },
     ])
 
-    await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 2, naoEncontrados: 0, invalidos: 0 })
+    await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 2, naoEncontrados: 0, invalidos: 0, jaPagos: 0 })
     expect(m.aluno.findMany).toHaveBeenCalledTimes(1)
     expect(m.aluno.findFirst).not.toHaveBeenCalled()
     expect(m.$transaction).toHaveBeenCalledTimes(2)
@@ -217,7 +218,7 @@ describe("reconciliarAuto", () => {
     m.transacaoMaquina.findMany.mockResolvedValue([tx({ nomeNoCartao: "PESSOA INEXISTENTE" })])
     m.aluno.findMany.mockResolvedValue([{ id: 10, nome: "João Silva", responsavel: "Carlos Silva" }])
 
-    await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 0, naoEncontrados: 1, invalidos: 0 })
+    await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 0, naoEncontrados: 1, invalidos: 0, jaPagos: 0 })
     expect(m.$transaction).not.toHaveBeenCalled()
   })
 })
@@ -251,5 +252,25 @@ describe("recibo da reconciliação", () => {
     ;(db.aluno as unknown as { findUnique: ReturnType<typeof vi.fn> }).findUnique.mockResolvedValue({ mensalidade: 200, desconto: 0 })
     await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
     expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 99, valor: 200, formaPagamento: "Cartão Crédito (Visa)" }))
+  })
+})
+
+describe("maquininha em mês já pago", () => {
+  it("reconciliação manual recusa mês já pago, sem sobrescrever nem emitir recibo", async () => {
+    m.pagamento.findUnique.mockResolvedValue({ id: 50, dataPagamento: new Date("2026-06-03") })
+    const res = await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(res).toEqual({ error: "A mensalidade desse mês já está paga" })
+    expect(m.pagamento.upsert).not.toHaveBeenCalled()
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
+  })
+
+  it("reconciliação automática pula mês já pago e deixa a transação pendente", async () => {
+    m.transacaoMaquina.findMany.mockResolvedValue([tx({ nomeNoCartao: "JOAO DA SILVA" })])
+    m.aluno.findMany.mockResolvedValue([{ id: 10, nome: "João da Silva", responsavel: "Carlos", mensalidade: 200, desconto: 0 }])
+    m.pagamento.findUnique.mockResolvedValue({ id: 50, dataPagamento: new Date("2026-06-03") })
+    await expect(reconciliarAuto()).resolves.toEqual({ reconciliados: 0, naoEncontrados: 0, invalidos: 0, jaPagos: 1 })
+    expect(m.pagamento.upsert).not.toHaveBeenCalled()
+    expect(m.transacaoMaquina.update).not.toHaveBeenCalled()
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
   })
 })

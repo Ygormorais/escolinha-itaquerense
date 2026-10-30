@@ -51,15 +51,17 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
   const searchParams = useSearchParams()
   const today = new Date().toISOString().split("T")[0]
 
+  // Vindo de uma baixa, o recibo já foi emitido e registrado: a tela só imprime.
+  const reciboEmitido = Boolean(searchParams.get("codigo"))
   const [form, setForm] = useState<ReciboData>({
-    numero: "001",
+    numero: searchParams.get("numero") ?? "001",
     aluno: searchParams.get("aluno") ?? "",
     responsavel: searchParams.get("responsavel") ?? "",
     referencia: searchParams.get("referencia") ?? "",
     valor: searchParams.get("valor") ?? "",
     forma: searchParams.get("forma") ?? "PIX",
     dataPagamento: searchParams.get("data") ?? today,
-    codigoVerificacao: "",
+    codigoVerificacao: searchParams.get("codigo") ?? "",
   })
 
   const [salvando, startSalvando] = useTransition()
@@ -72,6 +74,10 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
   }
 
   function handleImprimir() {
+    if (reciboEmitido) {
+      window.print()
+      return
+    }
     startSalvando(async () => {
       try {
         const result = await salvarRecibo({

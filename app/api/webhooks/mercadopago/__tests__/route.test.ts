@@ -8,6 +8,7 @@ vi.mock("@/lib/db", () => ({
     pagamento: {
       findFirst: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
   },
 }))
@@ -63,7 +64,7 @@ function makeRequest(body: object, opts: { signature?: string; requestId?: strin
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("POST /api/webhooks/mercadopago", () => {
-  let db: { pagamento: { findFirst: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> } }
+  let db: { pagamento: { findFirst: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn> } }
   let mpPayment: { get: ReturnType<typeof vi.fn> }
 
   beforeEach(async () => {
@@ -132,13 +133,14 @@ describe("POST /api/webhooks/mercadopago", () => {
       canalPrevisto: "pix",
       aluno: { nome: "Fulano", telefone: null, email: null, responsavel: null },
     })
-    db.pagamento.update.mockResolvedValue({})
+    // Já pago: a baixa condicional não encontra a mensalidade em aberto.
+    db.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
 
     const { POST } = await import("../route")
     const res = await POST(makeRequest({ type: "payment", data: { id: paymentId } }, { signature: sig }))
     expect(res.status).toBe(200)
-    expect(db.pagamento.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 1 } }),
+    expect(db.pagamento.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1, dataPagamento: null } }),
     )
     const { notificarPagamentoConfirmado } = await import("@/lib/whatsapp-jobs")
     expect(notificarPagamentoConfirmado).not.toHaveBeenCalled()
@@ -167,9 +169,9 @@ describe("POST /api/webhooks/mercadopago", () => {
     const { POST } = await import("../route")
     const res = await POST(makeRequest({ type: "payment", data: { id: paymentId } }, { signature: sig }))
     expect(res.status).toBe(200)
-    expect(db.pagamento.update).toHaveBeenCalledWith(
+    expect(db.pagamento.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 42 },
+        where: { id: 42, dataPagamento: null },
         data: expect.objectContaining({ statusCobranca: "pago" }),
       }),
     )

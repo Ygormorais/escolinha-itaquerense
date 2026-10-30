@@ -170,6 +170,12 @@ export async function reconciliarTransacao(
   // upsert na unique (alunoId, mesReferencia): se a mensalidade do mês já existe,
   // marca como paga via cartão (não duplica); senão cria.
   const alunoValores = await db.aluno.findUnique({ where: { id: alunoId }, select: { mensalidade: true, desconto: true } })
+  // Mês já pago (em dinheiro, Pix etc.) não é sobrescrito pelo cartão nem ganha segundo recibo.
+  const existente = await db.pagamento.findUnique({
+    where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
+    select: { dataPagamento: true },
+  })
+  if (existente?.dataPagamento) return { error: "A mensalidade desse mês já está paga" }
   await db.$transaction(async (tx) => {
     const pagamento = await tx.pagamento.upsert({
       where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
@@ -214,6 +220,7 @@ export async function reconciliarAuto() {
 
   let reconciliados = 0
   let naoEncontrados = 0
+  let jaPagos = 0
   let invalidos = 0
 
   for (const t of pendentes) {
@@ -223,6 +230,13 @@ export async function reconciliarAuto() {
 
     const mes = `${t.dataTransacao.getFullYear()}-${String(t.dataTransacao.getMonth() + 1).padStart(2, "0")}`
     const dataVenc = new Date(t.dataTransacao.getFullYear(), t.dataTransacao.getMonth(), 10)
+
+    // Mês já pago fica de fora; a transação continua pendente para conferência manual.
+    const existente = await db.pagamento.findUnique({
+      where: { alunoId_mesReferencia: { alunoId: aluno.id, mesReferencia: mes } },
+      select: { dataPagamento: true },
+    })
+    if (existente?.dataPagamento) { jaPagos++; continue }
 
     const dadosAuto = {
       dataPagamento: t.dataTransacao,
@@ -251,7 +265,7 @@ export async function reconciliarAuto() {
 
   revalidatePath("/caixa/maquina")
   revalidatePath("/caixa/recebimentos")
-  return { reconciliados, naoEncontrados, invalidos }
+  return { reconciliados, naoEncontrados, invalidos, jaPagos }
 }
 
 export async function ignorarTransacao(id: number) {
