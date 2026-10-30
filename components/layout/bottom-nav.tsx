@@ -4,16 +4,14 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import type { StaffRole } from "@/lib/permissions"
-import { bottomNavItems, isNavItemActive, NAV_GROUPS } from "@/lib/navigation"
+import { bottomNavItems, isNavItemActive } from "@/lib/navigation"
 
-const allNavItems = NAV_GROUPS.flatMap((group) => group.items)
-
-export function BottomNav({ role, pendingPendencias = 0 }: { role: StaffRole; pendingPendencias?: number }) {
+export function BottomNav({ role, pendingAtraso = 0 }: { role: StaffRole; pendingAtraso?: number }) {
   const pathname = usePathname()
 
   if (pathname.startsWith("/responsavel") || pathname === "/login") return null
 
-  const items = bottomNavItems(role, { pendencias: pendingPendencias })
+  const items = bottomNavItems(role, { atraso: pendingAtraso })
 
   return (
     <nav
@@ -22,7 +20,7 @@ export function BottomNav({ role, pendingPendencias = 0 }: { role: StaffRole; pe
       aria-label="Navegação rápida"
     >
       {items.map(({ href, label, icon: Icon, badge }) => {
-        const isActive = isNavItemActive(pathname, href, allNavItems)
+        const isActive = isNavItemActive(pathname, href, items)
         return (
           <Link
             key={href}

@@ -36,27 +36,9 @@ test.describe("Design system administrativo", () => {
 
       await expect(page.locator('[data-slot="page-header-date-nav"]')).toBeVisible()
       await expect(page.locator('[data-slot="month-picker"]')).toBeVisible()
-      await expect(page.locator('[data-slot="alert-summary"]')).toHaveCount(1)
+      await expect(page.locator('[data-slot="inicio-numeros"]')).toHaveCount(1)
       await expectNoHorizontalOverflow(page)
     }
-  })
-
-  test("resumo de alertas alinha os cards no desktop", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 1000 })
-    await page.goto("/dashboard", { waitUntil: "networkidle" })
-
-    const summary = page.locator('[data-slot="alert-summary"]')
-    await expect(summary).toBeVisible()
-    const visibleLinks = summary.getByRole("link", { name: /ver detalhes/i })
-    expect(await visibleLinks.count()).toBeGreaterThan(1)
-    const temConteudoTransbordando = await visibleLinks.evaluateAll((links) =>
-      links.some((link) => link.scrollWidth > link.clientWidth),
-    )
-    expect(temConteudoTransbordando).toBe(false)
-    const alturas = await visibleLinks.evaluateAll((links) =>
-      links.map((link) => Math.round(link.getBoundingClientRect().height)),
-    )
-    expect(new Set(alturas).size).toBe(1)
   })
 
   test("pagamentos troca a tabela por cartões funcionais no mobile", async ({ page }) => {

@@ -33,7 +33,6 @@ test.describe("Frequência", () => {
   test("sidebar link Frequência navega corretamente", async ({ page }) => {
     await page.goto("/dashboard")
     const sidebar = page.locator("aside")
-    await sidebar.getByRole("button", { name: "Operação" }).click()
     await sidebar.getByRole("link", { name: "Frequência", exact: true }).click()
     await expect(page).toHaveURL("/frequencia")
   })

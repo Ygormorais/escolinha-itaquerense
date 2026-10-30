@@ -6,25 +6,16 @@ test.describe("Navegação", () => {
     await loginAsAdmin(page)
   })
 
-  test("sidebar desktop organiza os links por seção", async ({ page }) => {
+  test("sidebar mostra as 10 seções e os sub-itens da seção ativa", async ({ page }) => {
+    await page.goto("/turmas")
     const sidebar = page.locator("aside")
-    await expect(sidebar.locator('a[href="/dashboard"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/alunos"]')).not.toBeVisible()
-
-    await sidebar.getByRole("button", { name: "Operação" }).click()
-    await expect(sidebar.locator('a[href="/alunos"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/pagamentos"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/frequencia"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/agenda"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/campeonatos"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/caixa"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/noticias"]')).not.toBeVisible()
-
-    await sidebar.getByRole("button", { name: "Documentos & Gestão" }).click()
-    await expect(sidebar.locator('a[href="/alunos"]')).not.toBeVisible()
-    await expect(sidebar.locator('a[href="/configuracoes"]')).toHaveCount(0)
-    await expect(sidebar.locator('a[href="/noticias"]')).toBeVisible()
-    await expect(sidebar.locator('a[href="/configuracoes/escalacoes"]')).toBeVisible()
+    for (const nome of ["Início", "Pagamentos", "Alunos", "Frequência", "Jogos e agenda", "Desenvolvimento", "Comunicação", "Loja", "Financeiro", "Configurações"]) {
+      await expect(sidebar.getByRole("link", { name: new RegExp(`^${nome}`) })).toBeVisible()
+    }
+    await expect(sidebar.locator('a[href="/configuracoes/responsaveis"]')).toBeVisible()
+    await expect(sidebar.locator('a[href="/custos"]')).toHaveCount(0)
+    await expect(sidebar.locator('a[href="/pendencias"]')).toHaveCount(0)
+    await expect(sidebar.locator('a[href="/secretaria"]')).toHaveCount(0)
   })
 
   test("configurações gerais não ficam acessíveis ao operador", async ({ page }) => {
@@ -32,14 +23,12 @@ test.describe("Navegação", () => {
     await expect(page).toHaveURL("/dashboard")
   })
 
-  test("abre automaticamente a seção da rota atual", async ({ page }) => {
+  test("marca a seção da rota atual", async ({ page }) => {
     const sidebar = page.locator("aside")
-    await sidebar.getByRole("button", { name: "Operação" }).click()
-    await sidebar.locator('a[href="/alunos"]').click()
-
+    await sidebar.getByRole("link", { name: /^Alunos/ }).click()
     await expect(page).toHaveURL("/alunos")
-    await expect(sidebar.getByRole("button", { name: "Operação" })).toHaveAttribute("aria-expanded", "true")
     await expect(sidebar.locator('a[href="/alunos"]')).toHaveAttribute("aria-current", "page")
+    await expect(sidebar.locator('a[href="/turmas"]')).toBeVisible()
   })
 
   test("sidebar mobile: hamburger abre menu", async ({ page }) => {
@@ -50,8 +39,7 @@ test.describe("Navegação", () => {
     await expect(hamburger).toBeVisible()
     await hamburger.click()
 
-    await page.locator("aside").getByRole("button", { name: "Operação" }).click()
-    await expect(page.getByRole("link", { name: "Alunos", exact: true }).first()).toBeVisible()
+    await expect(page.locator("aside").getByRole("link", { name: /^Alunos/ }).first()).toBeVisible()
   })
 
   test("sidebar mobile: click link fecha menu", async ({ page }) => {

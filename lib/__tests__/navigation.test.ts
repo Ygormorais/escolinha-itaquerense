@@ -1,22 +1,73 @@
 import { describe, expect, it } from "vitest"
-import { bottomNavItems, isNavItemActive, navGroupsFor, NAV_GROUPS } from "@/lib/navigation"
+import { bottomNavItems, isNavItemActive, NAV_SECTIONS, navSectionsFor, secaoAtiva } from "@/lib/navigation"
 import { canAccessStaffPath } from "@/lib/permissions"
 
-const todosOsItens = NAV_GROUPS.flatMap((g) => g.items)
+const todosOsItens = NAV_SECTIONS.flatMap((s) => [{ href: s.href, label: s.label, icon: s.icon }, ...s.children])
+
+describe("navSectionsFor", () => {
+  it("admin vê as 10 seções na ordem do desenho", () => {
+    expect(navSectionsFor("admin").map((s) => s.label)).toEqual([
+      "Início", "Pagamentos", "Alunos", "Frequência", "Jogos e agenda",
+      "Desenvolvimento", "Comunicação", "Loja", "Financeiro", "Configurações",
+    ])
+  })
+
+  it("secretaria em Financeiro cai no primeiro sub-item permitido", () => {
+    const fin = navSectionsFor("secretaria").find((s) => s.label === "Financeiro")!
+    expect(fin.href).toBe("/recibos")
+    expect(fin.children.map((c) => c.href)).not.toContain("/caixa")
+    expect(fin.children.map((c) => c.href)).not.toContain("/recibos")
+  })
+
+  it("seção sem nenhuma rota permitida some", () => {
+    expect(navSectionsFor("tecnico").map((s) => s.label)).not.toContain("Financeiro")
+  })
+
+  it("nunca mostra rota que o papel não acessa", () => {
+    for (const role of ["admin", "secretaria", "tecnico"] as const) {
+      for (const s of navSectionsFor(role)) {
+        expect(canAccessStaffPath(s.href, role)).toBe(true)
+        for (const c of s.children) expect(canAccessStaffPath(c.href, role)).toBe(true)
+      }
+    }
+  })
+
+  it("badge de atraso só em Pagamentos", () => {
+    const secoes = navSectionsFor("admin", { atraso: 8 })
+    expect(secoes.find((s) => s.label === "Pagamentos")!.badge).toBe(8)
+    expect(secoes.filter((s) => s.badge).map((s) => s.label)).toEqual(["Pagamentos"])
+  })
+
+  it("sub-itens com contagem própria recebem o badge", () => {
+    const alunos = navSectionsFor("admin", { solicitacoes: 2, matriculas: 3 }).find((s) => s.label === "Alunos")!
+    expect(alunos.children.find((c) => c.href === "/configuracoes/solicitacoes")?.badge).toBe(2)
+    expect(alunos.children.find((c) => c.href === "/configuracoes/matriculas")?.badge).toBe(3)
+  })
+
+  it("Pendências e Secretaria continuam alcançáveis, como sub-itens do Início", () => {
+    for (const role of ["admin", "secretaria", "tecnico"] as const) {
+      const inicio = navSectionsFor(role).find((s) => s.label === "Início")!
+      expect(inicio.children.map((c) => c.href)).toContain("/pendencias")
+    }
+    const inicioSec = navSectionsFor("secretaria").find((s) => s.label === "Início")!
+    expect(inicioSec.children.map((c) => c.href)).toContain("/secretaria")
+  })
+})
+
+describe("secaoAtiva", () => {
+  it("rota de sub-item ativa a seção", () => {
+    expect(secaoAtiva("/turmas", navSectionsFor("admin"))?.label).toBe("Alunos")
+    expect(secaoAtiva("/relatorio/turmas", navSectionsFor("admin"))?.label).toBe("Financeiro")
+    expect(secaoAtiva("/alunos/12", navSectionsFor("admin"))?.label).toBe("Alunos")
+    expect(secaoAtiva("/relatorio/frequencia", navSectionsFor("tecnico"))?.label).toBe("Frequência")
+  })
+})
 
 describe("bottomNavItems", () => {
-  it("admin vê os 4 atalhos prioritários, com pendências logo após o dashboard", () => {
-    expect(bottomNavItems("admin").map((i) => i.href)).toEqual(["/dashboard", "/pendencias", "/alunos", "/pagamentos"])
-  })
-
-  it("técnico recebe 4 atalhos do próprio trabalho em vez de ficar com 2", () => {
-    const hrefs = bottomNavItems("tecnico").map((i) => i.href)
-    expect(hrefs).toHaveLength(4)
-    expect(hrefs).toEqual(["/tecnico", "/frequencia", "/campeonatos", "/alunos"])
-  })
-
-  it("secretaria recebe 4 atalhos", () => {
-    expect(bottomNavItems("secretaria").map((i) => i.href)).toEqual(["/dashboard", "/pendencias", "/alunos", "/pagamentos"])
+  it("4 atalhos por perfil", () => {
+    expect(bottomNavItems("admin").map((i) => i.href)).toEqual(["/dashboard", "/pagamentos", "/alunos", "/frequencia"])
+    expect(bottomNavItems("secretaria").map((i) => i.href)).toEqual(["/pagamentos", "/alunos", "/frequencia", "/comunicados"])
+    expect(bottomNavItems("tecnico").map((i) => i.href)).toEqual(["/desenvolvimento", "/frequencia", "/agenda", "/alunos"])
   })
 
   it("nunca mostra rota que o papel não acessa", () => {
@@ -25,24 +76,8 @@ describe("bottomNavItems", () => {
     }
   })
 
-  it("usa o mesmo rótulo e ícone da Sidebar", () => {
-    for (const role of ["admin", "secretaria", "tecnico"] as const) {
-      for (const item of bottomNavItems(role)) {
-        const daSidebar = todosOsItens.find((i) => i.href === item.href)
-        expect(daSidebar).toBeDefined()
-        expect(item.label).toBe(daSidebar!.label)
-        expect(item.icon).toBe(daSidebar!.icon)
-      }
-    }
-  })
-})
-
-describe("navGroupsFor", () => {
-  it("filtra itens por papel e preenche badges pela chave", () => {
-    const grupos = navGroupsFor("tecnico", { pendencias: 3 })
-    const itens = grupos.flatMap((g) => g.items)
-    expect(itens.some((i) => i.href === "/pagamentos")).toBe(false)
-    expect(itens.find((i) => i.href === "/pendencias")?.badge).toBe(3)
+  it("usa o mesmo rótulo da seção do menu", () => {
+    expect(bottomNavItems("admin")[0].label).toBe("Início")
   })
 })
 
