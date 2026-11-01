@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Só vale em desenvolvimento. O dev server bloqueia origens que não sejam `localhost`: aberta
+  // por 127.0.0.1 ou pelo IP da rede, a página aparece, mas não hidrata e os botões não reagem.
+  allowedDevOrigins: ["127.0.0.1", "192.168.*.*", "10.*.*.*"],
   reactStrictMode: true,
   compress: true,
   images: {
