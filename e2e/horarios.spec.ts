@@ -10,6 +10,11 @@ const URLS = [
 
 for (const [origem, url] of URLS) {
   test.describe(`Turmas e horários (${origem})`, () => {
+    // No CI o servidor é `next start`, onde allowedDevOrigins não existe: o caso de 127.0.0.1
+    // só prova algo contra `next dev`. A configuração em si é coberta por
+    // lib/__tests__/next-config.test.ts, que roda em todo ambiente.
+    test.skip(origem === "127.0.0.1" && !!process.env.CI, "allowedDevOrigins só existe no servidor de desenvolvimento")
+
     test("aba Futsal Federado troca as categorias", async ({ page }) => {
       await page.goto(url)
       const federado = page.getByRole("tab", { name: /Futsal Federado/ })
