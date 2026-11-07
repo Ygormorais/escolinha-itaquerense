@@ -1,5 +1,6 @@
 "use server"
 
+import { restanteDoPagamento } from "@/lib/valor-devido"
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { getWhatsAppProvider } from "@/lib/whatsapp/provider"
@@ -248,9 +249,10 @@ export async function notificarInadimplentesEmLote(
       nome: true,
       telefone: true,
       mensalidade: true,
+      desconto: true,
       pagamentos: {
         where: { dataPagamento: null, dataVencimento: { lt: new Date() } },
-        select: { mesReferencia: true },
+        select: { mesReferencia: true, valorDevido: true, valorRecebido: true },
       },
     },
   })
@@ -263,7 +265,7 @@ export async function notificarInadimplentesEmLote(
     if (aluno.pagamentos.length === 0) continue
 
     const meses = aluno.pagamentos.map((p) => `• ${p.mesReferencia}`).join("\n")
-    const total = formatMoney(aluno.mensalidade * aluno.pagamentos.length)
+    const total = formatMoney(aluno.pagamentos.reduce((soma, p) => soma + restanteDoPagamento({ ...p, aluno }), 0))
     const msg = [
       `Olá ${aluno.nome.split(" ")[0]}! 👋`,
       ``,

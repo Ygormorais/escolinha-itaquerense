@@ -76,7 +76,7 @@ export async function registrarBaixa(
     const pag = await db.pagamento.findUnique({
       where: { id: pagamentoId },
       select: {
-        id: true, dataPagamento: true, valorRecebido: true, valorDevido: true, observacoes: true, mesReferencia: true,
+        id: true, dataPagamento: true, valorRecebido: true, valorDevido: true, observacoes: true, mesReferencia: true, externalId: true,
         aluno: { select: { nome: true, mensalidade: true, desconto: true } },
       },
     })
@@ -90,6 +90,9 @@ export async function registrarBaixa(
     }
     const acumulado = Math.round(((pag.valorRecebido ?? 0) + valor) * 100) / 100
     const quitada = acumulado + 0.005 >= valorDevidoDoPagamento(pag)
+    if (!quitada && pag.externalId) {
+      return { error: "Há cobrança Pix/boleto ativa nesta mensalidade. Cancele a cobrança antes de dar baixa parcial." }
+    }
     const data = new Date(dados.dataPagamento)
     const nota = motivo
       ? `${dados.dataPagamento} ${dados.formaPagamento} ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}: ${motivo}`

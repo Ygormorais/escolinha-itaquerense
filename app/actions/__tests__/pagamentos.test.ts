@@ -348,6 +348,16 @@ describe("registrarBaixa (central)", () => {
     expect(m.pagamento.updateMany.mock.calls[0][0].data.valorRecebido).toBe(130)
   })
 
+  it("baixa parcial com cobrança Pix/boleto ativa é recusada; quitação segue permitida", async () => {
+    m.pagamento.findUnique.mockResolvedValueOnce(aberta({ externalId: "mp-1" }))
+    const parcial = await registrarBaixa(5, { valor: 50, formaPagamento: "PIX", dataPagamento: "2026-06-10", observacao: "metade" })
+    expect(parcial).toMatchObject({ error: expect.stringContaining("cobrança") })
+    expect(m.pagamento.updateMany).not.toHaveBeenCalled()
+    m.pagamento.findUnique.mockResolvedValueOnce(aberta({ externalId: "mp-1" }))
+    const total = await registrarBaixa(5, { valor: 120, formaPagamento: "PIX", dataPagamento: "2026-06-10" })
+    expect(total).toMatchObject({ success: true, quitada: true })
+  })
+
   it("valor diferente do restante exige motivo", async () => {
     m.pagamento.findUnique.mockResolvedValueOnce(aberta())
     const res = await registrarBaixa(5, { valor: 50, formaPagamento: "PIX", dataPagamento: "2026-06-10" })
