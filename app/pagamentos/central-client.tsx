@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Download, FileUp, Search } from "lucide-react"
@@ -40,11 +40,13 @@ export function CentralClient({
   situacao,
   mesAtual,
   alunoSelecionado,
+  painel,
 }: {
   devedores: AlunoDevedor[]
   situacao: Situacao
   mesAtual: string
   alunoSelecionado: number | null
+  painel?: ReactNode
 }) {
   const router = useRouter()
   const [busca, setBusca] = useState("")
@@ -175,9 +177,11 @@ export function CentralClient({
           </ul>
         </section>
 
-        <section aria-label="Aluno" className="min-w-0 rounded-[var(--radius-card)] border border-border bg-card p-6 text-sm text-muted-foreground">
-          {alunoSelecionado ? "Carregando o aluno…" : "Escolha um aluno na lista para dar baixa."}
-        </section>
+        {painel ?? (
+          <section aria-label="Aluno" className="min-w-0 rounded-[var(--radius-card)] border border-border bg-card p-6 text-sm text-muted-foreground">
+            Escolha um aluno na lista para dar baixa.
+          </section>
+        )}
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { PagamentosClient } from "./pagamentos-client"
 import { CentralClient } from "./central-client"
+import { PainelAluno } from "./painel-aluno"
 import { getConfig } from "@/lib/config"
 import { carregarCentral, carregarMensalidadesDoMes, type FiltroCentral } from "@/lib/central-pagamentos"
 
@@ -45,6 +46,7 @@ export default async function PagamentosPage({
   }
 
   const devedores = await carregarCentral(db, agora)
+  const alunoId = params.aluno ? Number(params.aluno) : null
   return (
     <div data-page="pagamentos" className={PAGINA_ADMIN}>
       <PageHeader title="Pagamentos" description="Quem tem mensalidade em aberto" />
@@ -52,7 +54,8 @@ export default async function PagamentosPage({
         devedores={devedores}
         situacao={filtro}
         mesAtual={mesAtual}
-        alunoSelecionado={params.aluno ? Number(params.aluno) : null}
+        alunoSelecionado={alunoId}
+        painel={alunoId !== null ? <PainelAluno key={alunoId} alunoId={alunoId} agora={agora} /> : undefined}
       />
     </div>
   )
