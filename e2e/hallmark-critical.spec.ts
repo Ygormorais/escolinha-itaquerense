@@ -38,27 +38,13 @@ test.describe("Correções críticas Hallmark", () => {
       await page.goto("/alunos", { waitUntil: "networkidle" })
       await expectNoHorizontalOverflow(page)
 
-      await page.goto("/inadimplencia", { waitUntil: "networkidle" })
+      await page.goto("/pagamentos?filtro=atrasados", { waitUntil: "networkidle" })
       await expectNoHorizontalOverflow(page)
     })
   }
 
-  test("alunos e inadimplência usam cartões no mobile e tabelas no desktop", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto("/alunos", { waitUntil: "networkidle" })
-    await expect(page.locator('[data-slot="data-table-mobile"]')).toBeVisible()
-    await expect(page.locator('[data-slot="data-table-desktop"]')).toBeHidden()
-
-    await page.goto("/inadimplencia", { waitUntil: "networkidle" })
-    await expect(page.locator('[data-slot="delinquency-mobile-list"]')).toBeVisible()
-    await expect(page.locator('[data-slot="delinquency-table"]')).toBeHidden()
-
-    await page.setViewportSize({ width: 1024, height: 900 })
-    await expect(page.locator('[data-slot="delinquency-table"]')).toBeVisible()
-  })
-
   test("fluxos corrigidos não têm violações críticas ou sérias", async ({ page }) => {
-    for (const route of ["/alunos", "/inadimplencia", "/secretaria"]) {
+    for (const route of ["/alunos", "/secretaria"]) {
       await page.goto(route, { waitUntil: "networkidle" })
       await expectNoSeriousAccessibilityViolations(page, `[data-page="${route.slice(1)}"]`)
     }

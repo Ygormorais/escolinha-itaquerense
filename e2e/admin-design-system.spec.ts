@@ -43,7 +43,7 @@ test.describe("Design system administrativo", () => {
 
   test("pagamentos troca a tabela por cartões funcionais no mobile", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto("/pagamentos", { waitUntil: "networkidle" })
+    await page.goto("/pagamentos?filtro=mes", { waitUntil: "networkidle" })
 
     await expect(page.locator('[data-slot="filter-bar"]')).toBeVisible()
     await expect(page.locator('[data-slot="payment-context-bar"]')).toBeVisible()
@@ -59,7 +59,7 @@ test.describe("Design system administrativo", () => {
     await page.goto("/dashboard", { waitUntil: "networkidle" })
     await expectNoSeriousAccessibilityViolations(page, '[data-page="dashboard"]')
 
-    await page.goto("/pagamentos", { waitUntil: "networkidle" })
+    await page.goto("/pagamentos?filtro=mes", { waitUntil: "networkidle" })
     await expectNoSeriousAccessibilityViolations(page, '[data-page="pagamentos"]')
   })
 
@@ -76,7 +76,7 @@ test.describe("Design system administrativo", () => {
     await expect(page.locator("html")).toHaveClass(/dark/)
     await expectNoSeriousAccessibilityViolations(page, '[data-page="dashboard"]')
 
-    await page.goto("/pagamentos", { waitUntil: "networkidle" })
+    await page.goto("/pagamentos?filtro=mes", { waitUntil: "networkidle" })
     await expectNoSeriousAccessibilityViolations(page, '[data-page="pagamentos"]')
   })
 })

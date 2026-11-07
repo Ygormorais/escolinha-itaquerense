@@ -55,7 +55,7 @@ test.describe("Tema escuro do admin — tabelas", () => {
   test("linha de tabela não fica avermelhada fora do hover", async ({ page }) => {
     await loginAsAdmin(page)
     await salvarTemaEscuro(page)
-    await page.goto("/pagamentos", { waitUntil: "networkidle" })
+    await page.goto("/pagamentos?filtro=mes", { waitUntil: "networkidle" })
     await page.mouse.move(0, 0)
     const fundo = await page.locator('[data-slot="table-row"]').nth(1).evaluate((el) => getComputedStyle(el).backgroundColor)
     const canais = fundo.match(/[\d.]+/g)!.map(Number)
