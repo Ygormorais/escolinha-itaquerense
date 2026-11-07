@@ -5,6 +5,7 @@ import { PagamentosClient } from "./pagamentos-client"
 import { CentralClient } from "./central-client"
 import { PainelAluno } from "./painel-aluno"
 import { getConfig } from "@/lib/config"
+import { requireAuth } from "@/lib/auth"
 import { carregarCentral, carregarMensalidadesDoMes, type FiltroCentral } from "@/lib/central-pagamentos"
 
 export const metadata = { title: "Pagamentos — Escolinha Itaquerense" }
@@ -21,7 +22,7 @@ export default async function PagamentosPage({
 }: {
   searchParams: Promise<{ mes?: string; filtro?: string; aluno?: string }>
 }) {
-  const params = await searchParams
+  const [{ role }, params] = await Promise.all([requireAuth(["admin", "secretaria"]), searchParams])
   const agora = new Date()
   const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`
   const mes = params.mes ?? mesAtual
@@ -54,6 +55,7 @@ export default async function PagamentosPage({
         devedores={devedores}
         situacao={filtro}
         mesAtual={mesAtual}
+        podeCobrar={role === "admin"}
         alunoSelecionado={alunoId}
         painel={alunoId !== null ? <PainelAluno key={alunoId} alunoId={alunoId} agora={agora} /> : undefined}
       />

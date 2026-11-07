@@ -44,12 +44,14 @@ export function CentralClient({
   mesAtual,
   alunoSelecionado,
   painel,
+  podeCobrar,
 }: {
   devedores: AlunoDevedor[]
   situacao: Situacao
   mesAtual: string
   alunoSelecionado: number | null
   painel?: ReactNode
+  podeCobrar: boolean
 }) {
   const router = useRouter()
   const [busca, setBusca] = useState("")
@@ -120,7 +122,7 @@ export function CentralClient({
             <FileUp className="size-4" />
             Importar extrato
           </Button>
-          {marcados.size > 0 && (
+          {podeCobrar && marcados.size > 0 && (
             <Button variant="outline" onClick={cobrarSelecionados} disabled={cobrando}>
               <MessageCircle className="size-4" />
               Cobrar selecionados no WhatsApp
@@ -134,7 +136,7 @@ export function CentralClient({
       </div>
 
       <BarraBloco
-        alunos={devedores.filter((d) => marcados.has(d.id))}
+        alunos={lista.filter((d) => marcados.has(d.id))}
         onConcluir={() => setMarcados(new Set())}
       />
 

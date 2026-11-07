@@ -127,10 +127,10 @@ export function alertasDashboard({
 }) {
   const alerts: AlertItem[] = []
   if (mensalidadesVencidas > 5) {
-    alerts.push({ type: "danger", icon: "alerta", message: `${mensalidadesVencidas} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação.", href: "/inadimplencia" })
+    alerts.push({ type: "danger", icon: "alerta", message: `${mensalidadesVencidas} mensalidades em atraso`, detail: "Regularize os pagamentos pendentes para evitar acumulação.", href: "/pagamentos?filtro=atrasados" })
   }
   if (mensalidadesVencidas > 0 && mensalidadesVencidas <= 5) {
-    alerts.push({ type: "warning", icon: "alerta", message: `${plural(mensalidadesVencidas, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção.", href: "/inadimplencia" })
+    alerts.push({ type: "warning", icon: "alerta", message: `${plural(mensalidadesVencidas, "mensalidade", "mensalidades", "nenhuma")} em atraso`, detail: "Poucos casos, mas requer atenção.", href: "/pagamentos?filtro=atrasados" })
   }
   if (presencaMedia < 50 && totalFrequencias > 0) {
     alerts.push({ type: "danger", icon: "frequencia", message: "Presença média baixa", detail: `Apenas ${presencaMedia}% no mês atual.`, href: "/frequencia" })

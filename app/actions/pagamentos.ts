@@ -68,7 +68,7 @@ export async function registrarBaixa(
   dados: { valor: number; formaPagamento: string; dataPagamento: string; observacao?: string },
 ): Promise<{ success: true; quitada: boolean; recibo: ReciboEmitido } | { error: string }> {
   const session = await requireAuth(["admin", "secretaria"])
-  const valor = Number(dados.valor)
+  const valor = Math.round(Number(dados.valor) * 100) / 100
   if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
   if (!dados.formaPagamento) return { error: "Informe a forma de pagamento" }
   if (!dataValida(dados.dataPagamento)) return { error: "Data de pagamento inválida" }
@@ -88,7 +88,7 @@ export async function registrarBaixa(
     if (Math.abs(valor - restante) > 0.005 && !motivo) {
       return { error: "Informe o motivo para um valor diferente do devido" }
     }
-    const acumulado = (pag.valorRecebido ?? 0) + valor
+    const acumulado = Math.round(((pag.valorRecebido ?? 0) + valor) * 100) / 100
     const quitada = acumulado + 0.005 >= valorDevidoDoPagamento(pag)
     const data = new Date(dados.dataPagamento)
     const nota = motivo
@@ -117,6 +117,7 @@ export async function registrarBaixa(
       valor: valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
       forma: dados.formaPagamento,
     })
+    for (const rota of ["/pagamentos", "/caixa", "/caixa/recebimentos", "/dashboard"]) revalidatePath(rota)
     return { success: true, quitada, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
@@ -160,7 +161,7 @@ export async function registrarPagamentosLote(
     const resultados = await db.$transaction(
       pendentes.map((p) =>
         db.pagamento.updateMany({
-          where: { id: p.id, dataPagamento: null },
+          where: { id: p.id, dataPagamento: null, valorRecebido: p.valorRecebido },
           data: {
             dataPagamento: new Date(data.dataPagamento),
             formaPagamento: data.formaPagamento,

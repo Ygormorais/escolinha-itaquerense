@@ -141,7 +141,7 @@ export function SecretariaClient({
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard title="Alunos Ativos" value={alunosAtivos} description="Ver todos" icon={Users} variant="brand" href="/alunos" />
         <StatCard title="Matrículas no Mês" value={matriculasMes} description="Ver alunos" icon={GraduationCap} variant="success" href="/alunos" />
-        <StatCard title="Inadimplentes" value={inadimplentes} description="Cobrar" icon={AlertTriangle} variant="danger" href="/inadimplencia" />
+        <StatCard title="Inadimplentes" value={inadimplentes} description="Cobrar" icon={AlertTriangle} variant="danger" href="/pagamentos?filtro=atrasados" />
         <StatCard title="Aniversariantes do Mês" value={aniversariantes.length} description={resumoAniversariantes} icon={Cake} variant="warning" />
       </div>
 
