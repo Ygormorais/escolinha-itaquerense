@@ -7,71 +7,24 @@ test.beforeEach(async ({ page }) => {
   await loginAsAdmin(page)
 })
 
-test.describe("Inadimplência — smoke e carregamento", () => {
-  test("página carrega com título correto", async ({ page }) => {
+test.describe("Inadimplência — agora o filtro Atrasados da central", () => {
+  test("/inadimplencia redireciona para a central filtrada", async ({ page }) => {
     await page.goto("/inadimplencia")
-    await expect(page.getByRole("heading", { name: "Inadimplência", exact: true })).toBeVisible()
+    await expect(page).toHaveURL(/\/pagamentos\?filtro=atrasados/)
   })
 
-  test("exibe os três stat cards de resumo", async ({ page }) => {
-    await page.goto("/inadimplencia")
-    // Os StatCards têm títulos fixos
-    await expect(page.getByText(/Total Inadimplentes/i)).toBeVisible()
-    await expect(page.getByText(/Valor Total em Aberto/i)).toBeVisible()
-    await expect(page.getByText(/Meses Médios de Atraso/i)).toBeVisible()
+  test("inadimplente controlado aparece com o valor em aberto", async ({ page }) => {
+    await page.goto("/pagamentos?filtro=atrasados")
+    const item = page.locator('[data-slot="lista-devedores"] li').filter({ hasText: "E2E Aluno Inadimplente" })
+    await expect(item).toBeVisible()
+    await expect(item).toContainText("Sub-11")
+    await expect(item).toContainText("R$ 175,00")
   })
 
-  test("exibe seção 'Alunos Inadimplentes'", async ({ page }) => {
-    await page.goto("/inadimplencia")
-    await expect(page.getByRole("heading", { name: /Alunos Inadimplentes/i })).toBeVisible()
-  })
-})
-
-test.describe("Inadimplência — lista calculada", () => {
-  test("inadimplente controlado aparece na tabela", async ({ page }) => {
-    await page.goto("/inadimplencia")
-    const aluno = page.getByRole("link", { name: "E2E Aluno Inadimplente", exact: true })
-    const linha = page.getByRole("row").filter({ has: aluno })
-    await expect(linha).toBeVisible()
-    await expect(linha).toContainText("Sub-11")
-    await expect(linha).toContainText("R$ 175,00")
-  })
-
-  test("stat card 'Total Inadimplentes' exibe um número", async ({ page }) => {
-    await page.goto("/inadimplencia")
-    // O StatCard renderiza um valor (pode ser 0) no CardContent
-    const statCard = page.locator('[data-slot="card"]').filter({ hasText: "Total Inadimplentes" })
-    const texto = await statCard.locator('[data-slot="card-content"]').textContent()
-    // Deve conter dígito ou "0"
-    expect(texto).toMatch(/\d/)
-  })
-
-  test("stat card 'Valor Total em Aberto' exibe valor em R$", async ({ page }) => {
-    await page.goto("/inadimplencia")
-    // Valor sempre presente, mesmo quando R$ 0,00
-    await expect(page.getByText(/R\$\s*[\d,.]+/).first()).toBeVisible()
-  })
-})
-
-test.describe("Inadimplência — edge cases", () => {
-  test("lista carregada não gera erro de runtime", async ({ page }) => {
-    // Sem erros JS
-    const errors: string[] = []
-    page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(msg.text())
-    })
-    await page.goto("/inadimplencia")
-    await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(500)
-    // Aceita erros de rede mas não erros de runtime do React
-    const criticalErrors = errors.filter((e) =>
-      /Cannot read|undefined is not|TypeError/.test(e)
-    )
-    expect(criticalErrors).toHaveLength(0)
-  })
-
-  test("navegação direta para /inadimplencia não redireciona para login", async ({ page }) => {
-    await page.goto("/inadimplencia")
-    await expect(page).not.toHaveURL(/\/login/)
+  test("marcar um aluno libera a cobrança em lote no WhatsApp", async ({ page }) => {
+    await page.goto("/pagamentos?filtro=atrasados")
+    await expect(page.getByRole("button", { name: /Cobrar selecionados no WhatsApp/i })).toHaveCount(0)
+    await page.getByRole("checkbox", { name: "Selecionar E2E Aluno Inadimplente" }).check()
+    await expect(page.getByRole("button", { name: /Cobrar selecionados no WhatsApp/i })).toBeVisible()
   })
 })

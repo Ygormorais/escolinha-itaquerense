@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { MessageCircle, QrCode, Receipt, Trash2Icon } from "lucide-react"
+import { MessageCircle, QrCode, Receipt, Trash2Icon, CheckCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 import { formatMoney } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,6 @@ import { CobrancaDialog } from "@/components/ui/cobranca-dialog"
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table"
 import { deletePagamento } from "@/app/actions/pagamentos"
 import { CobrancaBadge } from "./cobranca-badge"
-import { RegistrarPagamentoDialog } from "./registrar-pagamento-dialog"
 import { getPagamentoStatus, linkCobrancaWhatsApp, urlReciboPago, type Pagamento } from "./pagamentos-utils"
 
 const columns: DataTableColumn<Pagamento>[] = [
@@ -88,16 +87,12 @@ const columns: DataTableColumn<Pagamento>[] = [
 
 export function PagamentosTabela({
   pagamentos,
-  selected,
-  onSelectionChange,
   emptyTitle,
   chavePix,
   nomeClube,
   cidade,
 }: {
   pagamentos: Pagamento[]
-  selected: Set<string>
-  onSelectionChange: (ids: Set<string>) => void
   emptyTitle: string
   chavePix?: string
   nomeClube?: string
@@ -109,7 +104,15 @@ export function PagamentosTabela({
     const status = getPagamentoStatus(p)
     return (
       <>
-        {status !== "Pago" && <RegistrarPagamentoDialog pagamento={p} />}
+        {status !== "Pago" && (
+          <Link
+            href={`/pagamentos?aluno=${p.aluno.id}`}
+            className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium hover:bg-muted"
+          >
+            <CheckCircleIcon className="size-3.5" />
+            Dar baixa
+          </Link>
+        )}
         {status !== "Pago" && chavePix && nomeClube && cidade && (
           <PixButton
             chave={chavePix}
@@ -171,10 +174,6 @@ export function PagamentosTabela({
       columns={columns}
       data={pagamentos}
       getRowId={(p) => String(p.id)}
-      selectable
-      selectedIds={selected}
-      onSelectionChange={onSelectionChange}
-      isRowSelectable={(p) => getPagamentoStatus(p) !== "Pago"}
       getRowLabel={(p) => `${p.aluno.nome} — ${p.mesReferencia}`}
       rowActions={rowActions}
       emptyState={{ title: emptyTitle }}

@@ -46,7 +46,7 @@ describe("acoesDoInicio", () => {
   it("mensalidades vencidas levam à inadimplência", () => {
     expect(acoesDoInicio([grupo("Mensalidades vencidas", 3, "/pagamentos?aluno=1", "alta")]).acoes[0]).toMatchObject({
       texto: "Mensalidades vencidas · 3",
-      href: "/inadimplencia",
+      href: "/pagamentos?filtro=atrasados",
       quantidade: 3,
     })
   })

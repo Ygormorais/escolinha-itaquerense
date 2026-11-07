@@ -2,11 +2,10 @@
  * E2E — Ações sobre Pagamentos
  *
  * Cobre os fluxos que o pagamentos.spec.ts existente deixa descobertos:
- *   • Registro manual de pagamento (preenche o dialog e confirma)
  *   • PIX direto (PixButton abre PixModal com QR code e botão de copiar)
  *   • Cobrança via Mercado Pago (CobrancaDialog — seleciona canal e clica Emitir)
  *   • Gerar mensalidades do mês (ConfirmDialog de geração)
- *   • Registro em lote (seleciona múltiplos e abre BulkDialog)
+ *   (baixa e lote: ver painel-aluno-pagamentos.spec.ts)
  *   • Filtro de status na tabela de pagamentos
  *   • Filtro por turma na tabela de pagamentos
  *   • Link de recibo na linha de pagamento pago
@@ -26,63 +25,6 @@ function linhaPagamento(page: Parameters<typeof loginAsAdmin>[0], nomeAluno: str
   const aluno = page.getByRole("link", { name: nomeAluno, exact: true })
   return page.getByRole("row").filter({ has: aluno })
 }
-
-// ── Registro manual de pagamento ──────────────────────────────────────────
-
-test.describe("Pagamentos — registro manual completo", () => {
-  test("abre dialog 'Registrar Pagamento', preenche e confirma", async ({ page }) => {
-    await page.goto("/pagamentos?filtro=mes")
-    await page.waitForLoadState("networkidle")
-
-    // Precisa de uma linha de pagamento pendente
-    const btnRegistrar = page.getByRole("button", { name: /Registrar/i }).first()
-    await expect(btnRegistrar).toBeVisible()
-    await btnRegistrar.click()
-    const dialog = page.getByRole("dialog")
-    await expect(dialog).toBeVisible()
-    await expect(dialog.getByRole("heading", { name: /Registrar Pagamento/i })).toBeVisible()
-
-    // Campos do formulário devem estar visíveis
-    const dateInput = dialog.locator('input[type="date"]')
-    await expect(dateInput).toBeVisible()
-
-    const valorInput = dialog.locator('input[type="number"]')
-    await expect(valorInput).toBeVisible()
-
-    // Seleciona forma de pagamento "Dinheiro"
-    const selectTrigger = dialog.locator('[role="combobox"]').first()
-    await selectTrigger.click()
-    const opcaoDinheiro = page.getByRole("option", { name: "Dinheiro" })
-    await expect(opcaoDinheiro).toBeVisible()
-    await opcaoDinheiro.click()
-
-    // Confirma pagamento
-    const btnConfirmar = dialog.getByRole("button", { name: /Confirmar/i })
-    await btnConfirmar.click()
-
-    // Após confirmar, o dialog permanece aberto exibindo o estado de sucesso
-    // (isVisible não espera — usar o assert com timeout real)
-    await expect(dialog.getByText(/Pagamento registrado/i)).toBeVisible({ timeout: 10000 })
-  })
-
-  test("estado de sucesso exibe botão 'Imprimir PDF' com link para /recibos", async ({ page }) => {
-    await page.goto("/pagamentos?filtro=mes")
-    await page.waitForLoadState("networkidle")
-
-    const btnRegistrar = page.getByRole("button", { name: /Registrar/i }).first()
-    await expect(btnRegistrar).toBeVisible()
-    await btnRegistrar.click()
-    const dialog = page.getByRole("dialog")
-    await expect(dialog).toBeVisible()
-
-    await dialog.getByRole("button", { name: /Confirmar/i }).click()
-
-    const btnImprimir = dialog.getByRole("link", { name: /Imprimir PDF/i })
-    await expect(btnImprimir).toBeVisible({ timeout: 10000 })
-    const href = await btnImprimir.getAttribute("href")
-    expect(href).toMatch(/\/recibos/)
-  })
-})
 
 // ── PIX direto (PixButton → PixModal) ────────────────────────────────────
 
@@ -241,77 +183,6 @@ test.describe("Pagamentos — gerar mensalidades", () => {
 
     // A tabela continua visível após a operação
     await expect(page.locator("table")).toBeVisible({ timeout: 5000 })
-  })
-})
-
-// ── Registro em lote ──────────────────────────────────────────────────────
-
-test.describe("Pagamentos — registro em lote", () => {
-  test("selecionar checkbox de pagamento pendente mostra barra de ações em lote", async ({ page }) => {
-    await page.goto("/pagamentos?filtro=mes")
-    await page.waitForLoadState("networkidle")
-
-    // Pega o primeiro checkbox de uma linha pendente (coluna de seleção)
-    const checkboxes = page.locator("table tbody tr input[type='checkbox']")
-    const count = await checkboxes.count()
-    expect(count).toBeGreaterThan(0)
-
-    await checkboxes.first().check()
-
-    // Barra de ações em lote aparece
-    await expect(page.getByText(/selecionado/i)).toBeVisible({ timeout: 3000 })
-    await expect(page.getByRole("button", { name: /Registrar todos/i })).toBeVisible()
-  })
-
-  test("selecionar vários e abrir BulkDialog mostra campos de data e forma", async ({ page }) => {
-    await page.goto("/pagamentos?filtro=mes")
-    await page.waitForLoadState("networkidle")
-
-    const checkboxes = page.locator("table tbody tr input[type='checkbox']")
-    const count = await checkboxes.count()
-    expect(count).toBeGreaterThanOrEqual(2)
-
-    // Seleciona os dois primeiros
-    await checkboxes.nth(0).check()
-    await checkboxes.nth(1).check()
-
-    await page.getByRole("button", { name: /Registrar todos/i }).click()
-
-    const dialog = page.getByRole("dialog")
-    await expect(dialog).toBeVisible()
-    await expect(dialog.getByRole("heading", { name: /Registrar \d+ pagamento/i })).toBeVisible()
-
-    // Campos de data e forma
-    await expect(dialog.locator('input[type="date"]')).toBeVisible()
-    await expect(dialog.locator('[role="combobox"]')).toBeVisible()
-
-    // Cancela
-    await dialog.getByRole("button", { name: /Cancelar|Fechar|Close/i }).first().click()
-    await expect(dialog).not.toBeVisible({ timeout: 5000 })
-  })
-
-  test("checkbox 'selecionar todos' marca todos os pendentes", async ({ page }) => {
-    await page.goto("/pagamentos?filtro=mes")
-    await page.waitForLoadState("networkidle")
-
-    const checkboxAll = page.locator("table thead input[type='checkbox']")
-    await expect(checkboxAll).toBeVisible()
-    const pendentesCheckboxes = page.locator("table tbody tr input[type='checkbox']")
-    expect(await pendentesCheckboxes.count()).toBeGreaterThan(0)
-
-    await checkboxAll.check()
-
-    // A barra de lote deve mostrar contagem > 0
-    const contagem = page.getByText(/\d+\s+selecionado/i)
-    await expect(contagem).toBeVisible()
-    const texto = await contagem.textContent()
-    const num = parseInt(texto?.match(/\d+/)?.[0] ?? "0")
-    expect(num).toBeGreaterThan(0)
-
-    // Limpa seleção
-    const btnLimpar = page.getByRole("button", { name: /Limpar/i })
-    await expect(btnLimpar).toBeVisible()
-    await btnLimpar.click()
   })
 })
 

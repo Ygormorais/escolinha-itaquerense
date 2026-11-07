@@ -1,9 +1,11 @@
 "use client"
 
-import { useMemo, useState, type ReactNode } from "react"
+import { useMemo, useState, useTransition, type ReactNode } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Download, FileUp, Search } from "lucide-react"
+import { Download, FileUp, MessageCircle, Search } from "lucide-react"
+import { toast } from "sonner"
+import { notificarInadimplentesEmLote } from "@/app/actions/whatsapp"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn, formatMoney, plural } from "@/lib/utils"
@@ -52,6 +54,7 @@ export function CentralClient({
   const router = useRouter()
   const [busca, setBusca] = useState("")
   const [turma, setTurma] = useState("")
+  const [cobrando, iniciarCobranca] = useTransition()
   const [marcados, setMarcados] = useState<Set<number>>(new Set())
 
   const turmas = useMemo(() => [...new Set(devedores.map((d) => d.turma))].sort((a, b) => a.localeCompare(b, "pt-BR")), [devedores])
@@ -64,6 +67,19 @@ export function CentralClient({
       if (proximo.has(id)) proximo.delete(id)
       else proximo.add(id)
       return proximo
+    })
+  }
+
+  function cobrarSelecionados() {
+    const ids = [...marcados]
+    iniciarCobranca(async () => {
+      try {
+        const r = await notificarInadimplentesEmLote(ids)
+        toast.success(`Enviado: ${r.enviados} · Erros: ${r.erros} · Sem telefone: ${r.semTelefone}`)
+        setMarcados(new Set())
+      } catch {
+        toast.error("Erro ao enviar as cobranças")
+      }
     })
   }
 
@@ -104,6 +120,12 @@ export function CentralClient({
             <FileUp className="size-4" />
             Importar extrato
           </Button>
+          {marcados.size > 0 && (
+            <Button variant="outline" onClick={cobrarSelecionados} disabled={cobrando}>
+              <MessageCircle className="size-4" />
+              Cobrar selecionados no WhatsApp
+            </Button>
+          )}
           <Button variant="outline" onClick={exportarCSV} disabled={lista.length === 0}>
             <Download className="size-4" />
             Exportar CSV
