@@ -9,13 +9,13 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("Pagamentos — listagem e filtros", () => {
   test("página carrega com tabela de pagamentos", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await expect(page.getByRole("heading", { name: "Pagamentos", exact: true })).toBeVisible()
     await expect(page.locator("table")).toBeVisible()
   })
 
   test("seletor de mês atualiza a URL e os dados", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     const anoAlvo = new Date().getFullYear() + 1
     await page.locator("#pag-mes").click()
     await page.getByRole("button", { name: "Próximo ano" }).click()
@@ -27,7 +27,7 @@ test.describe("Pagamentos — listagem e filtros", () => {
   })
 
   test("busca por nome funciona na listagem", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     const search = page.getByPlaceholder("Buscar aluno...")
     await expect(search).toBeVisible()
     await search.fill("zzz_nao_existe_e2e")
@@ -39,7 +39,7 @@ test.describe("Pagamentos — listagem e filtros", () => {
 
 test.describe("Pagamentos — registro manual", () => {
   test("botão de pagar abre modal de registro de pagamento", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await expect(page.locator("table tbody tr").first()).toBeVisible()
 
     const aluno = page.getByRole("link", { name: "E2E Aluno Pagamentos 1", exact: true })

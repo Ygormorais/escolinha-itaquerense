@@ -31,7 +31,7 @@ function linhaPagamento(page: Parameters<typeof loginAsAdmin>[0], nomeAluno: str
 
 test.describe("Pagamentos — registro manual completo", () => {
   test("abre dialog 'Registrar Pagamento', preenche e confirma", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     // Precisa de uma linha de pagamento pendente
@@ -66,7 +66,7 @@ test.describe("Pagamentos — registro manual completo", () => {
   })
 
   test("estado de sucesso exibe botão 'Imprimir PDF' com link para /recibos", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const btnRegistrar = page.getByRole("button", { name: /Registrar/i }).first()
@@ -88,7 +88,7 @@ test.describe("Pagamentos — registro manual completo", () => {
 
 test.describe("Pagamentos — PIX direto", () => {
   test("botão 'PIX direto' abre PixModal com QR code e código para copiar", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const btnPix = linhaPagamento(page, "E2E Aluno Pagamentos 1").getByRole("button", { name: /PIX direto/i })
@@ -111,7 +111,7 @@ test.describe("Pagamentos — PIX direto", () => {
   })
 
   test("botão 'Copiar código PIX' reflete estado copiado", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const btnPix = linhaPagamento(page, "E2E Aluno Pagamentos 1").getByRole("button", { name: /PIX direto/i })
@@ -134,7 +134,7 @@ test.describe("Pagamentos — PIX direto", () => {
 
 test.describe("Pagamentos — cobrança Mercado Pago", () => {
   test("botão 'Gerar' abre CobrancaDialog com seletor de canal", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     // O botão "Gerar" aparece na coluna "Cobrança" para pagamentos sem externalId
@@ -157,7 +157,7 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
   })
 
   test("CobrancaDialog permite selecionar canal 'Boleto'", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const btnGerar = page.getByRole("button", { name: /^Gerar$/i }).first()
@@ -178,7 +178,7 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
   })
 
   test("cobrança já emitida exibe badge de status ao clicar", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const linha = linhaPagamento(page, "E2E Aluno Pagamentos 3")
@@ -198,7 +198,7 @@ test.describe("Pagamentos — cobrança Mercado Pago", () => {
 
 test.describe("Pagamentos — gerar mensalidades", () => {
   test("botão 'Gerar Mensalidades' abre dialog de confirmação", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const btnGerar = page.getByRole("button", { name: /Gerar Mensalidades/i })
@@ -218,7 +218,7 @@ test.describe("Pagamentos — gerar mensalidades", () => {
   })
 
   test("confirmar geração exibe resultado (criadas/já existiam)", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const btnGerar = page.getByRole("button", { name: /Gerar Mensalidades/i })
@@ -248,7 +248,7 @@ test.describe("Pagamentos — gerar mensalidades", () => {
 
 test.describe("Pagamentos — registro em lote", () => {
   test("selecionar checkbox de pagamento pendente mostra barra de ações em lote", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     // Pega o primeiro checkbox de uma linha pendente (coluna de seleção)
@@ -264,7 +264,7 @@ test.describe("Pagamentos — registro em lote", () => {
   })
 
   test("selecionar vários e abrir BulkDialog mostra campos de data e forma", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const checkboxes = page.locator("table tbody tr input[type='checkbox']")
@@ -291,7 +291,7 @@ test.describe("Pagamentos — registro em lote", () => {
   })
 
   test("checkbox 'selecionar todos' marca todos os pendentes", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const checkboxAll = page.locator("table thead input[type='checkbox']")
@@ -319,7 +319,7 @@ test.describe("Pagamentos — registro em lote", () => {
 
 test.describe("Pagamentos — filtros de status e turma", () => {
   test("filtro 'Pago' exibe apenas pagamentos com data de pagamento", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     // O select de status (Todos/Pago/Pendente/Vencido) — segundo select na página
@@ -340,7 +340,7 @@ test.describe("Pagamentos — filtros de status e turma", () => {
   })
 
   test("filtro 'Pendente' esconde linhas com pagamento já efetuado", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     const selects = page.locator('[role="combobox"]')
@@ -355,7 +355,7 @@ test.describe("Pagamentos — filtros de status e turma", () => {
   })
 
   test("filtro por turma restringe resultados à turma selecionada", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     // O select de turma é o terceiro [role="combobox"] na página
@@ -379,7 +379,7 @@ test.describe("Pagamentos — filtros de status e turma", () => {
 
 test.describe("Pagamentos — recibo inline", () => {
   test("pagamento já pago exibe link 'Recibo' apontando para /recibos", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await page.waitForLoadState("networkidle")
 
     // Filtra por "Pago" para encontrar pagamentos com recibo disponível

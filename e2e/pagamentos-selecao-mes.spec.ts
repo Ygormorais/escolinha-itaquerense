@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test("trocar o mês de referência limpa a seleção em lote", async ({ page }) => {
-  await page.goto("/pagamentos")
+  await page.goto("/pagamentos?filtro=mes")
   await page.waitForLoadState("networkidle")
 
   const checkboxes = page.locator("table tbody tr input[type='checkbox']")

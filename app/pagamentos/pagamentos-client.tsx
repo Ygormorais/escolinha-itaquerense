@@ -171,7 +171,7 @@ export function PagamentosClient({
       <section data-slot="payment-context-bar" aria-label="Período e ações de cobrança" className="flex flex-col gap-3 rounded-[var(--radius-card)] border bg-card p-4 shadow-sm lg:flex-row lg:items-end">
         <div className="w-full sm:w-auto">
           <Label htmlFor="pag-mes" className="text-muted-foreground">Mês de referência</Label>
-          <MonthInput id="pag-mes" value={mes} onChange={(v) => router.push(`/pagamentos?mes=${v}`)} className="mt-1" />
+          <MonthInput id="pag-mes" value={mes} onChange={(v) => router.push(`/pagamentos?filtro=mes&mes=${v}`)} className="mt-1" />
         </div>
         <div className="grid w-full gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:items-center">
           <GerarMensalidades mes={mes} />

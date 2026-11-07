@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { agruparPorAluno, filtrarDevedores, type LinhaCentral } from "@/lib/central-pagamentos"
+import { agruparPorAluno, filtrarDevedores, gerarCSVDevedores, type LinhaCentral } from "@/lib/central-pagamentos"
 
 const agora = new Date("2026-06-15T12:00:00")
 
@@ -70,5 +70,16 @@ describe("filtrarDevedores", () => {
 
   it("busca sem resultado devolve lista vazia", () => {
     expect(filtrarDevedores(lista, { busca: "zzz", situacao: "aberto", turma: "" })).toEqual([])
+  })
+})
+
+describe("gerarCSVDevedores", () => {
+  it("uma linha por aluno, com valor em aberto e aspas escapadas", () => {
+    const lista = agruparPorAluno([
+      linha({ alunoId: 1, nome: 'Ana "Nina" Souza', aluno: { id: 1, nome: 'Ana "Nina" Souza', turma: "Sub-9", responsavel: "Marta; Souza", telefone: "", mensalidade: 120, desconto: 0, responsavelRef: null } }),
+    ], agora)
+    const csv = gerarCSVDevedores(lista).split("\n")
+    expect(csv[0]).toBe("Aluno;Turma;Responsável;Mensalidades em aberto;Atrasadas;Valor em aberto")
+    expect(csv[1]).toBe('"Ana ""Nina"" Souza";Sub-9;"Marta; Souza";1;1;120,00')
   })
 })

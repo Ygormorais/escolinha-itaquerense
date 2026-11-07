@@ -113,6 +113,22 @@ export function filtrarDevedores(lista: AlunoDevedor[], filtro: FiltroCentral): 
   })
 }
 
+function celulaCSV(valor: string): string {
+  return /[";\n]/.test(valor) ? `"${valor.replaceAll('"', '""')}"` : valor
+}
+
+/** CSV (separador ";", valores em pt-BR) da lista de quem deve, uma linha por aluno. */
+export function gerarCSVDevedores(lista: AlunoDevedor[]): string {
+  const linhas = lista.map((a) =>
+    [
+      celulaCSV(a.nome), celulaCSV(a.turma), celulaCSV(a.responsavel),
+      String(a.mensalidades.length), String(a.atrasadas),
+      a.totalRestante.toFixed(2).replace(".", ","),
+    ].join(";"),
+  )
+  return ["Aluno;Turma;Responsável;Mensalidades em aberto;Atrasadas;Valor em aberto", ...linhas].join("\n")
+}
+
 const SELECT_LINHA = {
   id: true,
   mesReferencia: true,
