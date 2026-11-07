@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { cn, formatMoney, plural } from "@/lib/utils"
 import { filtrarDevedores, gerarCSVDevedores, type AlunoDevedor, type FiltroCentral } from "@/lib/central-pagamentos"
 import { GerarMensalidades } from "./gerar-mensalidades"
+import { BarraBloco } from "./barra-bloco"
 
 type Situacao = Exclude<FiltroCentral["situacao"], "pagos">
 
@@ -109,6 +110,11 @@ export function CentralClient({
           </Button>
         </div>
       </div>
+
+      <BarraBloco
+        alunos={devedores.filter((d) => marcados.has(d.id))}
+        onConcluir={() => setMarcados(new Set())}
+      />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <section aria-label="Quem tem mensalidade em aberto" className="min-w-0 rounded-[var(--radius-card)] border border-border bg-card">

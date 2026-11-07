@@ -51,3 +51,29 @@ test.describe("Central — painel do aluno", () => {
     await expect(page.getByText("Aluno não encontrado")).toBeVisible()
   })
 })
+
+test.describe("Central — baixa em bloco", () => {
+  test("bloco: marca 2 alunos, dá baixa e lista os recibos", async ({ page }) => {
+    await page.goto("/pagamentos")
+    await page.getByRole("searchbox", { name: /buscar aluno ou responsável/i }).fill("E2E Aluno Pagamentos")
+    await page.getByRole("checkbox", { name: "Selecionar E2E Aluno Pagamentos 1" }).check()
+    await page.getByRole("checkbox", { name: "Selecionar E2E Aluno Pagamentos 2" }).check()
+    const barra = page.locator('[data-slot="barra-bloco"]')
+    await expect(barra.getByText(/2 alunos · 2 mensalidades/)).toBeVisible()
+    await barra.getByRole("button", { name: /Dar baixa em todos/i }).click()
+    await expect(barra.getByText(/2 recibos/)).toBeVisible({ timeout: 10000 })
+  })
+
+  test("bloco: total mostrado usa o restante de mensalidade parcial", async ({ page }) => {
+    await abrirAluno(page)
+    const painel = page.getByRole("region", { name: "Aluno" })
+    await painel.getByRole("button", { name: /Alterar valor/i }).click()
+    await painel.getByLabel("Valor recebido").fill("50")
+    await painel.getByLabel("Motivo").fill("Pagou parte")
+    await painel.getByRole("button", { name: /Dar baixa/i }).click()
+    await expect(painel.getByText(/Baixa registrada/i)).toBeVisible({ timeout: 10000 })
+    await page.reload()
+    await page.getByRole("checkbox", { name: `Selecionar ${ALUNO}` }).check()
+    await expect(page.locator('[data-slot="barra-bloco"]').getByText(/1 aluno · 1 mensalidade · R\$\s*100,00/)).toBeVisible()
+  })
+})
