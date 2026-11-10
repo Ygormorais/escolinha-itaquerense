@@ -83,7 +83,7 @@ export default async function CarteirinhaPage() {
           const uniformesEntregues = aluno.uniformes
 
           return (
-            <Card key={aluno.id} className="overflow-hidden border-0 shadow-lg">
+            <Card key={aluno.id} className="overflow-hidden border border-border shadow-sm">
               {/* Header brand */}
               <div
                 className="relative flex items-center gap-3 px-5 py-4"

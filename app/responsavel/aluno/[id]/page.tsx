@@ -100,7 +100,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
       <PortalHero backHref="/responsavel" title={aluno.nome}>
         <div className="flex items-center gap-5">
           {aluno.foto ? (
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-white/30 shadow-lg">
+            <div className="relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-white/30">
               <Image
                 src={aluno.foto}
                 alt={aluno.nome}
