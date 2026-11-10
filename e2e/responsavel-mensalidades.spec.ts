@@ -46,4 +46,12 @@ test.describe("Portal do Responsável — mensalidades e recibos", () => {
     await expect(page.getByRole("heading", { name: /Página não encontrada/i })).toBeVisible()
     await expect(page.getByText("E2E Portal Outra Família")).toHaveCount(0)
   })
+
+  test("declaração anual soma também a baixa parcial", async ({ page }) => {
+    await page.goto("/responsavel/mensalidades")
+    await page.getByRole("link", { name: "Declaração anual" }).first().click()
+    const total = page.getByRole("row", { name: /Total no ano/ })
+    // Janeiro quitado (150) + parcial do mês atual (50), quando o mês atual não é janeiro.
+    await expect(total).toContainText(dados.temParcial ? /R\$\s?200,00/ : /R\$\s?150,00/)
+  })
 })
