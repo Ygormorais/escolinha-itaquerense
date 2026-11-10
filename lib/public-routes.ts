@@ -3,6 +3,7 @@ const PUBLIC_EXACT_ROUTES = new Set([
   "/horarios",
   "/resultados",
   "/partidas",
+  "/buscar",
   "/login",
   "/privacidade",
   "/termos",
