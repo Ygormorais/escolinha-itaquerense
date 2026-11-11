@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { X, ChevronLeft, ChevronRight } from "lucide-react"
+import Link from "next/link"
+import { X, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
 import { NoticiasCarrossel } from "./noticias-carrossel"
 import { MateriasTabs } from "./materias-tabs"
 import { SiteHeader } from "@/components/site/site-header"
@@ -15,6 +16,7 @@ import type { CategoriaNoticias } from "@/lib/landing/noticias"
 import type { NoticiaClube } from "./noticias-clube-carrossel"
 import type { SobreConteudo, FotoGaleria, Depoimento } from "@/lib/landing/conteudo"
 import { marcos } from "@/lib/landing/conteudo"
+import { resumoCategorias } from "@/lib/site/categorias"
 import { publicFontClass } from "@/lib/public-fonts"
 import { TEXTO_ANUNCIAR, TEXTO_CONTATO, whatsappUrl } from "@/lib/site/whatsapp"
 import "./landing.css"
@@ -102,6 +104,31 @@ export function LandingClient({
         </div>
 
         <MateriasTabs publicacoes={noticiasClube} />
+
+        <section className="turmas" id="turmas" aria-labelledby="turmas-titulo">
+          <div className="container">
+            <div className="turmas-head">
+              <h2 className="section-title" id="turmas-titulo">Turmas</h2>
+              <Link href="/horarios" className="turmas-mais">
+                Todos os horários <ArrowRight size={16} aria-hidden />
+              </Link>
+            </div>
+            <ul className="turmas-grid">
+              {resumoCategorias().map((c) => (
+                <li key={c.categoria}>
+                  <Link href="/horarios" className="turmas-card">
+                    <strong>{c.categoria}</strong>
+                    <span className="turmas-idade">{c.idade}</span>
+                    <span className="turmas-tags">
+                      {c.escolinha && <span>Escolinha</span>}
+                      {c.federado && <span className="fed">Federado</span>}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
 
         <AnuncioBanner anuncio={anuncio} contratarUrl={whatsappUrl(whatsapp, TEXTO_ANUNCIAR)} />
 
