@@ -110,7 +110,7 @@ export function LandingClient({
             <div className="turmas-head">
               <h2 className="section-title" id="turmas-titulo">Turmas</h2>
               <Link href="/horarios" className="turmas-mais">
-                Ver turmas e horários <ArrowRight size={16} aria-hidden />
+                Todos os horários <ArrowRight size={16} aria-hidden />
               </Link>
             </div>
             <ul className="turmas-grid">
