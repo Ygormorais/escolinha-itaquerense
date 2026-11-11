@@ -55,3 +55,6 @@
   .lp .pg-seg{width:100%}
   .lp .pg-seg > *{flex:1;padding:0 8px}
 }
+
+/* Etapa 3: títulos de seção das páginas internas também no formato "+ SEÇÃO". */
+.lp .pg-secao::before{content:"+ ";content:"+ " / "";color:var(--red)}

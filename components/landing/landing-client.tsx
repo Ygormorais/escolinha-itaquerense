@@ -80,9 +80,9 @@ export function LandingClient({
       <SiteHeader whatsappUrl={waUrl} dentroDaLanding />
 
       <main id="conteudo-principal">
-        {faixa && <JogoStrip faixa={faixa} />}
-
         <HeroSlider slides={slides} />
+
+        {faixa && <JogoStrip faixa={faixa} />}
 
         {marcos.length > 0 && (
           <section className="marcos" aria-label="Marcos do clube">

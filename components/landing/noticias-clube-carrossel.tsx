@@ -14,12 +14,12 @@ export interface NoticiaClube {
 }
 
 const CORES: Record<string, string> = {
-  "Resultado":   "linear-gradient(140deg,var(--success-600) 0%,#1FA87A 100%)",
-  "Conquista":   "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
-  "Convocação":  "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
-  "Evento":      "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
-  "Comunicado":  "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
-  "Notícia":     "linear-gradient(140deg,#0B0B0B 0%,#262626 100%)",
+  "Resultado":   "var(--success-600)",
+  "Conquista":   "#0B0B0B",
+  "Convocação":  "#0B0B0B",
+  "Evento":      "#0B0B0B",
+  "Comunicado":  "#0B0B0B",
+  "Notícia":     "#0B0B0B",
 }
 
 const PAGE_SIZE = 3
