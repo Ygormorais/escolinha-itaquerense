@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { valorDevidoDoAluno, valorDevidoDoPagamento } from "@/lib/valor-devido"
+import { restanteDoPagamento, valorDevidoDoAluno, valorDevidoDoPagamento } from "@/lib/valor-devido"
 
 describe("valor devido", () => {
   it("desconta e nunca fica negativo", () => {
@@ -10,5 +10,11 @@ describe("valor devido", () => {
   it("usa o valor gravado e cai para o aluno quando falta", () => {
     expect(valorDevidoDoPagamento({ valorDevido: 90, aluno: { mensalidade: 120, desconto: 0 } })).toBe(90)
     expect(valorDevidoDoPagamento({ valorDevido: null, aluno: { mensalidade: 120, desconto: 20 } })).toBe(100)
+  })
+
+  it("restante desconta o já recebido e nunca fica negativo", () => {
+    expect(restanteDoPagamento({ valorDevido: 120, valorRecebido: 50, aluno: { mensalidade: 120, desconto: 0 } })).toBe(70)
+    expect(restanteDoPagamento({ valorDevido: 120, valorRecebido: null, aluno: { mensalidade: 120, desconto: 0 } })).toBe(120)
+    expect(restanteDoPagamento({ valorDevido: 120, valorRecebido: 150, aluno: { mensalidade: 120, desconto: 0 } })).toBe(0)
   })
 })

@@ -58,8 +58,7 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    href: "/pagamentos", label: "Pagamentos", icon: CreditCard, badgeKey: "atraso",
-    children: [{ href: "/inadimplencia", label: "Inadimplência", icon: AlertTriangle }],
+    href: "/pagamentos", label: "Pagamentos", icon: CreditCard, badgeKey: "atraso", children: [],
   },
   {
     href: "/alunos", label: "Alunos", icon: Users,

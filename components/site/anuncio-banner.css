@@ -4,7 +4,7 @@
 .lp .anuncio-rotulo{font-size:12px;color:var(--text-muted)}
 .lp .anuncio-link{display:block;width:100%;border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-muted);transition:opacity .2s}
 .lp .anuncio-link:hover{opacity:.92}
-.lp .anuncio-link img{display:block;width:100%;height:auto;max-height:240px;object-fit:cover}
+.lp .anuncio-link img{display:block;width:100%;height:auto;max-height:240px;object-fit:contain}
 /* Espaço sem anúncio ativo: oferece o espaço para contratação. */
 .lp .anuncio-vago{width:100%;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#0B0B0B;color:#fff;border-left:4px solid var(--red);border-radius:var(--radius-sm);padding:28px 32px}
 .lp .anuncio-vago-titulo{font-family:var(--font-heading),system-ui,sans-serif;font-size:clamp(26px,3.4vw,40px);font-weight:800;text-transform:uppercase;line-height:1;letter-spacing:.01em}
