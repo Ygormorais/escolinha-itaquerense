@@ -178,7 +178,7 @@ export function RelatorioAlunosClient({
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div className="rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ativos</p>
           <p className="mt-1 text-2xl font-extrabold text-brand-800">{resumo.ativos}</p>
@@ -187,13 +187,13 @@ export function RelatorioAlunosClient({
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Inativos</p>
           <p className="mt-1 text-2xl font-extrabold text-muted-foreground">{resumo.inativos}</p>
         </div>
-        <div className="rounded-xl border bg-card p-3">
+        <div className="@container/total min-w-0 rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Receita Mensal</p>
-          <p className="mt-1 text-xl font-extrabold text-success-600">{formatMoney(resumo.totalMensalidade)}</p>
+          <p data-numeric className="mt-1 whitespace-nowrap text-[1rem] font-extrabold text-success-600 @[10rem]/total:text-[1.125rem] @[12rem]/total:text-[1.25rem] @[14rem]/total:text-[1.5rem]">{formatMoney(resumo.totalMensalidade)}</p>
         </div>
-        <div className="rounded-xl border bg-card p-3">
+        <div className="@container/total min-w-0 rounded-xl border bg-card p-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Média Mensalidade</p>
-          <p className="mt-1 text-xl font-extrabold">{formatMoney(resumo.mediaMensalidade)}</p>
+          <p data-numeric className="mt-1 whitespace-nowrap text-[1rem] font-extrabold @[10rem]/total:text-[1.125rem] @[12rem]/total:text-[1.25rem] @[14rem]/total:text-[1.5rem]">{formatMoney(resumo.mediaMensalidade)}</p>
         </div>
       </div>
 

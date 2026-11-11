@@ -56,20 +56,20 @@ export function CaixaClient({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-4">
         {sections.map(({ href, label, icon: Icon, color, valor, sub }) => (
           <Link key={href} href={href}>
             <Card className="h-full cursor-pointer transition-all hover:shadow-md hover:-translate-y-px">
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</CardTitle>
-                  <div className={`flex size-9 items-center justify-center rounded-lg ${color}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="min-w-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</CardTitle>
+                  <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${color}`}>
                     <Icon className="size-4" />
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <p data-numeric className="text-lg font-bold tracking-tight text-foreground">{valor}</p>
+                <p data-numeric className="whitespace-nowrap text-lg font-bold tracking-tight text-foreground">{valor}</p>
                 <p className="text-xs text-muted-foreground">{sub}</p>
               </CardContent>
             </Card>

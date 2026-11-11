@@ -47,7 +47,7 @@ export function StatCard({
 
   const inner = (
     <Card className={cn(
-      "h-full border-border/80 bg-card shadow-sm transition-colors duration-200",
+      "@container/stat h-full border-border/80 bg-card shadow-sm transition-colors duration-200",
       href && "cursor-pointer hover:border-brand-200 hover:bg-brand-50/30",
       borderAccent && "border-brand-200 bg-brand-50/30",
       className
@@ -57,13 +57,14 @@ export function StatCard({
           <p className="min-w-0 [overflow-wrap:anywhere] text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
             {title}
           </p>
-          <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", iconCls)}>
+          {/* Em cartão estreito o ícone sai para o rótulo caber sem quebrar palavra no meio. */}
+          <div className={cn("hidden size-10 shrink-0 items-center justify-center rounded-xl @[13rem]/stat:flex", iconCls)}>
             <Icon className="size-5" />
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <p data-numeric className="text-xl font-bold tracking-tight text-foreground min-[420px]:text-2xl sm:text-3xl" title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>
+        <p data-numeric className="whitespace-nowrap text-[1rem] font-bold tracking-tight text-foreground @[11.5rem]/stat:text-[1.125rem] @[13rem]/stat:text-[1.25rem] @[16rem]/stat:text-[1.5rem] @[20rem]/stat:text-[1.875rem]" title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>
           {value}
         </p>
         {trend && (
@@ -98,6 +99,6 @@ export function StatCard({
     </Card>
   )
 
-  if (href) return <Link href={href} className="block h-full rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15">{inner}</Link>
+  if (href) return <Link href={href} className="block h-full whitespace-normal rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15">{inner}</Link>
   return inner
 }
