@@ -23,6 +23,7 @@ export default async function globalTeardown() {
 
   // Remove recibos e logs gerados pelos fluxos financeiros E2E
   await db.recibo.deleteMany({ where: { alunoNome: { startsWith: "E2E Recibo" } } })
+  await db.recibo.deleteMany({ where: { numero: { startsWith: "E2E-PORTAL-" } } })
   await db.log.deleteMany({
     where: {
       OR: [

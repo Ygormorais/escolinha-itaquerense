@@ -118,7 +118,7 @@ function MidiaCard({
   const imagemDireta = midia.tipo === "fotos" && /\.(jpe?g|png|webp)(?:\?.*)?$/i.test(midia.url)
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border bg-card transition-all hover:shadow-lg hover:-translate-y-0.5">
+    <div className="group relative overflow-hidden rounded-xl border bg-card transition-colors hover:border-[var(--color-ink-500)]">
       {youtubeId ? (
         <button
           onClick={() => onPlay(midia.url, midia.titulo)}
@@ -159,7 +159,7 @@ function MidiaCard({
           rel="noopener noreferrer"
           className="block"
         >
-          <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+          <div className="aspect-video flex items-center justify-center bg-muted">
             <div className="flex flex-col items-center gap-1 text-muted-foreground">
               <ImageIcon className="size-8" />
               <span className="text-[10px]">📷 Fotos</span>

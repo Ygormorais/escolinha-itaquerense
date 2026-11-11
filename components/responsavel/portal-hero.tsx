@@ -41,7 +41,7 @@ export function PortalHero({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-[var(--radius-hero)] px-6 py-7 text-white shadow-md sm:px-8 sm:py-8",
+        "overflow-hidden rounded-[var(--radius-hero)] px-6 py-7 text-white sm:px-8 sm:py-8",
         FUNDO,
         className,
       )}
@@ -58,7 +58,7 @@ export function PortalHero({
             </Link>
           )}
           {badge && !backHref && (
-            <div className="inline-flex rounded-full border border-white/30 bg-white/15 px-3.5 py-1.5 font-body text-[11px] font-bold uppercase tracking-[0.12em] text-white/95 backdrop-blur-sm">
+            <div className="inline-flex rounded-full border border-white/30 bg-white/15 px-3.5 py-1.5 font-body text-[11px] font-bold uppercase tracking-[0.12em] text-white/95">
               {badge}
             </div>
           )}
@@ -89,7 +89,7 @@ export function PortalHero({
             {stats!.map((s) => (
               <div
                 key={s.label}
-                className="rounded-xl border border-white/14 bg-white/10 p-4 backdrop-blur"
+                className="rounded-[var(--radius-card)] border border-white/14 bg-white/[0.06] p-4"
               >
                 <p className="font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">
                   {s.label}

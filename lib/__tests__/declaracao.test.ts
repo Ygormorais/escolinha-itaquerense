@@ -35,4 +35,44 @@ describe("montarDeclaracaoAnual", () => {
     expect(d.total).toBe(0)
     expect(d.linhas).toHaveLength(1)
   })
+
+  it("usa os recibos da mensalidade: baixa parcial entra mesmo sem quitação", () => {
+    const d = montarDeclaracaoAnual(
+      [{
+        mesReferencia: "2026-04", dataPagamento: null, valorRecebido: 50, formaPagamento: "Dinheiro",
+        recibos: [{ valor: 50, dataPagamento: new Date("2026-04-05T12:00:00"), formaPagamento: "Dinheiro" }],
+      }],
+      2026
+    )
+    expect(d.linhas).toHaveLength(1)
+    expect(d.linhas[0]).toMatchObject({ mesReferencia: "2026-04", valorRecebido: 50, formaPagamento: "Dinheiro" })
+    expect(d.total).toBe(50)
+  })
+
+  it("uma linha por baixa quando a mensalidade foi paga em partes, cada uma no seu ano", () => {
+    const d = montarDeclaracaoAnual(
+      [{
+        mesReferencia: "2025-12", dataPagamento: new Date("2026-01-08T12:00:00"), valorRecebido: 200, formaPagamento: "Pix",
+        recibos: [
+          { valor: 120, dataPagamento: new Date("2026-01-08T12:00:00"), formaPagamento: "Pix" },
+          { valor: 80, dataPagamento: new Date("2025-12-20T12:00:00"), formaPagamento: "Dinheiro" },
+        ],
+      }],
+      2026
+    )
+    expect(d.linhas.map((l) => l.valorRecebido)).toEqual([120])
+    expect(d.total).toBe(120)
+    expect(montarDeclaracaoAnual([{
+      mesReferencia: "2025-12", dataPagamento: new Date("2026-01-08T12:00:00"), valorRecebido: 200, formaPagamento: "Pix",
+      recibos: [
+        { valor: 120, dataPagamento: new Date("2026-01-08T12:00:00"), formaPagamento: "Pix" },
+        { valor: 80, dataPagamento: new Date("2025-12-20T12:00:00"), formaPagamento: "Dinheiro" },
+      ],
+    }], 2025).total).toBe(80)
+  })
+
+  it("sem recibos, cai no pagamento quitado (registros antigos)", () => {
+    const d = montarDeclaracaoAnual([{ ...pg("2026-02", "2026-02-10", 180), recibos: [] }], 2026)
+    expect(d.total).toBe(180)
+  })
 })

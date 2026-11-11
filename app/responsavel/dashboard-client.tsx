@@ -377,7 +377,7 @@ export function ResponsavelDashboardClient({
                       <ArrowRight className="size-4" />
                     </Button>
                   </Link>
-                  <Link href={`/responsavel/mensalidades?alunoId=${aluno.id}`} className="flex w-full">
+                  <Link href={`/responsavel/mensalidades#aluno-${aluno.id}`} className="flex w-full">
                     <Button variant="outline" size="lg" className="w-full justify-between">
                       Ver Mensalidades
                       <ArrowRight className="size-4" />

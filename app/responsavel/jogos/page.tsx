@@ -29,27 +29,27 @@ function resultadoMeta(resultado: string | null, golsPro: number | null) {
     return {
       label: "Próximo",
       className: "border-brand-200 bg-brand-50 text-brand-700",
-      bar: "from-brand-800 to-brand-600",
+      bar: "bg-brand-600",
     }
   }
   if (resultado === "Vitoria") {
     return {
       label: "Vitória",
       className: "border-success-600/20 bg-success-50 text-success-600",
-      bar: "from-emerald-700 to-emerald-500",
+      bar: "bg-success-600",
     }
   }
   if (resultado === "Derrota") {
     return {
       label: "Derrota",
       className: "border-destructive/20 bg-destructive/10 text-destructive",
-      bar: "from-red-900 to-red-600",
+      bar: "bg-danger-600",
     }
   }
   return {
     label: "Empate",
     className: "border-border bg-muted text-muted-foreground",
-    bar: "from-stone-500 to-stone-400",
+    bar: "bg-stone-400",
   }
 }
 
@@ -308,7 +308,7 @@ function MatchCard({
         "overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md",
       )}
     >
-      <div className={cn("h-1 bg-gradient-to-r", meta.bar)} aria-hidden />
+      <div className={cn("h-1", meta.bar)} aria-hidden />
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-start gap-3">
