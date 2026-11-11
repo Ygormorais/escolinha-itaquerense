@@ -245,6 +245,15 @@ describe("landing publica", () => {
     )
     expect(heroSlice).not.toContain("Vila Real")
   })
+  it("secao + TURMAS lista as categorias com idade e leva aos horarios", () => {
+    const secao = html.slice(html.indexOf('id="turmas"'), html.indexOf("</section>", html.indexOf('id="turmas"')))
+    expect(secao).toContain(">Turmas</h2>")
+    expect(secao).toContain("Sub-7")
+    expect(secao).toContain("5 – 7 anos")
+    expect(secao).toContain("Sub-18")
+    expect(secao).toContain("Federado")
+    expect(secao).toContain('href="/horarios"')
+  })
   it("nao tem mais placeholders de noticias nem patrocinadores", () => {
     expect(html).not.toContain("Patrocinadores")
     expect(html).not.toContain("Sócio Torcedor")

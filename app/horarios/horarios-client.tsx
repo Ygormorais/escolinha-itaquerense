@@ -13,30 +13,21 @@ import {
   Trophy,
 } from "lucide-react"
 import type { TurmaInfo } from "@/lib/landing/turmas"
-
-const FAIXA_ETARIA: Record<string, string> = {
-  "Sub-7": "5 – 7 anos",
-  "Sub-9": "7 – 9 anos",
-  "Sub-11": "9 – 11 anos",
-  "Sub-13": "11 – 13 anos",
-  "Sub-15": "13 – 15 anos",
-  "Sub-17": "15 – 17 anos",
-  "Sub-18": "17 – 18 anos",
-}
+import { CATEGORIAS_ESCOLINHA, CATEGORIAS_FEDERADO, FAIXA_ETARIA } from "@/lib/site/categorias"
 
 const MODALIDADES = {
   escolinha: {
     key: "escolinha" as const,
     label: "Futsal Escolinha",
     desc: "Iniciação esportiva e formação de base",
-    subs: ["Sub-7", "Sub-9", "Sub-11", "Sub-13"],
+    subs: CATEGORIAS_ESCOLINHA,
     icon: CircleDot,
   },
   federado: {
     key: "federado" as const,
     label: "Futsal Federado",
     desc: "Entrada somente por avaliação do atleta",
-    subs: ["Sub-11", "Sub-13", "Sub-15", "Sub-17", "Sub-18"],
+    subs: CATEGORIAS_FEDERADO,
     icon: Trophy,
   },
 }
