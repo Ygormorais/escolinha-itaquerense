@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Lock, Menu, Moon, Sun, X } from "lucide-react"
+import { Lock, Menu, Moon, Search, Sun, X } from "lucide-react"
 import { useTheme } from "@/components/theme"
 import { depoimentos } from "@/lib/landing/conteudo"
 import "@/components/landing/landing.css"
@@ -57,6 +57,10 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
     <div className={dentroDaLanding ? "lp-chrome" : "lp lp-chrome"}>
       <div className="util" ref={utilRef}>
         <div className="container util-row">
+          <form className="util-busca" action="/buscar" method="get" role="search" aria-label="Buscar no site">
+            <Search size={14} strokeWidth={2} aria-hidden />
+            <input type="search" name="q" placeholder="Buscar no site" aria-label="Buscar no site" minLength={2} required />
+          </form>
           <p className="util-id">Sociedade Esportiva Elite Itaquerense, desde 1922</p>
           <div className="util-tools">
             <a href="/responsavel" className="util-link">
@@ -99,7 +103,7 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
             <Image src="/logo.png" alt="" width={208} height={208} priority sizes="104px" />
           </Link>
 
-          <a href="/matricula" className="btn-matricula">Matrícula</a>
+          <a href="/matricula" className="btn-matricula">Matricule-se</a>
 
           <button
             type="button"
