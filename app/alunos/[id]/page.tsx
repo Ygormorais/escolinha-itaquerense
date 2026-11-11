@@ -300,7 +300,7 @@ export default async function AlunoDetailPage({
                       <div className="flex items-center gap-1">
                         {!p.dataPagamento ? (
                           <>
-                            <PagamentoButton pagamentoId={p.id} mensalidade={aluno.mensalidade} />
+                            <PagamentoButton alunoId={aluno.id} />
                             {config.chavePix && (
                               <PixButton
                                 chave={config.chavePix}

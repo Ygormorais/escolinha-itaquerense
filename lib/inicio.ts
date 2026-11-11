@@ -62,7 +62,7 @@ export function acoesDoInicio(grupos: PendenciaGrupo[], alertas: AcaoInicio[] = 
     .map((g) => ({
       chave: CHAVE_DO_GRUPO[g.titulo] ?? g.titulo,
       texto: `${g.titulo} · ${g.itens.length}`,
-      href: g.titulo === "Mensalidades vencidas" ? "/inadimplencia" : telaDaArea(g.itens[0].href),
+      href: g.titulo === "Mensalidades vencidas" ? "/pagamentos?filtro=atrasados" : telaDaArea(g.itens[0].href),
       quantidade: g.itens.length,
       prioridade: g.itens.some((i) => i.prioridade === "alta") ? "alta" : "normal",
     }))

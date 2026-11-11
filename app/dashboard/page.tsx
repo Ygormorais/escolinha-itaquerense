@@ -92,7 +92,7 @@ export default async function DashboardPage({
   const alertas: AcaoInicio[] = [
     { chave: "vencendo", texto: `Vencem nos próximos 7 dias · ${vencendoSemana}`, href: "/pagamentos", quantidade: vencendoSemana, prioridade: "normal" },
     { chave: "prematriculas", texto: `Pré-matrículas aguardando · ${preMatriculas}`, href: "/configuracoes/matriculas", quantidade: canAccessStaffPath("/configuracoes/matriculas", role) ? preMatriculas : 0, prioridade: "normal" },
-    { chave: "risco", texto: `Em atraso e com pouca presença · ${riscoEvasao}`, href: "/inadimplencia", quantidade: riscoEvasao, prioridade: "alta" },
+    { chave: "risco", texto: `Em atraso e com pouca presença · ${riscoEvasao}`, href: "/pagamentos?filtro=atrasados", quantidade: riscoEvasao, prioridade: "alta" },
   ]
   const { acoes, total } = acoesDoInicio(pendencias, alertas)
 
@@ -120,7 +120,7 @@ export default async function DashboardPage({
               ? `${plural(atraso.alunos, "aluno", "alunos")} · ${plural(atraso.mensalidades, "mensalidade", "mensalidades")}`
               : "Nenhuma mensalidade vencida"}
             atencao={atraso.valor > 0}
-            href="/inadimplencia"
+            href="/pagamentos?filtro=atrasados"
           />
         )}
         <NumeroInicio

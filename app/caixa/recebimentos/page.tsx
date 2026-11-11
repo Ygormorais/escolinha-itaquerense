@@ -28,7 +28,13 @@ export default async function RecebimentosPage({
   const fim = endOfMonth(ref)
 
   const pagamentos = await db.pagamento.findMany({
-    where: { dataPagamento: { gte: inicio, lte: fim } },
+    where: {
+      OR: [
+        { dataPagamento: { gte: inicio, lte: fim } },
+        // Baixa parcial: ainda sem dataPagamento, mas o dinheiro entrou (recibo no período).
+        { dataPagamento: null, valorRecebido: { gt: 0 }, recibos: { some: { canceladoAt: null, dataPagamento: { gte: inicio, lte: fim } } } },
+      ],
+    },
     include: { aluno: { select: { id: true, nome: true, turma: true } } },
     orderBy: { dataPagamento: "desc" },
   })

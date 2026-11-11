@@ -9,13 +9,13 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("Pagamentos — listagem e filtros", () => {
   test("página carrega com tabela de pagamentos", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     await expect(page.getByRole("heading", { name: "Pagamentos", exact: true })).toBeVisible()
     await expect(page.locator("table")).toBeVisible()
   })
 
   test("seletor de mês atualiza a URL e os dados", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     const anoAlvo = new Date().getFullYear() + 1
     await page.locator("#pag-mes").click()
     await page.getByRole("button", { name: "Próximo ano" }).click()
@@ -27,7 +27,7 @@ test.describe("Pagamentos — listagem e filtros", () => {
   })
 
   test("busca por nome funciona na listagem", async ({ page }) => {
-    await page.goto("/pagamentos")
+    await page.goto("/pagamentos?filtro=mes")
     const search = page.getByPlaceholder("Buscar aluno...")
     await expect(search).toBeVisible()
     await search.fill("zzz_nao_existe_e2e")
@@ -37,20 +37,14 @@ test.describe("Pagamentos — listagem e filtros", () => {
   })
 })
 
-test.describe("Pagamentos — registro manual", () => {
-  test("botão de pagar abre modal de registro de pagamento", async ({ page }) => {
-    await page.goto("/pagamentos")
-    await expect(page.locator("table tbody tr").first()).toBeVisible()
-
+test.describe("Pagamentos — dar baixa", () => {
+  test("linha pendente do mês leva ao painel do aluno", async ({ page }) => {
+    await page.goto("/pagamentos?filtro=mes")
     const aluno = page.getByRole("link", { name: "E2E Aluno Pagamentos 1", exact: true })
     const linha = page.getByRole("row").filter({ has: aluno })
-    const btnPagar = linha.getByRole("button", { name: /Registrar/i })
-    await expect(btnPagar).toBeVisible()
-    await btnPagar.click()
-    const dialog = page.getByRole("dialog")
-    await expect(dialog).toBeVisible()
-    await dialog.getByRole("button", { name: /Close|Fechar/i }).first().click()
-    await expect(dialog).not.toBeVisible()
+    await linha.getByRole("link", { name: /Dar baixa/i }).click()
+    await expect(page).toHaveURL(/aluno=\d+/)
+    await expect(page.getByRole("region", { name: "Aluno" }).getByRole("heading", { name: "E2E Aluno Pagamentos 1" })).toBeVisible()
   })
 })
 
@@ -73,15 +67,9 @@ test.describe("Custos", () => {
 })
 
 test.describe("Inadimplência", () => {
-  test("página de inadimplência carrega", async ({ page }) => {
+  test("/inadimplencia leva à central filtrada por atrasados", async ({ page }) => {
     await page.goto("/inadimplencia")
-    await expect(page.locator("h1")).toBeVisible()
-    await expect(page.locator("h1")).toContainText("Inadimpl")
-  })
-
-  test("exibe contagem de alunos inadimplentes", async ({ page }) => {
-    await page.goto("/inadimplencia")
-    // o número de inadimplentes é um stat card ou parágrafo
-    await expect(page.locator("body")).toBeVisible()
+    await expect(page).toHaveURL(/\/pagamentos\?filtro=atrasados/)
+    await expect(page.getByRole("heading", { name: "Pagamentos", level: 1 })).toBeVisible()
   })
 })
