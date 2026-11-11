@@ -31,7 +31,7 @@ export default async function BuscarPage({ searchParams }: { searchParams: Promi
     <PaginaPublica titulo="Buscar" descricao="História, notícias e partidas do E.C. Itaquerense." className="bs">
       <form action="/buscar" method="get" role="search" className="bs-form">
         <label htmlFor="bs-q" className="sr-only">Buscar no site</label>
-        <input id="bs-q" type="search" name="q" defaultValue={q} placeholder="Ex.: Mundial, Sub-13, nome do adversário" minLength={MIN_CARACTERES} required />
+        <input id="bs-q" type="search" name="q" defaultValue={q} autoFocus={!q} placeholder="Ex.: Mundial, Sub-13, nome do adversário" minLength={MIN_CARACTERES} required />
         <button type="submit" className="pg-btn pg-btn-primario">Buscar</button>
       </form>
 
