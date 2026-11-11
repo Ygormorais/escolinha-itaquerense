@@ -1,0 +1,13 @@
+/* Página de busca do site público (dentro de .lp .pg). */
+.lp .bs-form{display:flex;gap:10px;max-width:640px;margin-bottom:28px}
+.lp .bs-form input{flex:1;min-width:0;min-height:48px;padding:0 14px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text);font:inherit;font-size:16px}
+.lp .bs-form input:focus-visible{outline:3px solid var(--red);outline-offset:1px}
+.lp .bs-dica,.lp .bs-total{color:var(--text-muted);margin-bottom:24px}
+.lp .bs section{margin-bottom:40px}
+.lp .bs-lista{display:grid;gap:10px;list-style:none;padding:0}
+.lp .bs-item{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid var(--border);border-left:4px solid var(--red);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text);transition:border-color .2s}
+.lp .bs-item:hover{border-color:var(--red)}
+.lp .bs-item strong{font-family:var(--font-heading),system-ui,sans-serif;font-size:17px;font-weight:800}
+.lp .bs-meta{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+.lp .bs-sub{font-size:14px;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:560px){.lp .bs-form{flex-direction:column}}

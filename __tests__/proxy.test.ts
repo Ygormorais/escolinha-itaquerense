@@ -33,6 +33,7 @@ describe("isPublicPath — prefixos de API públicos", () => {
     "/horarios/sub-13",
     "/noticias/publico",
     "/noticias/publico/123",
+    "/buscar",
     "/responsavel/login",
     "/responsavel/recuperar-senha",
     "/responsavel/redefinir-senha",

@@ -86,6 +86,7 @@ export function isPublicPath(pathname: string): boolean {
     pathname === "/privacidade" ||
     hasPrefix(pathname, "/horarios") ||
     hasPrefix(pathname, "/noticias/publico") ||
+    pathname === "/buscar" ||            // busca do site público (notícias publicadas e partidas)
     hasPrefix(pathname, "/responsavel/login") ||
     hasPrefix(pathname, "/responsavel/recuperar-senha") ||
     hasPrefix(pathname, "/responsavel/redefinir-senha") ||

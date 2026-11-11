@@ -138,7 +138,7 @@ export function MateriasTabs({
       <div className="container mt-inner">
         <div className="mt-header">
           <div>
-            <h2 id="mt-heading">Notícias e conquistas</h2>
+            <h2 id="mt-heading">Notícias</h2>
             <p className="mt-lead">
               Mundial, títulos paulistas, participações e o legado de formação do Elite
               Itaquerense.

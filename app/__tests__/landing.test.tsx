@@ -63,7 +63,8 @@ describe("landing publica", () => {
         depoimentos={[]}
       />
     )
-    const strip = h.slice(h.indexOf('class="strip"'), h.indexOf('class="hs"'))
+    // Faixa fica logo abaixo do hero (etapa 3)
+    const strip = h.slice(h.indexOf('class="strip"'), h.indexOf('id="noticias"'))
     expect(strip).toContain("Próxima partida")
     expect(strip).toContain("Sub-9 A3")
     expect(strip).toContain("Vila Real")
@@ -90,7 +91,8 @@ describe("landing publica", () => {
         depoimentos={[]}
       />
     )
-    const strip = h.slice(h.indexOf('class="strip"'), h.indexOf('class="hs"'))
+    // Faixa fica logo abaixo do hero (etapa 3)
+    const strip = h.slice(h.indexOf('class="strip"'), h.indexOf('id="noticias"'))
     expect(strip).toContain("Último resultado")
     expect(strip).toContain("3 × 1")
     expect(strip).toContain('href="/partidas"')
@@ -124,11 +126,11 @@ describe("landing publica", () => {
   })
 
   it("com noticias vazias nao renderiza carrossel de jogos", () => {
-    expect(html).not.toContain(">Jogos e resultados</h2>")
+    expect(html).not.toContain(">Partidas</h2>")
   })
 
   it("exibe secao de noticias e conquistas com abas", () => {
-    expect(html).toContain("Notícias e conquistas")
+    expect(html).toContain(">Notícias</h2>")
     expect(html).toContain("Mundial")
     expect(html).toContain("Campeão Mundial Sub-13 na França")
     expect(html).toContain('href="/#materias"')
@@ -229,7 +231,7 @@ describe("landing publica", () => {
       />
     )
     expect(comJogos).toContain("Formação de base com paixão itaquerense")
-    expect(comJogos).toContain("Jogos e resultados")
+    expect(comJogos).toContain(">Partidas</h2>")
     expect(comJogos).toContain("Vila Real")
     expect(comJogos).toContain("Sub-13")
     expect(comJogos).toContain("Sub-18")
@@ -250,7 +252,7 @@ describe("landing publica", () => {
   })
   it("matricula aparece uma vez no header (so o botao de acesso)", () => {
     const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"))
-    expect(header.match(/Matrícula/g)).toHaveLength(1)
+    expect(header.match(/Matricule-se/g)).toHaveLength(1)
   })
   it("hero institucional nao duplica o CTA do banner de matricula", () => {
     const heroSection = html.slice(html.indexOf('class="hs"'), html.indexOf('id="noticias"'))
