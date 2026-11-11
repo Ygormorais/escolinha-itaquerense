@@ -79,3 +79,22 @@
 .lp .section-title,.lp .nc .nc-header h2,.lp .mt .mt-header h2,.lp .ncc-header h2{text-transform:uppercase;letter-spacing:-.01em;font-weight:900}
 .lp .section-title::before,.lp .nc .nc-header h2::before,.lp .mt .mt-header h2::before,.lp .ncc-header h2::before{content:"+ ";content:"+ " / "";color:var(--red)}
 .lp .sobre .section-title::before{color:var(--brand-500)}
+
+/* Etapa 3: "+ TURMAS" — categorias com faixa etária e modalidade, levando aos horários. */
+.lp section.turmas{background:var(--bg-muted);border-block:1px solid var(--border)}
+.lp .turmas-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.lp .turmas-head .section-title{margin-bottom:28px}
+.lp .turmas-mais{display:inline-flex;align-items:center;gap:4px;margin-bottom:32px;font-size:14px;font-weight:700;color:var(--red-dark)}
+.lp .turmas-mais:hover{text-decoration:underline;text-underline-offset:3px}
+html.dark .lp .turmas-mais{color:var(--brand-200)}
+.lp .turmas-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;list-style:none;padding:0;margin:0}
+.lp .turmas-card{display:flex;flex-direction:column;gap:6px;height:100%;padding:18px 16px;border:1px solid var(--border);border-top:4px solid #0B0B0B;border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text);transition:border-color .2s}
+.lp .turmas-card:hover{border-color:var(--red);border-top-color:var(--red)}
+.lp .turmas-card:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.lp .turmas-card strong{font-family:var(--font-heading),system-ui,sans-serif;font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;line-height:1}
+.lp .turmas-idade{font-size:13px;color:var(--text-muted)}
+.lp .turmas-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto;padding-top:8px}
+.lp .turmas-tags span{padding:2px 6px;border-radius:var(--radius-control,4px);background:var(--bg-muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text)}
+.lp .turmas-tags span.fed{background:#0B0B0B;color:#fff}
+@media(max-width:1100px){.lp .turmas-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:640px){.lp .turmas-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
