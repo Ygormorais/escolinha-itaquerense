@@ -20,15 +20,15 @@ export default async function ValidarReciboPage({ params }: { params: Promise<{ 
 
   return (
     <main className="min-h-screen bg-[var(--color-paper-50)] px-4 py-12 text-foreground">
-      <article className="mx-auto max-w-2xl overflow-hidden rounded-3xl border bg-white shadow-xl">
-        <header className={`px-7 py-7 text-white ${valido ? "bg-brand-800" : "bg-danger-700"}`}>
+      <article className="mx-auto max-w-2xl overflow-hidden rounded-[var(--radius-panel)] border border-border bg-white">
+        <header className={`border-b-4 px-7 py-7 text-white ${valido ? "border-b-[var(--red,#C62828)] bg-[#0B0B0B]" : "border-b-transparent bg-danger-600"}`}>
           <div className="flex items-start justify-between gap-5">
-            <div><p className="text-sm text-white/75">{config.nome}</p><h1 className="mt-1 font-heading text-3xl font-bold">Validação de recibo</h1></div>
+            <div><p className="text-sm text-white/75">{config.nome}</p><h1 className="mt-1 font-heading text-3xl font-extrabold uppercase">Validação de recibo</h1></div>
             <ShieldCheck className="size-10" />
           </div>
         </header>
         <div className="p-7 sm:p-9">
-          <div className={`flex items-center gap-3 rounded-2xl p-4 ${valido ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`}>
+          <div className={`flex items-center gap-3 rounded-[var(--radius-card)] border p-4 ${valido ? "border-success-600/25 bg-success-50 text-success-600" : "border-danger-600/25 bg-danger-50 text-danger-600"}`}>
             {valido ? <CheckCircle2 className="size-6" /> : <XCircle className="size-6" />}
             <div><p className="font-bold">{valido ? legado ? "Registro legado localizado e ativo" : "Recibo autêntico e ativo" : recibo.canceladoAt ? "Recibo cancelado" : "Integridade não confirmada"}</p><p className="text-sm opacity-80">Registro localizado no sistema da escolinha.</p></div>
           </div>

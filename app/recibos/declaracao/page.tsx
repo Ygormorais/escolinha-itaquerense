@@ -21,7 +21,12 @@ export default async function DeclaracaoPage({
     where: { id: alunoId },
     select: {
       nome: true, responsavel: true,
-      pagamentos: { select: { mesReferencia: true, dataPagamento: true, valorRecebido: true, formaPagamento: true } },
+      pagamentos: {
+        select: {
+          mesReferencia: true, dataPagamento: true, valorRecebido: true, formaPagamento: true,
+          recibos: { where: { canceladoAt: null }, select: { valor: true, dataPagamento: true, formaPagamento: true } },
+        },
+      },
     },
   })
   if (!aluno) notFound()

@@ -25,7 +25,12 @@ export default async function DeclaracaoResponsavelPage({
     where: { id: alunoId },
     select: {
       nome: true, responsavel: true, responsavelId: true,
-      pagamentos: { select: { mesReferencia: true, dataPagamento: true, valorRecebido: true, formaPagamento: true } },
+      pagamentos: {
+        select: {
+          mesReferencia: true, dataPagamento: true, valorRecebido: true, formaPagamento: true,
+          recibos: { where: { canceladoAt: null }, select: { valor: true, dataPagamento: true, formaPagamento: true } },
+        },
+      },
     },
   })
   if (!aluno || aluno.responsavelId == null || aluno.responsavelId !== session.responsavelId) notFound()

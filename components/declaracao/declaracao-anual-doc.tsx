@@ -39,8 +39,8 @@ export function DeclaracaoAnualDoc({ declaracao, aluno, clube }: Props) {
               </td>
             </tr>
           )}
-          {declaracao.linhas.map((l) => (
-            <tr key={l.mesReferencia}>
+          {declaracao.linhas.map((l, i) => (
+            <tr key={`${l.mesReferencia}-${i}`}>
               <td className="px-2 py-2">{l.mesReferencia}</td>
               <td className="px-2 py-2">{format(l.dataPagamento, "dd/MM/yyyy")}</td>
               <td className="px-2 py-2">{l.formaPagamento ?? "—"}</td>

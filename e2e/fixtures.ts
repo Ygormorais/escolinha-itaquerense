@@ -367,3 +367,54 @@ export async function resetAnunciosE2E() {
 export async function cliquesAnuncio(id: number) {
   return (await db.anuncio.findUnique({ where: { id }, select: { cliques: true } }))?.cliques ?? null
 }
+
+const ALUNO_PORTAL = "E2E Aluno Responsável"
+
+/**
+ * Mensalidades do aluno do portal: janeiro pago com recibo e o mês atual pago em parte
+ * (com recibo da parcial). Devolve os ids dos recibos e de um recibo de outra família.
+ */
+export async function prepararMensalidadesPortalE2E() {
+  const aluno = await db.aluno.findFirstOrThrow({ where: { nome: ALUNO_PORTAL }, select: { id: true } })
+  const ano = new Date().getFullYear()
+  const mes = mesAtual()
+  await db.recibo.deleteMany({ where: { OR: [{ alunoId: aluno.id }, { alunoNome: { startsWith: "E2E Portal Outra Família" } }] } })
+  await db.pagamento.deleteMany({ where: { alunoId: aluno.id } })
+
+  const janeiro = await db.pagamento.create({
+    data: {
+      alunoId: aluno.id, mesReferencia: `${ano}-01`, dataVencimento: new Date(Date.UTC(ano, 0, 10, 12)),
+      dataPagamento: new Date(Date.UTC(ano, 0, 8)), valorRecebido: 150, valorDevido: 150,
+      formaPagamento: "Pix", statusCobranca: "pago",
+    },
+  })
+  const parcial = mes === `${ano}-01` ? null : await db.pagamento.create({
+    data: {
+      alunoId: aluno.id, mesReferencia: mes, dataVencimento: new Date(),
+      valorRecebido: 50, valorDevido: 150, formaPagamento: "Dinheiro", statusCobranca: "parcial",
+    },
+  })
+
+  const base = { alunoNome: ALUNO_PORTAL, responsavel: RESP_TESTE.nome, formaPagamento: "Pix" }
+  const reciboJaneiro = await db.recibo.create({
+    data: {
+      ...base, numero: `E2E-PORTAL-${Date.now()}-1`, codigoVerificacao: `e2eportal${Date.now()}a`,
+      mesReferencia: `${ano}-01`, valor: 150, dataPagamento: janeiro.dataPagamento!, pagamentoId: janeiro.id, alunoId: aluno.id,
+    },
+  })
+  if (parcial) {
+    await db.recibo.create({
+      data: {
+        ...base, formaPagamento: "Dinheiro", numero: `E2E-PORTAL-${Date.now()}-2`, codigoVerificacao: `e2eportal${Date.now()}b`,
+        mesReferencia: mes, valor: 50, dataPagamento: new Date(), pagamentoId: parcial.id, alunoId: aluno.id,
+      },
+    })
+  }
+  const reciboAlheio = await db.recibo.create({
+    data: {
+      ...base, alunoNome: "E2E Portal Outra Família", numero: `E2E-PORTAL-${Date.now()}-3`,
+      mesReferencia: `${ano}-01`, valor: 99, dataPagamento: new Date(),
+    },
+  })
+  return { reciboJaneiro: reciboJaneiro.id, reciboAlheio: reciboAlheio.id, temParcial: parcial != null, mes }
+}

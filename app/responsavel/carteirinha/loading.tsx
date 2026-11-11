@@ -7,7 +7,7 @@ export default function CarteirinhaLoading() {
       <ResponsavelHeroSkeleton />
       <div className="grid gap-6 md:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-xl border shadow-lg">
+          <div key={i} className="overflow-hidden rounded-xl border shadow-sm">
             <div className="h-16 animate-pulse bg-muted" />
             <div className="p-5 space-y-3">
               <div className="flex gap-4">
