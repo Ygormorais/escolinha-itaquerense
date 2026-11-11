@@ -57,10 +57,6 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
     <div className={dentroDaLanding ? "lp-chrome" : "lp lp-chrome"}>
       <div className="util" ref={utilRef}>
         <div className="container util-row">
-          <form className="util-busca" action="/buscar" method="get" role="search" aria-label="Buscar no site">
-            <Search size={14} strokeWidth={2} aria-hidden />
-            <input type="search" name="q" placeholder="Buscar no site" aria-label="Buscar no site" minLength={2} required />
-          </form>
           <p className="util-id">Sociedade Esportiva Elite Itaquerense, desde 1922</p>
           <div className="util-tools">
             <a href="/responsavel" className="util-link">
@@ -72,6 +68,9 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
                 WhatsApp
               </a>
             )}
+            <a href="/buscar" className="util-icon" aria-label="Buscar no site" title="Buscar no site">
+              <Search size={16} strokeWidth={2} aria-hidden />
+            </a>
             {themeMounted ? (
               <button
                 type="button"
@@ -100,7 +99,7 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
       <header className={"site" + (stuck ? " is-stuck" : "")}>
         <div className="container header-row">
           <Link className="crest" href="/" onClick={closeNav} aria-label="E.C. Itaquerense, página inicial">
-            <Image src="/logo.png" alt="" width={208} height={208} priority sizes="104px" />
+            <Image src="/logo.png" alt="" width={208} height={208} priority sizes="80px" />
           </Link>
 
           <a href="/matricula" className="btn-matricula">Matricule-se</a>

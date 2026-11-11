@@ -4,12 +4,15 @@ test.describe("Site público — topo e busca", () => {
   test("topo tem busca e chamada Matricule-se", async ({ page }) => {
     await page.goto("/")
     await expect(page.getByRole("link", { name: "Matricule-se" })).toHaveAttribute("href", "/matricula")
-    await expect(page.getByRole("search", { name: "Buscar no site" })).toBeVisible()
+    await expect(page.getByRole("link", { name: "Buscar no site" })).toHaveAttribute("href", "/buscar")
   })
 
-  test("busca pelo topo abre /buscar sem login e mostra o termo", async ({ page }) => {
+  test("lupa do topo abre /buscar sem login e acha matéria", async ({ page }) => {
     await page.goto("/")
-    const campo = page.getByRole("search", { name: "Buscar no site" }).getByRole("searchbox")
+    await page.getByRole("link", { name: "Buscar no site" }).click()
+    await expect(page).toHaveURL(/\/buscar$/)
+    const campo = page.getByRole("searchbox", { name: "Buscar no site" })
+    await expect(campo).toBeFocused()
     await campo.fill("mundial")
     await campo.press("Enter")
     await expect(page).toHaveURL(/\/buscar\?q=mundial/)
