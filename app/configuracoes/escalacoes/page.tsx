@@ -93,10 +93,10 @@ function PartidaRow({ partida: p, passado }: { partida: Partida; passado?: boole
   return (
     <article className="border-b last:border-b-0">
       <Link
-        className={`group grid min-h-28 min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-4 p-4 outline-none hover:bg-muted/40 active:bg-muted/60 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset sm:p-5 md:grid-cols-[11rem_minmax(0,1fr)_auto_auto] md:items-center md:gap-6 ${passado ? "bg-muted/15" : ""}`}
+        className={`group grid min-h-28 min-w-0 whitespace-normal grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-4 p-4 outline-none hover:bg-muted/40 active:bg-muted/60 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset sm:p-5 lg:grid-cols-[11rem_minmax(0,1fr)_auto_auto] lg:items-center lg:gap-6 ${passado ? "bg-muted/15" : ""}`}
         href={`/campeonatos/${p.campeonato.id}/partidas/${p.id}/escalacao`}
       >
-        <time className="col-span-2 text-sm font-semibold capitalize tabular-nums text-foreground md:col-span-1" dateTime={new Date(p.data).toISOString()}>
+        <time className="col-span-2 text-sm font-semibold capitalize tabular-nums text-foreground lg:col-span-1" dateTime={new Date(p.data).toISOString()}>
           {format(new Date(p.data), "EEE, dd 'de' MMM · HH:mm", { locale: ptBR })}
           {p.local ? <span className="mt-1 block text-xs font-normal text-muted-foreground">{p.local}</span> : null}
         </time>
@@ -122,13 +122,13 @@ function PartidaRow({ partida: p, passado }: { partida: Partida; passado?: boole
 
         <Badge
           className={completa
-            ? "self-start border border-success-600/20 bg-success-50 text-success-600 md:self-center"
-            : "self-start border border-warning-600/20 bg-warning-50 text-warning-700 md:self-center"}
+            ? "self-start border border-success-600/20 bg-success-50 text-success-600 lg:self-center"
+            : "self-start border border-warning-600/20 bg-warning-50 text-warning-700 lg:self-center"}
         >
           {totalTitulares}/5
         </Badge>
 
-        <span className="col-span-2 flex min-h-11 items-center justify-end gap-1 whitespace-nowrap text-sm font-semibold text-brand-600 md:col-span-1">
+        <span className="col-span-2 flex min-h-11 items-center justify-end gap-1 whitespace-nowrap text-sm font-semibold text-brand-600 lg:col-span-1">
           Editar <ChevronRight aria-hidden="true" className="size-4" />
         </span>
       </Link>

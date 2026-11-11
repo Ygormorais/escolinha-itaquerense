@@ -109,7 +109,7 @@ export default async function RelatorioTurmasPage() {
       />
 
       {/* Totais */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div className="rounded-xl border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Alunos</p>
           <p className="mt-1 text-2xl font-extrabold">{totalGeral.alunos}</p>
@@ -122,9 +122,9 @@ export default async function RelatorioTurmasPage() {
           <p className={`text-xs font-semibold uppercase tracking-wider ${totalGeral.inadimplentes > 0 ? "text-danger-600" : "text-muted-foreground"}`}>Inadimplentes</p>
           <p className={`mt-1 text-2xl font-extrabold ${totalGeral.inadimplentes > 0 ? "text-danger-600" : ""}`}>{totalGeral.inadimplentes}</p>
         </div>
-        <div className="rounded-xl border bg-card p-4">
+        <div className="@container/total min-w-0 rounded-xl border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Realizado</p>
-          <p className="mt-1 text-2xl font-extrabold text-brand-800">
+          <p data-numeric className="mt-1 whitespace-nowrap text-[1.125rem] font-extrabold text-brand-800 @[11rem]/total:text-[1.25rem] @[13rem]/total:text-[1.5rem]">
             {(totalGeral.receitaRealizada ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
           <p className="text-xs text-muted-foreground">de {(totalGeral.receitaPrevista ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>

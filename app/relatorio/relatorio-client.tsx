@@ -49,14 +49,15 @@ export function RelatorioHeader({ ano, meses }: { ano: number; meses: MesData[] 
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Input
         type="number"
+        aria-label="Ano"
         min={2020}
         max={2099}
         value={ano}
         onChange={(e) => router.push(`/relatorio?ano=${e.target.value}`)}
-        className="w-24"
+        className="w-24 shrink-0"
       />
       <Button variant="outline" onClick={exportarCSV}>
         <Download className="size-4" />
