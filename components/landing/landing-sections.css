@@ -74,3 +74,8 @@
 @media(max-width:600px){
   .lp .membership .btn-row .btn{width:100%}
 }
+
+/* Etapa 3: títulos de seção no formato "+ NOTÍCIAS" (o "+" é decorativo para leitor de tela). */
+.lp .section-title,.lp .nc .nc-header h2,.lp .mt .mt-header h2,.lp .ncc-header h2{text-transform:uppercase;letter-spacing:-.01em;font-weight:900}
+.lp .section-title::before,.lp .nc .nc-header h2::before,.lp .mt .mt-header h2::before,.lp .ncc-header h2::before{content:"+ ";content:"+ " / "";color:var(--red)}
+.lp .sobre .section-title::before{color:var(--brand-500)}
