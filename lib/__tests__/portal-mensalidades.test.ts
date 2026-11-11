@@ -42,6 +42,14 @@ describe("montarMesesDoAluno", () => {
     expect(meses[5].situacao).toBe("a_vencer")
   })
 
+  it("no próprio dia do vencimento ainda está a vencer; atrasa no dia seguinte", () => {
+    const venc = pag({ mesReferencia: "2026-05", dataVencimento: new Date(Date.UTC(2026, 4, 10)) })
+    const noDia = new Date("2026-05-10T23:30:00-03:00")
+    const diaSeguinte = new Date("2026-05-11T00:10:00-03:00")
+    expect(montarMesesDoAluno(aluno, [venc], 2026, noDia)[4].situacao).toBe("a_vencer")
+    expect(montarMesesDoAluno(aluno, [venc], 2026, diaSeguinte)[4].situacao).toBe("atrasado")
+  })
+
   it("parcial mostra o recebido, o que falta e não traz data de pagamento", () => {
     const [, , , mes] = montarMesesDoAluno(aluno, [
       pag({ mesReferencia: "2026-04", valorDevido: 120, valorRecebido: 50, formaPagamento: "Dinheiro" }),

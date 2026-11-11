@@ -30,10 +30,18 @@ export type MesPortal = {
   recibos: ReciboPortal[]
 }
 
+/** Dia de hoje (AAAA-MM-DD) no fuso do clube. */
+function hojeNoClube(agora: Date): string {
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(agora)
+}
+
 function situacaoDe(p: PagamentoPortal, agora: Date): SituacaoMes {
   if (p.dataPagamento) return "pago"
   if ((p.valorRecebido ?? 0) > 0) return "parcial"
-  return p.dataVencimento < agora ? "atrasado" : "a_vencer"
+  // Compara dias do calendário: o vencimento é gravado à meia-noite (UTC) do dia e
+  // a mensalidade só fica atrasada no dia seguinte, não durante o próprio dia.
+  const diaVencimento = p.dataVencimento.toISOString().slice(0, 10)
+  return diaVencimento < hojeNoClube(agora) ? "atrasado" : "a_vencer"
 }
 
 /**
