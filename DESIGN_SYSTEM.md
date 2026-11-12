@@ -108,6 +108,28 @@ Neutras, sem tom vermelho:
 - Aliases: `--font-heading` e `--font-body` em `app/globals.css`. Fallback sempre
   `system-ui, sans-serif` — nunca serifa.
 
+### Escala de tamanhos (atenção: diferente do Tailwind)
+
+`tokens.css` redefine as variáveis `--text-*` que as classes do Tailwind usam. As classes
+`text-lg`, `text-xl` e `text-2xl` **não** têm os tamanhos da documentação do Tailwind:
+
+| Classe | Neste projeto | Tailwind padrão |
+|---|---|---|
+| `text-xs` | 12px | 12px |
+| `text-sm` | 14px | 14px |
+| `text-base` | 16px | 16px |
+| `text-lg` | **24px** | 18px |
+| `text-xl` | **30px** | 20px |
+| `text-2xl` | **36px** | 24px |
+| `text-3xl` | 30px | 30px |
+| `text-4xl` | 36px | 36px |
+
+A altura de linha de cada classe continua a do Tailwind (proporção), por isso trocar uma
+classe pela "equivalente" em px muda o espaço entre linhas. Em componente novo, quando o
+tamanho importa (valores em cartões, números de KPI), use tamanho explícito
+(`text-[1.25rem]`) ou meça na tela. Valores em dinheiro em cartões estreitos: tamanho pela
+largura do cartão (container query), como em `components/ui/stat-card.tsx`.
+
 ## 6. Espaçamento
 
 `tokens.css` já define uma escala em múltiplos de 4px e deve ser a canônica — não criar
