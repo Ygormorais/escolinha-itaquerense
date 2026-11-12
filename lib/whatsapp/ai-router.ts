@@ -7,7 +7,11 @@ import { logger } from "@/lib/logger"
 import { getWhatsAppProvider as getProvider } from "./provider"
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-const MODEL = process.env.CLAUDE_MODEL ?? "claude-sonnet-4-20250514"
+const MODEL = process.env.CLAUDE_MODEL ?? "claude-sonnet-5-5"
+/** Raciocínio + resposta curta de WhatsApp; com pouco espaço o raciocínio consome tudo e a resposta sai vazia. */
+const MAX_TOKENS = 4096
+const AVISO_FALHA = "Desculpe, estou com dificuldades técnicas agora. Tente em instantes."
+const MSG_ESCALACAO = "Não consegui te ajudar com isso. Um atendente da Escolinha Itaquerense vai entrar em contato em breve."
 
 const SYSTEM_PROMPT = `Você é o assistente virtual da Escolinha Itaquerense de Futebol.
 Responda sempre em português brasileiro, de forma clara e amigável.
@@ -121,46 +125,63 @@ export async function routeMessage(telefone: string, texto: string) {
     { role: "user", content: texto },
   ]
 
-  // Agentic loop com tool use
-  let response
-  try {
-    response = await anthropic.messages.create({
+  const system: Anthropic.TextBlockParam[] = [
+    { type: "text", text: SYSTEM_PROMPT + contexto, cache_control: { type: "ephemeral" } },
+  ]
+  // Esforço baixo: conversa curta de WhatsApp; o Sonnet 5.5 pensa por padrão.
+  const pedir = () =>
+    anthropic.messages.create({
       model: MODEL,
-      max_tokens: 1024,
-      system: [
-        {
-          type: "text",
-          text: SYSTEM_PROMPT + contexto,
-          cache_control: { type: "ephemeral" },
-        },
-      ],
+      max_tokens: MAX_TOKENS,
+      output_config: { effort: "low" },
+      system,
       tools: TOOL_DEFINITIONS,
       messages,
     })
-  } catch (err) {
-    logger.error("ai-router: Claude API error", { error: String(err) })
-    // Retry once on transient error
+  /** Chama o modelo e tenta de novo uma vez; null depois de avisar o responsável. */
+  const pedirComNovaTentativa = async (etapa: string) => {
     try {
-      response = await anthropic.messages.create({
-        model: MODEL,
-        max_tokens: 1024,
-        system: [
-          {
-            type: "text",
-            text: SYSTEM_PROMPT + contexto,
-            cache_control: { type: "ephemeral" },
-          },
-        ],
-        tools: TOOL_DEFINITIONS,
-        messages,
-      })
-    } catch (retryErr) {
-      logger.error("ai-router: retry also failed", { telefone, error: String(retryErr) })
-      const provider = getProvider()
-      await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
-      return
+      return await pedir()
+    } catch (err) {
+      logger.error(`ai-router: Claude API error${etapa}`, { error: String(err) })
+      try {
+        return await pedir()
+      } catch (retryErr) {
+        logger.error(`ai-router: retry also failed${etapa}`, { telefone, error: String(retryErr) })
+        await getProvider().sendText({ telefone, mensagem: AVISO_FALHA }).catch(() => {})
+        return null
+      }
     }
   }
+
+  const escalar = async (motivo: string) => {
+    await blockSession(telefone)
+    await getProvider().sendText({ telefone, mensagem: MSG_ESCALACAO })
+    await db.whatsAppMensagem.create({
+      data: {
+        telefone,
+        alunoId: aluno?.id,
+        mensagem: MSG_ESCALACAO,
+        direcao: "outgoing",
+        status: "sent",
+        instancia: process.env.EVOLUTION_INSTANCE ?? "escolinha",
+        origem: "ai-router",
+        intent: "escalacao",
+      },
+    })
+    await db.log.create({
+      data: {
+        tipo: "escalacao_chatbot",
+        descricao: `Responsável ${responsavel?.nome ?? telefone} (${telefone}) precisou de atendimento humano.`,
+        meta: JSON.stringify({ motivo, telefone, responsavelId: currentSession?.responsavelId }),
+      },
+    })
+    await appendHistory(telefone, "assistant", MSG_ESCALACAO)
+  }
+
+  // Agentic loop com tool use
+  let response = await pedirComNovaTentativa("")
+  if (!response) return
 
   let iterations = 0
   while (response.stop_reason === "tool_use" && iterations < 8) {
@@ -168,34 +189,9 @@ export async function routeMessage(telefone: string, texto: string) {
     const toolUses = response.content.filter((b) => b.type === "tool_use")
 
     // Check for escalation before executing other tools
-    const escalar = toolUses.find((b) => b.type === "tool_use" && b.name === "escalonar_humano")
-    if (escalar && escalar.type === "tool_use") {
-      const motivo = (escalar.input as { motivo: string }).motivo
-      await blockSession(telefone)
-      const msgEscalacao =
-        "Não consegui te ajudar com isso. Um atendente da Escolinha Itaquerense vai entrar em contato em breve."
-      const provider = getProvider()
-      await provider.sendText({ telefone, mensagem: msgEscalacao })
-      await db.whatsAppMensagem.create({
-        data: {
-          telefone,
-          alunoId: aluno?.id,
-          mensagem: msgEscalacao,
-          direcao: "outgoing",
-          status: "sent",
-          instancia: process.env.EVOLUTION_INSTANCE ?? "escolinha",
-          origem: "ai-router",
-          intent: "escalacao",
-        },
-      })
-      await db.log.create({
-        data: {
-          tipo: "escalacao_chatbot",
-          descricao: `Responsável ${responsavel?.nome ?? telefone} (${telefone}) precisou de atendimento humano.`,
-          meta: JSON.stringify({ motivo, telefone, responsavelId: currentSession?.responsavelId }),
-        },
-      })
-      await appendHistory(telefone, "assistant", msgEscalacao)
+    const pedidoEscalacao = toolUses.find((b) => b.type === "tool_use" && b.name === "escalonar_humano")
+    if (pedidoEscalacao && pedidoEscalacao.type === "tool_use") {
+      await escalar((pedidoEscalacao.input as { motivo: string }).motivo)
       return
     }
 
@@ -217,45 +213,16 @@ export async function routeMessage(telefone: string, texto: string) {
     messages.push({ role: "assistant", content: response.content })
     messages.push(toolResults)
 
-    try {
-      response = await anthropic.messages.create({
-        model: MODEL,
-        max_tokens: 1024,
-        system: [
-          {
-            type: "text",
-            text: SYSTEM_PROMPT + contexto,
-            cache_control: { type: "ephemeral" },
-          },
-        ],
-        tools: TOOL_DEFINITIONS,
-        messages,
-      })
-    } catch (err) {
-      logger.error("ai-router: Claude API error (tool loop)", { error: String(err) })
-      // Retry once
-      try {
-        response = await anthropic.messages.create({
-          model: MODEL,
-          max_tokens: 1024,
-          system: [
-            {
-              type: "text",
-              text: SYSTEM_PROMPT + contexto,
-              cache_control: { type: "ephemeral" },
-            },
-          ],
-          tools: TOOL_DEFINITIONS,
-          messages,
-        })
-      } catch (retryErr) {
-        logger.error("ai-router: loop retry also failed", { telefone, error: String(retryErr) })
-        const provider = getProvider()
-        await provider.sendText({ telefone, mensagem: "Desculpe, estou com dificuldades técnicas agora. Tente em instantes." }).catch(() => {})
-        // A resposta anterior ainda é o tool_use; seguir enviaria um texto parcial depois do aviso.
-        return
-      }
-    }
+    const proxima = await pedirComNovaTentativa(" (tool loop)")
+    // Sem resposta: o aviso já foi; a anterior ainda é o tool_use e seguir enviaria texto parcial.
+    if (!proxima) return
+    response = proxima
+  }
+
+  // Recusa dos filtros de segurança: não há resposta para dar, então vai para um atendente.
+  if (response.stop_reason === "refusal") {
+    await escalar("recusa do modelo")
+    return
   }
 
   // Extract final text response
@@ -265,7 +232,14 @@ export async function routeMessage(telefone: string, texto: string) {
     .join("\n")
     .trim()
 
-  if (!respostaTexto) return
+  if (!respostaTexto) {
+    // Cortada no limite antes de escrever a resposta: avisa em vez de ficar em silêncio.
+    if (response.stop_reason === "max_tokens") {
+      logger.error("ai-router: resposta cortada sem texto", { telefone })
+      await getProvider().sendText({ telefone, mensagem: AVISO_FALHA }).catch(() => {})
+    }
+    return
+  }
 
   // Send response to responsavel
   const provider = getProvider()

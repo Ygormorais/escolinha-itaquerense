@@ -317,6 +317,67 @@ describe("routeMessage — conversa com o Claude", () => {
     expect(mocks.sendText).not.toHaveBeenCalled()
   })
 
+  it("usa o Sonnet atual com esforço baixo e espaço para o raciocínio", async () => {
+    mocks.create.mockResolvedValue(texto("Oi!"))
+
+    await routeMessage(TELEFONE, "oi")
+
+    const params = mocks.create.mock.calls[0][0]
+    expect(params.model).toBe("claude-sonnet-5-5")
+    expect(params.output_config).toEqual({ effort: "low" })
+    expect(params.max_tokens).toBeGreaterThanOrEqual(4096)
+    expect(params).not.toHaveProperty("thinking")
+    expect(params).not.toHaveProperty("temperature")
+  })
+
+  it("ignora blocos de raciocínio e envia só o texto", async () => {
+    mocks.create.mockResolvedValue({
+      stop_reason: "end_turn",
+      content: [{ type: "thinking", thinking: "", signature: "x" }, { type: "text", text: "Pago!" }],
+    })
+
+    await routeMessage(TELEFONE, "pago?")
+
+    expect(mensagensEnviadas()).toEqual(["Pago!"])
+  })
+
+  it("devolve os blocos de raciocínio sem mexer no loop de tools", async () => {
+    const primeira = {
+      stop_reason: "tool_use",
+      content: [
+        { type: "thinking", thinking: "", signature: "sig" },
+        { type: "tool_use", id: "tu_1", name: "obter_pix_mensalidade", input: {} },
+      ],
+    }
+    mocks.create.mockResolvedValueOnce(primeira).mockResolvedValueOnce(texto("Segue o PIX."))
+
+    await routeMessage(TELEFONE, "quero pagar")
+
+    const segunda = mocks.create.mock.calls[1][0]
+    expect(segunda.messages.at(-2)).toEqual({ role: "assistant", content: primeira.content })
+  })
+
+  it("encaminha para atendente quando o modelo recusa", async () => {
+    mocks.create.mockResolvedValue({ stop_reason: "refusal", content: [], stop_details: { type: "refusal", category: null } })
+
+    await routeMessage(TELEFONE, "pergunta recusada")
+
+    expect(mocks.blockSession).toHaveBeenCalledWith(TELEFONE)
+    expect(mensagensEnviadas()[0]).toContain("Um atendente da Escolinha Itaquerense")
+    expect(m.log.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ tipo: "escalacao_chatbot", meta: expect.stringContaining("recusa do modelo") }),
+    })
+  })
+
+  it("avisa o responsável quando a resposta é cortada sem texto", async () => {
+    mocks.create.mockResolvedValue({ stop_reason: "max_tokens", content: [{ type: "thinking", thinking: "", signature: "x" }] })
+
+    await routeMessage(TELEFONE, "pergunta longa")
+
+    expect(mensagensEnviadas()).toEqual(["Desculpe, estou com dificuldades técnicas agora. Tente em instantes."])
+    expect(mocks.loggerError).toHaveBeenCalled()
+  })
+
   it("funciona sem aluno ativo, sem contexto extra no prompt", async () => {
     m.responsavel.findUnique.mockResolvedValue({ ...responsavelComAluno, alunos: [] })
     mocks.create.mockResolvedValue(texto("Não encontrei aluno ativo."))
