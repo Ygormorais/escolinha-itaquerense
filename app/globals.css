@@ -288,7 +288,10 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
-  :where(button, a, [role="button"]) {
+  /* Só botões: links quebram linha normalmente. Links com cara de botão usam o
+     componente Button (que já tem whitespace-nowrap). Antes "a" entrava aqui e
+     todo cartão-link estourava com texto longo. */
+  :where(button, [role="button"]) {
     white-space: nowrap;
   }
   :where([data-numeric]) {
