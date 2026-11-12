@@ -77,7 +77,32 @@ jobs:
 
       - run: npm ci
 
-      - run: npx playwright install --with-deps chromium
+      - name: Versão do Playwright
+        id: pw
+        run: echo "version=$(npx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      # O navegador vem do cache; só baixa quando a versão do Playwright muda.
+      - uses: actions/cache@v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Navegador do Playwright
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
+
+      # Pacotes do sistema via apt: o espelho do runner falha de vez em quando
+      # ("Installation process exited with code: 100"), então tenta de novo antes de desistir.
+      - name: Dependências do sistema para o Chromium
+        run: |
+          for tentativa in 1 2 3; do
+            if npx playwright install-deps chromium; then exit 0; fi
+            echo "Tentativa $tentativa falhou; nova tentativa em 20s"
+            sleep 20
+            sudo apt-get update -o Acquire::Retries=3 || true
+          done
+          exit 1
 
       - name: Migrate e seed
         run: |
