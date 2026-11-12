@@ -72,7 +72,7 @@ Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definid
 | `ADMIN_USERNAME` | Usuário administrativo de fallback |
 | `ADMIN_PASSWORD` | Senha administrativa de fallback |
 | `ANTHROPIC_API_KEY` | API key do Claude (chatbot) |
-| `CLAUDE_MODEL` | Modelo Claude (default: claude-sonnet-4-20250514) |
+| `CLAUDE_MODEL` | Modelo Claude (default: claude-sonnet-5-5) |
 | `EVOLUTION_API_URL` | URL da Evolution API |
 | `EVOLUTION_API_KEY` | API key da Evolution |
 | `EVOLUTION_INSTANCE` | Instância Evolution |
