@@ -133,6 +133,17 @@ describe("routeMessage — sem IA (sem ANTHROPIC_API_KEY)", () => {
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
+  it("não bloqueia a conversa se o aviso não for entregue, para tentar de novo na próxima mensagem", async () => {
+    mocks.getSession.mockResolvedValue(null)
+    mocks.createSession.mockResolvedValue({})
+    mocks.sendText.mockRejectedValue(new Error("evolution fora do ar"))
+
+    await expect(routeMessage(TELEFONE, "oi")).rejects.toThrow("evolution fora do ar")
+
+    expect(mocks.blockSession).not.toHaveBeenCalled()
+    expect(m.log.create).not.toHaveBeenCalled()
+  })
+
   it("reaproveita a sessão existente sem pedir identificação", async () => {
     mocks.getSession.mockResolvedValue({ ...sessaoIdentificada, identificado: false })
 

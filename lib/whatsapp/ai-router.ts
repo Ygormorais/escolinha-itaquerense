@@ -81,8 +81,9 @@ const MSG_SEM_IA =
  */
 async function responderSemIA(telefone: string, sessaoExiste: boolean) {
   if (!sessaoExiste) await createSession(telefone)
-  await blockSession(telefone)
+  // Envia antes de bloquear: se o envio falhar, a conversa segue aberta e a próxima mensagem tenta de novo.
   await getProvider().sendText({ telefone, mensagem: MSG_SEM_IA })
+  await blockSession(telefone)
   await db.whatsAppMensagem.create({
     data: {
       telefone,
