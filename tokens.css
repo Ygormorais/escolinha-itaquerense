@@ -43,6 +43,10 @@
   --space-2xl: 3rem;
   --space-3xl: 4rem;
 
+  /* ATENÇÃO: estes valores substituem a escala do Tailwind nas classes de mesmo nome.
+     text-lg = 24px, text-xl = 30px, text-2xl = 36px (no Tailwind padrão: 18/20/24px);
+     text-3xl continua 30px e text-4xl 36px. Altura de linha segue a proporção do Tailwind.
+     Para um tamanho exato em componente novo, prefira text-[1.25rem] etc. Ver DESIGN_SYSTEM.md §5. */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
