@@ -55,10 +55,15 @@ jobs:
           ADMIN_USERNAME: admin
           ADMIN_PASSWORD: ci-password
 
-  e2e:
+  e2e-parte:
+    name: e2e (parte ${{ matrix.parte }}/3)
     # Fixo: ubuntu-latest virou 26.04 e o Playwright 1.60 não instala o Chromium nele.
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    # Suíte dividida em 3 runners, cada um com o próprio banco SQLite e build.
+    strategy:
+      matrix:
+        parte: [1, 2, 3]
     env:
       DATABASE_URL: file:./prisma/dev.db
       PRISMA_CONFIG_PATH: prisma.config.ts
@@ -113,14 +118,25 @@ jobs:
         run: npm run build
 
       - name: E2E
-        run: npm run test:e2e
+        run: npm run test:e2e -- --shard=${{ matrix.parte }}/3
         timeout-minutes: 20
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-parte-${{ matrix.parte }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+
+  # Check obrigatório da master se chama "e2e": este job junta as 3 partes.
+  e2e:
+    if: always()
+    needs: e2e-parte
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resultado das partes
+        run: |
+          echo "Partes do e2e: ${{ needs.e2e-parte.result }}"
+          test "${{ needs.e2e-parte.result }}" = "success"

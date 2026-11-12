@@ -12,6 +12,24 @@ import Database from "better-sqlite3"
 // O setup e o servidor precisam apontar para o mesmo banco e ambiente.
 loadEnv()
 
+// Em desenvolvimento o Next compila cada rota no primeiro acesso, e o primeiro teste de uma
+// tela pesada estourava os 30s. Pedir as telas antes dos testes deixa tudo compilado.
+// No CI o servidor é o build de produção, então não há o que aquecer. E2E_AQUECER=0 desliga.
+const ROTAS_PARA_AQUECER = [
+  "/dashboard", "/pagamentos", "/alunos", "/frequencia", "/campeonatos", "/agenda",
+  "/configuracoes/escalacoes", "/avaliacoes", "/tecnico", "/caixa", "/custos", "/recibos",
+  "/relatorio", "/relatorio/pagamentos", "/noticias", "/secretaria", "/pendencias",
+]
+
+async function aquecerRotas(context: import("@playwright/test").BrowserContext) {
+  if (process.env.CI === "true" || process.env.E2E_AQUECER === "0") return
+  const inicio = Date.now()
+  for (const rota of ROTAS_PARA_AQUECER) {
+    await context.request.get(`http://localhost:3000${rota}`, { timeout: 120_000 }).catch(() => {})
+  }
+  console.log(`[e2e] ${ROTAS_PARA_AQUECER.length} rotas aquecidas em ${Math.round((Date.now() - inicio) / 1000)}s`)
+}
+
 function clearRateLimits() {
   const rateLimitDb = new Database(resolveDbPath())
   try {
@@ -130,6 +148,7 @@ export default async function globalSetup() {
     waitUntil: "domcontentloaded",
   })
   await adminContext.storageState({ path: path.join(authDir, "admin.json") })
+  await aquecerRotas(adminContext)
   await adminContext.close()
 
   const context = await browser.newContext()
