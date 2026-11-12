@@ -62,6 +62,19 @@ describe("desenvolvimento-ai", () => {
     expect(JSON.stringify(request.messages)).not.toContain("Nome Privado")
     expect(result.mensagemFamilia).toContain("{{ATLETA}}")
     expect(mocks.config).toHaveBeenCalledWith({ apiKey: "test-key", timeout: 20_000, maxRetries: 0 })
+    // Sonnet 5.5 raciocina antes de responder: esforço baixo e espaço para raciocínio + JSON.
+    expect(request.output_config.effort).toBe("low")
+    expect(request.max_tokens).toBeGreaterThanOrEqual(4096)
+  })
+
+  it("usa o Sonnet atual quando nenhum modelo está configurado", async () => {
+    vi.stubEnv("DESENVOLVIMENTO_AI_MODEL", "")
+    vi.stubEnv("CLAUDE_MODEL", "")
+    mocks.parse.mockResolvedValue({ parsed_output: { planoSemanal: ["a", "b"], mensagemFamilia: "Olá {{ATLETA}}" } })
+
+    await gerarRascunhoComIA(insight, { modo: "ia" })
+
+    expect(mocks.parse.mock.calls[0][0].model).toBe("claude-sonnet-5-5")
   })
 
   it.each(["familia", "treino"] as const)("aplica o foco %s ao pedido sem incluir identidade", async (foco) => {
