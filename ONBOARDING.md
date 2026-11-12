@@ -81,7 +81,7 @@ Copie `.env.example` para `.env` no desenvolvimento (o `npm run setup` faz isso)
 | `EVOLUTION_API_URL` | Não | URL da Evolution API para WhatsApp | `http://localhost:8080` |
 | `EVOLUTION_API_KEY` | Sim (produção) | API key da Evolution — webhook retorna 401 sem ela | `sua-api-key` |
 | `EVOLUTION_INSTANCE` | Não | Nome da instância Evolution | `escolinha` |
-| `ANTHROPIC_API_KEY` | Não | Chave da API Claude para o chatbot WhatsApp | `sk-ant-...` |
+| `ANTHROPIC_API_KEY` | Não | Chave da API Claude para o chatbot WhatsApp. Sem ela, o chatbot só avisa que a secretaria vai responder e manda a conversa para Escalações | `sk-ant-...` |
 | `CLAUDE_MODEL` | Não | Modelo Claude usado pelo chatbot | `claude-sonnet-5-5` |
 | `MERCADOPAGO_ACCESS_TOKEN` | Não | Token Mercado Pago — use `TEST-...` em dev, `APP_USR-...` em produção | `TEST-...` |
 | `MERCADOPAGO_WEBHOOK_SECRET` | Não | Secret para validar webhooks do MP | string aleatória |

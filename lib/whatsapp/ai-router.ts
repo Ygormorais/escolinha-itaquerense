@@ -72,11 +72,47 @@ async function identificarResponsavel(telefone: string, texto: string): Promise<
   return ""
 }
 
+const MSG_SEM_IA =
+  "Olá! Recebemos sua mensagem. A secretaria da Escolinha Itaquerense vai responder por aqui em breve."
+
+/**
+ * Sem ANTHROPIC_API_KEY o chatbot não usa IA: responde uma vez que a secretaria vai atender
+ * e bloqueia a conversa (aparece em Escalações para a secretaria responder e reativar).
+ */
+async function responderSemIA(telefone: string, sessaoExiste: boolean) {
+  if (!sessaoExiste) await createSession(telefone)
+  await blockSession(telefone)
+  await getProvider().sendText({ telefone, mensagem: MSG_SEM_IA })
+  await db.whatsAppMensagem.create({
+    data: {
+      telefone,
+      mensagem: MSG_SEM_IA,
+      direcao: "outgoing",
+      status: "sent",
+      instancia: process.env.EVOLUTION_INSTANCE ?? "escolinha",
+      origem: "ai-router",
+      intent: "escalacao",
+    },
+  })
+  await db.log.create({
+    data: {
+      tipo: "escalacao_chatbot",
+      descricao: `Mensagem de ${telefone} aguardando a secretaria (chatbot sem IA).`,
+      meta: JSON.stringify({ motivo: "chatbot sem IA", telefone }),
+    },
+  })
+}
+
 export async function routeMessage(telefone: string, texto: string) {
   const session = await getSession(telefone)
 
   // Sessão bloqueada (aguarda atendimento humano)
   if (session?.bloqueado) return
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    await responderSemIA(telefone, session != null)
+    return
+  }
 
   // Identificação — retorna mensagem se ainda não identificado
   const identificacaoMsg = await identificarResponsavel(telefone, texto)
