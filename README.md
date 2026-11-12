@@ -71,7 +71,7 @@ Acesse `http://localhost:3000` e use `ADMIN_USERNAME` e `ADMIN_PASSWORD` definid
 | `SESSION_SECRET` | Chave para assinar cookies de sessão |
 | `ADMIN_USERNAME` | Usuário administrativo de fallback |
 | `ADMIN_PASSWORD` | Senha administrativa de fallback |
-| `ANTHROPIC_API_KEY` | API key do Claude (chatbot) |
+| `ANTHROPIC_API_KEY` | API key do Claude (chatbot). Sem ela o chatbot não usa IA: responde que a secretaria vai atender e passa a conversa para Escalações |
 | `CLAUDE_MODEL` | Modelo Claude (default: claude-sonnet-5-5) |
 | `EVOLUTION_API_URL` | URL da Evolution API |
 | `EVOLUTION_API_KEY` | API key da Evolution |

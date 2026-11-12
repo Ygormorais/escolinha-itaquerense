@@ -91,12 +91,68 @@ function mensagensEnviadas() {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubEnv("ANTHROPIC_API_KEY", "test-key")
   mocks.sendText.mockResolvedValue(undefined)
   mocks.appendHistory.mockResolvedValue(true)
   mocks.blockSession.mockResolvedValue({})
   mocks.executeTool.mockResolvedValue("{}")
   m.whatsAppMensagem.create.mockResolvedValue({})
   m.log.create.mockResolvedValue({})
+})
+
+describe("routeMessage — sem IA (sem ANTHROPIC_API_KEY)", () => {
+  beforeEach(() => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "")
+  })
+
+  it("responde uma vez que a secretaria vai atender e passa a conversa para humano", async () => {
+    mocks.getSession.mockResolvedValue(null)
+    mocks.createSession.mockResolvedValue({})
+
+    await routeMessage(TELEFONE, "quanto devo?")
+
+    expect(mocks.create).not.toHaveBeenCalled()
+    expect(mocks.createSession).toHaveBeenCalledWith(TELEFONE)
+    expect(mensagensEnviadas()).toHaveLength(1)
+    expect(mensagensEnviadas()[0]).toContain("secretaria")
+    expect(mocks.blockSession).toHaveBeenCalledWith(TELEFONE)
+    expect(m.log.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ tipo: "escalacao_chatbot", meta: expect.stringContaining("chatbot sem IA") }),
+    })
+    expect(m.whatsAppMensagem.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ direcao: "outgoing", origem: "ai-router" }) })
+    )
+  })
+
+  it("não pede CPF nem responde de novo enquanto a secretaria não reativa", async () => {
+    mocks.getSession.mockResolvedValue({ ...sessaoIdentificada, bloqueado: true })
+
+    await routeMessage(TELEFONE, "alô?")
+
+    expect(mocks.sendText).not.toHaveBeenCalled()
+    expect(mocks.create).not.toHaveBeenCalled()
+  })
+
+  it("não bloqueia a conversa se o aviso não for entregue, para tentar de novo na próxima mensagem", async () => {
+    mocks.getSession.mockResolvedValue(null)
+    mocks.createSession.mockResolvedValue({})
+    mocks.sendText.mockRejectedValue(new Error("evolution fora do ar"))
+
+    await expect(routeMessage(TELEFONE, "oi")).rejects.toThrow("evolution fora do ar")
+
+    expect(mocks.blockSession).not.toHaveBeenCalled()
+    expect(m.log.create).not.toHaveBeenCalled()
+  })
+
+  it("reaproveita a sessão existente sem pedir identificação", async () => {
+    mocks.getSession.mockResolvedValue({ ...sessaoIdentificada, identificado: false })
+
+    await routeMessage(TELEFONE, "Maria Souza 12345678900")
+
+    expect(m.responsavel.findFirst).not.toHaveBeenCalled()
+    expect(mensagensEnviadas()[0]).toContain("secretaria")
+    expect(mocks.blockSession).toHaveBeenCalledWith(TELEFONE)
+  })
 })
 
 describe("routeMessage — sessão bloqueada", () => {
