@@ -71,4 +71,9 @@ describe("gerarCSVAvaliacoes", () => {
     expect(csv[1]).toBe('"Ana Lima";"Sub-9";"2026-1S";"8.5";"";"";"90%";"Disse ""ótimo"""')
     expect(csv[2]).toBe('"Ana Lima";"Sub-9";"2026-1S";"";"";"";"";""')
   })
+
+  it("neutraliza observações que o Excel interpretaria como fórmula", () => {
+    const csv = gerarCSVAvaliacoes([avaliacao(1, { observacoes: "=HYPERLINK(1)" })])
+    expect(csv).toContain(`"'=HYPERLINK(1)"`)
+  })
 })

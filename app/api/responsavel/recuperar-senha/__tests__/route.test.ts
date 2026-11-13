@@ -52,6 +52,14 @@ describe("POST /api/responsavel/recuperar-senha", () => {
     expect(email).not.toHaveBeenCalled()
   })
 
+  it("escapa o nome do responsável no HTML do email", async () => {
+    m.responsavel.findUnique.mockResolvedValue({ id: 1, nome: "<img src=x onerror=alert(1)>", email: "maria@x.com" })
+    await POST(req({ email: "maria@x.com" }))
+    const html = email.mock.calls[0][2] as string
+    expect(html).not.toContain("<img")
+    expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;")
+  })
+
   it("email existente: invalida tokens antigos e cria um novo", async () => {
     const res = await POST(req({ email: "maria@x.com" }))
     expect(res.status).toBe(200)

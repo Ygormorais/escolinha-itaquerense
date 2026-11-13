@@ -97,6 +97,20 @@ describe("runEnviarLembretesInadimplentes", () => {
     )
   })
 
+  it("escapa nomes com HTML para o texto não virar marcação no e-mail", async () => {
+    mocks.findMany.mockResolvedValue([
+      pagamento(1, { nome: "Pedro <b>Souza</b>", email: "pai@example.test", responsavel: '"Carlos" <script>x</script>' }),
+    ])
+
+    await runEnviarLembretesInadimplentes()
+
+    const html = mocks.enviarEmail.mock.calls[0][2]
+    expect(html).not.toContain("<script>")
+    expect(html).not.toContain("<b>Souza</b>")
+    expect(html).toContain("&lt;script&gt;x&lt;/script&gt;")
+    expect(html).toContain("Pedro &lt;b&gt;Souza&lt;/b&gt;")
+  })
+
   it("monta o e-mail com dias de atraso, valor e chave PIX", async () => {
     mocks.findMany.mockResolvedValue([
       pagamento(1, { nome: "Pedro", email: "pai.pedro@example.test", responsavel: "Carlos Lima", mensalidade: 1250 }),
