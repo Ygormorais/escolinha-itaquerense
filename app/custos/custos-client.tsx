@@ -72,6 +72,9 @@ export function CustosClient({
       const r = await gerarCustosRecorrentes(mes)
       if ("error" in r) {
         toast.error(r.error)
+      } else if (r.criados === 0 && r.jaExistentes > 0) {
+        setGeradoMsg("Já gerados neste mês")
+        toast.info(`Os custos recorrentes de ${mes} já foram gerados; nada foi duplicado.`)
       } else {
         setGeradoMsg(`${plural(r.criados, "custo gerado", "custos gerados", "nenhum")}`)
         toast.success(`${plural(r.criados, "custo recorrente gerado", "custos recorrentes gerados", "nenhum")} para ${mes}`)

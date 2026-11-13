@@ -142,31 +142,57 @@ export async function deleteCustoRecorrente(id: number): Promise<ActionResult> {
   }
 }
 
-export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: number } | { error: string }> {
+/** Chave que identifica um custo recorrente dentro do mês. */
+const chaveRecorrente = (c: { categoria: string; descricao: string; fornecedor: string }) =>
+  [c.categoria, c.descricao, c.fornecedor].map((t) => t.trim().toLowerCase()).join("|")
+
+/**
+ * Gera os custos recorrentes do mês. É idempotente: modelo que já tem custo no mês
+ * (mesma categoria, descrição e fornecedor) é pulado, então clicar de novo não duplica.
+ */
+export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: number; jaExistentes: number } | { error: string }> {
   await requireAuth(["admin"])
   try {
+    if (!/^\d{4}-\d{2}$/.test(mes)) return { error: "Mês inválido" }
     const [ano, mesNum] = mes.split("-").map(Number)
     const dataRef = new Date(ano, mesNum - 1, 1)
+    const proximoMes = new Date(ano, mesNum, 1)
 
-    const modelos = await db.custoRecorrente.findMany({ where: { ativo: true } })
+    const [modelos, doMes] = await Promise.all([
+      db.custoRecorrente.findMany({ where: { ativo: true } }),
+      db.custo.findMany({
+        where: { data: { gte: dataRef, lt: proximoMes } },
+        select: { categoria: true, descricao: true, fornecedor: true },
+      }),
+    ])
 
-    await db.custo.createMany({
-      data: modelos.map((m) => ({
-        data: dataRef,
-        categoria: m.categoria,
-        descricao: m.descricao,
-        fornecedor: m.fornecedor,
-        valor: m.valor,
-        formaPagamento: m.formaPagamento,
-        comprovante: false,
-      })),
+    const existentes = new Set(doMes.map(chaveRecorrente))
+    const novos = modelos.filter((m) => {
+      const k = chaveRecorrente(m)
+      if (existentes.has(k)) return false
+      existentes.add(k) // dois modelos iguais geram um custo só
+      return true
     })
+
+    if (novos.length > 0) {
+      await db.custo.createMany({
+        data: novos.map((m) => ({
+          data: dataRef,
+          categoria: m.categoria,
+          descricao: m.descricao,
+          fornecedor: m.fornecedor,
+          valor: m.valor,
+          formaPagamento: m.formaPagamento,
+          comprovante: false,
+        })),
+      })
+    }
 
     revalidatePath("/custos")
     revalidatePath("/relatorio")
     revalidatePath("/dashboard")
 
-    return { criados: modelos.length }
+    return { criados: novos.length, jaExistentes: modelos.length - novos.length }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao gerar custos recorrentes" }
   }

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
   const db = {
-    custo: { create: vi.fn(), update: vi.fn(), delete: vi.fn(), createMany: vi.fn() },
+    custo: { create: vi.fn(), update: vi.fn(), delete: vi.fn(), createMany: vi.fn(), findMany: vi.fn() },
     custoRecorrente: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   }
   return { db }
@@ -23,7 +23,7 @@ import { requireAuth } from "@/lib/auth"
 const requireAuthMock = requireAuth as unknown as ReturnType<typeof vi.fn>
 
 const m = db as unknown as {
-  custo: { create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn>; createMany: ReturnType<typeof vi.fn> }
+  custo: { create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn>; createMany: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn> }
   custoRecorrente: { findMany: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> }
 }
 
@@ -32,6 +32,7 @@ beforeEach(() => {
   m.custo.create.mockResolvedValue({})
   m.custo.delete.mockResolvedValue({})
   m.custo.createMany.mockResolvedValue({ count: 0 })
+  m.custo.findMany.mockResolvedValue([])
   m.custoRecorrente.findMany.mockResolvedValue([])
   m.custoRecorrente.create.mockResolvedValue({})
   m.custoRecorrente.update.mockResolvedValue({})
@@ -111,7 +112,7 @@ describe("gerarCustosRecorrentes", () => {
       { categoria: "Salário", descricao: "Técnico", fornecedor: "Prof.", valor: 800, formaPagamento: "PIX" },
     ])
     const res = await gerarCustosRecorrentes("2026-06")
-    expect(res).toEqual({ criados: 2 })
+    expect(res).toEqual({ criados: 2, jaExistentes: 0 })
     expect(m.custoRecorrente.findMany).toHaveBeenCalledWith({ where: { ativo: true } })
     const criados = m.custo.createMany.mock.calls[0][0].data
     expect(criados).toHaveLength(2)
@@ -121,7 +122,40 @@ describe("gerarCustosRecorrentes", () => {
 
   it("gera zero quando não há modelos ativos", async () => {
     const res = await gerarCustosRecorrentes("2026-06")
-    expect(res).toEqual({ criados: 0 })
+    expect(res).toEqual({ criados: 0, jaExistentes: 0 })
+    expect(m.custo.createMany).not.toHaveBeenCalled()
+  })
+
+  const aluguel = { categoria: "Aluguel", descricao: "Campo", fornecedor: "Arena X", valor: 1200, formaPagamento: "PIX" }
+  const salario = { categoria: "Salário", descricao: "Técnico", fornecedor: "Prof.", valor: 800, formaPagamento: "PIX" }
+
+  it("não duplica custo que já existe no mês", async () => {
+    m.custoRecorrente.findMany.mockResolvedValue([aluguel, salario])
+    m.custo.findMany.mockResolvedValue([{ categoria: "aluguel ", descricao: "Campo", fornecedor: "Arena X" }])
+    const res = await gerarCustosRecorrentes("2026-06")
+    expect(res).toEqual({ criados: 1, jaExistentes: 1 })
+    const criados = m.custo.createMany.mock.calls[0][0].data
+    expect(criados).toHaveLength(1)
+    expect(criados[0]).toMatchObject({ categoria: "Salário" })
+  })
+
+  it("segunda geração do mesmo mês não cria nada", async () => {
+    m.custoRecorrente.findMany.mockResolvedValue([aluguel, salario])
+    m.custo.findMany.mockResolvedValue([aluguel, salario])
+    const res = await gerarCustosRecorrentes("2026-06")
+    expect(res).toEqual({ criados: 0, jaExistentes: 2 })
+    expect(m.custo.createMany).not.toHaveBeenCalled()
+  })
+
+  it("consulta só o intervalo do mês pedido", async () => {
+    await gerarCustosRecorrentes("2026-12")
+    const where = m.custo.findMany.mock.calls[0][0].where.data
+    expect(where.gte).toEqual(new Date(2026, 11, 1))
+    expect(where.lt).toEqual(new Date(2027, 0, 1))
+  })
+
+  it("rejeita mês inválido", async () => {
+    expect(await gerarCustosRecorrentes("junho")).toEqual({ error: "Mês inválido" })
   })
 })
 
