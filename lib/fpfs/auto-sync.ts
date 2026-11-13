@@ -31,11 +31,14 @@ export async function executarSyncFpfs(env: NodeJS.ProcessEnv = process.env): Pr
 
 /**
  * Sincroniza com a FPFS a cada 2 horas dentro do próprio servidor (Railway/VPS com processo
- * contínuo). Desligue com FPFS_AUTO_SYNC=0 se usar um cron externo.
+ * contínuo). Desligue com FPFS_AUTO_SYNC=0 se usar um cron externo;
+ * em desenvolvimento, ligue com FPFS_AUTO_SYNC=1.
  */
 export function iniciarSyncAutomatico(env: NodeJS.ProcessEnv = process.env): boolean {
   if (timer) return false
-  if (env.NODE_ENV !== "production" || env.FPFS_AUTO_SYNC === "0" || !env.CRON_SECRET) return false
+  if (!env.CRON_SECRET || env.FPFS_AUTO_SYNC === "0") return false
+  // Em desenvolvimento só liga por opt-in (FPFS_AUTO_SYNC=1), para não buscar a FPFS sem querer.
+  if (env.NODE_ENV !== "production" && env.FPFS_AUTO_SYNC !== "1") return false
   primeira = setTimeout(() => void executarSyncFpfs(env), PRIMEIRA_EXECUCAO_MS)
   timer = setInterval(() => void executarSyncFpfs(env), DUAS_HORAS_MS)
   primeira.unref?.()

@@ -29,10 +29,10 @@ describe("executarSyncFpfs", () => {
 })
 
 describe("iniciarSyncAutomatico", () => {
-  it("só liga em produção, com segredo e sem FPFS_AUTO_SYNC=0", () => {
+  it("liga em produção, ou em dev só com FPFS_AUTO_SYNC=1; nunca sem segredo, com segredo e sem FPFS_AUTO_SYNC=0", () => {
     expect(iniciarSyncAutomatico({ NODE_ENV: "development", CRON_SECRET: "s" } as unknown as NodeJS.ProcessEnv)).toBe(false)
     expect(iniciarSyncAutomatico({ NODE_ENV: "production" } as unknown as NodeJS.ProcessEnv)).toBe(false)
     expect(iniciarSyncAutomatico({ NODE_ENV: "production", CRON_SECRET: "s", FPFS_AUTO_SYNC: "0" } as unknown as NodeJS.ProcessEnv)).toBe(false)
-    expect(iniciarSyncAutomatico({ NODE_ENV: "production", CRON_SECRET: "s" } as unknown as NodeJS.ProcessEnv)).toBe(true)
+    expect(iniciarSyncAutomatico({ NODE_ENV: "development", CRON_SECRET: "s", FPFS_AUTO_SYNC: "1" } as unknown as NodeJS.ProcessEnv)).toBe(true)
   })
 })
