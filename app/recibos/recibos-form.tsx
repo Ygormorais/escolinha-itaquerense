@@ -4,7 +4,7 @@ import { PAGINA_ADMIN } from "@/components/layout/pagina"
 
 import { cn } from "@/lib/utils"
 
-import { useState, useTransition } from "react"
+import { useState, useSyncExternalStore, useTransition } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -90,7 +90,8 @@ export default function RecibosForm({
   const [salvando, startSalvando] = useTransition()
   const [searchRecibo, setSearchRecibo] = useState("")
   const router = useRouter()
-  const origin = typeof window === "undefined" ? "" : window.location.origin
+  // No servidor a origem é "" (snapshot do servidor), então o HTML hidrata igual e o QR aparece após a hidratação.
+  const origin = useSyncExternalStore(() => () => {}, () => window.location.origin, () => "")
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
