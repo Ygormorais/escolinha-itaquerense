@@ -102,6 +102,9 @@ públicas e do responsável leem do banco (nunca da FPFS ao vivo). Disparo:
 - **Automático (recomendado):** a cada **2 horas** o cron chama `/api/cron/fpfs` e atualiza
   todos os campeonatos **ativos** com evento FPFS. A landing e `/resultados` são revalidadas.
 
+  **Railway / servidor contínuo:** em produção, com `CRON_SECRET` definido, o próprio app agenda
+  esse sync a cada 2 horas (`instrumentation.ts`). Desligue com `FPFS_AUTO_SYNC=0` se usar cron externo.
+
   **VPS (crontab):**
   ```bash
   bash deploy/install-fpfs-cron.sh https://SEU_DOMINIO
