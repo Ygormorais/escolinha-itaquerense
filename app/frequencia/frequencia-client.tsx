@@ -245,7 +245,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={exportarCSV} disabled={alunos.length === 0}>
+              <Button variant="outline" onClick={exportarCSV} disabled={alunos.length === 0}>
                 <Download className="size-4" />
                 Exportar CSV
               </Button>
