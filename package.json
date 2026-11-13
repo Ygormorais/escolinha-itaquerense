@@ -96,6 +96,7 @@
     "browserslist": "4.28.8",
     "deepmerge-ts": "8.0.0",
     "fast-uri": "4.2.3",
+    "hono": "4.13.16",
     "mysql2": "3.24.3",
     "nanoid": "3.3.18",
     "postcss-selector-parser": "7.1.7",
