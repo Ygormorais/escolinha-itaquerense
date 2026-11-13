@@ -48,6 +48,15 @@ CRON_LINE="15 */2 * * * \"${WRAPPER}\" \"${BASE}\" >> /tmp/escolinha-fpfs-cron.l
   echo "$CRON_LINE"
 ) | crontab -
 
+# O cron externo é o agendador nesta VPS: desliga o timer interno do app para não rodarem os dois.
+if grep -q -E '^FPFS_AUTO_SYNC=' "$APP_DIR/.env"; then
+  sed -i 's/^FPFS_AUTO_SYNC=.*/FPFS_AUTO_SYNC=0/' "$APP_DIR/.env"
+else
+  printf '
+FPFS_AUTO_SYNC=0
+' >> "$APP_DIR/.env"
+fi
+echo "FPFS_AUTO_SYNC=0 definido no .env (reinicie o app para valer)."
 echo "Cron FPFS instalado para ${BASE}; o Bearer será lido do .env em tempo de execução."
 echo "Log: /tmp/escolinha-fpfs-cron.log"
 echo "Teste manual: $WRAPPER $BASE"
