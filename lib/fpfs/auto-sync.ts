@@ -1,6 +1,7 @@
 import { logger } from "@/lib/logger"
 
-const DUAS_HORAS_MS = 2 * 60 * 60 * 1000
+const HORA_MS = 60 * 60 * 1000
+const HORAS_PADRAO = 24
 const PRIMEIRA_EXECUCAO_MS = 2 * 60 * 1000
 
 let timer: ReturnType<typeof setInterval> | null = null
@@ -29,8 +30,14 @@ export async function executarSyncFpfs(env: NodeJS.ProcessEnv = process.env): Pr
   }
 }
 
+/** Intervalo em ms: FPFS_AUTO_SYNC_HORAS (ex.: 168 = semanal); padrão 24h; mínimo 1h. */
+export function intervaloSyncMs(env: NodeJS.ProcessEnv = process.env): number {
+  const horas = Number(env.FPFS_AUTO_SYNC_HORAS)
+  return (Number.isFinite(horas) && horas >= 1 ? horas : HORAS_PADRAO) * HORA_MS
+}
+
 /**
- * Sincroniza com a FPFS a cada 2 horas dentro do próprio servidor (Railway/VPS com processo
+ * Sincroniza com a FPFS uma vez por dia (padrão) dentro do próprio servidor (Railway/VPS com processo
  * contínuo). Desligue com FPFS_AUTO_SYNC=0 se usar um cron externo;
  * em desenvolvimento, ligue com FPFS_AUTO_SYNC=1.
  */
@@ -40,7 +47,7 @@ export function iniciarSyncAutomatico(env: NodeJS.ProcessEnv = process.env): boo
   // Em desenvolvimento só liga por opt-in (FPFS_AUTO_SYNC=1), para não buscar a FPFS sem querer.
   if (env.NODE_ENV !== "production" && env.FPFS_AUTO_SYNC !== "1") return false
   primeira = setTimeout(() => void executarSyncFpfs(env), PRIMEIRA_EXECUCAO_MS)
-  timer = setInterval(() => void executarSyncFpfs(env), DUAS_HORAS_MS)
+  timer = setInterval(() => void executarSyncFpfs(env), intervaloSyncMs(env))
   primeira.unref?.()
   timer.unref?.()
   return true

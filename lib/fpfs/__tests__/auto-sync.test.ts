@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { executarSyncFpfs, iniciarSyncAutomatico } from "@/lib/fpfs/auto-sync"
+import { executarSyncFpfs, iniciarSyncAutomatico, intervaloSyncMs } from "@/lib/fpfs/auto-sync"
 
 vi.mock("@/lib/logger", () => ({ logger: { info: vi.fn(), error: vi.fn() } }))
 
@@ -34,5 +34,15 @@ describe("iniciarSyncAutomatico", () => {
     expect(iniciarSyncAutomatico({ NODE_ENV: "production" } as unknown as NodeJS.ProcessEnv)).toBe(false)
     expect(iniciarSyncAutomatico({ NODE_ENV: "production", CRON_SECRET: "s", FPFS_AUTO_SYNC: "0" } as unknown as NodeJS.ProcessEnv)).toBe(false)
     expect(iniciarSyncAutomatico({ NODE_ENV: "development", CRON_SECRET: "s", FPFS_AUTO_SYNC: "1" } as unknown as NodeJS.ProcessEnv)).toBe(true)
+  })
+})
+
+describe("intervaloSyncMs", () => {
+  const h = 60 * 60 * 1000
+  it("padrão diário; aceita FPFS_AUTO_SYNC_HORAS; ignora valor inválido", () => {
+    expect(intervaloSyncMs({} as NodeJS.ProcessEnv)).toBe(24 * h)
+    expect(intervaloSyncMs({ FPFS_AUTO_SYNC_HORAS: "168" } as unknown as NodeJS.ProcessEnv)).toBe(168 * h)
+    expect(intervaloSyncMs({ FPFS_AUTO_SYNC_HORAS: "0" } as unknown as NodeJS.ProcessEnv)).toBe(24 * h)
+    expect(intervaloSyncMs({ FPFS_AUTO_SYNC_HORAS: "abc" } as unknown as NodeJS.ProcessEnv)).toBe(24 * h)
   })
 })
