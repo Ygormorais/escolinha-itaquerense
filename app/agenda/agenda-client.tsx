@@ -9,11 +9,13 @@ import { AgendaCalendario } from "./agenda-calendario"
 import { AgendaDiaPainel } from "./agenda-dia-painel"
 import { AgendaListaMobile } from "./agenda-lista-mobile"
 import { EventoFormDialog } from "./evento-form-dialog"
+import { BloqueiosQuadra } from "./bloqueios-quadra"
 import {
   diasDoCalendario,
   formDoEvento,
   formVazio,
   parseDiaSelecionado,
+  type AgendaExtras,
   type Evento,
   type Jogo,
 } from "./agenda-utils"
@@ -21,12 +23,14 @@ import {
 export function AgendaClient({
   eventos,
   jogos,
+  extras,
   mes,
   ano,
   diaSelecionado,
 }: {
   eventos: Evento[]
   jogos: Jogo[]
+  extras: AgendaExtras
   mes: number
   ano: number
   diaSelecionado?: string
@@ -123,6 +127,7 @@ export function AgendaClient({
         currentMonth={currentMonth}
         eventos={eventos}
         jogos={jogos}
+        extras={extras}
         selectedDate={selectedDate}
         onSelect={setSelectedDate}
       />
@@ -132,6 +137,7 @@ export function AgendaClient({
         currentMonth={currentMonth}
         eventos={eventos}
         jogos={jogos}
+        extras={extras}
         mes={mes}
         ano={ano}
         selectedDate={selectedDate}
@@ -147,10 +153,15 @@ export function AgendaClient({
         selectedDate={selectedDate}
         eventos={eventos}
         jogos={jogos}
+        extras={extras}
         onNovo={openNewEvento}
         onEditar={openEditEvento}
         onDelete={handleDelete}
       />
+
+      <div className="lg:col-span-2">
+        <BloqueiosQuadra bloqueios={extras.bloqueios} diaSugerido={selectedDate} />
+      </div>
 
       <EventoFormDialog
         open={dialogOpen}

@@ -208,6 +208,17 @@ model Evento {
   @@index([status])
 }
 
+/// Datas (ou intervalos) em que a quadra não pode ser usada. Treinos nesses dias aparecem cancelados.
+model BloqueioQuadra {
+  id         Int      @id @default(autoincrement())
+  dataInicio DateTime // meia-noite UTC do primeiro dia
+  dataFim    DateTime // meia-noite UTC do último dia (inclusive)
+  motivo     String
+  createdAt  DateTime @default(now())
+
+  @@index([dataInicio, dataFim])
+}
+
 model Usuario {
   id        Int      @id @default(autoincrement())
   username  String   @unique

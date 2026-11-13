@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
 import { resetOperacionalE2E } from "./fixtures"
+import { db } from "@/lib/db"
 
 test.beforeEach(async ({ page }) => {
   await resetOperacionalE2E()
@@ -61,6 +62,59 @@ test.describe("Agenda", () => {
     await expect(dialog.getByRole("heading", { name: "Novo evento", exact: true })).toBeVisible()
     await dialog.getByRole("button", { name: /Close|Fechar/i }).first().click()
     await expect(dialog).not.toBeVisible()
+  })
+})
+
+test.describe("Agenda automática", () => {
+  test("mostra treinos semanais e feriado com treino cancelado", async ({ page }) => {
+    await page.goto("/agenda?mes=2026-11")
+    // 18/11/2026 é quarta: treino da turma "Seg/Qua/Sex" aparece
+    await expect(page.locator('[data-dia="2026-11-18"]')).toContainText("Treino")
+    // 20/11 é feriado nacional: aparece o feriado e o treino fica cancelado
+    const feriado = page.locator('[data-dia="2026-11-20"]')
+    await expect(feriado).toContainText("Dia da Consciência Negra")
+    await expect(feriado.locator(".line-through").first()).toBeVisible()
+    await feriado.click()
+    await expect(page.locator('[data-slot="agenda-feriado"]')).toContainText("Dia da Consciência Negra")
+    await expect(page.locator('[data-slot="agenda-treino"]').first()).toContainText("Cancelado")
+  })
+
+  test("legenda inclui Feriado e Quadra bloqueada", async ({ page }) => {
+    await page.goto("/agenda?mes=2026-11")
+    const legenda = page.locator('[data-slot="card"]').filter({ hasText: "Legenda" })
+    await expect(legenda).toContainText("Feriado")
+    await expect(legenda).toContainText("Quadra bloqueada")
+  })
+
+  test("bloqueio da quadra cancela treinos e pode ser removido", async ({ page }) => {
+    await db.bloqueioQuadra.deleteMany({ where: { motivo: { startsWith: "E2E" } } })
+    try {
+      await page.goto("/agenda?mes=2026-11")
+      // preenche tudo com retry: antes da hidratação o React descarta o valor digitado
+      const campos = [
+        [page.getByLabel("De", { exact: true }), "2026-11-24"],
+        [page.getByLabel("Até (opcional)"), "2026-11-25"],
+        [page.getByLabel("Motivo", { exact: true }), "E2E quadra interditada"],
+      ] as const
+      await expect(async () => {
+        for (const [campo, valor] of campos) await campo.fill(valor)
+        await page.waitForTimeout(300)
+        for (const [campo, valor] of campos) await expect(campo).toHaveValue(valor, { timeout: 500 })
+      }).toPass({ timeout: 20_000 })
+      await page.getByRole("button", { name: "Bloquear quadra" }).click()
+
+      const bloqueios = page.locator('[data-slot="bloqueios-quadra"]')
+      await expect(bloqueios).toContainText("E2E quadra interditada")
+      const dia = page.locator('[data-dia="2026-11-24"]')
+      await expect(dia).toContainText("Quadra: E2E quadra interditada")
+      await expect(dia.locator(".line-through").first()).toBeVisible()
+
+      await bloqueios.getByRole("button", { name: /Remover bloqueio E2E quadra interditada/ }).click()
+      await page.getByRole("button", { name: "Confirmar", exact: true }).click()
+      await expect(bloqueios).not.toContainText("E2E quadra interditada")
+    } finally {
+      await db.bloqueioQuadra.deleteMany({ where: { motivo: { startsWith: "E2E" } } })
+    }
   })
 })
 

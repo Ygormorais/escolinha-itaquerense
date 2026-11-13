@@ -4,6 +4,7 @@ import {
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { nomeTime } from "@/lib/landing/times"
+import type { TreinoOcorrencia } from "@/lib/treinos-agenda"
 
 export type Evento = {
   id: number
@@ -27,6 +28,31 @@ export type Jogo = {
   campeonato: string | null
 }
 
+export type Bloqueio = { id: number; inicio: string; fim: string; motivo: string }
+
+/** Itens derivados: treinos virtuais, feriados nacionais e bloqueios da quadra. */
+export type AgendaExtras = {
+  treinos: TreinoOcorrencia[]
+  feriados: Record<string, string> // "yyyy-MM-dd" → nome
+  bloqueios: Bloqueio[]
+}
+
+export const extrasVazio: AgendaExtras = { treinos: [], feriados: {}, bloqueios: [] }
+
+export function chaveDia(d: Date) {
+  return format(d, "yyyy-MM-dd")
+}
+
+/** Treinos, feriado e bloqueios que caem no dia. */
+export function extrasDoDia(extras: AgendaExtras, date: Date) {
+  const k = chaveDia(date)
+  return {
+    treinos: extras.treinos.filter((t) => t.dia === k),
+    feriado: extras.feriados[k] ?? null,
+    bloqueios: extras.bloqueios.filter((b) => b.inicio <= k && k <= b.fim),
+  }
+}
+
 export type EventoForm = {
   titulo: string
   tipo: string
@@ -42,6 +68,8 @@ export const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800 border-brand-300",
   Jogo: "bg-success-50 text-success-600 border-success-300",
   Evento: "bg-info-50 text-info-600 border-info-300",
+  Feriado: "bg-warning-50 text-warning-700 border-warning-600/40",
+  "Quadra bloqueada": "bg-danger-50 text-danger-600 border-danger-600/40",
 }
 
 export function capMes(d: Date) {

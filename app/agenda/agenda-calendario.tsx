@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { nomeTime } from "@/lib/landing/times"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { capMes, doDia, montarICS, tipoStyles, type Evento, type Jogo } from "./agenda-utils"
+import { capMes, doDia, extrasDoDia, montarICS, tipoStyles, type AgendaExtras, type Evento, type Jogo } from "./agenda-utils"
 
 const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
@@ -26,6 +26,7 @@ export function AgendaCalendario({
   currentMonth,
   eventos,
   jogos,
+  extras,
   mes,
   ano,
   selectedDate,
@@ -40,6 +41,7 @@ export function AgendaCalendario({
   currentMonth: Date
   eventos: Evento[]
   jogos: Jogo[]
+  extras: AgendaExtras
   mes: number
   ano: number
   selectedDate: Date | null
@@ -82,7 +84,15 @@ export function AgendaCalendario({
           {days.map((date, i) => {
             const dayEventos = eventosDoDia(date)
             const dayJogos = jogosDoDia(date)
-            const total = dayEventos.length + dayJogos.length
+            const dayExtras = extrasDoDia(extras, date)
+            const linhas: { key: string; cls: string; texto: string; riscado?: boolean; title?: string }[] = [
+              ...(dayExtras.feriado ? [{ key: "fer", cls: tipoStyles.Feriado, texto: dayExtras.feriado }] : []),
+              ...dayExtras.bloqueios.map((b) => ({ key: `b${b.id}`, cls: tipoStyles["Quadra bloqueada"], texto: `Quadra: ${b.motivo}` })),
+              ...dayJogos.map((j) => ({ key: `j${j.id}`, cls: tipoStyles.Jogo, texto: `vs ${nomeTime(j.adversario)}` })),
+              ...dayEventos.map((ev) => ({ key: `e${ev.id}`, cls: tipoStyles[ev.tipo] ?? "bg-muted text-muted-foreground border-border", texto: `${ev.horaInicio ? `${ev.horaInicio} ` : ""}${ev.titulo}` })),
+              ...dayExtras.treinos.map((t) => ({ key: `t${t.chave}`, cls: tipoStyles.Treino, texto: `${t.hora} ${t.titulo}`, riscado: t.cancelado, title: t.motivo ?? undefined })),
+            ]
+            const total = linhas.length
             const isToday = isSameDay(date, new Date())
             const isCurrentMonth = isSameMonth(date, currentMonth)
             const isSelected = selectedDate != null && isSameDay(date, selectedDate)
@@ -91,6 +101,7 @@ export function AgendaCalendario({
             return (
               <div
                 key={i}
+                data-dia={format(date, "yyyy-MM-dd")}
                 className={cn(
                   "min-h-[100px] cursor-pointer rounded-lg border p-1.5 transition-colors hover:bg-muted/50",
                   !isCurrentMonth && "opacity-30",
@@ -114,18 +125,13 @@ export function AgendaCalendario({
                   )}
                 </div>
                 <div className="space-y-0.5">
-                  {dayJogos.slice(0, 2).map((j) => (
-                    <div key={`j${j.id}`} className={cn("truncate rounded px-1 py-0.5 text-[10px] font-medium border", tipoStyles.Jogo)}>
-                      vs {nomeTime(j.adversario)}
+                  {linhas.slice(0, 3).map((l) => (
+                    <div key={l.key} title={l.title} className={cn("truncate rounded px-1 py-0.5 text-[10px] font-medium border", l.cls, l.riscado && "line-through opacity-60")}>
+                      {l.texto}
                     </div>
                   ))}
-                  {dayEventos.slice(0, Math.max(0, 2 - dayJogos.length)).map((ev) => (
-                    <div key={`e${ev.id}`} className={cn("truncate rounded px-1 py-0.5 text-[10px] font-medium border", tipoStyles[ev.tipo] ?? "bg-muted text-muted-foreground border-border")}>
-                      {ev.horaInicio && `${ev.horaInicio} `}{ev.titulo}
-                    </div>
-                  ))}
-                  {total > 2 && (
-                    <p className="text-[10px] text-muted-foreground">+{total - 2} mais</p>
+                  {total > 3 && (
+                    <p className="text-[10px] text-muted-foreground">+{total - 3} mais</p>
                   )}
                 </div>
               </div>

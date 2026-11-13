@@ -8,7 +8,7 @@ import { nomeTime } from "@/lib/landing/times"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { doDia, mensagemEvento, mensagemJogo, tipoStyles, type Evento, type Jogo } from "./agenda-utils"
+import { doDia, extrasDoDia, mensagemEvento, mensagemJogo, tipoStyles, type AgendaExtras, type Evento, type Jogo } from "./agenda-utils"
 
 function abrirWhatsApp(msg: string) {
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer")
@@ -19,6 +19,7 @@ export function AgendaDiaPainel({
   selectedDate,
   eventos,
   jogos,
+  extras,
   onNovo,
   onEditar,
   onDelete,
@@ -26,13 +27,17 @@ export function AgendaDiaPainel({
   selectedDate: Date | null
   eventos: Evento[]
   jogos: Jogo[]
+  extras: AgendaExtras
   onNovo: (date: Date) => void
   onEditar: (evento: Evento) => void
   onDelete: (id: number) => Promise<void>
 }) {
   const eventosDoDia = (date: Date) => doDia(eventos, date)
   const jogosDoDia = (date: Date) => doDia(jogos, date)
-  const totalDoDia = (date: Date) => eventosDoDia(date).length + jogosDoDia(date).length
+  const totalDoDia = (date: Date) => {
+    const x = extrasDoDia(extras, date)
+    return eventosDoDia(date).length + jogosDoDia(date).length + x.treinos.length + x.bloqueios.length + (x.feriado ? 1 : 0)
+  }
   const avisarEvento = (ev: Evento) => abrirWhatsApp(mensagemEvento(ev))
   const avisarJogo = (j: Jogo) => abrirWhatsApp(mensagemJogo(j))
 
@@ -56,6 +61,35 @@ export function AgendaDiaPainel({
               <p className="text-sm text-muted-foreground">Nenhum evento neste dia</p>
             </div>
           )}
+
+          {/* Feriado, bloqueios e treinos do dia (derivados, somente leitura) */}
+          {selectedDate && (() => {
+            const x = extrasDoDia(extras, selectedDate)
+            return (
+              <>
+                {x.feriado && (
+                  <div className={cn("rounded-lg border p-3 mb-2", tipoStyles.Feriado)} data-slot="agenda-feriado">
+                    <p className="text-sm font-semibold">Feriado: {x.feriado}</p>
+                  </div>
+                )}
+                {x.bloqueios.map((b) => (
+                  <div key={`b${b.id}`} className={cn("rounded-lg border p-3 mb-2", tipoStyles["Quadra bloqueada"])} data-slot="agenda-bloqueio">
+                    <p className="text-sm font-semibold">Quadra bloqueada</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{b.motivo}</p>
+                  </div>
+                ))}
+                {x.treinos.map((t) => (
+                  <div key={t.chave} className={cn("rounded-lg border p-3 mb-2", tipoStyles.Treino, t.cancelado && "opacity-70")} data-slot="agenda-treino">
+                    <p className={cn("text-sm font-semibold", t.cancelado && "line-through")}>{t.titulo}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Treino · {t.hora}
+                      {t.cancelado && ` · Cancelado (${t.motivo})`}
+                    </p>
+                  </div>
+                ))}
+              </>
+            )
+          })()}
 
           {/* Jogos (somente leitura — vêm das partidas) */}
           {selectedDate && jogosDoDia(selectedDate).map((j) => (
