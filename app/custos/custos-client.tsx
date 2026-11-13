@@ -19,6 +19,7 @@ import {
   categoriaDestaque,
   filtrarCustos,
   gerarCSVCustos,
+  recorrentesPendentes,
   ticketMedio,
   type Custo,
   type Recorrente,
@@ -51,6 +52,8 @@ export function CustosClient({
   const [geradoMsg, setGeradoMsg] = useState<string | null>(null)
   const [busca, setBusca] = useState("")
 
+  const pendentes = useMemo(() => recorrentesPendentes(recorrentes, custos), [recorrentes, custos])
+  const jaGerados = recorrentes.some((r) => r.ativo) && pendentes.length === 0
   const custosFiltrados = useMemo(() => filtrarCustos(custos, busca), [custos, busca])
   const topCategoria = useMemo(() => categoriaDestaque(custos), [custos])
 
@@ -107,10 +110,14 @@ export function CustosClient({
         <div className="ml-auto flex flex-col items-end gap-2">
           {geradoMsg && <p className="text-xs text-success-600 font-medium">{geradoMsg}</p>}
           <div className="flex gap-2">
-            <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${plural(recorrentes.filter((r) => r.ativo).length, "custo recorrente", "custos recorrentes", "nenhum")} para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
-              <Button variant="outline" disabled={gerando}>
+            <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${plural(pendentes.length, "custo recorrente", "custos recorrentes", "nenhum")} para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
+              <Button
+                variant="outline"
+                disabled={gerando || jaGerados}
+                title={jaGerados ? `Os custos recorrentes de ${mes} já foram gerados` : undefined}
+              >
                 <RefreshCw className="size-4" />
-                {gerando ? "Gerando..." : "Gerar recorrentes"}
+                {gerando ? "Gerando..." : jaGerados ? "Recorrentes já gerados" : "Gerar recorrentes"}
               </Button>
             </ConfirmDialog>
             <Button

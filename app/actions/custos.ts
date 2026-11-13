@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
 import { CustoSchema } from "@/lib/schemas"
+import { chaveRecorrente } from "@/app/custos/custos-utils"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -141,10 +142,6 @@ export async function deleteCustoRecorrente(id: number): Promise<ActionResult> {
     return { error: e instanceof Error ? e.message : "Erro ao excluir custo recorrente" }
   }
 }
-
-/** Chave que identifica um custo recorrente dentro do mês. */
-const chaveRecorrente = (c: { categoria: string; descricao: string; fornecedor: string }) =>
-  [c.categoria, c.descricao, c.fornecedor].map((t) => t.trim().toLowerCase()).join("|")
 
 /**
  * Gera os custos recorrentes do mês. É idempotente: modelo que já tem custo no mês
