@@ -3,7 +3,7 @@
 import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { useState } from "react"
 import Link from "next/link"
-import { ReceiptText, Search, Users } from "lucide-react"
+import { FileText, ReceiptText, Search, Users } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Badge } from "@/components/ui/badge"
@@ -114,8 +114,11 @@ export function MensalidadesClient({ responsavelNome, ano, alunos }: { responsav
                 <span className="border-l-4 border-brand-600 pl-2.5">{aluno.nome}</span>
                 <Badge variant="secondary" className="px-2.5 text-[11px]">{aluno.turma}</Badge>
               </CardTitle>
-              <Link href={`/responsavel/declaracao?alunoId=${aluno.id}&ano=${ano}`} className="text-xs font-semibold text-brand-700 underline-offset-2 hover:underline">
-                Declaração anual
+              <Link
+                href={`/responsavel/declaracao?alunoId=${aluno.id}&ano=${ano}`}
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-white px-3 text-sm font-semibold text-foreground hover:bg-muted dark:bg-transparent"
+              >
+                <FileText className="size-4" aria-hidden /> Declaração anual
               </Link>
             </div>
             <p className="text-sm text-[var(--color-ink-700)]">

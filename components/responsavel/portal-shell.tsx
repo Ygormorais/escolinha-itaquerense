@@ -19,7 +19,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto max-w-7xl px-4 pt-4 pb-24 sm:px-6 sm:pt-6 md:pb-8 lg:px-8 lg:pt-8">
       <NavResponsavel />
       <div className="min-w-0 font-body text-[var(--text)]">{children}</div>
     </div>

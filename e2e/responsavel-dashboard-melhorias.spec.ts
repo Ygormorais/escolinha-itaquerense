@@ -27,8 +27,12 @@ test.describe("Dashboard melhorias — autenticado", () => {
     await expect(eventos.or(vazio).or(jogos).first()).toBeVisible({ timeout: 8000 })
   })
 
-  test("aba Calendário permanece acessível no dashboard", async ({ page }) => {
+  test("Calendário fica como aba do grupo Jogos", async ({ page }) => {
     await page.goto("/responsavel")
-    await expect(page.getByRole("link", { name: "Calendário", exact: true })).toBeVisible({ timeout: 8000 })
+    await page.getByRole("navigation", { name: "Portal da família" }).getByRole("link", { name: "Jogos", exact: true }).click()
+    await expect(page).toHaveURL(/\/responsavel\/jogos$/)
+    const abas = page.getByRole("navigation", { name: "Seções de Jogos" })
+    await abas.getByRole("link", { name: "Calendário", exact: true }).click()
+    await expect(page).toHaveURL(/\/responsavel\/calendario/)
   })
 })

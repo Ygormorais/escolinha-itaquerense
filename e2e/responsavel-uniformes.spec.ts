@@ -12,9 +12,11 @@ test.describe("Uniformes — sem autenticação", () => {
 test.describe("Uniformes — autenticado", () => {
   test.use({ storageState: RESP_STORAGE })
 
-  test("link 'Uniforme' aparece no menu de navegação", async ({ page }) => {
+  test("'Uniforme' é aba do grupo Meu atleta", async ({ page }) => {
     await page.goto("/responsavel")
-    await expect(page.getByRole("link", { name: "Uniforme", exact: true })).toBeVisible({ timeout: 8000 })
+    await page.getByRole("navigation", { name: "Portal da família" }).getByRole("link", { name: "Meu atleta", exact: true }).click()
+    const abas = page.getByRole("navigation", { name: "Seções de Meu atleta" })
+    await expect(abas.getByRole("link", { name: "Uniforme", exact: true })).toBeVisible({ timeout: 8000 })
   })
 
   test("página /responsavel/uniformes carrega com título", async ({ page }) => {
