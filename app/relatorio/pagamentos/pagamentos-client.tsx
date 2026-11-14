@@ -187,7 +187,7 @@ export function RelatorioPagamentosClient({
           <CardHeader className="border-b">
             <CardTitle className="text-base">Leitura executiva</CardTitle>
             <CardDescription>
-              Panorama anual do caixa escolar com foco em recebimento, atraso e distribuicao por canal.
+              Panorama anual do caixa escolar com foco em recebimento, atraso e distribuição por canal.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-x-6 gap-y-5 pt-5">
@@ -216,9 +216,9 @@ export function RelatorioPagamentosClient({
 
         <Card>
           <CardHeader className="border-b">
-            <CardTitle className="text-base">Canal lider</CardTitle>
+            <CardTitle className="text-base">Canal líder</CardTitle>
             <CardDescription>
-              Canal com maior volume acumulado no periodo analisado.
+              Canal com maior volume acumulado no período analisado.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-5">
@@ -323,7 +323,7 @@ export function RelatorioPagamentosClient({
         <CardHeader className="border-b">
           <CardTitle className="text-base">Detalhamento dos pagamentos</CardTitle>
           <CardDescription>
-            Tabela filtravel para conferencia operacional, exportacao e impressao.
+            Tabela filtrável para conferência operacional, exportação e impressão.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 pt-1">

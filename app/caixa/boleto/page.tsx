@@ -44,7 +44,7 @@ export default async function BoletoPage() {
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Boletos pendentes</p>
             <p data-numeric className="mt-1 text-2xl font-bold text-warning-600">{emitidos.length}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Aguardando compensacao</p>
+            <p className="mt-1 text-xs text-muted-foreground">Aguardando compensação</p>
           </CardContent>
         </Card>
         <Card>
@@ -56,10 +56,10 @@ export default async function BoletoPage() {
         </Card>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Proximo vencimento</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Próximo vencimento</p>
             <p data-numeric className="mt-1 text-2xl font-bold">{proximoVencimento ? format(new Date(proximoVencimento), "dd/MM") : "—"}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {diasParaVencer === null ? "Nenhum boleto emitido" : diasParaVencer < 0 ? "Ja vencido" : `${diasParaVencer} dia(s) para vencer`}
+              {diasParaVencer === null ? "Nenhum boleto emitido" : diasParaVencer < 0 ? "Já vencido" : `${diasParaVencer} dia(s) para vencer`}
             </p>
           </CardContent>
         </Card>
@@ -73,7 +73,7 @@ export default async function BoletoPage() {
         <TabsContent value="emitidos">
           <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
             <Badge variant="outline">Boleto</Badge>
-            Cobrancas emitidas com linha digitavel pronta para envio.
+            Cobranças emitidas com linha digitável pronta para envio.
           </div>
           <div className="grid gap-3 md:hidden">{emitidos.map((p) => <article key={p.id} className="rounded-xl border bg-card p-4"><Link href={`/alunos/${p.aluno.id}`} className="font-semibold text-brand-800 hover:underline">{p.aluno.nome}</Link><p className="mt-1 text-sm text-muted-foreground">{p.aluno.turma} · {p.mesReferencia}</p><p className="mt-3 border-t pt-3 text-sm">Vence em <strong>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</strong></p></article>)}</div>
           <div className="hidden overflow-x-auto rounded-xl border bg-card md:block">
