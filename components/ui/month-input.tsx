@@ -24,9 +24,11 @@ interface MonthInputProps {
   onChange: (value: string) => void
   id?: string
   className?: string
+  /** Texto quando não há mês escolhido (value vazio), ex.: "Todos os meses". */
+  placeholder?: string
 }
 
-export function MonthInput({ value, onChange, id, className }: MonthInputProps) {
+export function MonthInput({ value, onChange, id, className, placeholder }: MonthInputProps) {
   const { year: initYear } = parseYM(value)
   const [open, setOpen] = useState(false)
   const [viewYear, setViewYear] = useState(initYear)
@@ -63,7 +65,7 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
     setOpen(false)
   }
 
-  const label = `${MESES_EXTENSO[curMonth]} de ${curYear}`
+  const label = !value && placeholder ? placeholder : `${MESES_EXTENSO[curMonth]} de ${curYear}`
 
   return (
     <div ref={ref} className={cn("relative w-full min-w-0 sm:w-auto", className)}>
@@ -72,7 +74,7 @@ export function MonthInput({ value, onChange, id, className }: MonthInputProps) 
         type="button"
         onClick={() => setOpen(v => !v)}
         className={cn(
-          "flex h-10 w-full min-w-0 items-center gap-2 rounded-[var(--radius-control)] border border-input bg-background px-3 py-1.5 text-sm shadow-[var(--shadow-xs)] sm:w-44",
+          "flex h-10 w-full min-w-0 items-center gap-2 rounded-[var(--radius-control)] border border-input bg-background px-3 py-1.5 text-sm shadow-[var(--shadow-xs)] sm:w-52",
           "text-foreground transition-colors hover:bg-muted focus:outline-none focus-visible:ring-4 focus-visible:ring-ring/15",
           open && "border-ring bg-muted"
         )}
