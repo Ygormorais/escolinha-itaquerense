@@ -4,6 +4,9 @@ import { requireAuth } from "@/lib/auth"
 import { PageHeader } from "@/components/layout/page-header"
 import { AgendaClient } from "./agenda-client"
 import { FpfsJogos } from "./fpfs-jogos"
+import { mapaFeriados } from "@/lib/feriados"
+import { gerarTreinos } from "@/lib/treinos-agenda"
+import type { AgendaExtras } from "./agenda-utils"
 
 export const metadata = { title: "Agenda — Escolinha Itaquerense" }
 
@@ -15,15 +18,21 @@ export default async function AgendaPage({
   await requireAuth(["admin", "secretaria", "tecnico"])
   const params = await searchParams
   const now = new Date()
-  const valido = /^\d{4}-\d{2}$/.test(params.mes ?? "")
-  const [ano, mes] = valido
-    ? params.mes!.split("-").map(Number)
+  // formato AAAA-MM e mês de 1 a 12; qualquer outra coisa cai no mês atual
+  const m = /^(\d{4})-(\d{2})$/.exec(params.mes ?? "")
+  const valido = m != null && Number(m[2]) >= 1 && Number(m[2]) <= 12
+  const [ano, mes] = valido && m
+    ? [Number(m[1]), Number(m[2])]
     : [now.getFullYear(), now.getMonth() + 1]
 
   const inicio = new Date(ano, mes - 1, 1)
   const fim = new Date(ano, mes, 0, 23, 59, 59)
 
-  const [eventos, partidas] = await Promise.all([
+  const pad = (n: number) => String(n).padStart(2, "0")
+  const primeiroDia = `${ano}-${pad(mes)}-01`
+  const ultimoDia = `${ano}-${pad(mes)}-${pad(new Date(ano, mes, 0).getDate())}`
+
+  const [eventos, partidas, slots, bloqueiosDb] = await Promise.all([
     db.evento.findMany({ where: { data: { gte: inicio, lte: fim } }, orderBy: { data: "asc" } }),
     db.partida.findMany({
       where: {
@@ -42,7 +51,35 @@ export default async function AgendaPage({
       },
       orderBy: { data: "asc" },
     }),
+    // Treinos não são gravados por dia: saem da turma + horário dos alunos ativos.
+    db.aluno.findMany({
+      where: { status: "Ativo", horario: { not: "" } },
+      select: { turma: true, horario: true },
+      distinct: ["turma", "horario"],
+    }),
+    db.bloqueioQuadra.findMany({
+      where: {
+        dataInicio: { lte: new Date(`${ultimoDia}T00:00:00.000Z`) },
+        dataFim: { gte: new Date(`${primeiroDia}T00:00:00.000Z`) },
+      },
+      orderBy: { dataInicio: "asc" },
+    }),
   ])
+
+  const bloqueios = bloqueiosDb.map((b) => ({
+    id: b.id,
+    inicio: b.dataInicio.toISOString().slice(0, 10),
+    fim: b.dataFim.toISOString().slice(0, 10),
+    motivo: b.motivo,
+  }))
+  const feriados = Object.fromEntries(
+    [...mapaFeriados([ano])].filter(([dia]) => dia >= primeiroDia && dia <= ultimoDia),
+  )
+  const extras: AgendaExtras = {
+    treinos: gerarTreinos(slots, primeiroDia, ultimoDia, new Map(Object.entries(feriados)), bloqueios),
+    feriados,
+    bloqueios,
+  }
 
   const jogos = partidas.map((p) => ({
     id: p.id,
@@ -60,7 +97,7 @@ export default async function AgendaPage({
         title="Agenda"
         description="Calendário de treinos, jogos, eventos e reuniões"
       />
-      <AgendaClient eventos={eventos} jogos={jogos} mes={mes} ano={ano} diaSelecionado={params.dia} />
+      <AgendaClient eventos={eventos} jogos={jogos} extras={extras} mes={mes} ano={ano} diaSelecionado={params.dia} />
       <FpfsJogos />
     </div>
   )

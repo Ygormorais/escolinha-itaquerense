@@ -29,6 +29,7 @@ async function main() {
   await db.avaliacao.deleteMany()
   await db.inscricaoCampeonato.deleteMany()
   await db.partida.deleteMany()
+  await db.bloqueioQuadra.deleteMany()
   await db.campeonato.deleteMany()
   await db.frequencia.deleteMany()
   await db.pagamento.deleteMany()
@@ -249,6 +250,28 @@ async function main() {
     ],
   })
   console.log(`✅ Campeonato "${camp.nome}" criado com partidas`)
+
+  // Jogos fictícios (marcados [TESTE]) para o calendário da agenda não ficar vazio no dev.
+  // Datas relativas a hoje, às 15h UTC (meio-dia em Brasília) para cair no mesmo dia em qualquer fuso.
+  const diaRelativo = (dias: number) => {
+    const d = new Date()
+    d.setUTCDate(d.getUTCDate() + dias)
+    d.setUTCHours(15, 0, 0, 0)
+    return d
+  }
+  await db.partida.createMany({
+    data: [
+      { campeonatoId: camp.id, adversario: "[TESTE] EC Vila Matilde", data: diaRelativo(3),  local: "Casa", observacoes: "Jogo fictício de teste (seed)." },
+      { campeonatoId: camp.id, adversario: "[TESTE] AD Cidade Líder", data: diaRelativo(10), local: "Fora", observacoes: "Jogo fictício de teste (seed)." },
+      { campeonatoId: camp.id, adversario: "[TESTE] Futsal Tatuapé", data: diaRelativo(17), local: "Casa", observacoes: "Jogo fictício de teste (seed)." },
+      { campeonatoId: camp.id, adversario: "[TESTE] SC Arthur Alvim", data: diaRelativo(-6), local: "Fora", golsPro: 2, golsContra: 2, resultado: "Empate", observacoes: "Jogo fictício de teste (seed)." },
+    ],
+  })
+
+  // Bloqueio fictício da quadra, para mostrar treinos cancelados na agenda.
+  await db.bloqueioQuadra.create({
+    data: { dataInicio: diaRelativo(5), dataFim: diaRelativo(6), motivo: "[TESTE] Manutenção do piso" },
+  })
 
   // ── Uniformes ─────────────────────────────────────────────────────────────
   const uniformeItems = [

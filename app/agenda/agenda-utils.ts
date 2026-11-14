@@ -4,6 +4,7 @@ import {
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { nomeTime } from "@/lib/landing/times"
+import type { TreinoOcorrencia } from "@/lib/treinos-agenda"
 
 export type Evento = {
   id: number
@@ -27,6 +28,31 @@ export type Jogo = {
   campeonato: string | null
 }
 
+export type Bloqueio = { id: number; inicio: string; fim: string; motivo: string }
+
+/** Itens derivados: treinos virtuais, feriados nacionais e bloqueios da quadra. */
+export type AgendaExtras = {
+  treinos: TreinoOcorrencia[]
+  feriados: Record<string, string> // "yyyy-MM-dd" → nome
+  bloqueios: Bloqueio[]
+}
+
+export const extrasVazio: AgendaExtras = { treinos: [], feriados: {}, bloqueios: [] }
+
+export function chaveDia(d: Date) {
+  return format(d, "yyyy-MM-dd")
+}
+
+/** Treinos, feriado e bloqueios que caem no dia. */
+export function extrasDoDia(extras: AgendaExtras, date: Date) {
+  const k = chaveDia(date)
+  return {
+    treinos: extras.treinos.filter((t) => t.dia === k),
+    feriado: extras.feriados[k] ?? null,
+    bloqueios: extras.bloqueios.filter((b) => b.inicio <= k && k <= b.fim),
+  }
+}
+
 export type EventoForm = {
   titulo: string
   tipo: string
@@ -42,6 +68,8 @@ export const tipoStyles: Record<string, string> = {
   Treino: "bg-brand-100 text-brand-800 border-brand-300",
   Jogo: "bg-success-50 text-success-600 border-success-300",
   Evento: "bg-info-50 text-info-600 border-info-300",
+  Feriado: "bg-warning-50 text-warning-700 border-warning-600/40",
+  "Quadra bloqueada": "bg-danger-50 text-danger-600 border-danger-600/40",
 }
 
 export function capMes(d: Date) {
@@ -110,7 +138,7 @@ function formatICSDate(d: Date, hora?: string | null): string {
   return `${base}T${pad(h)}${pad(m)}00`
 }
 
-export function montarICS(eventos: Evento[], jogos: Jogo[]) {
+export function montarICS(eventos: Evento[], jogos: Jogo[], treinos: TreinoOcorrencia[] = []) {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -128,6 +156,14 @@ export function montarICS(eventos: Evento[], jogos: Jogo[]) {
   for (const j of jogos) {
     const dt = new Date(j.data)
     lines.push("BEGIN:VEVENT", `UID:jogo-${j.id}@escolinha`, `DTSTART;VALUE=DATE:${formatICSDate(dt)}`, `DTEND;VALUE=DATE:${formatICSDate(dt)}`, `SUMMARY:Jogo vs ${j.adversario}`, j.local ? `LOCATION:${j.local}` : "", j.campeonato ? `DESCRIPTION:${j.campeonato}` : "", "END:VEVENT")
+  }
+
+  // treinos virtuais do mês; os cancelados (feriado, quadra bloqueada) ficam de fora
+  for (const t of treinos) {
+    if (t.cancelado) continue
+    const [ano, mes, dia] = t.dia.split("-").map(Number)
+    const dt = new Date(ano, mes - 1, dia)
+    lines.push("BEGIN:VEVENT", `UID:treino-${t.chave}@escolinha`, `DTSTART:${formatICSDate(dt, t.hora)}`, `DTEND:${formatICSDate(dt, t.hora)}`, `SUMMARY:${t.titulo}`, "END:VEVENT")
   }
 
   lines.push("END:VCALENDAR")

@@ -114,3 +114,16 @@ describe("mensagens do WhatsApp", () => {
     expect(mensagemJogo(jogo)).toBe("*Jogo vs Sport Club Xyz* (Paulista)\nsexta-feira, 16 de outubro às 15:30\nCasa")
   })
 })
+
+describe("montarICS com treinos virtuais", () => {
+  const t = (dia: string, cancelado: boolean) => ({
+    chave: `${dia}|14:00`, dia, hora: "14:00", turmas: ["Sub-13"], titulo: "Treino Sub-13", cancelado, motivo: cancelado ? "Feriado: X" : null,
+  })
+  it("inclui treinos ativos e omite os cancelados", () => {
+    const ics = montarICS([], [], [t("2026-11-17", false), t("2026-11-20", true)])
+    expect(ics).toContain("UID:treino-2026-11-17|14:00@escolinha")
+    expect(ics).toContain("DTSTART:20261117T140000")
+    expect(ics).toContain("SUMMARY:Treino Sub-13")
+    expect(ics).not.toContain("2026-11-20")
+  })
+})
