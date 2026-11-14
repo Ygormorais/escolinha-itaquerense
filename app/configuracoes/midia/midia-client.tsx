@@ -1,5 +1,6 @@
 "use client"
 
+import { EmptyState } from "@/components/ui/empty-state"
 import { PAGINA_ADMIN } from "@/components/layout/pagina"
 
 import { useState, useTransition } from "react"
@@ -267,7 +268,7 @@ export function MidiaClient({
       />
 
       {midias.length === 0 ? (
-        <p className="text-muted-foreground">Nenhuma mídia cadastrada.</p>
+        <EmptyState icon={Film} title="Nenhuma mídia cadastrada" description="Cadastre vídeos e fotos de jogos e campeonatos para aparecerem no mural do portal da família." />
       ) : (
         <>
         <div className="grid gap-3 md:hidden">

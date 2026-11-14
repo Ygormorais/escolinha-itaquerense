@@ -1,5 +1,7 @@
 "use client"
 
+import { Inbox } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { useState, useTransition } from "react"
 import { format } from "date-fns"
@@ -93,7 +95,7 @@ export function SolicitacoesClient({ solicitacoes }: { solicitacoes: Solicitacao
 
       <div className="space-y-3">
         <h2 className="font-heading text-xl font-bold text-ink-950">Histórico</h2>
-        {solicitacoes.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma solicitação enviada ainda.</p>}
+        {solicitacoes.length === 0 && <EmptyState icon={Inbox} title="Nenhuma solicitação enviada" description="Use o formulário para pedir declaração, troca de turma ou outro atendimento da secretaria." />}
         {solicitacoes.map((s) => {
           const st = STATUS_MAP[s.status] ?? STATUS_MAP.pendente
           const Icon = st.icon
