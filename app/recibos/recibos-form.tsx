@@ -210,7 +210,7 @@ export default function RecibosForm({ recibos, config }: { recibos: Recibo[]; co
                     <td className="px-4 py-3">{r.mesReferencia}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">{formatMoney(r.valor)}</td>
                     <td className="px-4 py-3">{r.formaPagamento}</td>
-                    <td className="px-4 py-3">{new Date(r.dataPagamento).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</td>
+                    <td className="px-4 py-3">{new Date(r.dataPagamento).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Link href={`/recibos/${r.id}`} className="inline-flex items-center gap-1 text-xs font-medium text-brand-800 hover:underline">

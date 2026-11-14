@@ -78,7 +78,7 @@ export default async function ReciboPage({
             mesReferencia: recibo.mesReferencia,
             valor: recibo.valor,
             formaPagamento: recibo.formaPagamento,
-            dataPagamento: recibo.dataPagamento.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+            dataPagamento: recibo.dataPagamento.toLocaleDateString("pt-BR", { timeZone: "UTC" }),
             codigoVerificacao: recibo.codigoVerificacao,
           }}
         />
