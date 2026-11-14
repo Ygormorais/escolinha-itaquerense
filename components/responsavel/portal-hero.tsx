@@ -81,16 +81,18 @@ export function PortalHero({
         </div>
 
         {hasStats && (
-          <dl className="grid grid-cols-3 gap-2 sm:gap-3 lg:max-w-3xl">
+          // Celular: uma linha por número (rótulo à esquerda, valor inteiro à direita) — valores
+          // em reais nunca são cortados. A partir de sm: três cartões lado a lado.
+          <dl className="grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-white/14 sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:rounded-none sm:border-0 lg:max-w-3xl">
             {stats!.map((s) => (
               <div
                 key={s.label}
-                className="min-w-0 rounded-[var(--radius-card)] border border-white/14 bg-white/[0.06] px-2.5 py-2.5 sm:px-4 sm:py-3"
+                className="flex items-baseline justify-between gap-3 bg-white/[0.06] px-3.5 py-2.5 sm:block sm:rounded-[var(--radius-card)] sm:border sm:border-white/14 sm:px-4 sm:py-3"
               >
-                <dt className="font-body text-[10px] font-semibold uppercase leading-tight tracking-[0.02em] text-white/70 hyphens-auto sm:text-[11px] sm:tracking-[0.12em]">
+                <dt className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-white/70">
                   {s.label}
                 </dt>
-                <dd data-numeric className="mt-1 truncate text-lg font-extrabold tabular-nums sm:text-xl">{s.value}</dd>
+                <dd data-numeric className="whitespace-nowrap text-lg font-extrabold tabular-nums sm:mt-1 sm:text-xl">{s.value}</dd>
               </div>
             ))}
           </dl>
