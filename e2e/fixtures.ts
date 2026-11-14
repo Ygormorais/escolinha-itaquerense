@@ -133,9 +133,13 @@ export async function resetRecibosE2E() {
       valor: 150,
       formaPagamento: "PIX",
       dataPagamento: new Date(),
+      codigoVerificacao: RECIBO_CODIGO_E2E,
     },
   })
 }
+
+/** Código de verificação do recibo do fixture (link antigo /recibos?codigo=…). */
+export const RECIBO_CODIGO_E2E = "E2E-RECIBO-QR-0001"
 
 export async function resetCaixaE2E() {
   await db.transacaoMaquina.deleteMany({ where: { arquivo: MAQUINA_ARQUIVO } })
