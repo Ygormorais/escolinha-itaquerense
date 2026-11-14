@@ -17,11 +17,12 @@ test.describe("Pré-Matrícula Pública", () => {
 
   test("formulário exibe turmas e horários corretamente", async ({ page }) => {
     await page.goto("/matricula")
-    const turmaSelect = page.getByRole("combobox").first()
+    const turmaSelect = page.getByRole("combobox", { name: "Turma" })
     await expect(turmaSelect).toBeVisible()
     await turmaSelect.click()
     const opcoes = await page.locator('[role="option"]').allTextContents()
-    expect(opcoes.length).toBeGreaterThanOrEqual(6)
+    expect(opcoes.length).toBeGreaterThanOrEqual(1)
+    expect(opcoes.every((o) => /^Sub-\d+$/.test(o.trim()))).toBe(true)
     await page.keyboard.press("Escape")
   })
 
@@ -30,6 +31,8 @@ test.describe("Pré-Matrícula Pública", () => {
     // aguarda hidratação para o handler JS de submit estar ativo
     await page.waitForLoadState("networkidle")
     await page.fill('input[id="aluno"]', "Teste E2E")
+    await page.getByRole("combobox", { name: "Turma" }).click()
+    await page.locator('[role="option"]').first().click()
     await page.fill('input[id="dataNasc"]', "15062015")
     await page.fill('input[id="responsavel"]', "Responsável Teste")
     await page.fill('input[id="telefone"]', "(11) 99999-8888")

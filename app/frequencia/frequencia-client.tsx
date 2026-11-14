@@ -289,11 +289,12 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                 )}
                 {alunos.map((aluno) => (
                   <TableRow key={aluno.id} className="hover:bg-muted/40 transition-colors">
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium whitespace-normal">
                       <Link href={`/alunos/${aluno.id}`} className="hover:underline text-brand-800">{aluno.nome}</Link>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      {/* Quebra em vez de vazar: no celular as três opções não cabem numa linha. */}
+                      <div className="flex flex-wrap gap-1.5">
                         {OPCOES.map((opcao) => (
                           <button
                             key={opcao}

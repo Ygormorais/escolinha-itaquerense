@@ -160,12 +160,12 @@ export function RelatorioPagamentosClient({
         action={
           <div className="flex gap-2">
             <Input
-              type="number"
-              min={2020}
-              max={2099}
+              type="text"
+              inputMode="numeric"
+              maxLength={4}
               value={anoInput}
               aria-label="Ano do relatório"
-              className="h-9 w-24"
+              className="h-9 w-20 shrink-0 text-center tabular-nums"
               onChange={(e) => {
                 const value = e.target.value
                 setAnoInput(value)

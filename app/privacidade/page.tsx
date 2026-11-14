@@ -14,7 +14,7 @@ export default function PrivacidadePage() {
         <h2>Segurança e retenção</h2>
         <p>Usamos autenticação, controle de acesso, cópias de segurança com acesso restrito, criptografia nas cópias externas e registros de auditoria. Pedidos de pré-matrícula pendentes são removidos após 90 dias; pedidos recusados, após 30 dias da decisão; e os documentos dos pedidos aprovados, após 90 dias. Arquivos enviados sem conclusão do pedido são removidos após 24 horas. Outros dados são mantidos pelo período necessário às finalidades administrativas, esportivas e legais aplicáveis.</p>
         <h2>Solicitações</h2>
-        <p>O responsável pode solicitar atualização, correção ou esclarecimentos pelos canais oficiais da Escolinha Itaquerense. Esta política deve ser revisada pelo responsável legal da organização antes da publicação comercial.</p>
+        <p>O responsável pode solicitar atualização, correção ou esclarecimentos pelos canais oficiais da Escolinha Itaquerense.</p>
       </div>
     </PaginaPublica>
   )
