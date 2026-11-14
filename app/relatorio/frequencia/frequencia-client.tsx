@@ -153,7 +153,7 @@ export function RelatorioFrequenciaClient({
               <Printer className="size-4" />
               Imprimir PDF
             </Button>
-            <Button size="sm" onClick={exportarCSV}>
+            <Button size="sm" variant="outline" onClick={exportarCSV}>
               <Download className="size-4 mr-1" /> Exportar CSV
             </Button>
           </div>

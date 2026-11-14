@@ -384,7 +384,7 @@ export function SecretariaClient({
                 ))}
                 {aniversariantes.length > 8 && (
                   <p className="text-xs text-center text-muted-foreground">
-                    +{plural(aniversariantes.length - 8, "aniversariante", "aniversariantes")}
+                    +{plural(aniversariantes.length - 8, "aniversariante", "aniversariantes", "nenhum")}
                   </p>
                 )}
               </div>

@@ -107,9 +107,9 @@ export function CustosClient({
           <Label htmlFor="custos-mes" className="text-muted-foreground">Mês</Label>
           <MonthInput id="custos-mes" value={mes} onChange={(v) => router.push(`/custos?mes=${v}`)} className="mt-1" />
         </div>
-        <div className="ml-auto flex flex-col items-end gap-2">
+        <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:items-end">
           {geradoMsg && <p className="text-xs text-success-600 font-medium">{geradoMsg}</p>}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <ConfirmDialog title="Gerar custos recorrentes?" description={`Gerar ${plural(pendentes.length, "custo recorrente", "custos recorrentes", "nenhum")} para ${mes}?`} confirmLabel="Gerar" variant="warning" onConfirm={handleGerarRecorrentes}>
               <Button
                 variant="outline"

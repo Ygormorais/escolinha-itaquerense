@@ -2,6 +2,7 @@
 
 /* Hallmark · macrostructure: Catalogue · theme: Escolinha Orgânico / Humano · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · nav: existing admin chrome · footer: existing admin chrome · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (34, 49–57) · icons: pass (30) */
 
+import { plural } from "@/lib/utils"
 import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, RefreshCw, Search, Trophy, Wifi } from "lucide-react"
@@ -81,7 +82,7 @@ export function CampeonatoClient({
                 id="campeonato-busca"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Buscar campeonato, local ou descricao..."
+                placeholder="Buscar campeonato, local ou descrição..."
                 className="pl-9"
               />
             </div>
@@ -117,7 +118,7 @@ export function CampeonatoClient({
 
         <div className="mt-4 flex min-w-0 flex-col gap-3 border-t border-border/70 pt-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span aria-live="polite">{filtrados.length} de {campeonatos.length} campeonato(s) visiveis</span>
+            <span aria-live="polite">{filtrados.length} de {plural(campeonatos.length, "campeonato", "campeonatos", "nenhum")}</span>
             <Badge variant="outline" className="shrink-0 text-xs">
               <Wifi className="size-3" aria-hidden="true" /> {comFpfs} conectados
             </Badge>
@@ -142,7 +143,7 @@ export function CampeonatoClient({
         <EmptyState icon={Trophy} title="Nenhum campeonato cadastrado" description="Crie o primeiro campeonato para começar." />
       )}
       {campeonatos.length > 0 && filtrados.length === 0 && (
-        <EmptyState icon={Trophy} title="Nenhum campeonato encontrado" description="Ajuste a busca ou os filtros para encontrar outra competicao." />
+        <EmptyState icon={Trophy} title="Nenhum campeonato encontrado" description="Ajuste a busca ou os filtros para encontrar outra competição." />
       )}
       {filtrados.length > 0 && (
         <section aria-label="Catálogo de campeonatos" data-slot="campeonato-catalogue" className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">

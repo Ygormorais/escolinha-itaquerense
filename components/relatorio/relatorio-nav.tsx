@@ -12,19 +12,22 @@ const TABS = [
   { href: "/relatorio/frequencia", label: "Frequência", roles: ["admin", "secretaria", "tecnico"] },
 ]
 
+import { FaixaAbas } from "@/components/ui/faixa-abas"
+
 export function RelatorioNav({ role = "admin" }: { role?: StaffRole }) {
   const pathname = usePathname()
 
   return (
-    <div className="flex gap-1 rounded-lg border border-border bg-muted p-1 w-fit">
+    <FaixaAbas className="w-fit gap-1 rounded-lg border border-border bg-muted p-1">
       {TABS.filter((tab) => tab.roles.includes(role)).map(({ href, label }) => {
         const isActive = href === "/relatorio" ? pathname === href : pathname.startsWith(href)
         return (
           <Link
             key={href}
             href={href}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              "shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               isActive
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -34,6 +37,6 @@ export function RelatorioNav({ role = "admin" }: { role?: StaffRole }) {
           </Link>
         )
       })}
-    </div>
+    </FaixaAbas>
   )
 }

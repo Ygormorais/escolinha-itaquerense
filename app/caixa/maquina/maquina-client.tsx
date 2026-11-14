@@ -171,11 +171,10 @@ export function MaquinaClient({
           </ConfirmDialog>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <input
-            type="month"
+          <MonthInput
             value={filters.periodo}
-            onChange={(e) => navegar({ periodo: e.target.value })}
-            className="rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            onChange={(v) => navegar({ periodo: v })}
+            placeholder="Todos os meses"
           />
           {filters.periodo && (
             <Button variant="ghost" size="sm" onClick={() => navegar({ periodo: "" })}>Limpar</Button>

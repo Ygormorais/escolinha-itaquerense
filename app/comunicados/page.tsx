@@ -68,7 +68,7 @@ export default async function ComunicadosPage() {
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full bg-success-50 px-2 py-0.5 text-xs font-medium text-success-600">
-                  {plural(lote.total, "enviado", "enviados")}
+                  {plural(lote.total, "enviado", "enviados", "nenhum")}
                 </span>
               </div>
             ))}

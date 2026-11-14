@@ -1,5 +1,6 @@
 "use client"
 
+import { EmptyState } from "@/components/ui/empty-state"
 import { useState } from "react"
 import Image from "next/image"
 import { ImageIcon, Play, ExternalLink } from "lucide-react"
@@ -51,9 +52,7 @@ export function GaleriaMural({ grupos }: { grupos: GrupoCampeonato[] }) {
   return (
     <>
       {grupos.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-brand-100 bg-[var(--color-paper-50)] px-6 py-12 text-center text-sm text-muted-foreground">
-          Nenhuma mídia disponível ainda.
-        </p>
+        <EmptyState icon={ImageIcon} title="Nenhuma foto ou vídeo ainda" description="Fotos e vídeos dos jogos e campeonatos aparecem aqui quando a equipe publicar." />
       )}
 
       <div className="space-y-12">

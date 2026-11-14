@@ -1,3 +1,4 @@
+import { plural } from "@/lib/utils"
 import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { PageHeader } from "@/components/layout/page-header"
 import { PendenciasClient } from "./pendencias-client"
@@ -11,5 +12,5 @@ export default async function PendenciasPage() {
   const auth = await requireAuth(["admin", "secretaria", "tecnico"])
   const grupos = await carregarPendencias(auth.role as StaffRole, auth.user)
   const total = grupos.reduce((soma, grupo) => soma + grupo.itens.length, 0)
-  return <div className={PAGINA_ADMIN}><PageHeader title="Central de pendências" description={`${total} item(ns) visíveis para o perfil ${auth.role}. Resolva, atribua ou adie sem perder o vínculo com a origem.`} /><PendenciasClient grupos={grupos} /></div>
+  return <div className={PAGINA_ADMIN}><PageHeader title="Central de pendências" description={`${plural(total, "item visível", "itens visíveis", "nenhum")} para o seu perfil. Resolva, atribua ou adie sem perder o vínculo com a origem.`} /><PendenciasClient grupos={grupos} /></div>
 }

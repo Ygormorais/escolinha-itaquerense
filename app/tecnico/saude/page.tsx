@@ -1,3 +1,4 @@
+import { plural } from "@/lib/utils"
 import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
@@ -81,7 +82,7 @@ export default async function TecnicoSaudePage() {
             <CardTitle className="flex items-center gap-2 text-base">
               <Heart className="size-4 text-danger-600" />
               {turma}
-              <Badge variant="secondary" className="ml-auto">{lista.length} alunos</Badge>
+              <Badge variant="secondary" className="ml-auto">{plural(lista.length, "aluno", "alunos", "nenhum")}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

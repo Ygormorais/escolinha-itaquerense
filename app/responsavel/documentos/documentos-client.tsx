@@ -1,5 +1,6 @@
 "use client"
 
+import { EmptyState } from "@/components/ui/empty-state"
 import { useState, useTransition } from "react"
 import { CheckCircle2, ExternalLink, FileText } from "lucide-react"
 import { toast } from "sonner"
@@ -12,7 +13,7 @@ export function DocumentosFamilia({ itens }: { itens: Item[] }) {
   const [confirmados, setConfirmados] = useState<Record<string, boolean>>({})
   const [aceites, setAceites] = useState<Record<string, string | null>>(Object.fromEntries(itens.map((item) => [`${item.versaoId}:${item.aluno.id}`, item.aceite ? new Date(item.aceite).toISOString() : null])))
   const [pending, startTransition] = useTransition()
-  if (itens.length === 0) return <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhum documento vigente para os atletas vinculados.</p>
+  if (itens.length === 0) return <EmptyState icon={FileText} title="Nenhum documento pendente" description="Quando a escolinha publicar um termo ou regulamento para os seus atletas, ele aparece aqui para leitura e aceite." />
 
   function aceitar(item: Item) {
     const chave = `${item.versaoId}:${item.aluno.id}`

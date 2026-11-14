@@ -96,7 +96,7 @@ function PartidaRow({ partida: p, passado }: { partida: Partida; passado?: boole
         className={`group grid min-h-28 min-w-0 whitespace-normal grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-4 p-4 outline-none hover:bg-muted/40 active:bg-muted/60 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset sm:p-5 lg:grid-cols-[11rem_minmax(0,1fr)_auto_auto] lg:items-center lg:gap-6 ${passado ? "bg-muted/15" : ""}`}
         href={`/campeonatos/${p.campeonato.id}/partidas/${p.id}/escalacao`}
       >
-        <time className="col-span-2 text-sm font-semibold capitalize tabular-nums text-foreground lg:col-span-1" dateTime={new Date(p.data).toISOString()}>
+        <time className="col-span-2 text-sm font-semibold first-letter:uppercase tabular-nums text-foreground lg:col-span-1" dateTime={new Date(p.data).toISOString()}>
           {format(new Date(p.data), "EEE, dd 'de' MMM · HH:mm", { locale: ptBR })}
           {p.local ? <span className="mt-1 block text-xs font-normal text-muted-foreground">{p.local}</span> : null}
         </time>

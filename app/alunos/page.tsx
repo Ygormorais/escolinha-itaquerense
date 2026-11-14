@@ -88,7 +88,7 @@ export default async function AlunosPage({
     <div data-page="alunos" className={PAGINA_ADMIN}>
       <PageHeader
         title="Alunos"
-        description={plural(totalAtivos, "aluno ativo", "alunos ativos")}
+        description={plural(totalAtivos, "aluno ativo", "alunos ativos", "nenhum")}
         action={canManage ? <NovoAlunoButton /> : undefined}
       />
       <AlunosClient

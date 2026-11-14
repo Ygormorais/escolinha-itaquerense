@@ -106,7 +106,9 @@ export function AvaliacoesClient({ avaliacoes, alunos }: AvaliacoesClientProps) 
       <div className="flex items-center gap-3">
         <Select value={filtroAlunoId} onValueChange={(v) => v && setFiltroAlunoId(v)}>
           <SelectTrigger className="w-64">
-            <SelectValue placeholder="Filtrar por aluno" />
+            <SelectValue placeholder="Filtrar por aluno">
+              {(v: string) => (v === "all" ? "Todos os alunos" : (() => { const a = alunos.find((x) => String(x.id) === v); return a ? `${a.nome} — ${a.turma}` : v })())}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os alunos</SelectItem>
