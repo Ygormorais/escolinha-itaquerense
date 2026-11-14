@@ -10,8 +10,8 @@ import { capMes, doDia, extrasDoDia, montarICS, tipoStyles, type AgendaExtras, t
 
 const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 
-function gerarICS(eventos: Evento[], jogos: Jogo[], mes: number, ano: number) {
-  const ics = montarICS(eventos, jogos)
+function gerarICS(eventos: Evento[], jogos: Jogo[], extras: AgendaExtras, mes: number, ano: number) {
+  const ics = montarICS(eventos, jogos, extras.treinos)
   const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
@@ -69,7 +69,7 @@ export function AgendaCalendario({
         </div>
         <div className="flex gap-1">
           <Button variant="outline" size="sm" onClick={onHoje} disabled={navegando}>Hoje</Button>
-          <Button variant="outline" size="sm" onClick={() => gerarICS(eventos, jogos, mes, ano)} title="Exportar calendário (.ics)">
+          <Button variant="outline" size="sm" onClick={() => gerarICS(eventos, jogos, extras, mes, ano)} title="Exportar calendário (.ics)">
             <Download className="size-4" />
           </Button>
         </div>

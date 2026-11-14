@@ -138,7 +138,7 @@ function formatICSDate(d: Date, hora?: string | null): string {
   return `${base}T${pad(h)}${pad(m)}00`
 }
 
-export function montarICS(eventos: Evento[], jogos: Jogo[]) {
+export function montarICS(eventos: Evento[], jogos: Jogo[], treinos: TreinoOcorrencia[] = []) {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -156,6 +156,14 @@ export function montarICS(eventos: Evento[], jogos: Jogo[]) {
   for (const j of jogos) {
     const dt = new Date(j.data)
     lines.push("BEGIN:VEVENT", `UID:jogo-${j.id}@escolinha`, `DTSTART;VALUE=DATE:${formatICSDate(dt)}`, `DTEND;VALUE=DATE:${formatICSDate(dt)}`, `SUMMARY:Jogo vs ${j.adversario}`, j.local ? `LOCATION:${j.local}` : "", j.campeonato ? `DESCRIPTION:${j.campeonato}` : "", "END:VEVENT")
+  }
+
+  // treinos virtuais do mês; os cancelados (feriado, quadra bloqueada) ficam de fora
+  for (const t of treinos) {
+    if (t.cancelado) continue
+    const [ano, mes, dia] = t.dia.split("-").map(Number)
+    const dt = new Date(ano, mes - 1, dia)
+    lines.push("BEGIN:VEVENT", `UID:treino-${t.chave}@escolinha`, `DTSTART:${formatICSDate(dt, t.hora)}`, `DTEND:${formatICSDate(dt, t.hora)}`, `SUMMARY:${t.titulo}`, "END:VEVENT")
   }
 
   lines.push("END:VCALENDAR")

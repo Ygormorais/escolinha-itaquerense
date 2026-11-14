@@ -18,9 +18,11 @@ export default async function AgendaPage({
   await requireAuth(["admin", "secretaria", "tecnico"])
   const params = await searchParams
   const now = new Date()
-  const valido = /^\d{4}-\d{2}$/.test(params.mes ?? "")
-  const [ano, mes] = valido
-    ? params.mes!.split("-").map(Number)
+  // formato AAAA-MM e mês de 1 a 12; qualquer outra coisa cai no mês atual
+  const m = /^(\d{4})-(\d{2})$/.exec(params.mes ?? "")
+  const valido = m != null && Number(m[2]) >= 1 && Number(m[2]) <= 12
+  const [ano, mes] = valido && m
+    ? [Number(m[1]), Number(m[2])]
     : [now.getFullYear(), now.getMonth() + 1]
 
   const inicio = new Date(ano, mes - 1, 1)
