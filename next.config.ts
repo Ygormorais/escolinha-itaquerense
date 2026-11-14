@@ -72,6 +72,14 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // A ficha do aluno tira a foto pela webcam. Só a rota exata (/alunos/123) libera a
+        // câmera; subrotas como a carteirinha continuam bloqueadas.
+        source: "/alunos/:id(\\d+)",
+        headers: [
+          { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
+        ],
+      },
+      {
         source: "/logo.png",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
