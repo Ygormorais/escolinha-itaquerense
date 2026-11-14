@@ -4,6 +4,7 @@ vi.mock("@/lib/db", () => {
   const db = {
     custo: { create: vi.fn(), update: vi.fn(), delete: vi.fn(), createMany: vi.fn(), findMany: vi.fn() },
     custoRecorrente: { findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    $transaction: vi.fn(),
   }
   return { db }
 })
@@ -25,10 +26,12 @@ const requireAuthMock = requireAuth as unknown as ReturnType<typeof vi.fn>
 const m = db as unknown as {
   custo: { create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn>; createMany: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn> }
   custoRecorrente: { findMany: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> }
+  $transaction: ReturnType<typeof vi.fn>
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
+  m.$transaction.mockImplementation(async (cb: (tx: typeof m) => unknown) => cb(m))
   m.custo.create.mockResolvedValue({})
   m.custo.delete.mockResolvedValue({})
   m.custo.createMany.mockResolvedValue({ count: 0 })
@@ -154,8 +157,33 @@ describe("gerarCustosRecorrentes", () => {
     expect(where.lt).toEqual(new Date(2027, 0, 1))
   })
 
-  it("rejeita mês inválido", async () => {
-    expect(await gerarCustosRecorrentes("junho")).toEqual({ error: "Mês inválido" })
+  it.each(["junho", "2026-13", "2026-00", "2026-6"])("rejeita mês inválido %s", async (mes) => {
+    expect(await gerarCustosRecorrentes(mes)).toEqual({ error: "Mês inválido" })
+    expect(m.custo.createMany).not.toHaveBeenCalled()
+  })
+
+  it("duas gerações simultâneas do mesmo mês não duplicam", async () => {
+    const guardados: { categoria: string; descricao: string; fornecedor: string }[] = []
+    m.custoRecorrente.findMany.mockResolvedValue([aluguel, salario])
+    // leitura lenta: sem a fila, as duas chamadas leriam o mês vazio antes de qualquer inserção
+    m.custo.findMany.mockImplementation(async () => {
+      const foto = [...guardados]
+      await new Promise((r) => setTimeout(r, 10))
+      return foto
+    })
+    m.custo.createMany.mockImplementation(async ({ data }: { data: typeof guardados }) => {
+      guardados.push(...data)
+      return { count: data.length }
+    })
+    const [a, b] = await Promise.all([gerarCustosRecorrentes("2026-06"), gerarCustosRecorrentes("2026-06")])
+    expect([a, b]).toEqual([{ criados: 2, jaExistentes: 0 }, { criados: 0, jaExistentes: 2 }])
+    expect(guardados).toHaveLength(2)
+  })
+
+  it("faz checagem e inserção dentro da mesma transação", async () => {
+    m.custoRecorrente.findMany.mockResolvedValue([aluguel])
+    await gerarCustosRecorrentes("2026-06")
+    expect(m.$transaction).toHaveBeenCalledTimes(1)
   })
 })
 
