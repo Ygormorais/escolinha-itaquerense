@@ -308,7 +308,7 @@ export function ResponsaveisClient({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={r.ativo ? "default" : "secondary"} className="text-[10px]">
+                    <Badge variant={r.ativo ? "success" : "secondary"}>
                       {r.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </TableCell>
