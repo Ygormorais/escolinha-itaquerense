@@ -14,7 +14,7 @@ export async function salvarRecibo(data: {
   valor: number
   formaPagamento: string
   dataPagamento: string
-}): Promise<{ numero: string; codigoVerificacao: string } | { error: string }> {
+}): Promise<{ id: number; numero: string; codigoVerificacao: string } | { error: string }> {
   const session = await requireAuth(["admin", "secretaria"])
   if (!data.alunoNome?.trim()) return { error: "Nome do aluno é obrigatório" }
   if (!data.responsavel?.trim()) return { error: "Nome do responsável é obrigatório" }
@@ -36,7 +36,7 @@ export async function salvarRecibo(data: {
     dataPagamento: new Date(`${data.dataPagamento}T12:00:00`),
   }
 
-  await db.recibo.create({
+  const criado = await db.recibo.create({
     data: {
       ...dados,
       hashIntegridade: calcularHashRecibo(dados),
@@ -46,7 +46,7 @@ export async function salvarRecibo(data: {
 
   await registrarLog("recibo", `Recibo Nº${numero} emitido — ${data.alunoNome}`, { mes: data.mesReferencia, valor: valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), codigoVerificacao })
   revalidatePath("/recibos")
-  return { numero, codigoVerificacao }
+  return { id: criado.id, numero, codigoVerificacao }
 }
 
 export async function getRecibos() {

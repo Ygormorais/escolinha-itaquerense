@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { redirect } from "next/navigation"
 import { getRecibos } from "@/app/actions/recibos"
 import { getClubConfig } from "@/app/actions/config"
 import { requireAuth } from "@/lib/auth"
@@ -10,15 +11,15 @@ export const metadata = { title: "Recibos — Escolinha Itaquerense" }
 export default async function RecibosPage({ searchParams }: { searchParams: Promise<{ codigo?: string | string[] }> }) {
   await requireAuth(["admin", "secretaria"])
   const { codigo } = await searchParams
-  const [recibos, config, reciboSalvo] = await Promise.all([
-    getRecibos(),
-    getClubConfig(),
-    // Impressão de um recibo emitido por uma baixa: carrega o registro pelo código.
-    typeof codigo === "string" && codigo ? db.recibo.findUnique({ where: { codigoVerificacao: codigo } }) : null,
-  ])
+  // Link antigo de impressão (?codigo=…): o recibo agora tem página própria.
+  if (typeof codigo === "string" && codigo) {
+    const recibo = await db.recibo.findUnique({ where: { codigoVerificacao: codigo }, select: { id: true } })
+    if (recibo) redirect(`/recibos/${recibo.id}`)
+  }
+  const [recibos, config] = await Promise.all([getRecibos(), getClubConfig()])
   return (
     <Suspense fallback={null}>
-      <RecibosForm recibos={recibos} config={config} reciboSalvo={reciboSalvo} />
+      <RecibosForm recibos={recibos} config={config} />
     </Suspense>
   )
 }

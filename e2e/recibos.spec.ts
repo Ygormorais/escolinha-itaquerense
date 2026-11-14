@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 import { loginAsAdmin } from "./helpers"
-import { resetRecibosE2E } from "./fixtures"
+import { RECIBO_CODIGO_E2E, resetRecibosE2E } from "./fixtures"
 
 test.beforeEach(async ({ page }) => {
   await resetRecibosE2E()
@@ -13,16 +13,14 @@ test.describe("Recibos — smoke e carregamento", () => {
     await expect(page.getByRole("heading", { name: "Recibos", exact: true })).toBeVisible()
   })
 
-  test("botão 'Imprimir PDF' está visível", async ({ page }) => {
+  test("botão 'Emitir e imprimir' fica embaixo do formulário", async ({ page }) => {
     await page.goto("/recibos")
-    await expect(page.getByRole("button", { name: /Imprimir PDF/i })).toBeVisible()
+    await expect(page.getByRole("button", { name: /Emitir e imprimir/i })).toBeVisible()
   })
 
-  test("card 'Dados do Recibo' está visível com campos do formulário", async ({ page }) => {
+  test("card 'Novo recibo' está visível com campos do formulário", async ({ page }) => {
     await page.goto("/recibos")
-    await expect(page.getByText(/Dados do Recibo/i)).toBeVisible()
-    // Campos: Número, Referência, Aluno, Responsável, Valor, Forma de Pagamento, Data
-    await expect(page.locator("#rec-numero")).toBeVisible()
+    await expect(page.getByText(/Novo recibo/i)).toBeVisible()
     await expect(page.locator("#rec-referencia")).toBeVisible()
     await expect(page.locator("#rec-aluno")).toBeVisible()
     await expect(page.locator("#rec-responsavel")).toBeVisible()
@@ -108,5 +106,36 @@ test.describe("Recibos — pré-preenchimento por query string", () => {
     await expect(page.locator("#rec-referencia")).toHaveValue("Maio/2025")
     await expect(page.locator("#rec-valor")).toHaveValue("180")
     await expect(page.getByRole("combobox", { name: /Forma de Pagamento/i })).toContainText("Dinheiro")
+  })
+})
+
+test.describe("Recibos — página de cada recibo", () => {
+  test("'Ver e imprimir' abre o recibo com QR e botão de imprimir", async ({ page }) => {
+    await page.goto("/recibos")
+    const linha = page.getByRole("row").filter({ hasText: "E2E Recibo Fixture" })
+    await linha.getByRole("link", { name: /Ver e imprimir/i }).click()
+    await expect(page).toHaveURL(/\/recibos\/\d+$/)
+    await expect(page.getByRole("button", { name: /Imprimir PDF/i })).toBeVisible()
+    await expect(page.locator("#recibo-print")).toContainText("E2E Recibo Fixture")
+    await expect(page.getByRole("img", { name: "QR code de validação do recibo" })).toBeVisible()
+  })
+
+  test("link antigo ?codigo= leva à página do recibo", async ({ page }) => {
+    await page.goto(`/recibos?codigo=${RECIBO_CODIGO_E2E}`)
+    await expect(page).toHaveURL(/\/recibos\/\d+$/)
+    await expect(page.locator("#recibo-print")).toContainText("E2E Recibo Fixture")
+  })
+
+  test("emitir cria o recibo e abre a página dele", async ({ page }) => {
+    await page.goto("/recibos")
+    await page.locator("#rec-aluno").fill("E2E Recibo Emitido")
+    await page.locator("#rec-responsavel").fill("Responsável E2E")
+    await page.locator("#rec-referencia").fill("2026-01")
+    await page.locator("#rec-valor").fill("90")
+    await page.evaluate(() => { window.print = () => {} })
+    await page.getByRole("button", { name: /Emitir e imprimir/i }).click()
+    await expect(page).toHaveURL(/\/recibos\/\d+\?imprimir=1$/, { timeout: 15000 })
+    await expect(page.locator("#recibo-print")).toContainText("E2E Recibo Emitido")
+    await expect(page.locator("#recibo-print")).toContainText(/R\$\s*90/)
   })
 })
