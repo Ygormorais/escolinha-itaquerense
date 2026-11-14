@@ -1,3 +1,5 @@
+import { sanitizeCSVCell } from "@/lib/utils"
+
 export type AlunoResumo = { id: number; nome: string; turma: string }
 
 export type Avaliacao = {
@@ -68,5 +70,5 @@ export function gerarCSVAvaliacoes(avaliacoes: Avaliacao[]) {
       a.observacoes ?? "",
     ]),
   ]
-  return linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n")
+  return linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
 }

@@ -47,6 +47,16 @@ export function sanitizeCSVCell(value: unknown): string {
   return `"${safe}"`
 }
 
+/** Escapa texto de usuário para interpolar em HTML (e-mails): & < > " '. */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
 export function calcStatus(vencimento: Date, pagamento: Date | null): string {
   if (pagamento) return "Pago"
   const today = new Date()

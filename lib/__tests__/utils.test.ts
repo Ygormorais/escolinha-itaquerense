@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { formatMoney, formatDate, calcStatus, sanitizeCSVCell, plural, formatPhone, dataValida } from "@/lib/utils"
+import { formatMoney, formatDate, calcStatus, sanitizeCSVCell, escapeHtml, plural, formatPhone, dataValida } from "@/lib/utils"
 
 describe("dataValida", () => {
   it("aceita yyyy-mm-dd com ano razoavel", () => {
@@ -169,5 +169,24 @@ describe("calcStatus", () => {
     vi.setSystemTime(new Date("2026-06-15"))
     const venc = new Date("2026-06-15")
     expect(calcStatus(venc, null)).toBe("Pendente")
+  })
+})
+
+describe("escapeHtml", () => {
+  it("escapa os caracteres que abrem tags ou atributos", () => {
+    expect(escapeHtml(`<img src=x onerror="alert('1')"> & cia`)).toBe(
+      "&lt;img src=x onerror=&quot;alert(&#39;1&#39;)&quot;&gt; &amp; cia"
+    )
+  })
+
+  it("não escapa duas vezes o & que ele mesmo gerou, só o que recebe", () => {
+    expect(escapeHtml("a & b")).toBe("a &amp; b")
+    expect(escapeHtml("&amp;")).toBe("&amp;amp;")
+  })
+
+  it("trata nulo e número como texto", () => {
+    expect(escapeHtml(null)).toBe("")
+    expect(escapeHtml(undefined)).toBe("")
+    expect(escapeHtml(42)).toBe("42")
   })
 })

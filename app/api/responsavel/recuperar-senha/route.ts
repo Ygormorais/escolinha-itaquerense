@@ -8,6 +8,7 @@ import { enviarEmail } from "@/lib/mailer"
 import { getConfig } from "@/lib/config"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { escapeHtml } from "@/lib/utils"
 
 export async function POST(request: Request) {
   const { email } = await request.json()
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
   const html = `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
       <h1 style="color:#C62828">Recuperação de senha</h1>
-      <p>Olá, <strong>${responsavel.nome}</strong>!</p>
+      <p>Olá, <strong>${escapeHtml(responsavel.nome)}</strong>!</p>
       <p>Recebemos um pedido de redefinição de senha para o portal do responsável.</p>
       <p style="text-align:center;margin:32px 0">
         <a href="${resetLink}"
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
         ignore este email.
       </p>
       <hr style="border:none;border-top:1px solid #eee" />
-      <p style="color:#999;font-size:12px">${config.nome}</p>
+      <p style="color:#999;font-size:12px">${escapeHtml(config.nome)}</p>
     </div>
   `
 
