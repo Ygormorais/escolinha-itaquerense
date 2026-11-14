@@ -35,7 +35,15 @@ Depois que o Railway gerar o domínio, configure também:
 
 ```env
 NEXT_PUBLIC_APP_URL=https://SEU-DOMINIO.up.railway.app
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=<chave pública VAPID, se usar push>
 ```
+
+Variáveis `NEXT_PUBLIC_*` são embutidas no `next build`: o Dockerfile as recebe
+como build args. Depois de criar ou mudar qualquer uma delas, faça um **novo
+deploy** (redeploy) — só reiniciar o container não troca o valor.
+
+Os caminhos de dados precisam ficar dentro do volume. Se `RAILWAY_VOLUME_MOUNT_PATH`
+estiver definido e algum deles apontar para fora, o container não sobe.
 
 O container aplica as migrations no volume e executa o seed administrativo de
 forma idempotente. Um admin já existente mantém sua senha; uma rotação deliberada
