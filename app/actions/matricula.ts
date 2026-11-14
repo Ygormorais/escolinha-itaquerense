@@ -28,6 +28,7 @@ export async function criarPreMatricula(data: {
   if (!data.nomeAluno?.trim() || !data.nomeResponsavel?.trim() || !data.telefone?.trim()) {
     return { error: "Preencha os campos obrigatórios" }
   }
+  if (!data.turma?.trim()) return { error: "Escolha a turma" }
 
   if (!dataValida(data.dataNascimento)) {
     return { error: "Data de nascimento inválida" }
