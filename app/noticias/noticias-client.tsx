@@ -108,7 +108,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total</CardTitle></CardHeader>
           <CardContent><p data-numeric className="text-2xl font-bold">{noticias.length}</p></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Publicadas</CardTitle></CardHeader>
