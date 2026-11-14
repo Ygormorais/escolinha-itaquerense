@@ -33,7 +33,7 @@ export interface AnuncioLinha {
 }
 
 const STATUS = {
-  "no-ar": { rotulo: "No ar", variante: "default" as const },
+  "no-ar": { rotulo: "No ar", variante: "success" as const },
   agendado: { rotulo: "Agendado", variante: "secondary" as const },
   encerrado: { rotulo: "Encerrado", variante: "outline" as const },
   pausado: { rotulo: "Pausado", variante: "outline" as const },

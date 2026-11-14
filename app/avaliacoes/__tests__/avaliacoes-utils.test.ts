@@ -22,15 +22,15 @@ function avaliacao(id: number, extra: Partial<Avaliacao> = {}): Avaliacao {
 describe("cores das badges", () => {
   it("classifica notas de 0 a 10", () => {
     expect(notaBadgeColor(null)).toBe("outline")
-    expect(notaBadgeColor(7)).toBe("default")
-    expect(notaBadgeColor(5)).toBe("secondary")
+    expect(notaBadgeColor(7)).toBe("success")
+    expect(notaBadgeColor(5)).toBe("warning")
     expect(notaBadgeColor(4.9)).toBe("destructive")
   })
 
   it("classifica frequência em porcentagem", () => {
     expect(freqBadgeColor(null)).toBe("outline")
-    expect(freqBadgeColor(75)).toBe("default")
-    expect(freqBadgeColor(50)).toBe("secondary")
+    expect(freqBadgeColor(75)).toBe("success")
+    expect(freqBadgeColor(50)).toBe("warning")
     expect(freqBadgeColor(49)).toBe("destructive")
   })
 })

@@ -116,8 +116,8 @@ export function HistoricoClient({ logs }: { logs: Log[] }) {
         title="Histórico de Atividades"
         description={`${plural(filtrados.length, "registro", "registros", "nenhum")}${logs.length >= 500 ? " · exibindo os 500 mais recentes" : ""}`}
         action={
-          <Button size="sm" onClick={exportarCSV}>
-            <Download className="size-4 mr-1" /> CSV
+          <Button size="sm" variant="outline" onClick={exportarCSV}>
+            <Download className="size-4" /> Exportar CSV
           </Button>
         }
       />

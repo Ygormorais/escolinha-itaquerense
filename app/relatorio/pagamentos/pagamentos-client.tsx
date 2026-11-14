@@ -175,7 +175,7 @@ export function RelatorioPagamentosClient({
             <Button size="sm" variant="outline" onClick={imprimirPDF} disabled={exportando || total === 0}>
               <Printer className="size-4" /> Imprimir PDF
             </Button>
-            <Button size="sm" onClick={exportarCSV} disabled={exportando || total === 0}>
+            <Button size="sm" variant="outline" onClick={exportarCSV} disabled={exportando || total === 0}>
               <Download className="size-4 mr-1" /> Exportar CSV
             </Button>
           </div>
