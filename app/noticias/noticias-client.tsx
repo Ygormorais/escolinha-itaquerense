@@ -1,5 +1,6 @@
 "use client"
 
+import { plural } from "@/lib/utils"
 import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Newspaper, Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2, Search } from "lucide-react"
@@ -123,7 +124,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por titulo ou subtitulo..."
+              placeholder="Buscar por título ou subtitulo..."
               className="pl-9"
             />
           </div>
@@ -150,7 +151,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
           <Button onClick={openCreate}><Plus className="size-4" /> Nova notícia</Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          {filtradas.length} de {noticias.length} noticia(s) visiveis
+          {filtradas.length} de {plural(noticias.length, "notícia", "notícias")}
         </p>
       </div>
 
@@ -158,7 +159,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
         <EmptyState icon={Newspaper} title="Nenhuma notícia cadastrada" description="Crie a primeira publicação do clube." />
       )}
       {noticias.length > 0 && filtradas.length === 0 && (
-        <EmptyState icon={Newspaper} title="Nenhuma notícia encontrada" description="Ajuste a busca ou os filtros para encontrar outra publicacao." />
+        <EmptyState icon={Newspaper} title="Nenhuma notícia encontrada" description="Ajuste a busca ou os filtros para encontrar outra publicação." />
       )}
 
       <div className="grid gap-3">

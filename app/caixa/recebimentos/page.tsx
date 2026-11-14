@@ -1,6 +1,6 @@
 import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
-import { formatMoney } from "@/lib/utils"
+import { formatMoney, plural } from "@/lib/utils"
 import { Inbox } from "lucide-react"
 import { getPaymentChannel } from "@/lib/payment-channel"
 import { PageHeader } from "@/components/layout/page-header"
@@ -64,17 +64,17 @@ export default async function RecebimentosPage({
           <CardContent className="p-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total recebido</p>
             <p data-numeric className="mt-1 text-2xl font-bold text-success-600">{formatMoney(total)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{pagamentos.length} recebimento(s) no mes</p>
+            <p className="mt-1 text-xs text-muted-foreground">{plural(pagamentos.length, "recebimento", "recebimentos", "nenhum")} no mês</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Canal lider</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Canal líder</p>
             <p data-numeric className="mt-1 text-2xl font-bold">
               {canaisOrdenados[0]?.[0] ?? "Sem dados"}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {canaisOrdenados[0] ? `${formatMoney(canaisOrdenados[0][1].total)} no periodo` : "Nenhum recebimento ainda"}
+              {canaisOrdenados[0] ? `${formatMoney(canaisOrdenados[0][1].total)} no período` : "Nenhum recebimento ainda"}
             </p>
           </CardContent>
         </Card>

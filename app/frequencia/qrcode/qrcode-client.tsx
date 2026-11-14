@@ -107,7 +107,7 @@ export function QrCodeClient({ turmas }: { turmas: string[] }) {
             />
             <div>
               <p className="font-heading text-lg font-bold">{turma}</p>
-              <p className="text-sm capitalize text-muted-foreground">{dataLabel}</p>
+              <p className="text-sm text-muted-foreground first-letter:uppercase">{dataLabel}</p>
             </div>
             <p className="text-xs text-muted-foreground">Aponte a câmera para registrar sua presença</p>
           </div>

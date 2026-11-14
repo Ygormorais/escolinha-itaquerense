@@ -117,7 +117,7 @@ export default async function DashboardPage({
             rotulo="Em atraso"
             valor={formatMoney(atraso.valor)}
             detalhe={atraso.alunos > 0
-              ? `${plural(atraso.alunos, "aluno", "alunos")} · ${plural(atraso.mensalidades, "mensalidade", "mensalidades")}`
+              ? `${plural(atraso.alunos, "aluno", "alunos", "nenhum")} · ${plural(atraso.mensalidades, "mensalidade", "mensalidades")}`
               : "Nenhuma mensalidade vencida"}
             atencao={atraso.valor > 0}
             href="/pagamentos?filtro=atrasados"

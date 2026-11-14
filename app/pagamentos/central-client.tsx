@@ -165,7 +165,7 @@ export function CentralClient({
             </select>
           </div>
           <p className="border-b border-border px-3 py-2 text-xs text-muted-foreground" data-numeric>
-            {plural(lista.length, "aluno", "alunos")} · {formatMoney(totalAberto)} em aberto
+            {plural(lista.length, "aluno", "alunos", "nenhum")} · {formatMoney(totalAberto)} em aberto
           </p>
 
           <ul data-slot="lista-devedores" className="max-h-[70vh] divide-y divide-border overflow-y-auto">

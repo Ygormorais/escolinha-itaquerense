@@ -49,7 +49,7 @@ export function BarraBloco({ alunos, onConcluir }: { alunos: AlunoDevedor[]; onC
       {alunos.length > 0 && (
         <div className="flex flex-wrap items-end gap-3">
           <p className="mr-auto text-sm" data-numeric>
-            {plural(alunos.length, "aluno", "alunos")} · {plural(ids.length, "mensalidade", "mensalidades")} · <strong>{formatMoney(total)}</strong>
+            {plural(alunos.length, "aluno", "alunos", "nenhum")} · {plural(ids.length, "mensalidade", "mensalidades")} · <strong>{formatMoney(total)}</strong>
           </p>
           <div className="space-y-1">
             <label htmlFor="bloco-forma" className="text-xs font-medium">Forma</label>
@@ -68,7 +68,7 @@ export function BarraBloco({ alunos, onConcluir }: { alunos: AlunoDevedor[]; onC
       )}
       {emitidos.length > 0 && (
         <div role="status" className="space-y-1">
-          <p className="text-sm font-semibold text-success-600">Baixa em bloco registrada · {plural(emitidos.length, "recibo", "recibos")}</p>
+          <p className="text-sm font-semibold text-success-600">Baixa em bloco registrada · {plural(emitidos.length, "recibo", "recibos", "nenhum")}</p>
           <ul className="flex flex-wrap gap-2">
             {emitidos.map((r) => (
               <li key={r.numero}>
