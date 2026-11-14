@@ -121,7 +121,8 @@ test.describe("Portal autenticado — dashboard", () => {
   test("mantém Solicitações visível no menu desktop", async ({ page }) => {
     await page.setViewportSize({ width: 1720, height: 900 })
     await page.goto("/responsavel")
-    const link = page.getByRole("link", { name: "Solicitações", exact: true })
+    await page.getByRole("navigation", { name: "Portal da família" }).getByRole("link", { name: "Escolinha", exact: true }).click()
+    const link = page.getByRole("navigation", { name: "Seções de Escolinha" }).getByRole("link", { name: "Solicitações", exact: true })
     await expect(link).toBeVisible()
     const box = await link.boundingBox()
     expect(box).not.toBeNull()
