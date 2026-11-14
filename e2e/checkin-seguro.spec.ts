@@ -25,7 +25,7 @@ test("check-in usa link assinado sem expor a lista da turma", async ({ page }) =
   await expect(page).toHaveURL(/ok=1/)
   await expect(page.getByRole("heading", { name: "Presença confirmada!" })).toBeVisible()
 
-  const data = new Date(`${format(new Date(), "yyyy-MM-dd")}T12:00:00.000Z`)
+  const data = new Date(`${format(new Date(), "yyyy-MM-dd")}T00:00:00.000Z`)
   await expect.poll(() => db.frequencia.findUnique({
     where: { alunoId_data: { alunoId: aluno.id, data } },
     select: { presenca: true },
