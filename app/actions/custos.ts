@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
 import { CustoSchema } from "@/lib/schemas"
+import { chaveRecorrente } from "@/app/custos/custos-utils"
 
 type ActionResult = { success: true } | { error: string }
 
@@ -142,31 +143,67 @@ export async function deleteCustoRecorrente(id: number): Promise<ActionResult> {
   }
 }
 
-export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: number } | { error: string }> {
+// Gerações do mesmo processo entram em fila: a checagem de existência e a inserção de uma
+// não podem se misturar com as de outra (dois cliques, duas abas), senão ambas inserem.
+let filaGeracao: Promise<unknown> = Promise.resolve()
+
+/**
+ * Gera os custos recorrentes do mês. É idempotente: modelo que já tem custo no mês
+ * (mesma categoria, descrição e fornecedor) é pulado, então clicar de novo não duplica.
+ */
+export async function gerarCustosRecorrentes(mes: string): Promise<{ criados: number; jaExistentes: number } | { error: string }> {
   await requireAuth(["admin"])
   try {
-    const [ano, mesNum] = mes.split("-").map(Number)
+    const m = /^(\d{4})-(\d{2})$/.exec(mes)
+    if (!m || Number(m[2]) < 1 || Number(m[2]) > 12) return { error: "Mês inválido" }
+    const ano = Number(m[1])
+    const mesNum = Number(m[2])
     const dataRef = new Date(ano, mesNum - 1, 1)
+    const proximoMes = new Date(ano, mesNum, 1)
 
-    const modelos = await db.custoRecorrente.findMany({ where: { ativo: true } })
+    const executar = (): Promise<{ criados: number; jaExistentes: number }> =>
+      db.$transaction(async (tx) => {
+        const [modelos, doMes] = await Promise.all([
+          tx.custoRecorrente.findMany({ where: { ativo: true } }),
+          tx.custo.findMany({
+            where: { data: { gte: dataRef, lt: proximoMes } },
+            select: { categoria: true, descricao: true, fornecedor: true },
+          }),
+        ])
 
-    await db.custo.createMany({
-      data: modelos.map((m) => ({
-        data: dataRef,
-        categoria: m.categoria,
-        descricao: m.descricao,
-        fornecedor: m.fornecedor,
-        valor: m.valor,
-        formaPagamento: m.formaPagamento,
-        comprovante: false,
-      })),
-    })
+        const existentes = new Set(doMes.map(chaveRecorrente))
+        const novos = modelos.filter((mod) => {
+          const k = chaveRecorrente(mod)
+          if (existentes.has(k)) return false
+          existentes.add(k) // dois modelos iguais geram um custo só
+          return true
+        })
+
+        if (novos.length > 0) {
+          await tx.custo.createMany({
+            data: novos.map((mod) => ({
+              data: dataRef,
+              categoria: mod.categoria,
+              descricao: mod.descricao,
+              fornecedor: mod.fornecedor,
+              valor: mod.valor,
+              formaPagamento: mod.formaPagamento,
+              comprovante: false,
+            })),
+          })
+        }
+        return { criados: novos.length, jaExistentes: modelos.length - novos.length }
+      })
+
+    const resultado = filaGeracao.then(executar, executar)
+    filaGeracao = resultado.catch(() => undefined)
+    const { criados, jaExistentes } = await resultado
 
     revalidatePath("/custos")
     revalidatePath("/relatorio")
     revalidatePath("/dashboard")
 
-    return { criados: modelos.length }
+    return { criados, jaExistentes }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao gerar custos recorrentes" }
   }

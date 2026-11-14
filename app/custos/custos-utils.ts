@@ -23,7 +23,34 @@ export type Custo = {
   observacoes: string | null
 }
 
-export type Recorrente = { id: number; descricao: string; valor: number; ativo: boolean }
+export type Recorrente = {
+  id: number
+  categoria: string
+  descricao: string
+  fornecedor: string
+  valor: number
+  ativo: boolean
+}
+
+/** Chave que identifica um custo recorrente dentro do mês (sem diferenciar maiúsculas/espaços). */
+export const chaveRecorrente = (c: { categoria: string; descricao: string; fornecedor: string }) =>
+  [c.categoria, c.descricao, c.fornecedor].map((t) => t.trim().toLowerCase()).join("|")
+
+/** Modelos ativos que ainda não têm custo no mês listado. */
+export function recorrentesPendentes(
+  recorrentes: Pick<Recorrente, "categoria" | "descricao" | "fornecedor" | "ativo">[],
+  custosDoMes: Pick<Custo, "categoria" | "descricao" | "fornecedor">[],
+) {
+  const existentes = new Set(custosDoMes.map(chaveRecorrente))
+  const vistos = new Set<string>()
+  return recorrentes.filter((r) => {
+    if (!r.ativo) return false
+    const k = chaveRecorrente(r)
+    if (existentes.has(k) || vistos.has(k)) return false
+    vistos.add(k)
+    return true
+  })
+}
 
 export type CustoFormValues = {
   data: string

@@ -3,6 +3,7 @@ import {
   categoriaDestaque,
   filtrarCustos,
   gerarCSVCustos,
+  recorrentesPendentes,
   ticketMedio,
   type Custo,
 } from "@/app/custos/custos-utils"
@@ -86,5 +87,22 @@ describe("gerarCSVCustos", () => {
   it("neutraliza fórmulas de planilha na descrição", () => {
     const linha = gerarCSVCustos([custo({ descricao: "=SOMA(A1)" })]).split("\n")[1]
     expect(linha).toContain(`"'=SOMA(A1)"`)
+  })
+})
+
+describe("recorrentesPendentes", () => {
+  const aluguel = { categoria: "Aluguel", descricao: "Campo", fornecedor: "Arena X", ativo: true }
+  const internet = { categoria: "Serviços", descricao: "Internet", fornecedor: "Vivo", ativo: true }
+
+  it("lista só os modelos ativos sem custo no mês", () => {
+    const r = recorrentesPendentes([aluguel, internet, { ...internet, descricao: "Antigo", ativo: false }], [custo({ ...aluguel })])
+    expect(r).toEqual([internet])
+  })
+  it("fica vazio quando tudo já foi gerado (ignora maiúsculas e espaços)", () => {
+    const r = recorrentesPendentes([aluguel], [custo({ categoria: " aluguel", descricao: "CAMPO", fornecedor: "arena x" })])
+    expect(r).toEqual([])
+  })
+  it("modelos iguais contam uma vez", () => {
+    expect(recorrentesPendentes([aluguel, { ...aluguel }], [])).toHaveLength(1)
   })
 })
