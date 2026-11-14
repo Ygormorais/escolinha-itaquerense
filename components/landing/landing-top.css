@@ -89,7 +89,8 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
 .lp .hs-track{display:flex;transition:transform .55s cubic-bezier(.22,.7,.2,1)}
 .lp .hs-slide{--w:clamp(56px,7vw,104px);position:relative;flex:0 0 100%;min-width:0;min-height:clamp(480px,calc(100svh - 230px),740px);display:flex;align-items:flex-end;overflow:hidden;isolation:isolate}
 .lp .hs-field{position:absolute;inset:0;z-index:-3;background:repeating-linear-gradient(90deg,#141414 0 var(--w),#0B0B0B var(--w) calc(var(--w) * 2))}
-.lp .hs-crest{position:absolute;z-index:-2;right:clamp(-48px,-2vw,-8px);bottom:-6%;width:clamp(280px,40vw,560px);height:auto;filter:drop-shadow(0 32px 60px rgba(0,0,0,.5))}
+/* Escudo inteiro dentro do slide, centralizado na vertical à direita do texto. */
+.lp .hs-crest{position:absolute;z-index:-2;top:50%;right:clamp(24px,6vw,120px);bottom:auto;width:auto;height:min(78%,clamp(280px,36vw,520px));max-width:42vw;object-fit:contain;transform:translateY(-50%);filter:drop-shadow(0 32px 60px rgba(0,0,0,.5))}
 .lp .hs-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(0,0,0,.94) 0%,rgba(0,0,0,.72) 40%,transparent 72%)}
 .lp .hs-photo{z-index:-3}
 .lp .hs-shade-photo{background:linear-gradient(0deg,rgba(20,6,6,.9) 0%,rgba(20,6,6,.45) 48%,rgba(20,6,6,.15) 100%)}
@@ -121,8 +122,8 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
   .lp .hs-slide{min-height:clamp(520px,78svh,680px)}
   .lp .hs-shade{background:linear-gradient(0deg,rgba(0,0,0,.94) 0%,rgba(0,0,0,.72) 40%,transparent 64%)}
   /* O escudo fica no topo do slide e o texto começa abaixo dele: nada de texto sobre a camisa. */
-  .lp .hs-crest{width:58vw;right:-8vw;bottom:auto;top:20px}
-  .lp .container.hs-copy{padding-top:calc(58vw + 32px)}
+  .lp .hs-crest{width:52vw;height:auto;max-width:none;left:50%;right:auto;top:24px;transform:translateX(-50%)}
+  .lp .container.hs-copy{padding-top:calc(52vw + 40px)}
   .lp .hs-text{max-width:none}
   .lp .hs-tabs{align-items:center;justify-content:center;gap:4px}
   .lp .hs-tab{flex:0 0 auto;width:28px;height:44px;padding:0}
