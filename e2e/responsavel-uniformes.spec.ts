@@ -32,9 +32,9 @@ test.describe("Uniformes — autenticado", () => {
     await expect(card).toContainText("Pendente")
   })
 
-  test("link 'Voltar ao portal' navega para /responsavel", async ({ page }) => {
+  test("menu 'Início' navega para /responsavel", async ({ page }) => {
     await page.goto("/responsavel/uniformes")
-    await page.getByRole("link", { name: /Voltar ao portal/i }).click()
+    await page.getByRole("navigation", { name: "Portal da família" }).getByRole("link", { name: "Início", exact: true }).click()
     await expect(page).toHaveURL("/responsavel", { timeout: 5000 })
   })
 })

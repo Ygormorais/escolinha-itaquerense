@@ -385,9 +385,10 @@ test.describe("Portal autenticado — solicitacoes", () => {
     await expect(page).toHaveURL("/responsavel/solicitacoes")
   })
 
-  test("exibe link 'Voltar ao portal'", async ({ page }) => {
+  test("fica na aba Solicitações do grupo Escolinha", async ({ page }) => {
     await page.goto("/responsavel/solicitacoes")
-    await expect(page.getByRole("link", { name: /Voltar ao portal/i })).toBeVisible()
+    const aba = page.getByRole("navigation", { name: "Seções de Escolinha" }).getByRole("link", { name: "Solicitações", exact: true })
+    await expect(aba).toHaveAttribute("aria-current", "page")
   })
 
   test("exibe formulário para nova solicitação", async ({ page }) => {
