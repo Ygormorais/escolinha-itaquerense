@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Download, Printer, ShieldAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { InsightDesenvolvimento } from "@/lib/desenvolvimento"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 const pesoPorTipo: Partial<Record<InsightDesenvolvimento["tipo"], number>> = {
   frequencia_em_queda: 80,
@@ -32,7 +33,7 @@ function preparar(insights: InsightDesenvolvimento[]): Linha[] {
 }
 
 function exportarCsv(linhas: Linha[]) {
-  const csv = [["atleta", "turma", "nivel", "pontuacao", "evidencias"], ...linhas.map((linha) => [linha.nome, linha.turma, linha.nivel, linha.pontuacao, linha.evidencias.join(" | ")])].map((linha) => linha.map((valor) => `"${String(valor).replaceAll('"', '""')}"`).join(";")).join("\r\n")
+  const csv = [["atleta", "turma", "nivel", "pontuacao", "evidencias"], ...linhas.map((linha) => [linha.nome, linha.turma, linha.nivel, linha.pontuacao, linha.evidencias.join(" | ")])].map((linha) => linha.map(sanitizeCSVCell).join(";")).join("\r\n")
   const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }))
   const link = document.createElement("a"); link.href = url; link.download = "acompanhamento-participacao.csv"; link.click(); URL.revokeObjectURL(url)
 }

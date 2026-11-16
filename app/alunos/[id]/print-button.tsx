@@ -37,15 +37,15 @@ export function AlunoPrintButton({ alunoId }: { alunoId: number }) {
           <div><dt>Horário</dt><dd>${data.horario}</dd></div>
           <div><dt>Responsável</dt><dd>${data.responsavel}</dd></div>
           <div><dt>Telefone</dt><dd>${data.telefone}</dd></div>
-          <div><dt>Mensalidade</dt><dd>${formatMoney(data.mensalidade)}</dd></div>
+          ${data.financeiro ? html`<div><dt>Mensalidade</dt><dd>${formatMoney(data.mensalidade)}</dd></div>` : ""}
           <div><dt>Status</dt><dd><span class="badge ${data.status === "Ativo" ? "badge-success" : "badge-danger"}">${data.status}</span></dd></div>
           <div><dt>% Presença</dt><dd>${pctPresenca}%</dd></div>
         </dl>
-        <h2>Pagamentos</h2>
+        ${data.financeiro ? html`<h2>Pagamentos</h2>
         <table>
           <thead><tr><th>Mês</th><th>Valor</th><th>Data Pagamento</th><th>Forma</th></tr></thead>
           <tbody>${pagamentosHtml.length ? pagamentosHtml : html`<tr><td colspan="4">Nenhum pagamento registrado.</td></tr>`}</tbody>
-        </table>
+        </table>` : ""}
         <h2 style="margin-top: 20px;">Frequência</h2>
         <table>
           <thead><tr><th>Data</th><th>Presença</th></tr></thead>

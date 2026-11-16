@@ -1,4 +1,5 @@
 import type { db as Db } from "@/lib/db"
+import { sanitizeCSVCell } from "@/lib/utils"
 import { restanteDoPagamento, valorDevidoDoPagamento } from "@/lib/valor-devido"
 
 /** Linha de mensalidade em aberto, como a central lê do banco. */
@@ -113,9 +114,8 @@ export function filtrarDevedores(lista: AlunoDevedor[], filtro: FiltroCentral): 
   })
 }
 
-function celulaCSV(valor: string): string {
-  return /[";\n]/.test(valor) ? `"${valor.replaceAll('"', '""')}"` : valor
-}
+// Sempre entre aspas e com prefixo anti-fórmula (nome vem do formulário público).
+const celulaCSV = sanitizeCSVCell
 
 /** CSV (separador ";", valores em pt-BR) da lista de quem deve, uma linha por aluno. */
 export function gerarCSVDevedores(lista: AlunoDevedor[]): string {

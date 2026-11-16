@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
+import { cookies } from "next/headers"
 import { requireAuth, ROLES } from "@/lib/auth"
+import { getSession, createSession, cookieName, cookieMaxAge } from "@/lib/session"
 import { registrarLog } from "@/app/actions/log"
 import { BCRYPT_COST, isBcryptHash, needsBcryptRehash } from "@/lib/password-hash"
 
@@ -45,8 +47,24 @@ export async function alterarSenha(id: number, novaSenha: string) {
   const usuario = await db.usuario.findUnique({ where: { id }, select: { username: true } })
   await db.usuario.update({
     where: { id },
-    data: { senha: hashSenha(novaSenha) },
+    data: { senha: hashSenha(novaSenha), sessaoVersao: { increment: 1 } },
   })
+  // A troca invalida os cookies da conta; se o admin trocou a própria senha,
+  // reemite o cookie para não derrubar a sessão atual.
+  const atual = await getSession()
+  if (usuario && atual.user === usuario.username) {
+    const nova = await db.usuario.findUnique({ where: { id }, select: { role: true, sessaoVersao: true } })
+    if (nova) {
+      const jar = await cookies()
+      jar.set(cookieName(), await createSession(usuario.username, nova.role, "db", nova.sessaoVersao), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: cookieMaxAge(),
+        path: "/",
+      })
+    }
+  }
   void registrarLog("senha_alterada", `Senha alterada — ${usuario?.username ?? `ID ${id}`}`, { id })
   revalidatePath("/configuracoes/usuarios")
   return { success: true }
@@ -67,7 +85,7 @@ export async function deletarUsuario(id: number) {
   revalidatePath("/configuracoes/usuarios")
 }
 
-export async function checkDbCredentials(username: string, senha: string): Promise<{ ok: boolean; nome?: string; role?: string }> {
+export async function checkDbCredentials(username: string, senha: string): Promise<{ ok: boolean; nome?: string; role?: string; sessaoVersao?: number }> {
   const user = await db.usuario.findUnique({ where: { username } })
   if (!user || !user.ativo) return { ok: false }
   if (!isBcryptHash(user.senha)) return { ok: false }
@@ -77,7 +95,7 @@ export async function checkDbCredentials(username: string, senha: string): Promi
     if (needsBcryptRehash(user.senha)) {
       await db.usuario.update({ where: { id: user.id }, data: { senha: hashSenha(senha) } })
     }
-    return { ok: true, nome: user.nome, role: user.role }
+    return { ok: true, nome: user.nome, role: user.role, sessaoVersao: user.sessaoVersao }
   }
 
   return { ok: false }

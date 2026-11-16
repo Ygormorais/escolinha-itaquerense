@@ -3,10 +3,13 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { SecretariaClient } from "./secretaria-client"
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Secretaria — Escolinha Itaquerense" }
 
 export default async function SecretariaPage() {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin", "secretaria"])
   const now = new Date()
   const hojeInicio = startOfDay(now)
   const hojeFim = endOfDay(now)

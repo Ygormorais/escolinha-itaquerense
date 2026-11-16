@@ -3,10 +3,13 @@ import { db } from "@/lib/db"
 import { PageHeader } from "@/components/layout/page-header"
 import { extrairCategorias, calcularViradas } from "@/lib/categorias"
 import { CategoriasClient } from "./categorias-client"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Virada de categoria — Escolinha Itaquerense" }
 
 export default async function CategoriasPage() {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin", "secretaria"])
   const alunos = await db.aluno.findMany({
     where: { status: "Ativo" },
     select: { id: true, nome: true, dataNascimento: true, turma: true },

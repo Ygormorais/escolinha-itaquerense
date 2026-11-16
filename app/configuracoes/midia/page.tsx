@@ -1,9 +1,12 @@
 import { db } from "@/lib/db"
 import { MidiaClient } from "./midia-client"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Mídia — Escolinha Itaquerense" }
 
 export default async function MidiaPage() {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin", "secretaria"])
   const [midias, partidas, campeonatos] = await Promise.all([
     db.media.findMany({
       select: {

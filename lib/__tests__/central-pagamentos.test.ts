@@ -80,6 +80,6 @@ describe("gerarCSVDevedores", () => {
     ], agora)
     const csv = gerarCSVDevedores(lista).split("\n")
     expect(csv[0]).toBe("Aluno;Turma;Responsável;Mensalidades em aberto;Atrasadas;Valor em aberto")
-    expect(csv[1]).toBe('"Ana ""Nina"" Souza";Sub-9;"Marta; Souza";1;1;120,00')
+    expect(csv[1]).toBe('"Ana ""Nina"" Souza";"Sub-9";"Marta; Souza";1;1;120,00')
   })
 })

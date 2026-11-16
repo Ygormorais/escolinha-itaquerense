@@ -36,20 +36,33 @@ export const getResponsavelSession = cache(async (): Promise<{ authenticated: bo
   if (!raw) return { authenticated: false }
   const value = verify(raw)
   if (!value || !value.startsWith("resp:")) return { authenticated: false }
-  const responsavelId = Number(value.slice(5))
+  // Formato: resp:id:iat:versao. Cookie do formato antigo (resp:id) não vale mais.
+  const [idStr, iatStr, versaoStr] = value.slice(5).split(":")
+  const responsavelId = Number(idStr)
+  const iat = Number(iatStr)
+  const versao = Number(versaoStr)
   if (!Number.isSafeInteger(responsavelId) || responsavelId <= 0) return { authenticated: false }
+  if (!Number.isSafeInteger(iat) || !Number.isSafeInteger(versao)) return { authenticated: false }
+  const agora = Math.floor(Date.now() / 1000)
+  if (agora - iat > MAX_AGE || iat - agora > 300) return { authenticated: false }
 
   const responsavel = await db.responsavel.findUnique({
     where: { id: responsavelId },
-    select: { ativo: true },
+    select: { ativo: true, sessaoVersao: true },
   })
   if (!responsavel?.ativo) return { authenticated: false }
+  if (responsavel.sessaoVersao !== versao) return { authenticated: false }
 
   return { authenticated: true, responsavelId }
 })
 
-export async function createResponsavelSession(responsavelId: number): Promise<string> {
-  return sign(`resp:${responsavelId}`)
+export async function createResponsavelSession(responsavelId: number, versao = 0): Promise<string> {
+  return sign(`resp:${responsavelId}:${Math.floor(Date.now() / 1000)}:${versao}`)
+}
+
+/** Revoga todos os cookies do responsável (redefinição de senha, logout). */
+export async function revogarSessoesResponsavel(responsavelId: number): Promise<void> {
+  await db.responsavel.updateMany({ where: { id: responsavelId }, data: { sessaoVersao: { increment: 1 } } })
 }
 
 export function responsavelCookieName() { return COOKIE_NAME }
