@@ -96,7 +96,10 @@ export function isPublicPath(pathname: string): boolean {
     pathname === "/logo.png" ||
     pathname === "/logo.jpg" ||
     pathname === "/sw.js" ||
-    pathname === "/manifest.json"
+    pathname === "/manifest.json" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    hasPrefix(pathname, "/validar-recibo") // QR do recibo: conferência por terceiros
   )
 }
 
