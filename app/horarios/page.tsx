@@ -7,6 +7,7 @@ export const metadata = {
   title: "Turmas e horários — E.C. Itaquerense",
   description:
     "Turmas e horários da escolinha e do futsal federado do E.C. Itaquerense. Veja a categoria do seu filho e faça a pré-matrícula.",
+  robots: { index: true, follow: true }, // página pública: indexável
 }
 
 export default async function HorariosPage() {

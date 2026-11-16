@@ -14,9 +14,24 @@ git pull --ff-only
 
 # Snapshot do banco imediatamente ANTES de migrar (migrations não têm "down").
 # A aplicação antiga continua disponível somente durante o pull e o backup online.
-DB_FILE=$(grep -oP '^DATABASE_URL=file:\K\S+' .env || true)
-DB_FILE=${DB_FILE:-prisma/dev.db}
-BACKUP_ROOT=$(grep -oP '^BACKUP_DIR=\K\S+' .env || true)
+# Lê CHAVE do .env aceitando "export", aspas simples/duplas e CRLF (como o loadEnv).
+env_val() {
+  local linha
+  linha=$(grep -E "^[[:space:]]*(export[[:space:]]+)?$1=" .env 2>/dev/null | tail -n 1 || true)
+  linha=${linha#*=}
+  linha=${linha%$'\r'}
+  linha=${linha#\"}; linha=${linha%\"}
+  linha=${linha#\'}; linha=${linha%\'}
+  printf '%s' "$linha"
+}
+DB_URL=${DATABASE_URL:-$(env_val DATABASE_URL)}
+if [[ "$DB_URL" == file:* ]]; then
+  DB_FILE=${DB_URL#file:}
+  [[ "$DB_FILE" == /* ]] || DB_FILE="$PWD/${DB_FILE#./}"
+else
+  DB_FILE="$PWD/prisma/dev.db"
+fi
+BACKUP_ROOT=${BACKUP_DIR:-$(env_val BACKUP_DIR)}
 BACKUP_ROOT=${BACKUP_ROOT:-backups}
 if [[ -f "$DB_FILE" ]]; then
   mkdir -p "$BACKUP_ROOT"
@@ -39,6 +54,11 @@ if [[ -f "$DB_FILE" ]]; then
     | tail -z -n +11 \
     | cut -z -d' ' -f2- \
     | xargs -0 -r rm --
+elif [[ "${ALLOW_DEPLOY_SEM_BACKUP:-0}" != "1" ]]; then
+  # Sem arquivo, o snapshot seria pulado e a migration rodaria sem rede de segurança.
+  echo "Erro: banco não encontrado em $DB_FILE; não há como criar o snapshot pré-migração." >&2
+  echo "Confira DATABASE_URL no .env. Primeiro deploy (banco ainda não existe): ALLOW_DEPLOY_SEM_BACKUP=1 bash deploy/deploy.sh" >&2
+  exit 1
 fi
 
 # O checkout, node_modules e .next são compartilhados pelo processo em execução.

@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { getSession, createSession, identifySession, appendHistory, blockSession } from "./session"
 import { TOOL_DEFINITIONS, executeTool } from "./tools"
 import { logger } from "@/lib/logger"
+import { mascararTelefone } from "@/lib/mascarar-telefone"
 import { getWhatsAppProvider as getProvider } from "./provider"
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -184,7 +185,7 @@ export async function routeMessage(telefone: string, texto: string) {
       try {
         return await pedir()
       } catch (retryErr) {
-        logger.error(`ai-router: retry also failed${etapa}`, { telefone, error: String(retryErr) })
+        logger.error(`ai-router: retry also failed${etapa}`, { telefone: mascararTelefone(telefone), error: String(retryErr) })
         await getProvider().sendText({ telefone, mensagem: AVISO_FALHA }).catch(() => {})
         return null
       }
@@ -272,7 +273,7 @@ export async function routeMessage(telefone: string, texto: string) {
   if (!respostaTexto) {
     // Cortada no limite antes de escrever a resposta: avisa em vez de ficar em silêncio.
     if (response.stop_reason === "max_tokens") {
-      logger.error("ai-router: resposta cortada sem texto", { telefone })
+      logger.error("ai-router: resposta cortada sem texto", { telefone: mascararTelefone(telefone) })
       await getProvider().sendText({ telefone, mensagem: AVISO_FALHA }).catch(() => {})
     }
     return

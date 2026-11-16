@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { routeMessage } from "@/lib/whatsapp/ai-router"
 import { getEvolutionApiKey, verifyEvolutionAuth } from "@/lib/env"
 import { logger } from "@/lib/logger"
+import { mascararTelefone } from "@/lib/mascarar-telefone"
 
 export async function POST(req: NextRequest) {
   const apiKey = getEvolutionApiKey()
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
       })
 
       routeMessage(telefone, texto).catch((err) => {
-        logger.error("whatsapp/webhook: falha ao rotear mensagem", { telefone, error: String(err) })
+        logger.error("whatsapp/webhook: falha ao rotear mensagem", { telefone: mascararTelefone(telefone), error: String(err) })
       })
     }
 
