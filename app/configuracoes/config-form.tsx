@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateClubConfig } from "@/app/actions/config"
 import type { ClubConfig } from "@/lib/config"
+import { MODELOS_MENSAGEM } from "@/lib/whatsapp-modelos"
 import { toast } from "sonner"
 
 function interpolate(template: string, vars: Record<string, string>) {
@@ -267,6 +268,32 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
                 />
                 <TemplatePreview template={form.templateFalta ?? ""} vars={PREVIEW_FALTA} />
               </div>
+            </div>
+
+            <div className="border-t pt-4 space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Modelos de mensagem da secretaria</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Usados nos botões de WhatsApp (Comunicados, Atenção e Turmas). Deixe em branco para usar o texto padrão.
+                  Variáveis: {"{responsavel}"}, {"{aluno}"}, {"{clube}"}, {"{turma}"}, {"{data}"}, {"{hora}"}, {"{local}"}, {"{adversario}"}, {"{valor}"}, {"{vencimento}"}, {"{prazo}"}, {"{motivo}"}, {"{link}"}.
+                </p>
+              </div>
+              {MODELOS_MENSAGEM.map((modelo) => (
+                <div key={modelo.id} className="space-y-2">
+                  <Label htmlFor={`cfg-modelo-${modelo.id}`}>{modelo.titulo}</Label>
+                  <Textarea
+                    id={`cfg-modelo-${modelo.id}`}
+                    value={form.modelosMensagem?.[modelo.id] ?? ""}
+                    onChange={(e) => {
+                      const valor = e.target.value
+                      setForm((prev) => ({ ...prev, modelosMensagem: { ...prev.modelosMensagem, [modelo.id]: valor } }))
+                    }}
+                    rows={4}
+                    className="text-sm font-mono"
+                    placeholder={modelo.padrao}
+                  />
+                </div>
+              ))}
             </div>
 
             <Button type="submit" disabled={saving} className="bg-brand-800 text-white hover:bg-brand-900">
