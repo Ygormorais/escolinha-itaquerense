@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { formatarDataUtc, hojeNoClube } from "@/lib/datas-clube"
+import { formatarDataUtc } from "@/lib/datas-clube"
 import { MessageCircle, QrCode, Receipt, Trash2Icon, CheckCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 import { formatMoney } from "@/lib/utils"
