@@ -5,7 +5,10 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { PaginaPublica } from "@/components/site/pagina-publica"
 
-export const metadata = { title: "Notícias — E.C. Itaquerense" }
+export const metadata = {
+  title: "Notícias — E.C. Itaquerense",
+  robots: { index: true, follow: true }, // página pública: indexável
+}
 
 /** Fundo do cartão sem foto: preto, com verde só para resultado (cor só para situação). */
 const CORES: Record<string, string> = {

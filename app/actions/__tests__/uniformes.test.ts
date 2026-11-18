@@ -19,6 +19,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 import { getUniformes, adicionarUniforme, marcarEntregue, removerUniforme } from "@/app/actions/uniformes"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 const m = db as unknown as {
@@ -39,6 +40,11 @@ beforeEach(() => {
 })
 
 describe("getUniformes", () => {
+  it("exige admin ou secretaria (leitura não é pública)", async () => {
+    await getUniformes(1)
+    expect(requireAuth).toHaveBeenCalledWith(["admin", "secretaria"])
+  })
+
   it("retorna uniformes do aluno ordenados por createdAt", async () => {
     const uniformes = [{ id: 1, item: "Camisa" }]
     m.uniforme.findMany.mockResolvedValue(uniformes)

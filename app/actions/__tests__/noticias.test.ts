@@ -13,6 +13,7 @@ vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
 import { listarNoticias, criarNoticia, editarNoticia, deletarNoticia, togglePublicado } from "@/app/actions/noticias"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
 const m = db as unknown as { noticia: { findMany: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> } }
@@ -29,6 +30,12 @@ beforeEach(() => {
 })
 
 describe("listarNoticias", () => {
+  it("exige admin ou secretaria (rascunhos não são públicos)", async () => {
+    m.noticia.findMany.mockResolvedValueOnce([])
+    await listarNoticias()
+    expect(requireAuth).toHaveBeenCalledWith(["admin", "secretaria"])
+  })
+
   it("retorna todas as notícias ordenadas por data", async () => {
     const mock = [{ id: 1, titulo: "Notícia" }]
     m.noticia.findMany.mockResolvedValueOnce(mock)

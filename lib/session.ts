@@ -1,11 +1,11 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 import { checkCredentialsFromEnv, getSessionSecret, isEnvAdminUsername } from "@/lib/env"
-import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
+import { SESSION_COOKIE, SESSION_PREFIX, SESSION_MAX_AGE_SECONDS } from "@/lib/session-constants"
 import { db } from "@/lib/db"
 
 const COOKIE_NAME = SESSION_COOKIE
-const MAX_AGE = 60 * 60 * 24 * 7 // 7 dias
+const MAX_AGE = SESSION_MAX_AGE_SECONDS
 
 function sign(value: string): string {
   const secret = getSessionSecret()
@@ -29,6 +29,9 @@ function verify(signed: string): string | null {
   return value
 }
 
+/** Segundos desde a época (iat gravado no cookie). */
+const agoraSeg = () => Math.floor(Date.now() / 1000)
+
 export type SessionInfo = { authenticated: boolean; user?: string; role?: string }
 
 export async function getSession(): Promise<SessionInfo> {
@@ -44,26 +47,41 @@ export async function getSession(): Promise<SessionInfo> {
   // A assinatura protege a integridade do cookie, mas não revoga uma sessão já
   // emitida. Confirma a conta a cada request para que desativação, exclusão ou
   // troca de perfil tenham efeito imediato.
+  // Formato: user:role:origem:iat:versao. Cookie sem iat/versão (formato antigo)
+  // não vale: nunca expiraria. Exige novo login uma única vez.
+  const iat = Number(parts[3])
+  const versao = Number(parts[4])
+  if (!Number.isSafeInteger(iat) || !Number.isSafeInteger(versao)) return { authenticated: false }
+  // Expiração no servidor (o maxAge do cookie só vale para o navegador).
+  if (agoraSeg() - iat > MAX_AGE || iat - agoraSeg() > 300) return { authenticated: false }
+
   const usuario = await db.usuario.findUnique({
     where: { username },
-    select: { ativo: true, role: true },
+    select: { ativo: true, role: true, sessaoVersao: true },
   })
   // O administrador do .env não tem conta no banco; o login o aceita, então a sessão também.
   // Só vale para sessão emitida pelo login do .env: um cookie de conta do banco que foi
   // excluída não pode virar admin só por ter o mesmo nome. Conta existente prevalece.
   if (!usuario) {
-    return parts[2] === "env" && isEnvAdminUsername(username)
+    return parts[2] === "env" && versao === 0 && isEnvAdminUsername(username)
       ? { authenticated: true, user: username, role: "admin" }
       : { authenticated: false }
   }
   if (!usuario.ativo) return { authenticated: false }
+  // Troca de senha incrementa a versão e revoga os cookies antigos.
+  if (usuario.sessaoVersao !== versao) return { authenticated: false }
 
   return { authenticated: true, user: username, role: usuario.role }
 }
 
 /** origem "env": sessão do administrador do .env; "db": conta da tabela de usuários. */
-export async function createSession(username: string, role = "admin", origem: "db" | "env" = "db"): Promise<string> {
-  return sign(`${SESSION_PREFIX}${username}:${role}:${origem}`)
+export async function createSession(
+  username: string,
+  role = "admin",
+  origem: "db" | "env" = "db",
+  versao = 0
+): Promise<string> {
+  return sign(`${SESSION_PREFIX}${username}:${role}:${origem}:${agoraSeg()}:${versao}`)
 }
 
 export function cookieName() { return COOKIE_NAME }

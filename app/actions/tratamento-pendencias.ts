@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { perfilPodeTratarChave } from "@/lib/pendencias-chaves"
 
 const schema = z.object({
   chave: z.string().min(3).max(180),
@@ -17,6 +18,8 @@ export async function tratarPendencia(input: z.infer<typeof schema>) {
   if (!parsed.success) return { error: "Ação de pendência inválida." }
 
   const { chave, acao } = parsed.data
+  // O perfil só trata pendências dos grupos que enxerga (técnico não baixa financeiro).
+  if (!perfilPodeTratarChave(auth.role, chave)) return { error: "Você não pode tratar esta pendência." }
   const data = acao === "resolver"
     ? { status: "resolvida", responsavel: auth.user, adiadaAte: null }
     : acao === "adiar"

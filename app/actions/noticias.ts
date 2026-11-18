@@ -7,6 +7,7 @@ import { registrarLog } from "@/app/actions/log"
 import { NoticiaSchema } from "@/lib/schemas"
 
 export async function listarNoticias() {
+  await requireAuth(["admin", "secretaria"])
   return db.noticia.findMany({ orderBy: { createdAt: "desc" } })
 }
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getSessionSecret } from "@/lib/env"
-import { SESSION_COOKIE, SESSION_PREFIX } from "@/lib/session-constants"
+import { SESSION_COOKIE, SESSION_PREFIX, SESSION_MAX_AGE_SECONDS } from "@/lib/session-constants"
 import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
 
 const COOKIE_NAME = SESSION_COOKIE
@@ -96,7 +96,10 @@ export function isPublicPath(pathname: string): boolean {
     pathname === "/logo.png" ||
     pathname === "/logo.jpg" ||
     pathname === "/sw.js" ||
-    pathname === "/manifest.json"
+    pathname === "/manifest.json" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    hasPrefix(pathname, "/validar-recibo") // QR do recibo: conferência por terceiros
   )
 }
 
@@ -153,8 +156,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  const [, role] = sessionValue.slice(SESSION_PREFIX.length).split(":")
-  if (!isStaffRole(role)) {
+  const [, role, , iatStr] = sessionValue.slice(SESSION_PREFIX.length).split(":")
+  // Cookie expirado (ou do formato antigo, sem iat) volta ao login; getSession confere o resto.
+  const iat = Number(iatStr)
+  const agora = Math.floor(Date.now() / 1000)
+  const expirado = !Number.isSafeInteger(iat) || agora - iat > SESSION_MAX_AGE_SECONDS
+  if (expirado || !isStaffRole(role)) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     url.search = ""

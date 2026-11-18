@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { consultarComparativoDesenvolvimento } from "@/app/actions/evolucao-desenvolvimento"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 type Dados = NonNullable<Awaited<ReturnType<typeof consultarComparativoDesenvolvimento>>["dados"]>
 type Linha = Dados["porTurma"][number]
@@ -20,7 +21,7 @@ export function ComparativoDesenvolvimento() {
   const imprimir = () => { document.body.dataset.printSection = "comparativo-desenvolvimento"; window.addEventListener("afterprint", () => { delete document.body.dataset.printSection }, { once: true }); window.print() }
   const exportarCsv = () => {
     if (!dados) return
-    const escapar = (valor: string | number | null) => `"${String(valor ?? "").replaceAll('"', '""')}"`
+    const escapar = (valor: string | number | null) => sanitizeCSVCell(valor)
     const cabecalho = ["agrupamento", "grupo", "atletas_ativos", "avaliados", "presenca_percentual", "acoes_pendentes", "planos_salvos", "planos_com_retorno"]
     const linhas = [
       ...dados.porTurma.map((item) => ["turma", item.nome, item.atletas, item.avaliados, item.frequencia.percentualPresenca, item.acoes.pendentes, item.planos, item.planosComRetorno]),

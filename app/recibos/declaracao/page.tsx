@@ -4,6 +4,7 @@ import { getConfig } from "@/lib/config"
 import { montarDeclaracaoAnual } from "@/lib/declaracao"
 import { DeclaracaoAnualDoc } from "@/components/declaracao/declaracao-anual-doc"
 import { PrintButton } from "@/components/ui/print-button"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Declaração anual — Escolinha Itaquerense" }
 
@@ -12,6 +13,8 @@ export default async function DeclaracaoPage({
 }: {
   searchParams: Promise<{ alunoId?: string; ano?: string }>
 }) {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin", "secretaria"])
   const { alunoId: alunoIdRaw, ano: anoRaw } = await searchParams
   const alunoId = Number(alunoIdRaw)
   const ano = Number(anoRaw) || new Date().getFullYear()

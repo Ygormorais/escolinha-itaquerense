@@ -33,7 +33,7 @@ function makeContext(id: string) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockGetSession.mockResolvedValue({ authenticated: true, user: "admin" })
+  mockGetSession.mockResolvedValue({ authenticated: true, user: "admin", role: "admin" })
   mockDb.aluno.findUnique.mockResolvedValue(ALUNO)
 })
 
@@ -70,5 +70,24 @@ describe("GET /api/alunos/[id]/print", () => {
     expect(mockDb.aluno.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 42 } })
     )
+  })
+})
+
+describe("GET /api/alunos/[id]/print — perfil técnico", () => {
+  it("não devolve financeiro ao técnico", async () => {
+    mockGetSession.mockResolvedValue({ authenticated: true, user: "tec", role: "tecnico" })
+    const res = await GET(new Request("http://localhost"), makeContext("1"))
+    const body = await res.json()
+    expect(body.financeiro).toBe(false)
+    const select = mockDb.aluno.findUnique.mock.calls[0][0].select
+    expect(select.mensalidade).toBe(false)
+    expect(select.pagamentos.take).toBe(0)
+  })
+
+  it("devolve financeiro à secretaria", async () => {
+    mockGetSession.mockResolvedValue({ authenticated: true, user: "sec", role: "secretaria" })
+    const res = await GET(new Request("http://localhost"), makeContext("1"))
+    expect((await res.json()).financeiro).toBe(true)
+    expect(mockDb.aluno.findUnique.mock.calls[0][0].select.mensalidade).toBe(true)
   })
 })

@@ -4,10 +4,11 @@
 // Agora sempre buscamos da rede quando online; o cache é só fallback offline.
 // v3: o catch nunca devolve undefined ao respondWith (causava
 // "Failed to convert value to 'Response'" e falhas silenciosas em server actions).
-const CACHE_NAME = "escolinha-v3"
+// v4: cache SÓ de assets estáticos (allowlist). Páginas, RSC, /api e /uploads
+// (dados pessoais e financeiros) nunca entram no cache; o logout limpa tudo.
+const CACHE_NAME = "escolinha-v4"
 
 const STATIC_ASSETS = [
-  "/login",
   "/manifest.json",
   "/logo.png",
 ]
@@ -20,13 +21,32 @@ self.addEventListener("install", (event) => {
   )
 })
 
+// Só arquivos estáticos versionados ou públicos; nunca navegação, /api nem /uploads.
+function cacheavel(request, response) {
+  const url = new URL(request.url)
+  if (url.origin !== self.location.origin) return false
+  if (request.mode === "navigate" || request.headers.get("RSC")) return false
+  const permitido =
+    url.pathname.startsWith("/_next/static/") ||
+    STATIC_ASSETS.includes(url.pathname)
+  if (!permitido) return false
+  const cc = (response.headers.get("Cache-Control") || "").toLowerCase()
+  return !cc.includes("no-store") && !cc.includes("private")
+}
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "limpar-cache") {
+    event.waitUntil(caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))))
+  }
+})
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response && response.status === 200 && response.type === "basic") {
+        if (response && response.status === 200 && response.type === "basic" && cacheavel(event.request, response)) {
           const clone = response.clone()
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
         }

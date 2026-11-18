@@ -5,10 +5,11 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { getClientIp, accountKey, accountLimit } from "@/lib/client-ip"
 
 export async function POST(request: Request) {
   const { token, senha } = await request.json()
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+  const ip = getClientIp(request)
   const limit = checkRateLimit(`redefinir-senha:${ip}`)
   if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
 
@@ -18,6 +19,11 @@ export async function POST(request: Request) {
   if (!senha || senha.length < 6) {
     return NextResponse.json({ error: "A senha deve ter no mínimo 6 caracteres" }, { status: 400 })
   }
+
+  // Limite por token: impede adivinhar/forçar um mesmo link a partir de vários IPs.
+  const conta = accountLimit(10)
+  const limitConta = checkRateLimit(`redefinir-conta:${accountKey(token)}`, conta.max, conta.windowMs)
+  if (!limitConta.ok) return rateLimitResponse(limitConta.retryAfterMs)
 
   const resetToken = await db.resetToken.findUnique({ where: { token } })
   if (!resetToken || resetToken.usado || resetToken.expiresAt < new Date()) {
@@ -29,7 +35,7 @@ export async function POST(request: Request) {
   await db.$transaction([
     db.responsavel.update({
       where: { id: resetToken.responsavelId },
-      data: { senha: senhaHash },
+      data: { senha: senhaHash, sessaoVersao: { increment: 1 } },
     }),
     db.resetToken.update({
       where: { id: resetToken.id },

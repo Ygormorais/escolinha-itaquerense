@@ -8,17 +8,23 @@ import { enviarEmail } from "@/lib/mailer"
 import { getConfig } from "@/lib/config"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { getClientIp, accountKey, accountLimit } from "@/lib/client-ip"
 import { escapeHtml } from "@/lib/utils"
 
 export async function POST(request: Request) {
   const { email } = await request.json()
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+  const ip = getClientIp(request)
   const limit = checkRateLimit(`recuperar-senha:${ip}`)
   if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
 
   if (!email || typeof email !== "string") {
     return NextResponse.json({ error: "Email inválido" }, { status: 400 })
   }
+
+  // Limite por e-mail: evita spam de mensagens para uma mesma caixa.
+  const conta = accountLimit(5)
+  const limitConta = checkRateLimit(`recuperar-conta:${accountKey(email)}`, conta.max, conta.windowMs)
+  if (!limitConta.ok) return rateLimitResponse(limitConta.retryAfterMs)
 
   const responsavel = await db.responsavel.findUnique({ where: { email: email.toLowerCase() } })
   if (!responsavel) {

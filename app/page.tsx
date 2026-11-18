@@ -9,7 +9,10 @@ import { getAnuncio } from "@/lib/site/anuncios-dados"
 import { LandingClient } from "@/components/landing/landing-client"
 import type { NoticiaClube } from "@/components/landing/noticias-clube-carrossel"
 
-export const metadata = { title: "Escolinha Itaquerense" }
+export const metadata = {
+  title: "Escolinha Itaquerense",
+  robots: { index: true, follow: true }, // página pública: indexável
+}
 
 /**
  * Rota renderiza a cada request (sem ISR/HTML estático), mas as queries de

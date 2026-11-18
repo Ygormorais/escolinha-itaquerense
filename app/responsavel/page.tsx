@@ -5,6 +5,9 @@ import { ResponsavelDashboardClient } from "./dashboard-client"
 import { buscarProximosEventos } from "@/lib/responsavel-eventos"
 import { buscarJogosPortal } from "@/lib/responsavel-jogos"
 import { getConfig } from "@/lib/config"
+import { acoesDoPortal } from "@/lib/portal-acoes"
+import { hojeNoClube } from "@/lib/portal-mensalidades"
+import { restanteDoPagamento } from "@/lib/valor-devido"
 
 export const metadata = { title: "Portal do Responsável — Escolinha Itaquerense" }
 
@@ -54,7 +57,7 @@ export default async function ResponsavelPage() {
   const alunoIds = responsavel.alunos.map((a) => a.id)
   const turmasAlunos = responsavel.alunos.map((a) => a.turma)
 
-  const [comunicados, proximosEventos, jogos] = await Promise.all([
+  const [comunicados, proximosEventos, jogos, abertas, documentos] = await Promise.all([
     alunoIds.length > 0
       ? db.whatsAppMensagem.findMany({
           where: {
@@ -69,7 +72,48 @@ export default async function ResponsavelPage() {
       : Promise.resolve([]),
     buscarProximosEventos(session.responsavelId, turmasAlunos),
     buscarJogosPortal(turmasAlunos),
+    // Mensalidades sem quitação (parciais incluídas): base do "Precisa de você".
+    alunoIds.length > 0
+      ? db.pagamento.findMany({
+          where: { alunoId: { in: alunoIds }, dataPagamento: null },
+          select: { dataVencimento: true, valorDevido: true, valorRecebido: true, aluno: { select: { mensalidade: true, desconto: true } } },
+        })
+      : Promise.resolve([]),
+    // Documentos obrigatórios (versão vigente) sem aceite desta família.
+    alunoIds.length > 0
+      ? db.documentoInstitucional.findMany({
+          where: { ativo: true },
+          select: {
+            versoes: {
+              orderBy: [{ publicadoEm: "desc" }, { id: "desc" }],
+              take: 1,
+              select: { turmas: true, obrigatorio: true, aceites: { where: { responsavelId: session.responsavelId }, select: { alunoId: true } } },
+            },
+          },
+        })
+      : Promise.resolve([]),
   ])
+
+  const hoje = hojeNoClube(new Date())
+  const atrasadas = abertas.filter((p) => p.dataVencimento.toISOString().slice(0, 10) < hoje)
+  const aVencer = abertas.filter((p) => !atrasadas.includes(p))
+  const somaRestante = (lista: typeof abertas) => Math.round(lista.reduce((s, p) => s + restanteDoPagamento(p), 0) * 100) / 100
+  const documentosPendentes = documentos.reduce((total, doc) => {
+    const versao = doc.versoes[0]
+    if (!versao?.obrigatorio) return total
+    const turmas = versao.turmas.split(",").map((t) => t.trim())
+    const sem = responsavel.alunos.filter(
+      (a) => (turmas.includes("Todas") || turmas.includes(a.turma)) && !versao.aceites.some((x) => x.alunoId === a.id),
+    )
+    return total + sem.length
+  }, 0)
+  const acoes = acoesDoPortal({
+    atrasadas: atrasadas.length,
+    aVencer: aVencer.length,
+    restanteAtrasado: somaRestante(atrasadas),
+    restanteAVencer: somaRestante(aVencer),
+    documentosPendentes,
+  })
 
   return (
     <ResponsavelDashboardClient
@@ -77,6 +121,7 @@ export default async function ResponsavelPage() {
       comunicados={comunicados}
       proximosEventos={proximosEventos}
       jogos={jogos}
+      acoes={acoes}
       whatsapp={config.whatsapp}
     />
   )

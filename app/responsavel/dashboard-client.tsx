@@ -22,6 +22,8 @@ import type { JogoPortal } from "@/lib/responsavel-jogos"
 import { nomeTime } from "@/lib/landing/times"
 import { AdvCrest } from "@/components/responsavel/adv-crest"
 import { buildWhatsAppHref } from "@/lib/browser-safety"
+import { PrecisaDeVoce } from "@/components/inicio/precisa-de-voce"
+import type { AcaoInicio } from "@/lib/inicio"
 
 type Aluno = {
   id: number
@@ -52,12 +54,15 @@ export function ResponsavelDashboardClient({
   comunicados,
   proximosEventos,
   jogos = { proximos: [], recentes: [] },
+  acoes = [],
   whatsapp = "5511999999999",
 }: {
   responsavel: { nome: string; alunos: Aluno[] }
   comunicados: Comunicado[]
   proximosEventos: ItemAgendaDashboard[]
   jogos?: { proximos: JogoPortal[]; recentes: JogoPortal[] }
+  /** O que pede ação da família hoje (vazio = tudo em dia). */
+  acoes?: AcaoInicio[]
   whatsapp?: string
 }) {
   const whatsappHref = buildWhatsAppHref(whatsapp)
@@ -77,7 +82,8 @@ export function ResponsavelDashboardClient({
   }
 
   const totalAlunos = responsavel.alunos.length
-  const pendencias = responsavel.alunos.filter((aluno) => statusPagamento(aluno).label !== "Em dia").length
+  // Mesma conta de Mensalidades (inclui meses anteriores e baixas parciais), para as telas não divergirem.
+  const pendencias = acoes.find((a) => a.chave === "atraso" || a.chave === "vencendo")?.quantidade ?? 0
   const totalComunicados = comunicados.length
 
   return (
@@ -92,6 +98,8 @@ export function ResponsavelDashboardClient({
           { label: "Comunicados", value: totalComunicados },
         ]}
       />
+
+      {responsavel.alunos.length > 0 && <PrecisaDeVoce acoes={acoes} total={acoes.length} />}
 
       {responsavel.alunos.length > 0 && (
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

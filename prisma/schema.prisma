@@ -163,6 +163,7 @@ model Responsavel {
   senha             String
   cpf               String?                 @unique
   ativo             Boolean                 @default(true)
+  sessaoVersao      Int                     @default(0) // incrementa em redefinição de senha/logout
   alunos            Aluno[]
   chatSessions      ChatSession[]
   resetTokens       ResetToken[]
@@ -226,6 +227,7 @@ model Usuario {
   senha     String
   role      String   @default("secretaria") // admin, secretaria, tecnico
   ativo     Boolean  @default(true)
+  sessaoVersao Int   @default(0) // incrementa em troca de senha/logout: revoga cookies antigos
   createdAt DateTime @default(now())
   acoesResponsavel AcaoDesenvolvimento[] @relation("ResponsavelAcaoDesenvolvimento")
   notificacoesInternas NotificacaoInterna[]

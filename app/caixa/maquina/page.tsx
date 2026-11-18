@@ -4,6 +4,7 @@ import { MaquinaClient } from "./maquina-client"
 import { getTransacoes, getResumoMaquina } from "@/app/actions/maquina"
 import { formatMoney } from "@/lib/utils"
 import { db } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Maquininha — Escolinha Itaquerense" }
 
@@ -12,6 +13,8 @@ export default async function MaquinaPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin"])
   const params = await searchParams
   const [listagem, resumo, alunos] = await Promise.all([
     getTransacoes(params),

@@ -6,6 +6,7 @@ import { consultarEvolucaoColetiva } from "@/app/actions/evolucao-desenvolviment
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 type Dados = NonNullable<Awaited<ReturnType<typeof consultarEvolucaoColetiva>>["dados"]>
 
@@ -15,7 +16,7 @@ function exportarCsv(dados: Dados) {
     ...dados.frequenciaMensal.map((item) => ["frequencia", item.key, item.atletasComRegistro, item.registrosValidos, item.percentualPresenca ?? "", "", "", ""]),
     ...dados.avaliacoesPorPeriodo.map((item) => ["avaliacao", item.periodo, item.atletasAvaliados, "", "", item.tecnica ?? "", item.fisica ?? "", item.comportamento ?? ""]),
   ]
-  const csv = linhas.map((linha) => linha.map((valor) => `"${String(valor).replaceAll('"', '""')}"`).join(";")).join("\r\n")
+  const csv = linhas.map((linha) => linha.map(sanitizeCSVCell).join(";")).join("\r\n")
   const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }))
   const link = document.createElement("a")
   link.href = url
