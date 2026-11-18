@@ -18,6 +18,11 @@ export function getYoutubeEmbedUrl(id: string): string {
   return `https://www.youtube.com/embed/${id}`
 }
 
+/** Embed sem cookies de rastreamento (youtube-nocookie), usado pela facade das notícias. */
+export function getYoutubeNoCookieEmbedUrl(id: string): string {
+  return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`
+}
+
 export function isYoutubeUrl(url: string): boolean {
   return extractYoutubeId(url) !== null
 }

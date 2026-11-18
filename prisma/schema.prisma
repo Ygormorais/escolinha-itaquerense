@@ -1147,6 +1147,13 @@ model Noticia {
   subtitulo  String?
   categoria  String   @default("Notícia")
   imagemUrl  String?
+  /// Endereço estável da página própria (/noticias/publico/<slug>). Gerado na criação e nunca
+  /// muda com a edição do título, para o link compartilhado no WhatsApp continuar valendo.
+  slug       String?  @unique
+  /// Texto da matéria (parágrafos separados por linha em branco). Opcional.
+  corpo      String?
+  /// Link de vídeo do YouTube exibido na página da notícia (carregado só ao clicar).
+  videoUrl   String?
   publicado  Boolean  @default(false)
   destaque   Boolean  @default(false)
   createdAt  DateTime @default(now())
