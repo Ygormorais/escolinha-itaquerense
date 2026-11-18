@@ -26,6 +26,6 @@ describe("lib/print — buildPrintDocument", () => {
     expect(doc).toContain("<title>Histórico — &lt;/title&gt;&lt;script&gt;alert(1)&lt;/script&gt;</title>")
     expect(doc).not.toContain("<img")
     // Único script é o window.print() do próprio template.
-    expect(doc.match(/<script>/g)).toHaveLength(1)
+    expect(doc.match(/<script>/gi)).toHaveLength(1)
   })
 })

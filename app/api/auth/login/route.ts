@@ -7,6 +7,7 @@ import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
 import { getClientIp, accountKey, accountLimit } from "@/lib/client-ip"
 import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
+import { db } from "@/lib/db"
 
 export async function POST(request: Request) {
   const { username, password } = await request.json()
@@ -31,8 +32,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: INVALID_CREDENTIALS_MESSAGE }, { status: 401 })
   }
 
-  const role = dbResult.ok ? dbResult.role : "admin"
-  const token = await createSession(username, role, dbResult.ok ? "db" : "env", dbResult.ok ? dbResult.sessaoVersao ?? 0 : 0)
+  let role = dbResult.ok ? dbResult.role : "admin"
+  let origem: "db" | "env" = dbResult.ok ? "db" : "env"
+  let versao = dbResult.ok ? dbResult.sessaoVersao ?? 0 : 0
+  if (!dbResult.ok) {
+    // Credencial do .env aceita como reserva: se já existe conta com esse username no banco,
+    // a sessão segue a versão e o perfil dela (getSession confere a conta a cada request).
+    const conta = await db.usuario.findUnique({ where: { username }, select: { role: true, sessaoVersao: true, ativo: true } })
+    if (conta) {
+      if (!conta.ativo) return NextResponse.json({ error: INVALID_CREDENTIALS_MESSAGE }, { status: 401 })
+      role = conta.role
+      origem = "db"
+      versao = conta.sessaoVersao
+    }
+  }
+  const token = await createSession(username, role, origem, versao)
   const response = NextResponse.json({ ok: true, role })
   response.cookies.set(cookieName(), token, {
     httpOnly: true,

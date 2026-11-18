@@ -60,10 +60,5 @@ export async function createResponsavelSession(responsavelId: number, versao = 0
   return sign(`resp:${responsavelId}:${Math.floor(Date.now() / 1000)}:${versao}`)
 }
 
-/** Revoga todos os cookies do responsável (redefinição de senha, logout). */
-export async function revogarSessoesResponsavel(responsavelId: number): Promise<void> {
-  await db.responsavel.updateMany({ where: { id: responsavelId }, data: { sessaoVersao: { increment: 1 } } })
-}
-
 export function responsavelCookieName() { return COOKIE_NAME }
 export function responsavelCookieMaxAge() { return MAX_AGE }

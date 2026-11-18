@@ -68,7 +68,7 @@ export async function getSession(): Promise<SessionInfo> {
       : { authenticated: false }
   }
   if (!usuario.ativo) return { authenticated: false }
-  // Troca de senha ou logout incrementam a versão e revogam os cookies antigos.
+  // Troca de senha incrementa a versão e revoga os cookies antigos.
   if (usuario.sessaoVersao !== versao) return { authenticated: false }
 
   return { authenticated: true, user: username, role: usuario.role }
@@ -82,11 +82,6 @@ export async function createSession(
   versao = 0
 ): Promise<string> {
   return sign(`${SESSION_PREFIX}${username}:${role}:${origem}:${agoraSeg()}:${versao}`)
-}
-
-/** Revoga todos os cookies da conta (troca de senha, logout). Admin do .env não tem conta no banco. */
-export async function revogarSessoesUsuario(username: string): Promise<void> {
-  await db.usuario.updateMany({ where: { username }, data: { sessaoVersao: { increment: 1 } } })
 }
 
 export function cookieName() { return COOKIE_NAME }

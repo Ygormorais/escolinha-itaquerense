@@ -45,13 +45,14 @@ export async function criarUsuario(data: {
 export async function alterarSenha(id: number, novaSenha: string) {
   await requireAuth(["admin"])
   const usuario = await db.usuario.findUnique({ where: { id }, select: { username: true } })
+  // Lê a sessão atual ANTES de incrementar a versão: depois dela o cookie antigo não vale mais.
+  const atual = await getSession()
   await db.usuario.update({
     where: { id },
     data: { senha: hashSenha(novaSenha), sessaoVersao: { increment: 1 } },
   })
   // A troca invalida os cookies da conta; se o admin trocou a própria senha,
   // reemite o cookie para não derrubar a sessão atual.
-  const atual = await getSession()
   if (usuario && atual.user === usuario.username) {
     const nova = await db.usuario.findUnique({ where: { id }, select: { role: true, sessaoVersao: true } })
     if (nova) {

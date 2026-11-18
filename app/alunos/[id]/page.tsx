@@ -1,6 +1,6 @@
 import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
 import dynamic from "next/dynamic"
@@ -77,6 +77,8 @@ export default async function AlunoDetailPage({
   const config = getConfig()
 
   const session = await getSession()
+  // O proxy só confere a assinatura do cookie; a sessão revogada (senha trocada) cai aqui.
+  if (!session.authenticated) redirect("/login")
   // Financeiro, uniformes e edição são de admin/secretaria; o técnico vê só o esportivo.
   const verFinanceiro = can(session.role, "secretaria")
   const podeVerDesenvolvimento = session.role === "admin" || session.role === "tecnico"

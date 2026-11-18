@@ -11,6 +11,9 @@ vi.mock("@/app/actions/usuarios", () => ({
   checkDbCredentials: vi.fn(),
 }))
 
+const mockDb = vi.hoisted(() => ({ usuario: { findUnique: vi.fn() } }))
+vi.mock("@/lib/db", () => ({ db: mockDb }))
+
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: vi.fn().mockReturnValue({ ok: true }),
 }))
@@ -68,9 +71,27 @@ describe("POST /api/auth/login", () => {
   it("autentica via env como admin quando DB falha mas env é válido", async () => {
     mockCheckDb.mockResolvedValue({ ok: false })
     mockCheckCredentials.mockReturnValue(true)
+    mockDb.usuario.findUnique.mockResolvedValue(null)
     const res = await POST(makeRequest({ username: "admin", password: "secret" }))
     expect(res.status).toBe(200)
     expect(mockCreateSession).toHaveBeenCalledWith("admin", "admin", "env", 0)
+  })
+
+  it("credencial do .env com conta no banco segue a versão e o perfil da conta", async () => {
+    mockCheckDb.mockResolvedValue({ ok: false })
+    mockCheckCredentials.mockReturnValue(true)
+    mockDb.usuario.findUnique.mockResolvedValue({ role: "admin", sessaoVersao: 4, ativo: true })
+    const res = await POST(makeRequest({ username: "admin", password: "secret" }))
+    expect(res.status).toBe(200)
+    expect(mockCreateSession).toHaveBeenCalledWith("admin", "admin", "db", 4)
+  })
+
+  it("credencial do .env com conta desativada no banco é recusada", async () => {
+    mockCheckDb.mockResolvedValue({ ok: false })
+    mockCheckCredentials.mockReturnValue(true)
+    mockDb.usuario.findUnique.mockResolvedValue({ role: "admin", sessaoVersao: 1, ativo: false })
+    const res = await POST(makeRequest({ username: "admin", password: "secret" }))
+    expect(res.status).toBe(401)
   })
 
   it("retorna 429 quando rate limit excedido", async () => {
