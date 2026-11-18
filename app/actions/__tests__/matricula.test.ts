@@ -207,12 +207,22 @@ describe("criarPreMatricula — validação e rate limit", () => {
 
   it.each([
     ["turma que não existe", { turma: "Sub-99" }],
-    ["e-mail malformado", { email: "não-é-email" }],
     ["observações gigantes", { observacoes: "x".repeat(2001) }],
     ["nome gigante", { nomeAluno: "a".repeat(121) }],
   ])("rejeita %s", async (_nome, extra) => {
     const res = await criarPreMatricula({ ...ok, ...extra })
     expect(res).toEqual({ error: "Dados inválidos. Confira turma, e-mail e o tamanho dos textos." })
+    expect(m.preMatricula.create).not.toHaveBeenCalled()
+  })
+})
+
+describe("criarPreMatricula — e-mail", () => {
+  it("rejeita e-mail malformado apontando o campo", async () => {
+    const res = await criarPreMatricula({
+      nomeAluno: "João", dataNascimento: "2015-04-10", turma: "Sub-11", horario: "10h",
+      nomeResponsavel: "Maria", telefone: "11999998888", email: "não-é-email", consentimento: true,
+    })
+    expect(res).toEqual({ error: "E-mail inválido.", campos: { email: "E-mail inválido." } })
     expect(m.preMatricula.create).not.toHaveBeenCalled()
   })
 })
@@ -229,7 +239,45 @@ describe("criarPreMatricula", () => {
       email: "maria@email.com",
       consentimento: true,
     })
-    expect(res).toEqual({ error: "Preencha os campos obrigatórios" })
+    expect(res).toEqual({
+      error: "Confira os campos destacados no formulário.",
+      campos: { aluno: "Informe o nome do aluno.", telefone: "Informe o telefone." },
+    })
+  })
+
+  it("aplica no servidor a mesma validação do cliente (telefone com texto, idade fora de 3-20)", async () => {
+    const base = {
+      nomeAluno: "João", dataNascimento: "2015-04-10", turma: "Sub-11", horario: "10h",
+      nomeResponsavel: "Maria", telefone: "11999998888", email: "", consentimento: true,
+    }
+    const tel = await criarPreMatricula({ ...base, telefone: "me liga depois" })
+    expect(tel).toEqual({ error: "Telefone inválido — informe DDD + número.", campos: { telefone: "Telefone inválido — informe DDD + número." } })
+    const idade = await criarPreMatricula({ ...base, dataNascimento: "1990-01-01" })
+    expect("error" in idade && idade.error).toMatch(/3 a 20 anos/)
+    expect(m.preMatricula.create).not.toHaveBeenCalled()
+  })
+
+  it("descarta em silêncio quando a isca anti-robô vem preenchida", async () => {
+    const res = await criarPreMatricula({
+      nomeAluno: "João", dataNascimento: "2015-04-10", turma: "Sub-11", horario: "10h",
+      nomeResponsavel: "Maria", telefone: "11999998888", email: "", consentimento: true,
+      website: "http://spam.example",
+    })
+    expect(res).toEqual({ success: true })
+    expect(m.preMatricula.create).not.toHaveBeenCalled()
+  })
+
+  it("descarta em silêncio o envio rápido demais e aceita o que passou do tempo mínimo", async () => {
+    vi.stubEnv("MATRICULA_TEMPO_MINIMO_MS", "3000")
+    const dados = {
+      nomeAluno: "João", dataNascimento: "2015-04-10", turma: "Sub-11", horario: "10h",
+      nomeResponsavel: "Maria", telefone: "11999998888", email: "", consentimento: true,
+    }
+    expect(await criarPreMatricula({ ...dados, abertoEm: Date.now() - 500 })).toEqual({ success: true })
+    expect(m.preMatricula.create).not.toHaveBeenCalled()
+    expect(await criarPreMatricula({ ...dados, abertoEm: Date.now() - 10_000 })).toEqual({ success: true })
+    expect(m.preMatricula.create).toHaveBeenCalledTimes(1)
+    vi.unstubAllEnvs()
   })
 
   it("cria com status pendente quando valido", async () => {
@@ -257,7 +305,10 @@ describe("criarPreMatricula", () => {
       nomeAluno: "João", dataNascimento: "2015-04-10", turma: "Sub-11", horario: "10h",
       nomeResponsavel: "Maria", telefone: "11999998888", email: "", consentimento: false,
     })
-    expect(res).toEqual({ error: "É necessário autorizar o tratamento dos dados para enviar a pré-matrícula" })
+    expect(res).toEqual({
+      error: "Autorize o tratamento dos dados para enviar a pré-matrícula.",
+      campos: { consentimento: "Autorize o tratamento dos dados para enviar a pré-matrícula." },
+    })
     expect(m.preMatricula.create).not.toHaveBeenCalled()
   })
 })
