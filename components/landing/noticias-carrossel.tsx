@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ArrowRight, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
 import type { CategoriaNoticias, NoticiaCard } from "@/lib/landing/noticias"
 import { centralizarAba } from "./centralizar-aba"
+import { BotaoPausar, useAutoplay } from "./autoplay"
 import "./noticias-carrossel.css"
 
 function statusMeta(r: NoticiaCard["resultado"]): { text: string; tone: string } {
@@ -127,15 +128,11 @@ export function NoticiasCarrossel({
     [items.length],
   )
 
-  useEffect(() => {
-    if (pausado || items.length <= 1) return
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (reduce) return
-    const t = setInterval(next, 6000)
-    return () => clearInterval(t)
-  }, [pausado, next, items.length])
+  const { pausadoPeloUsuario, movimentoReduzido, alternarPausa } = useAutoplay({
+    ativo: !pausado && items.length > 1,
+    intervaloMs: 6000,
+    avancar: next,
+  })
 
   useEffect(() => {
     if (items.length <= 1) return
@@ -275,6 +272,15 @@ export function NoticiasCarrossel({
               ))}
             </div>
           </div>
+        )}
+
+        {items.length > 1 && (
+          <BotaoPausar
+            pausado={pausadoPeloUsuario}
+            onAlternar={alternarPausa}
+            oculto={movimentoReduzido}
+            rotulo="a troca automática de jogos"
+          />
         )}
 
         <div

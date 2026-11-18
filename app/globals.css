@@ -294,6 +294,12 @@
   :where(button, [role="button"]) {
     white-space: nowrap;
   }
+  /* Foco visível padrão para teclado em qualquer página. Especificidade zero (:where):
+     os estilos próprios de cada componente (landing, botões, campos) continuam valendo. */
+  :where(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
   :where([data-numeric]) {
     font-family: var(--font-body), system-ui, sans-serif;
     font-variant-numeric: lining-nums tabular-nums;

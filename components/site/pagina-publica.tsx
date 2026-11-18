@@ -30,7 +30,6 @@ export function PaginaPublica({
 }) {
   return (
     <div className={[publicFontClass, "lp", "pg", className].filter(Boolean).join(" ")}>
-      <a className="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
       <SiteTopo dentroDaLanding />
 
       <main id="conteudo-principal">

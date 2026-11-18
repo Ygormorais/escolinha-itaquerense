@@ -7,6 +7,7 @@ import { Providers } from "@/components/providers"
 import { PWARegister } from "@/components/pwa-register"
 import { getSession } from "@/lib/session"
 import { ShellGate } from "@/components/layout/shell-gate"
+import { SkipLink } from "@/components/layout/skip-link"
 import { ThemeScript } from "@/components/theme-script"
 import { db } from "@/lib/db"
 
@@ -29,22 +30,6 @@ export const viewport: Viewport = {
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "SportsActivityLocation",
-  name: "E.C. Itaquerense — Escolinha de Futebol",
-  description: "Escolinha de futebol formando atletas e cidadãos.",
-  image: "/logo.png",
-  url: baseUrl,
-  sport: "Futebol",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "São Paulo",
-    addressRegion: "SP",
-    addressCountry: "BR",
-  },
-}
-
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
@@ -60,13 +45,12 @@ export const metadata: Metadata = {
     siteName: "Escolinha Itaquerense",
     title: "Escolinha Itaquerense",
     description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos.",
-    images: [{ url: "/logo.png", width: 500, height: 500, alt: "E.C. Itaquerense" }],
+    // A imagem 1200x630 vem de app/opengraph-image.tsx (o Next injeta as tags).
   },
   twitter: {
     card: "summary_large_image",
     title: "Escolinha Itaquerense",
     description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos.",
-    images: ["/logo.png"],
   },
   // Padrão fechado: áreas autenticadas não são indexadas; as páginas públicas
   // (landing, matrícula, horários, notícias, partidas) abrem com robots próprio.
@@ -106,26 +90,16 @@ export default async function RootLayout({
       <html lang="pt-BR" className={`h-full antialiased ${raleway.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <script
-          id="site-jsonld"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="E.C. Itaquerense" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="Escolinha Itaquerense" />
-        <link rel="apple-touch-icon" href="/logo.png" sizes="500x500" />
+        <link rel="apple-touch-icon" href="/logo.png" sizes="512x512" />
       </head>
       <body className="flex h-full bg-background font-body antialiased">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-brand-800 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none"
-        >
-          Pular para o conteúdo
-        </a>
+        <SkipLink />
         <PWARegister />
         <Providers>
           <ShellGate

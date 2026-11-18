@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { BotaoPausar, useAutoplay } from "./autoplay"
 import "./noticias-clube-carrossel.css"
 
 export interface NoticiaClube {
@@ -31,11 +32,11 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
 
   const next = useCallback(() => setPage((p) => (p + 1) % totalPages), [totalPages])
 
-  useEffect(() => {
-    if (pausado || totalPages <= 1) return
-    const t = setInterval(next, 5000)
-    return () => clearInterval(t)
-  }, [pausado, next, totalPages])
+  const { pausadoPeloUsuario, movimentoReduzido, alternarPausa } = useAutoplay({
+    ativo: !pausado && totalPages > 1,
+    intervaloMs: 5000,
+    avancar: next,
+  })
 
   if (items.length === 0) return null
 
@@ -85,6 +86,12 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
 
         {totalPages > 1 && (
           <div className="ncc-dots">
+            <BotaoPausar
+              pausado={pausadoPeloUsuario}
+              onAlternar={alternarPausa}
+              oculto={movimentoReduzido}
+              rotulo="a troca automática de notícias"
+            />
             {Array.from({ length: totalPages }).map((_, i) => (
               <button key={i} className={"ncc-dot" + (i === page ? " active" : "")} onClick={() => setPage(i)} aria-label={`Página ${i + 1}`} />
             ))}

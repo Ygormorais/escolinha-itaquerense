@@ -2,15 +2,16 @@ import Link from "next/link"
 import { Check } from "lucide-react"
 import { PaginaPublica } from "@/components/site/pagina-publica"
 import { getConfig } from "@/lib/config"
+import { metadataPublica } from "@/lib/site/seo"
 import { MatriculaForm } from "./matricula-form"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 
-export const metadata = {
-  title: "Pré-Matrícula — E.C. Itaquerense",
+export const metadata = metadataPublica({
+  title: "Pré-matrícula",
   description:
     "Pré-matrícula da escolinha de futsal do E.C. Itaquerense. Envie os dados do aluno e do responsável — respondemos em até 48h.",
-  robots: { index: true, follow: true }, // página pública: indexável
-}
+  path: "/matricula",
+})
 
 const css = `
   /* ── GARANTIAS (faixa de título) ── */

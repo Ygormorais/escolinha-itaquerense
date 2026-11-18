@@ -1,9 +1,12 @@
 import { PaginaPublica } from "@/components/site/pagina-publica"
+import { metadataPublica } from "@/lib/site/seo"
 
-export const metadata = {
-  title: "Termos de Uso — Escolinha Itaquerense",
-  robots: { index: true, follow: true }, // página pública: indexável
-}
+export const metadata = metadataPublica({
+  title: "Termos de Uso",
+  description:
+    "Regras de uso do site, do painel da equipe e do portal da família da escolinha de futebol do E.C. Itaquerense.",
+  path: "/termos",
+})
 
 export default function TermosPage() {
   return (
