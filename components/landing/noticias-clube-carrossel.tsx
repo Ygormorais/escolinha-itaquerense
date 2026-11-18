@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { hrefNoticia } from "@/lib/noticias/conteudo"
 import "./noticias-clube-carrossel.css"
 
 export interface NoticiaClube {
@@ -11,6 +12,7 @@ export interface NoticiaClube {
   subtitulo: string | null
   categoria: string
   imagemUrl: string | null
+  slug?: string | null
 }
 
 const CORES: Record<string, string> = {
@@ -59,7 +61,7 @@ export function NoticiasClubCarrossel({ items }: { items: NoticiaClube[] }) {
             {visible.map((n) => {
               const grad = CORES[n.categoria] ?? CORES["Notícia"]
               return (
-                <Link href="/noticias/publico" className="ncc-card" key={n.id}>
+                <Link href={hrefNoticia(n.slug)} className="ncc-card" key={n.id}>
                   <div className="ncc-bg">
                     {n.imagemUrl ? (
                       <Image src={n.imagemUrl} alt={n.titulo} fill style={{ objectFit: "cover" }} />

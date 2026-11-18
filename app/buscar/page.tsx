@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { getPartidasPublicasCached } from "@/lib/site/partidas-dados"
 import { buscarNoSite, MIN_CARACTERES } from "@/lib/site/busca"
 import { MATERIAS } from "@/lib/landing/materias"
+import { hrefNoticia } from "@/lib/noticias/conteudo"
 import "./buscar.css"
 
 export const dynamic = "force-dynamic"
@@ -19,7 +20,7 @@ export default async function BuscarPage({ searchParams }: { searchParams: Promi
     ? await Promise.all([
         db.noticia.findMany({
           where: { publicado: true },
-          select: { id: true, titulo: true, subtitulo: true, categoria: true, createdAt: true },
+          select: { id: true, titulo: true, subtitulo: true, categoria: true, createdAt: true, slug: true },
         }),
         getPartidasPublicasCached(),
       ])
@@ -74,7 +75,7 @@ export default async function BuscarPage({ searchParams }: { searchParams: Promi
               <ul className="bs-lista">
                 {r.noticias.map((n) => (
                   <li key={n.id}>
-                    <Link href="/noticias/publico" className="bs-item">
+                    <Link href={hrefNoticia(n.slug)} className="bs-item">
                       <span className="bs-meta">{n.categoria} · {format(n.createdAt, "dd/MM/yyyy", { locale: ptBR })}</span>
                       <strong>{n.titulo}</strong>
                       {n.subtitulo && <span className="bs-sub">{n.subtitulo}</span>}

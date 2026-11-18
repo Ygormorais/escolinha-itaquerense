@@ -110,6 +110,12 @@ describe("montarSlidesHero", () => {
     })
   })
 
+  it("publicação com slug aponta para a página da notícia; sem slug cai na listagem", () => {
+    const s = montarSlidesHero([noticia(3, { slug: "vitoria-sub-11" }), noticia(4)])
+    expect(s.find((x) => x.id === "noticia-3")!.cta.href).toBe("/noticias/publico/vitoria-sub-11")
+    expect(s.find((x) => x.id === "noticia-4")!.cta.href).toBe("/noticias/publico")
+  })
+
   it("publicação sem foto não carrega imagem", () => {
     const s = montarSlidesHero([noticia(1)]).find((x) => x.id === "noticia-1")!
     expect(s.imagem).toBeUndefined()

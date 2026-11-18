@@ -35,7 +35,7 @@ export default async function Page() {
       where: { publicado: true },
       orderBy: [{ destaque: "desc" }, { createdAt: "desc" }],
       take: 9,
-      select: { id: true, titulo: true, subtitulo: true, categoria: true, imagemUrl: true },
+      select: { id: true, titulo: true, subtitulo: true, categoria: true, imagemUrl: true, slug: true },
     }) as Promise<NoticiaClube[]>,
     getConfig(),
     getHeroDestaque(),
