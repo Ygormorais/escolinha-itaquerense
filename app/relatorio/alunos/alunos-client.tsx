@@ -20,7 +20,7 @@ import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 import { EmptyState } from "@/components/ui/empty-state"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
-import { printHTML } from "@/lib/print"
+import { html, printHTML } from "@/lib/print"
 import type { StaffRole } from "@/lib/permissions"
 import { REPORT_PAGE_SIZE, type AlunoReportFilters } from "@/lib/report-query"
 import { Pagination } from "@/components/ui/pagination"
@@ -119,9 +119,9 @@ export function RelatorioAlunosClient({
   async function imprimirPDF() {
     const completos = await carregarRelatorioCompleto()
     const linhas = completos.map((a) =>
-      `<tr><td>${a.nome}</td><td>${a.turma}</td><td>${a.horario}</td><td>${a.status}</td><td>${calcIdade(a.dataNascimento)}</td><td>${a.responsavel ?? "—"}</td><td>${a.telefone ?? "—"}</td><td>R$ ${a.mensalidade.toFixed(2)}</td><td>${format(new Date(a.dataMatricula), "dd/MM/yyyy")}</td></tr>`
-    ).join("")
-    printHTML(`
+      html`<tr><td>${a.nome}</td><td>${a.turma}</td><td>${a.horario}</td><td>${a.status}</td><td>${calcIdade(a.dataNascimento)}</td><td>${a.responsavel ?? "—"}</td><td>${a.telefone ?? "—"}</td><td>R$ ${a.mensalidade.toFixed(2)}</td><td>${format(new Date(a.dataMatricula), "dd/MM/yyyy")}</td></tr>`
+    )
+    printHTML(html`
       <h1>Relatório de Alunos</h1>
       <p>${completos.length} alunos · Receita mensal ${formatMoney(resumo.totalMensalidade)}</p>
       <table>

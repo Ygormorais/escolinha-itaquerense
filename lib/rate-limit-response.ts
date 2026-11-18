@@ -5,8 +5,9 @@ export function rateLimitResponse(retryAfterMs?: number) {
   if (retryAfterMs != null && retryAfterMs > 0) {
     headers["Retry-After"] = String(Math.ceil(retryAfterMs / 1000))
   }
+  const minutos = Math.max(1, Math.ceil((retryAfterMs ?? 60_000) / 60_000))
   return NextResponse.json(
-    { error: "Muitas tentativas. Aguarde 1 minuto." },
+    { error: `Muitas tentativas. Aguarde ${minutos} ${minutos === 1 ? "minuto" : "minutos"}.` },
     { status: 429, headers }
   )
 }

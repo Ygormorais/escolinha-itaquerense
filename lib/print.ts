@@ -1,4 +1,26 @@
-export function printHTML(html: string, title = "Escolinha Itaquerense") {
+import { escapeHtml } from "@/lib/utils"
+
+/** Trecho de HTML já escapado; só `html` cria. */
+export class SafeHtml {
+  constructor(readonly value: string) {}
+  toString() { return this.value }
+}
+
+function renderValue(value: unknown): string {
+  if (value instanceof SafeHtml) return value.value
+  if (Array.isArray(value)) return value.map(renderValue).join("")
+  return escapeHtml(value)
+}
+
+/** Template de HTML que escapa todo valor interpolado (exceto outro `html` ou lista deles). */
+export function html(strings: TemplateStringsArray, ...values: unknown[]): SafeHtml {
+  let out = strings[0]
+  values.forEach((value, i) => { out += renderValue(value) + strings[i + 1] })
+  return new SafeHtml(out)
+}
+
+/** Documento completo de impressão; o corpo precisa vir de `html`. */
+export function buildPrintDocument(body: SafeHtml, title = "Escolinha Itaquerense"): string {
   const styles = `
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,7 +49,11 @@ export function printHTML(html: string, title = "Escolinha Itaquerense") {
       }
     </style>
   `
-  const fullHTML = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${title}</title>${styles}</head><body>${html}<div class="footer">Escolinha Itaquerense — E.C. Itaquerense</div><script>window.print()</script></body></html>`
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>${styles}</head><body>${body.value}<div class="footer">Escolinha Itaquerense — E.C. Itaquerense</div><script>window.print()</script></body></html>`
+}
+
+export function printHTML(body: SafeHtml, title = "Escolinha Itaquerense") {
+  const fullHTML = buildPrintDocument(body, title)
   const win = window.open("", "_blank")
   if (!win) return
   win.document.write(fullHTML)
@@ -48,7 +74,7 @@ export function printAlunoHistorico(aluno: {
     ? Math.round((aluno.frequencias.filter((f) => f.presenca === "Presente").length / aluno.frequencias.length) * 100)
     : 0
 
-  const html = `
+  const corpo = html`
     <h1>${aluno.nome}</h1>
     <p>Histórico completo do aluno</p>
     <dl class="info">
@@ -63,18 +89,18 @@ export function printAlunoHistorico(aluno: {
     <table>
       <thead><tr><th>Mês</th><th>Valor</th><th>Data Pagamento</th><th>Forma</th></tr></thead>
       <tbody>
-        ${aluno.pagamentos.map((p) => `<tr><td>${p.mesReferencia}</td><td>${p.valorRecebido ? p.valorRecebido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td><td>${p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString("pt-BR") : "—"}</td><td>${p.formaPagamento ?? "—"}</td></tr>`).join("")}
+        ${aluno.pagamentos.map((p) => html`<tr><td>${p.mesReferencia}</td><td>${p.valorRecebido ? p.valorRecebido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td><td>${p.dataPagamento ? new Date(p.dataPagamento).toLocaleDateString("pt-BR") : "—"}</td><td>${p.formaPagamento ?? "—"}</td></tr>`)}
       </tbody>
     </table>
     <h2 style="margin-top: 20px;">Frequência</h2>
     <table>
       <thead><tr><th>Data</th><th>Presença</th></tr></thead>
       <tbody>
-        ${aluno.frequencias.map((f) => `<tr><td>${new Date(f.data).toLocaleDateString("pt-BR")}</td><td><span class="badge ${f.presenca === "Presente" ? "badge-success" : f.presenca === "Justificado" ? "badge-warning" : "badge-danger"}">${f.presenca}</span></td></tr>`).join("")}
+        ${aluno.frequencias.map((f) => html`<tr><td>${new Date(f.data).toLocaleDateString("pt-BR")}</td><td><span class="badge ${f.presenca === "Presente" ? "badge-success" : f.presenca === "Justificado" ? "badge-warning" : "badge-danger"}">${f.presenca}</span></td></tr>`)}
       </tbody>
     </table>
   `
-  printHTML(html, `Histórico — ${aluno.nome}`)
+  printHTML(corpo, `Histórico — ${aluno.nome}`)
 }
 
 export function printRecibo(recibo: {
@@ -86,7 +112,7 @@ export function printRecibo(recibo: {
   formaPagamento: string
   dataPagamento: Date
 }) {
-  const html = `
+  const corpo = html`
     <div style="max-width: 400px; margin: 0 auto; padding: 32px; border: 2px solid #7F0000; border-radius: 8px; text-align: center;">
       <h1 style="font-size: 24px;">RECIBO</h1>
       <p style="font-size: 16px; font-weight: 600; margin: 4px 0;">Escolinha Itaquerense</p>
@@ -103,5 +129,5 @@ export function printRecibo(recibo: {
       <p style="font-size: 11px; color: #7A6F6C;">Obrigado pela confiança!</p>
     </div>
   `
-  printHTML(html, `Recibo ${recibo.numero}`)
+  printHTML(corpo, `Recibo ${recibo.numero}`)
 }

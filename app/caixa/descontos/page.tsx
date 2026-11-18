@@ -7,10 +7,13 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Descontos — Escolinha Itaquerense" }
 
 export default async function DescontosPage() {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin"])
   const alunosComDesconto = await db.aluno.findMany({
     where: { desconto: { gt: 0 }, status: "Ativo" },
     select: { id: true, nome: true, turma: true, mensalidade: true, desconto: true },

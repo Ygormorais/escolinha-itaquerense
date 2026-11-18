@@ -9,10 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { differenceInDays, format } from "date-fns"
 import Link from "next/link"
 import { FileText, Inbox } from "lucide-react"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Boleto — Escolinha Itaquerense" }
 
 export default async function BoletoPage() {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin"])
   const [emitidos, recebidos] = await Promise.all([
     db.pagamento.findMany({
       where: { canalPrevisto: "Boleto", statusCobranca: "pendente" },

@@ -18,6 +18,15 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
+const cookieSet = vi.fn()
+vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ set: cookieSet })) }))
+vi.mock("@/lib/session", () => ({
+  getSession: vi.fn(async () => ({ authenticated: true, user: "admin", role: "admin" })),
+  createSession: vi.fn(async () => "novo-cookie"),
+  cookieName: () => "escolinha_session",
+  cookieMaxAge: () => 100,
+}))
+
 vi.mock("bcryptjs", () => ({
   default: { hashSync: vi.fn(() => "bcrypt-hash"), compare: vi.fn() },
   getRounds: vi.fn((hash: string) => Number(hash.slice(4, 6))),
@@ -74,6 +83,19 @@ describe("gestão de usuários — restrita a admin", () => {
   it("alterarSenha exige papel admin", async () => {
     await alterarSenha(3, "novaSenha")
     expect(auth).toHaveBeenCalledWith(["admin"])
+  })
+
+  it("alterarSenha incrementa a versão de sessão para revogar cookies antigos", async () => {
+    m.usuario.findUnique.mockResolvedValue({ username: "outro" })
+    await alterarSenha(3, "novaSenha")
+    expect(m.usuario.update.mock.calls[0][0].data).toMatchObject({ sessaoVersao: { increment: 1 } })
+    expect(cookieSet).not.toHaveBeenCalled()
+  })
+
+  it("alterarSenha reemite o cookie quando o admin troca a própria senha", async () => {
+    m.usuario.findUnique.mockResolvedValue({ username: "admin", role: "admin", sessaoVersao: 4 })
+    await alterarSenha(1, "novaSenha")
+    expect(cookieSet).toHaveBeenCalledWith("escolinha_session", "novo-cookie", expect.objectContaining({ httpOnly: true }))
   })
 
   it("toggleUsuario exige papel admin", async () => {

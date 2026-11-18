@@ -1,9 +1,12 @@
 import { db } from "@/lib/db"
 import { ResponsaveisClient } from "./responsaveis-client"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Responsáveis — Configurações — Escolinha Itaquerense" }
 
 export default async function ResponsaveisPage() {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin", "secretaria"])
   const [responsaveis, alunos] = await Promise.all([
     db.responsavel.findMany({
       include: {

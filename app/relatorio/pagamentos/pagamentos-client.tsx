@@ -17,7 +17,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 import { format } from "date-fns"
 import type { RscDate } from "@/lib/rsc-date"
-import { printHTML } from "@/lib/print"
+import { html, printHTML } from "@/lib/print"
 import { getPaymentChannel, type PaymentChannel } from "@/lib/payment-channel"
 import { TURMAS } from "@/lib/constants"
 import type { StaffRole } from "@/lib/permissions"
@@ -116,9 +116,9 @@ export function RelatorioPagamentosClient({
     const linhas = completos.map((p) => {
       const st = calcStatus(p)
       const canal = getPaymentChannel(p.formaPagamento)
-      return `<tr><td>${p.aluno.nome}</td><td>${p.aluno.turma}</td><td>${p.mesReferencia}</td><td>${canal}</td><td>${format(new Date(p.dataVencimento), "dd/MM/yyyy")}</td><td>${p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</td><td>R$ ${(p.valorRecebido ?? 0).toFixed(2)}</td><td>${st}</td></tr>`
-    }).join("")
-    printHTML(`
+      return html`<tr><td>${p.aluno.nome}</td><td>${p.aluno.turma}</td><td>${p.mesReferencia}</td><td>${canal}</td><td>${format(new Date(p.dataVencimento), "dd/MM/yyyy")}</td><td>${p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</td><td>R$ ${(p.valorRecebido ?? 0).toFixed(2)}</td><td>${st}</td></tr>`
+    })
+    printHTML(html`
       <h1>Relatório de Pagamentos — ${filters.ano}</h1>
       <p>${completos.length} registros filtrados · Recebido: ${formatMoney(resumo.totalRecebido)} · Pendente: ${formatMoney(resumo.totalPendente)} · Em atraso: ${formatMoney(resumo.totalAtrasado)}</p>
       <table>
