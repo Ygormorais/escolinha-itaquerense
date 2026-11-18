@@ -1,5 +1,29 @@
 import { describe, it, expect } from "vitest"
-import { isPublicPath } from "../proxy"
+import { NextRequest } from "next/server"
+import { isPublicPath, proxy } from "../proxy"
+
+describe("proxy — visitante sem sessão", () => {
+  const visitar = (pathname: string) => proxy(new NextRequest(`http://localhost${pathname}`))
+
+  it.each(["/nao-existe", "/admin", "/pagina/qualquer/coisa", "/alunosx"])(
+    "%s não existe: segue para o Next responder 404, sem ir ao login",
+    async (rota) => {
+      const response = await visitar(rota)
+      expect(response.status).toBe(200)
+      expect(response.headers.get("x-middleware-next")).toBe("1")
+      expect(response.headers.get("location")).toBeNull()
+    },
+  )
+
+  it.each(["/dashboard", "/alunos", "/alunos/1", "/pagamentos", "/configuracoes/midia", "/noticias/admin", "/api/alunos", "/api/rota-nova", "/uploads/documentos/a.pdf"])(
+    "%s continua protegido: redireciona ao login",
+    async (rota) => {
+      const response = await visitar(rota)
+      expect(response.status).toBe(307)
+      expect(new URL(response.headers.get("location")!).pathname).toBe("/login")
+    },
+  )
+})
 
 describe("isPublicPath — rotas exatas públicas", () => {
   it.each(["/", "/login", "/api/health", "/logo.png", "/sw.js", "/manifest.json"])(

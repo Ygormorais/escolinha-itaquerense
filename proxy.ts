@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server"
 import { getSessionSecret } from "@/lib/env"
 import { SESSION_COOKIE, SESSION_PREFIX, SESSION_MAX_AGE_SECONDS } from "@/lib/session-constants"
 import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
+import { isPrivateAppPath } from "@/lib/public-routes"
 
 const COOKIE_NAME = SESSION_COOKIE
 
@@ -144,6 +145,13 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isPublicPath(pathname)) {
+    return nextResponse()
+  }
+
+  // Caminho que não é público nem de uma área privada conhecida não existe:
+  // segue para o Next responder 404 (página "não encontrada"), em vez de
+  // mandar quem digitou um link errado para a tela de login da equipe.
+  if (!isPrivateAppPath(pathname)) {
     return nextResponse()
   }
 
