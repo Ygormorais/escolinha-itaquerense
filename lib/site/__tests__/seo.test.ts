@@ -24,6 +24,11 @@ describe("metadataPublica", () => {
     expect(meta.twitter?.description).toBe("Descrição própria da página.")
   })
 
+  it("repete a imagem 1200x630 de prévia, que o openGraph da página substituiria", () => {
+    expect(meta.openGraph?.images).toEqual([expect.objectContaining({ url: "/opengraph-image", width: 1200, height: 630 })])
+    expect(meta.twitter?.images).toEqual(["/twitter-image"])
+  })
+
   it("é indexável", () => {
     expect(meta.robots).toEqual({ index: true, follow: true })
   })

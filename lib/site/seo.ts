@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 
+const ALT_PREVIA = "Escolinha de Futsal E.C. Itaquerense — Itaquera, São Paulo"
+
 /**
  * Metadata das páginas públicas indexáveis. O template do layout raiz
  * ("%s — Escolinha Itaquerense") acrescenta o nome do clube sozinho: passe só
@@ -30,8 +32,11 @@ export function metadataPublica({
       title,
       description,
       url: path,
+      // O openGraph da página substitui o do layout, e com ele a imagem do arquivo
+      // app/opengraph-image.tsx: sem repetir aqui, a prévia sairia sem foto.
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: ALT_PREVIA }],
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: { card: "summary_large_image", title, description, images: ["/twitter-image"] },
     robots: { index: true, follow: true },
   }
 }
