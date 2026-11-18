@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { limparCacheOffline } from "@/lib/limpar-cache-offline"
 import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
 import { FaixaAbas } from "@/components/ui/faixa-abas"
 import { GRUPOS_PORTAL, abaAtiva, grupoDaRota } from "@/lib/portal-navegacao"
@@ -23,6 +24,7 @@ export function NavResponsavel() {
   async function handleLogout() {
     try {
       await fetch("/api/responsavel/logout", { method: "POST" })
+      await limparCacheOffline()
     } finally {
       router.replace("/responsavel/login")
       router.refresh()

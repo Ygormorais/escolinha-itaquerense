@@ -9,6 +9,7 @@ export const metadata = {
   title: "Pré-Matrícula — E.C. Itaquerense",
   description:
     "Pré-matrícula da escolinha de futsal do E.C. Itaquerense. Envie os dados do aluno e do responsável — respondemos em até 48h.",
+  robots: { index: true, follow: true }, // página pública: indexável
 }
 
 const css = `

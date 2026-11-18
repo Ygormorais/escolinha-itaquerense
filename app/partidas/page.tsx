@@ -29,6 +29,7 @@ export const dynamic = "force-dynamic"
 export const metadata = {
   title: "Partidas — E.C. Itaquerense",
   description: "Agenda e resultados das categorias de base do E.C. Itaquerense, com classificação por categoria.",
+  robots: { index: true, follow: true }, // página pública: indexável
 }
 
 const SITUACOES: { valor: Situacao; rotulo: string }[] = [

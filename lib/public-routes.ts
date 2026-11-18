@@ -14,6 +14,7 @@ const PUBLIC_PREFIX_ROUTES = [
   "/matricula",
   "/noticias/publico",
   "/responsavel",
+  "/validar-recibo",
 ]
 
 export function isPublicRoute(pathname: string): boolean {

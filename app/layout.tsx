@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     default: "Escolinha Itaquerense",
     template: "%s — Escolinha Itaquerense",
   },
-  description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos. Painel administrativo para gestão de alunos, pagamentos, frequência e campeonatos.",
+  description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos. Turmas, horários e pré-matrícula online.",
   applicationName: "Escolinha Itaquerense",
   authors: [{ name: "E.C. Itaquerense" }],
   openGraph: {
@@ -68,6 +68,8 @@ export const metadata: Metadata = {
     description: "Escolinha de futebol E.C. Itaquerense — formando atletas e cidadãos.",
     images: ["/logo.png"],
   },
+  // Padrão fechado: áreas autenticadas não são indexadas; as páginas públicas
+  // (landing, matrícula, horários, notícias, partidas) abrem com robots próprio.
   robots: {
     index: false,
     follow: false,

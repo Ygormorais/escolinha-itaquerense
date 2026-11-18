@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { limparCacheOffline } from "@/lib/limpar-cache-offline"
 import { BuscaGlobal } from "@/components/ui/busca-global"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { OnboardingRestart } from "@/components/onboarding/onboarding-restart"
@@ -25,6 +26,7 @@ function LogoutButton() {
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" })
+    await limparCacheOffline()
     router.replace("/login")
     router.refresh()
   }
