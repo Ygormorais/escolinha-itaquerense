@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useState, useSyncExternalStore, useTransition } from "react"
 import { CalendarPlus, Copy, RefreshCw, Smartphone } from "lucide-react"
 import { toast } from "sonner"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -11,17 +11,13 @@ import { cn } from "@/lib/utils"
 /** Assinatura do calendário (feed .ics): o responsável assina uma vez e a agenda do celular se atualiza sozinha. */
 export function AssinarCalendario({ tokenInicial }: { tokenInicial: string | null }) {
   const [token, setToken] = useState(tokenInicial)
-  const [origem, setOrigem] = useState("")
+  const origem = useSyncExternalStore(() => () => {}, () => window.location.origin, () => "")
   const [aberto, setAberto] = useState(false)
   const [pending, start] = useTransition()
 
-  useEffect(() => {
-    setOrigem(window.location.host)
-  }, [])
-
   const caminho = token ? `/api/calendario/${token}.ics` : ""
-  const webcal = token && origem ? `webcal://${origem}${caminho}` : ""
-  const https = token && origem ? `${window.location.protocol}//${origem}${caminho}` : ""
+  const webcal = token && origem ? `${origem.replace(/^https?:/, "webcal:")}${caminho}` : ""
+  const https = token && origem ? `${origem}${caminho}` : ""
 
   function executar(acao: () => Promise<{ token: string | null } | { error: string }>, sucesso: string) {
     start(async () => {

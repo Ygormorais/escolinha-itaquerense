@@ -24,6 +24,15 @@ for (const [origem, url] of URLS) {
       await expect(page.getByRole("button", { name: "Sub-7", exact: true })).toHaveCount(0)
     })
 
+    test("cada turma com horários mostra a situação de vagas", async ({ page }) => {
+      await page.goto(url)
+      const cards = page.locator(".tcard")
+      const total = await cards.count()
+      test.skip(total === 0, "sem turmas com horários cadastrados neste banco")
+      await expect(cards.locator('[data-testid^="vagas-"]')).toHaveCount(total)
+      await expect(cards.first().locator('[data-testid^="vagas-"]')).toHaveText(/vagas?|lotada/i)
+    })
+
     test("chip de categoria filtra e 'Todas' limpa o filtro", async ({ page }) => {
       await page.goto(url)
       const chip = page.getByRole("button", { name: "Sub-11", exact: true })

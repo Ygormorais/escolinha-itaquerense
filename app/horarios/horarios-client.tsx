@@ -13,6 +13,7 @@ import {
   Trophy,
 } from "lucide-react"
 import type { TurmaInfo } from "@/lib/landing/turmas"
+import { buildWhatsAppHref } from "@/lib/browser-safety"
 import { CATEGORIAS_ESCOLINHA, CATEGORIAS_FEDERADO, FAIXA_ETARIA } from "@/lib/site/categorias"
 
 const MODALIDADES = {
@@ -114,6 +115,17 @@ const css = `
   .hc .tcard-pill-red svg{color:var(--red)}
   .hc .tcard-pill-dark svg{color:var(--red-dark)}
 
+  /* ── VAGAS ── */
+  .hc .vagas{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+  .hc .vagas-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:5px 12px;border-radius:var(--radius-pill)}
+  .hc .vagas-badge::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+  .hc .vagas-disponivel{color:#166534;background:#DCFCE7}
+  .hc .vagas-poucas{color:#92400E;background:#FEF3C7}
+  .hc .vagas-lotada{color:#991B1B;background:#FEE2E2}
+  .hc .vagas-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px;font-weight:700;color:var(--red)}
+  .hc .vagas-link:hover{text-decoration:underline}
+  .hc .vagas-link:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+
   /* ── EMPTY / EM BREVE ── */
   .hc .soon-card{background:var(--bg-muted);border:1.5px dashed var(--border);
     border-radius:var(--radius-sm);padding:28px 24px;display:flex;flex-direction:column;
@@ -184,13 +196,15 @@ const css = `
 type Props = {
   turmas: TurmaInfo[]
   waUrl: string
+  /** Número do WhatsApp do clube (só dígitos), para o link da lista de espera. */
+  waNumero?: string
 }
 
 function Ico({ children }: { children: ReactNode }) {
   return <span className="tab-ico" aria-hidden>{children}</span>
 }
 
-export default function HorariosClient({ turmas, waUrl }: Props) {
+export default function HorariosClient({ turmas, waUrl, waNumero }: Props) {
   const [modalidade, setModalidade] = useState<ModalidadeKey>("escolinha")
   const [subFiltro, setSubFiltro] = useState<string | null>(null)
 
@@ -318,6 +332,24 @@ export default function HorariosClient({ turmas, waUrl }: Props) {
                         </div>
                       ))}
                     </div>
+                    {dados.vagas && (
+                      <div className="vagas">
+                        <span className={`vagas-badge vagas-${dados.vagas.nivel}`} data-testid={`vagas-${sub}`}>
+                          {dados.vagas.rotulo}
+                        </span>
+                        {dados.vagas.nivel === "lotada" && (
+                          <a
+                            className="vagas-link"
+                            href={buildWhatsAppHref(waNumero, `Olá! A turma ${sub} está lotada. Gostaria de entrar na lista de espera.`)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <MessageCircle size={16} aria-hidden />
+                            Entrar na lista de espera <span className="sr-only">da turma {sub} (abre o WhatsApp)</span>
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )

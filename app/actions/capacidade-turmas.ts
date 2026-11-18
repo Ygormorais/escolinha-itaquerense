@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { TURMAS } from "@/lib/constants"
 import { getConfig } from "@/lib/config"
+import { textoDoModelo } from "@/lib/whatsapp-modelos"
 
 export async function carregarCapacidadeTurmas() {
   await requireAuth(["admin", "secretaria"])
@@ -16,7 +17,7 @@ export async function carregarCapacidadeTurmas() {
     db.aluno.groupBy({ by: ["turma"], where: { status: "Ativo" }, _count: { _all: true } }),
   ])
   const ocupacao = new Map(contagens.map((item) => [item.turma, item._count._all]))
-  return { dados: { turmas: turmas.map((turma) => ({ ...turma, ocupacao: ocupacao.get(turma.nome) ?? 0, createdAt: turma.createdAt.toISOString(), updatedAt: turma.updatedAt.toISOString(), listaEspera: turma.listaEspera.map((item) => ({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt.toISOString() })) })) } }
+  return { dados: { clube: getConfig().nome, modeloVaga: textoDoModelo("vaga", getConfig().modelosMensagem), turmas: turmas.map((turma) => ({ ...turma, ocupacao: ocupacao.get(turma.nome) ?? 0, createdAt: turma.createdAt.toISOString(), updatedAt: turma.updatedAt.toISOString(), listaEspera: turma.listaEspera.map((item) => ({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt.toISOString() })) })) } }
 }
 
 export async function atualizarCapacidadeTurma(id: number, capacidade: number) {
