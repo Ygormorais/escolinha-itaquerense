@@ -22,7 +22,7 @@
 .lp .crest{grid-area:1/2;justify-self:center;align-self:center;position:relative;z-index:2;display:block;width:80px;height:80px;transition:transform .3s ease}
 .lp .crest img{width:100%;height:100%;object-fit:contain}
 .lp header.site.is-stuck .crest{transform:scale(.8)}
-.lp .btn-matricula{grid-area:1/3;justify-self:end;position:relative;z-index:2;display:inline-flex;align-items:center;min-height:44px;padding:0 22px;border-radius:var(--radius-control,4px);background:var(--red);color:#fff;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;transition:background .2s}
+.lp .btn-matricula{grid-area:1/3;justify-self:end;position:relative;z-index:2;display:inline-flex;align-items:center;min-height:44px;padding:0 22px;border-radius:var(--radius-pill);background:var(--red);color:#fff;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;transition:background .2s}
 .lp .btn-matricula:hover{background:var(--red-dark)}
 .lp .btn-matricula:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .lp .burger{display:none;grid-area:1/4;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;background:none;color:#fff;cursor:pointer}
@@ -90,7 +90,7 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
 .lp .hs-slide{--w:clamp(56px,7vw,104px);position:relative;flex:0 0 100%;min-width:0;min-height:clamp(480px,calc(100svh - 230px),740px);display:flex;align-items:flex-end;overflow:hidden;isolation:isolate}
 .lp .hs-field{position:absolute;inset:0;z-index:-3;background:repeating-linear-gradient(90deg,#141414 0 var(--w),#0B0B0B var(--w) calc(var(--w) * 2))}
 /* Escudo inteiro dentro do slide, centralizado na vertical à direita do texto. */
-.lp .hs-crest{position:absolute;z-index:-2;top:50%;right:clamp(24px,6vw,120px);bottom:auto;width:auto;height:min(78%,clamp(280px,36vw,520px));max-width:42vw;object-fit:contain;transform:translateY(-50%);filter:drop-shadow(0 32px 60px rgba(0,0,0,.5))}
+.lp .hs-crest{position:absolute;z-index:-2;top:50%;right:clamp(24px,6vw,120px);bottom:auto;width:auto;height:min(78%,clamp(280px,36vw,520px));max-width:42vw;object-fit:contain;transform:translateY(-50%) perspective(900px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transition:transform .25s ease-out;will-change:transform;filter:drop-shadow(0 32px 60px rgba(0,0,0,.5))}
 .lp .hs-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(0,0,0,.94) 0%,rgba(0,0,0,.72) 40%,transparent 72%)}
 .lp .hs-photo{z-index:-3}
 .lp .hs-shade-photo{background:linear-gradient(0deg,rgba(20,6,6,.9) 0%,rgba(20,6,6,.45) 48%,rgba(20,6,6,.15) 100%)}
@@ -132,6 +132,7 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
   .lp .hs-tab-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 }
 @media(prefers-reduced-motion:reduce){
+  .lp .hs-crest{transition:none}
   .lp .hs-track{transition:none}
 }
 

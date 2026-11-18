@@ -24,6 +24,21 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     if (e.key === "ArrowRight") ir(atual + 1)
   }
 
+  /** Profundidade leve: o escudo inclina poucos graus acompanhando o mouse (CSS: .hs-crest). */
+  function onPointerMove(e: React.PointerEvent<HTMLElement>) {
+    if (e.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const r = e.currentTarget.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width - 0.5
+    const y = (e.clientY - r.top) / r.height - 0.5
+    e.currentTarget.style.setProperty("--tilt-x", `${(-y * 8).toFixed(2)}deg`)
+    e.currentTarget.style.setProperty("--tilt-y", `${(x * 10).toFixed(2)}deg`)
+  }
+
+  function onPointerLeave(e: React.PointerEvent<HTMLElement>) {
+    e.currentTarget.style.setProperty("--tilt-x", "0deg")
+    e.currentTarget.style.setProperty("--tilt-y", "0deg")
+  }
+
   function onTouchEnd(e: React.TouchEvent) {
     if (toqueX.current === null) return
     const delta = e.changedTouches[0].clientX - toqueX.current
@@ -37,6 +52,8 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       aria-roledescription="carousel"
       aria-label="Destaques do clube"
       onKeyDown={onKeyDown}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
     >
       <div
         className="hs-viewport"
