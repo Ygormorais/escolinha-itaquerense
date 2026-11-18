@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { accountKey, getClientIp } from "@/lib/client-ip"
+import { accountKey, getClientIp, getClientIpFromHeaders } from "@/lib/client-ip"
 
 const req = (xff?: string) => new Request("http://localhost", { headers: xff ? { "x-forwarded-for": xff } : {} })
 
@@ -14,6 +14,13 @@ describe("getClientIp", () => {
 
   it("sem cabeçalho devolve unknown", () => {
     expect(getClientIp(req())).toBe("unknown")
+  })
+})
+
+describe("getClientIpFromHeaders", () => {
+  it("segue a mesma regra de getClientIp para quem só tem os cabeçalhos", () => {
+    expect(getClientIpFromHeaders(new Headers({ "x-forwarded-for": "9.9.9.9, 203.0.113.7" }))).toBe("203.0.113.7")
+    expect(getClientIpFromHeaders(new Headers())).toBe("unknown")
   })
 })
 

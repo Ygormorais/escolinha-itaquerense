@@ -31,7 +31,8 @@ describe("robots e sitemap", () => {
 
   it("páginas públicas abrem com index:true e o layout raiz segue fechado", () => {
     for (const p of ["app/page.tsx", "app/matricula/page.tsx", "app/horarios/page.tsx", "app/partidas/page.tsx", "app/noticias/publico/page.tsx"]) {
-      expect(ler(p), p).toContain("robots: { index: true, follow: true }")
+      // metadataPublica (lib/site/seo) define robots index:true; o teste dela cobre o valor.
+      expect(ler(p), p).toMatch(/metadataPublica\(|robots: \{ index: true, follow: true \}/)
     }
     expect(ler("app/layout.tsx")).toMatch(/robots: \{\s*index: false/)
   })

@@ -6,7 +6,7 @@ import { X, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
 import { NoticiasCarrossel } from "./noticias-carrossel"
 import { MateriasTabs } from "./materias-tabs"
 import { SiteHeader } from "@/components/site/site-header"
-import { SiteFooter } from "@/components/site/site-footer"
+import { SiteFooter, type ContatoRodape } from "@/components/site/site-footer"
 import { AnuncioBanner } from "@/components/site/anuncio-banner"
 import type { AnuncioPublico } from "@/lib/site/anuncios"
 import { JogoStrip } from "./jogo-strip"
@@ -33,6 +33,7 @@ export function LandingClient({
   depoimentos,
   endereco,
   cidade,
+  contato,
   anuncio = null,
 }: {
   /** Jogos/resultados agrupados por Sub (abas no carrossel). */
@@ -47,6 +48,8 @@ export function LandingClient({
   depoimentos: Depoimento[]
   endereco?: string
   cidade?: string
+  /** Mapa e redes sociais do rodapé (vêm das configurações do clube). */
+  contato?: ContatoRodape
   /** Banner de publicidade da posição "landing", quando houver um no ar. */
   anuncio?: AnuncioPublico | null
 }) {
@@ -77,8 +80,6 @@ export function LandingClient({
 
   return (
     <div className={`${publicFontClass} lp`}>
-      <a className="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
-
       <SiteHeader whatsappUrl={waUrl} dentroDaLanding />
 
       <main id="conteudo-principal">
@@ -223,7 +224,7 @@ export function LandingClient({
         </section>
       </main>
 
-      <SiteFooter whatsapp={whatsapp} endereco={endereco} cidade={cidade} dentroDaLanding />
+      <SiteFooter whatsapp={whatsapp} endereco={endereco} cidade={cidade} contato={contato} dentroDaLanding />
 
       {lbIndex !== null && galeria[lbIndex] && (
         <div className="lb" role="dialog" aria-modal="true" aria-label="Foto ampliada" onClick={closeLb}>

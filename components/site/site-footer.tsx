@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Lock } from "lucide-react"
 import { depoimentos } from "@/lib/landing/conteudo"
 import { TEXTO_CONTATO, TEXTO_NOVIDADES, whatsappUrl } from "@/lib/site/whatsapp"
+import { rotasDoLocal } from "@/lib/site/mapas"
 import "@/components/landing/landing.css"
 import "./site-chrome.css"
 import "./site-footer.css"
@@ -10,6 +11,25 @@ import "./site-footer.css"
 interface Grupo {
   titulo: string
   links: { href: string; rotulo: string; externo?: boolean }[]
+}
+
+/** Dados opcionais do clube que enriquecem o rodapé (mapa e redes). Vêm das configurações. */
+export type ContatoRodape = {
+  latitude?: string | null
+  longitude?: string | null
+  instagram?: string | null
+  facebook?: string | null
+  youtube?: string | null
+}
+
+/** Só aceita links https de verdade; configuração em branco ou malformada some do rodapé. */
+function linkRede(valor: string | null | undefined): string | null {
+  try {
+    const url = new URL(valor?.trim() ?? "")
+    return url.protocol === "https:" ? url.toString() : null
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -21,16 +41,24 @@ export function SiteFooter({
   whatsapp,
   endereco,
   cidade,
+  contato = {},
   dentroDaLanding = false,
 }: {
   whatsapp?: string | null
   endereco?: string | null
   cidade?: string | null
+  contato?: ContatoRodape
   /** Na landing o wrapper não repete a classe .lp (ela já envolve a página). */
   dentroDaLanding?: boolean
 }) {
   const waContato = whatsappUrl(whatsapp, TEXTO_CONTATO)
   const waNovidades = whatsappUrl(whatsapp, TEXTO_NOVIDADES)
+  const rotas = rotasDoLocal({ endereco, cidade, latitude: contato.latitude, longitude: contato.longitude })
+  const redes = [
+    { rotulo: "Instagram", href: linkRede(contato.instagram) },
+    { rotulo: "Facebook", href: linkRede(contato.facebook) },
+    { rotulo: "YouTube", href: linkRede(contato.youtube) },
+  ].filter((r): r is { rotulo: string; href: string } => r.href !== null)
 
   const grupos: Grupo[] = [
     {
@@ -94,6 +122,41 @@ export function SiteFooter({
                 {endereco && <span>{endereco}</span>}
                 {cidade && <span>{cidade}</span>}
               </address>
+            )}
+            {rotas && (
+              <div className="foot-rota">
+                <span id="foot-rota-rotulo" className="foot-rota-rotulo">Como chegar</span>
+                <ul aria-labelledby="foot-rota-rotulo">
+                  <li>
+                    <a href={rotas.googleMaps} target="_blank" rel="noopener noreferrer">
+                      Google Maps<span className="sr-only"> (abre em nova aba)</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href={rotas.waze} target="_blank" rel="noopener noreferrer">
+                      Waze<span className="sr-only"> (abre em nova aba)</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            )}
+            {(waContato || redes.length > 0) && (
+              <ul className="foot-contato" aria-label="Fale com o clube">
+                {waContato && (
+                  <li>
+                    <a href={waContato} target="_blank" rel="noopener noreferrer">
+                      WhatsApp<span className="sr-only"> (abre em nova aba)</span>
+                    </a>
+                  </li>
+                )}
+                {redes.map((r) => (
+                  <li key={r.rotulo}>
+                    <a href={r.href} target="_blank" rel="noopener noreferrer">
+                      {r.rotulo}<span className="sr-only"> (abre em nova aba)</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 

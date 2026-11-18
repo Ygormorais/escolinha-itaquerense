@@ -2,15 +2,16 @@ import Link from "next/link"
 import { Check } from "lucide-react"
 import { PaginaPublica } from "@/components/site/pagina-publica"
 import { getConfig } from "@/lib/config"
+import { metadataPublica } from "@/lib/site/seo"
 import { MatriculaForm } from "./matricula-form"
 import { getTurmasHorarios } from "@/lib/landing/turmas"
 
-export const metadata = {
-  title: "Pré-Matrícula — E.C. Itaquerense",
+export const metadata = metadataPublica({
+  title: "Pré-matrícula",
   description:
     "Pré-matrícula da escolinha de futsal do E.C. Itaquerense. Envie os dados do aluno e do responsável — respondemos em até 48h.",
-  robots: { index: true, follow: true }, // página pública: indexável
-}
+  path: "/matricula",
+})
 
 const css = `
   /* ── GARANTIAS (faixa de título) ── */
@@ -62,6 +63,10 @@ const css = `
   .mat .mat-textarea::placeholder{color:var(--text-light,#B0A9A2)}
   .mat .mat-textarea:hover{border-color:var(--text-light,#C4B9B0)}
   .mat .mat-textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb, var(--brand-600) 12%, transparent);background:var(--bg-card,#fff)}
+  .mat .mat-input[aria-invalid="true"],.mat .mat-textarea[aria-invalid="true"]{border-color:var(--danger-600,#B91C1C)}
+  .mat .mat-erro{font-size:13px;font-weight:600;color:var(--danger-600,#B91C1C);line-height:1.4}
+  /* Isca anti-robô: fora da tela (não usar display:none, que alguns robôs ignoram). */
+  .mat .mat-isca{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
   .mat .mat-input-wrap{position:relative}
   .mat .mat-input-wrap .mat-input{padding-left:40px}
   .mat .mat-input-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-light,#B0A9A2);pointer-events:none}

@@ -9,10 +9,13 @@ import {
   ClipboardList,
   Clock,
   Lock,
+  MapPin,
   MessageCircle,
+  Navigation,
   Trophy,
 } from "lucide-react"
 import type { TurmaInfo } from "@/lib/landing/turmas"
+import type { RotasLocal } from "@/lib/site/mapas"
 import { CATEGORIAS_ESCOLINHA, CATEGORIAS_FEDERADO, FAIXA_ETARIA } from "@/lib/site/categorias"
 
 const MODALIDADES = {
@@ -165,6 +168,15 @@ const css = `
     font-weight:700;font-size:14px;letter-spacing:.02em;
     padding:14px 28px;border-radius:100px;border:2px solid rgba(255,255,255,.2);
     transition:all .2s var(--ease);min-height:48px}
+  .hc .onde{margin-top:32px;padding:24px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card)}
+  .hc .onde h2{font-family:var(--font-heading),system-ui,sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px}
+  .hc .onde address{font-style:normal;color:var(--text-muted);font-size:15px;margin-bottom:16px}
+  .hc .onde-btns{display:flex;flex-wrap:wrap;gap:10px}
+  .hc .onde-btns a{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:var(--radius-pill);
+    border:1.5px solid var(--red);color:var(--red);font-weight:700;font-size:14px;transition:background .2s,color .2s}
+  .hc .onde-btns a:hover{background:var(--red);color:#fff}
+  .hc .onde-btns a:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+  @media(max-width:480px){.hc .onde-btns a{width:100%}}
   .hc .btn-wa:hover{background:#22c05e;transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,.3)}
   @media(max-width:480px){
     .hc .cta h2{font-size:22px}
@@ -184,13 +196,15 @@ const css = `
 type Props = {
   turmas: TurmaInfo[]
   waUrl: string
+  /** Local de treino (das configurações do clube) e as rotas até ele; null se não configurado. */
+  local?: { endereco: string; rotas: RotasLocal } | null
 }
 
 function Ico({ children }: { children: ReactNode }) {
   return <span className="tab-ico" aria-hidden>{children}</span>
 }
 
-export default function HorariosClient({ turmas, waUrl }: Props) {
+export default function HorariosClient({ turmas, waUrl, local = null }: Props) {
   const [modalidade, setModalidade] = useState<ModalidadeKey>("escolinha")
   const [subFiltro, setSubFiltro] = useState<string | null>(null)
 
@@ -369,6 +383,23 @@ export default function HorariosClient({ turmas, waUrl }: Props) {
             </li>
           </ul>
         </div>
+      )}
+
+      {local && (
+        <section className="onde" aria-labelledby="onde-h">
+          <h2 id="onde-h">Como chegar</h2>
+          <address>{local.endereco}</address>
+          <div className="onde-btns">
+            <a href={local.rotas.googleMaps} target="_blank" rel="noopener noreferrer">
+              <MapPin size={16} strokeWidth={2} aria-hidden />
+              Abrir no Google Maps<span className="sr-only"> (abre em nova aba)</span>
+            </a>
+            <a href={local.rotas.waze} target="_blank" rel="noopener noreferrer">
+              <Navigation size={16} strokeWidth={2} aria-hidden />
+              Abrir no Waze<span className="sr-only"> (abre em nova aba)</span>
+            </a>
+          </div>
+        </section>
       )}
 
       <div className={`cta ${modalidade === "federado" ? "cta-dark" : "cta-red"}`}>

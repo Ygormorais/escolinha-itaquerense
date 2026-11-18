@@ -1,10 +1,11 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { CategoriaJogos } from "@/lib/landing/jogos"
 import { proximoFoco, type Foco } from "./jogos-carrossel-logic"
+import { BotaoPausar, useAutoplay } from "./autoplay"
 
 const INTERVALO_MS = 4000
 
@@ -14,12 +15,11 @@ export function JogosCarrossel({ categorias }: { categorias: CategoriaJogos[] })
 
   const tamanhos = categorias.map((c) => c.jogos.length)
 
-  useEffect(() => {
-    if (pausado || categorias.length === 0) return
-    const t = setInterval(() => setFoco((f) => proximoFoco(f, tamanhos)), INTERVALO_MS)
-    return () => clearInterval(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pausado, categorias.length, JSON.stringify(tamanhos)])
+  const { pausadoPeloUsuario, movimentoReduzido, alternarPausa } = useAutoplay({
+    ativo: !pausado && categorias.length > 0,
+    intervaloMs: INTERVALO_MS,
+    avancar: () => setFoco((f) => proximoFoco(f, tamanhos)),
+  })
 
   if (categorias.length === 0) {
     return (
@@ -48,6 +48,12 @@ export function JogosCarrossel({ categorias }: { categorias: CategoriaJogos[] })
       onBlur={() => setPausado(false)}
     >
       <div className="container">
+        <BotaoPausar
+          pausado={pausadoPeloUsuario}
+          onAlternar={alternarPausa}
+          oculto={movimentoReduzido}
+          rotulo="a troca automática de jogos"
+        />
         <div className="jc-tabs">
           {categorias.map((c, i) => (
             <button
