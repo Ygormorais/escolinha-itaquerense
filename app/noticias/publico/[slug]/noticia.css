@@ -1,0 +1,8 @@
+.nt .nt-meta{display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:14px;color:var(--text-muted);margin-bottom:20px}
+.nt .nt-cat{background:#0B0B0B;color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:var(--radius-control,4px)}
+.nt .nt-capa{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:cover;border-radius:var(--radius-sm,8px);margin-bottom:28px;background:var(--bg-muted)}
+.nt .nt-texto{max-width:none;color:var(--text);font-size:17px}
+.nt .nt-video{margin-top:32px}
+.nt .nt-acoes{display:flex;flex-wrap:wrap;gap:12px;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.nt .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(max-width:420px){.nt .nt-acoes .pg-btn{width:100%}}
