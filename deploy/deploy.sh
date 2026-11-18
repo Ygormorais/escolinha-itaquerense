@@ -91,6 +91,14 @@ npm ci
 npm run build
 npx prisma migrate deploy
 [[ ! -f "$DB_FILE" ]] || chmod 600 "$DB_FILE"
+# Também migra instalações antigas cujo crontab continha o Bearer em texto puro.
+if grep -q '^CRON_SECRET=.' .env 2>/dev/null && grep -q '^NEXT_PUBLIC_APP_URL=.' .env 2>/dev/null; then
+  if ! bash deploy/install-fpfs-cron.sh; then
+    echo "Aviso: não foi possível atualizar o cron FPFS; rode deploy/install-fpfs-cron.sh manualmente." >&2
+  fi
+fi
+# (antes de subir o app: o install grava FPFS_AUTO_SYNC=0 no .env e o app já nasce com o timer interno desligado)
+
 pm2 startOrReload deploy/ecosystem.config.cjs --only escolinha
 if pm2 describe escolinha-fpfs >/dev/null 2>&1; then
   pm2 delete escolinha-fpfs
@@ -98,13 +106,6 @@ fi
 MAINTENANCE_STARTED=false
 pm2 save
 trap - EXIT
-
-# Também migra instalações antigas cujo crontab continha o Bearer em texto puro.
-if grep -q '^CRON_SECRET=.' .env 2>/dev/null && grep -q '^NEXT_PUBLIC_APP_URL=.' .env 2>/dev/null; then
-  if ! bash deploy/install-fpfs-cron.sh; then
-    echo "Aviso: não foi possível atualizar o cron FPFS; rode deploy/install-fpfs-cron.sh manualmente." >&2
-  fi
-fi
 
 TAG="deploy-$(date +%Y%m%d-%H%M%S)"
 git tag "$TAG"
