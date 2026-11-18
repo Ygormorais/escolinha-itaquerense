@@ -24,9 +24,11 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 
 vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
-vi.mock("@/lib/baixa", () => ({
+vi.mock("@/lib/baixa", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/baixa")>()),
   emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
   cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(1),
+  encerrarCobrancaAtiva: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock("@/app/actions/cobranca", () => ({
@@ -43,7 +45,7 @@ import {
 } from "@/app/actions/pagamentos"
 import { db } from "@/lib/db"
 import { cancelarCobranca } from "@/app/actions/cobranca"
-import { cancelarRecibosDoPagamento, emitirReciboSeguro } from "@/lib/baixa"
+import { cancelarRecibosDoPagamento, emitirReciboSeguro, encerrarCobrancaAtiva } from "@/lib/baixa"
 
 const m = db as unknown as {
   pagamento: {
@@ -61,7 +63,11 @@ beforeEach(() => {
   vi.clearAllMocks()
   m.pagamento.update.mockResolvedValue({})
   m.pagamento.updateMany.mockResolvedValue({ count: 1 })
-  m.pagamento.findUnique.mockResolvedValue({ mesReferencia: "Junho/2026", aluno: { nome: "Aluno A" } })
+  // Mensalidade em aberto de R$ 200 (sem desconto nem baixa anterior).
+  m.pagamento.findUnique.mockResolvedValue({
+    id: 5, mesReferencia: "Junho/2026", dataPagamento: null, valorRecebido: null, valorDevido: 200, observacoes: null, externalId: null,
+    aluno: { nome: "Aluno A", mensalidade: 200, desconto: 0 },
+  })
   m.pagamento.findMany.mockResolvedValue([])
   m.pagamento.createMany.mockResolvedValue({ count: 0 })
   m.pagamento.delete.mockResolvedValue({})
@@ -80,7 +86,6 @@ describe("registrarPagamento", () => {
     expect(data).toMatchObject({
       formaPagamento: "PIX",
       valorRecebido: 200,
-      observacoes: null,
       canalPrevisto: "PIX",
       statusCobranca: "pago",
     })
@@ -119,10 +124,10 @@ describe("marcarComoPago", () => {
     const res = await marcarComoPago(5, {
       dataPagamento: "2026-06-10",
       formaPagamento: "PIX",
-      valorRecebido: 150,
+      valorRecebido: 200,
     })
     expect(res).toMatchObject({ success: true })
-    expect(m.pagamento.updateMany.mock.calls[0][0].data.valorRecebido).toBe(150)
+    expect(m.pagamento.updateMany.mock.calls[0][0].data.valorRecebido).toBe(200)
     expect(m.pagamento.updateMany.mock.calls[0][0].data.canalPrevisto).toBe("PIX")
     expect(m.pagamento.updateMany.mock.calls[0][0].data.statusCobranca).toBe("pago")
   })
@@ -231,7 +236,7 @@ describe("deletePagamento", () => {
 })
 
 describe("marcarComoPago", () => {
-  const base = { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 150 }
+  const base = { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 }
 
   it("marca como pago com valor válido", async () => {
     const res = await marcarComoPago(1, base)
@@ -265,8 +270,8 @@ describe("recibo da baixa", () => {
   })
 
   it("marcar como pago emite recibo", async () => {
-    await marcarComoPago(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 150 })
-    expect(emitir).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 5, valor: 150 }))
+    await marcarComoPago(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
+    expect(emitir).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 5, valor: 200 }))
   })
 
   it("lote emite um recibo por mensalidade baixada, com o valor devido", async () => {
@@ -297,7 +302,7 @@ describe("recibo da baixa", () => {
   })
 
   it("segunda baixa da mesma mensalidade é recusada, sem sobrescrever nem emitir recibo", async () => {
-    m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
+    m.pagamento.findUnique.mockResolvedValueOnce({ id: 5, dataPagamento: new Date("2026-06-01"), valorRecebido: 200, valorDevido: 200, aluno: { nome: "A", mensalidade: 200, desconto: 0 } })
     const res = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
     expect(res).toEqual({ error: "Esta mensalidade já está paga" })
     expect(m.pagamento.update).not.toHaveBeenCalled()
@@ -305,8 +310,8 @@ describe("recibo da baixa", () => {
   })
 
   it("marcar como pago também recusa mensalidade já paga", async () => {
-    m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
-    const res = await marcarComoPago(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 150 })
+    m.pagamento.findUnique.mockResolvedValueOnce({ id: 5, dataPagamento: new Date("2026-06-01"), valorRecebido: 200, valorDevido: 200, aluno: { nome: "A", mensalidade: 200, desconto: 0 } })
+    const res = await marcarComoPago(5, { dataPagamento: "2026-06-10", formaPagamento: "PIX", valorRecebido: 200 })
     expect(res).toEqual({ error: "Esta mensalidade já está paga" })
     expect(emitir).not.toHaveBeenCalled()
   })
@@ -356,6 +361,26 @@ describe("registrarBaixa (central)", () => {
     m.pagamento.findUnique.mockResolvedValueOnce(aberta({ externalId: "mp-1" }))
     const total = await registrarBaixa(5, { valor: 120, formaPagamento: "PIX", dataPagamento: "2026-06-10" })
     expect(total).toMatchObject({ success: true, quitada: true })
+  })
+
+  it("quitação com cobrança ativa cancela o Pix/boleto; parcial acumulada não sobrescreve", async () => {
+    m.pagamento.findUnique.mockResolvedValueOnce(aberta({ externalId: "mp-1", valorRecebido: 50 }))
+    await registrarBaixa(5, { valor: 70, formaPagamento: "PIX", dataPagamento: "2026-06-10" })
+    expect(encerrarCobrancaAtiva).toHaveBeenCalledWith(expect.anything(), 5)
+  })
+
+  it("dinheiro: recebimento de R$ 10 numa mensalidade de R$ 200 exige motivo e fica parcial", async () => {
+    const sem = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro", valorRecebido: 10 })
+    expect(sem).toEqual({ error: "Informe o motivo para um valor diferente do devido" })
+    const com = await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro", valorRecebido: 10, observacoes: "entrada" })
+    expect(com).toMatchObject({ success: true })
+    expect(m.pagamento.updateMany.mock.calls[0][0].data).toMatchObject({ valorRecebido: 10, statusCobranca: "parcial" })
+  })
+
+  it("dinheiro: restante de mensalidade com parcial soma ao acumulado", async () => {
+    m.pagamento.findUnique.mockResolvedValueOnce(aberta({ valorRecebido: 60, valorDevido: 120 }))
+    await registrarPagamento(5, { dataPagamento: "2026-06-10", formaPagamento: "Dinheiro", valorRecebido: 60 })
+    expect(m.pagamento.updateMany.mock.calls[0][0].data).toMatchObject({ valorRecebido: 120, statusCobranca: "pago" })
   })
 
   it("valor diferente do restante exige motivo", async () => {

@@ -19,8 +19,12 @@ vi.mock("@/lib/db", () => ({
       update: vi.fn(),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
+    // Baixa já feita por este mesmo pagamento do MP (reentrega do webhook).
+    recibo: { count: vi.fn().mockResolvedValue(1) },
   },
 }))
+
+vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
 vi.mock("@/lib/baixa", () => ({
   emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
@@ -42,6 +46,7 @@ vi.mock("@/lib/email-jobs", () => ({
 }))
 
 import { db } from "@/lib/db"
+import { registrarLog } from "@/app/actions/log"
 import { mpPayment } from "@/lib/mercadopago"
 import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
 import { notificarPagamentoConfirmadoEmail } from "@/lib/email-jobs"
@@ -145,7 +150,6 @@ describe("POST /api/webhooks/mercadopago", () => {
       id: 9, canalPrevisto: "PIX", dataPagamento: new Date("2026-06-10T10:00:00Z"),
       aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
     })
-    ;(m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany.mockResolvedValueOnce({ count: 0 })
     m.pagamento.update.mockResolvedValue({})
     await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
     expect(notificar).not.toHaveBeenCalled()
@@ -241,10 +245,37 @@ describe("recibo do Mercado Pago", () => {
       id: 9, canalPrevisto: "PIX", dataPagamento: new Date("2026-06-10T10:00:00Z"),
       aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
     })
-    ;(m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany.mockResolvedValueOnce({ count: 0 })
     m.pagamento.update.mockResolvedValue({})
     await POST(makeRequest({ type: "payment", data: { id: "mp-777" } }))
     expect(emitirReciboSeguro).not.toHaveBeenCalled()
+  })
+
+  it("mensalidade já baixada por outro canal: registra pagamento em duplicidade e não regrava", async () => {
+    mp.get.mockResolvedValue({ id: "mp-888", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 150 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 9, canalPrevisto: "PIX", dataPagamento: new Date("2026-06-09T00:00:00Z"), mesReferencia: "2026-06",
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    ;(db.recibo.count as ReturnType<typeof vi.fn>).mockResolvedValueOnce(0)
+    const res = await POST(makeRequest({ type: "payment", data: { id: "mp-888" } }))
+    expect(res.status).toBe(200)
+    expect(registrarLog).toHaveBeenCalledWith("pagamento_duplicado", expect.stringContaining("duplicidade"), expect.objectContaining({ mpPaymentId: "mp-888" }))
+    expect((m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany).not.toHaveBeenCalled()
+  })
+
+  it("baixa parcial anterior: soma o pago pelo MP ao acumulado", async () => {
+    mp.get.mockResolvedValue({ id: "mp-889", status: "approved", date_approved: "2026-06-10T10:00:00Z", transaction_amount: 60 })
+    m.pagamento.findFirst.mockResolvedValue({
+      id: 10, canalPrevisto: "PIX", dataPagamento: null, valorRecebido: 60, valorDevido: 120,
+      aluno: { nome: "Ana", telefone: "1199", email: "a@t.com", responsavel: "Mãe" },
+    })
+    await POST(makeRequest({ type: "payment", data: { id: "mp-889" } }))
+    expect((m.pagamento as unknown as { updateMany: ReturnType<typeof vi.fn> }).updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 10, dataPagamento: null, valorRecebido: 60 },
+        data: expect.objectContaining({ valorRecebido: 120 }),
+      })
+    )
   })
 
   it("duas notificações simultâneas: só a que baixa de fato emite recibo e notifica", async () => {

@@ -2,6 +2,8 @@ import { db } from "@/lib/db"
 import { sendPushToResponsavel } from "@/lib/push"
 import { differenceInDays } from "date-fns"
 import { logger } from "@/lib/logger"
+import { inicioDeHojeUtc } from "@/lib/datas-clube"
+import { restanteDoPagamento } from "@/lib/valor-devido"
 
 export type ResultadoPush = { enviados: number; semCadastro: number }
 
@@ -9,16 +11,17 @@ export type ResultadoPush = { enviados: number; semCadastro: number }
 export async function runPushVencimento(): Promise<ResultadoPush | { error: string }> {
   const t0 = performance.now()
   try {
-    const amanha = new Date()
-    amanha.setDate(amanha.getDate() + 3)
+    const hoje = inicioDeHojeUtc()
+    const ateTresDias = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000)
 
+    // Inclui quem vence hoje (vencimento à meia-noite UTC do dia).
     const vencendo = await db.pagamento.findMany({
       where: {
         dataPagamento: null,
-        dataVencimento: { gte: new Date(), lte: amanha },
+        dataVencimento: { gte: hoje, lte: ateTresDias },
       },
       include: {
-        aluno: { select: { nome: true, responsavelId: true, mensalidade: true } },
+        aluno: { select: { nome: true, responsavelId: true, mensalidade: true, desconto: true } },
       },
     })
 
@@ -26,6 +29,7 @@ export async function runPushVencimento(): Promise<ResultadoPush | { error: stri
     let semCadastro = 0
 
     for (const p of vencendo) {
+      if (restanteDoPagamento(p) <= 0) continue
       const responsavelId = p.aluno.responsavelId
       if (!responsavelId) { semCadastro++; continue }
       await sendPushToResponsavel(responsavelId, "vencimento", {
@@ -49,9 +53,10 @@ export async function runPushInadimplentes(): Promise<ResultadoPush | { error: s
   const t0 = performance.now()
   try {
     const inadimplentes = await db.pagamento.findMany({
-      where: { dataPagamento: null, dataVencimento: { lt: new Date() } },
+      // Em atraso só a partir do dia seguinte ao vencimento.
+      where: { dataPagamento: null, dataVencimento: { lt: inicioDeHojeUtc() } },
       include: {
-        aluno: { select: { nome: true, responsavelId: true } },
+        aluno: { select: { nome: true, responsavelId: true, mensalidade: true, desconto: true } },
       },
     })
 
@@ -59,9 +64,10 @@ export async function runPushInadimplentes(): Promise<ResultadoPush | { error: s
     let semCadastro = 0
 
     for (const p of inadimplentes) {
+      if (restanteDoPagamento(p) <= 0) continue
       const responsavelId = p.aluno.responsavelId
       if (!responsavelId) { semCadastro++; continue }
-      const dias = differenceInDays(new Date(), p.dataVencimento)
+      const dias = differenceInDays(inicioDeHojeUtc(), p.dataVencimento)
       await sendPushToResponsavel(responsavelId, "vencimento", {
         title: "Mensalidade em atraso",
         body: `Mensalidade de ${p.aluno.nome} (${p.mesReferencia}) está ${dias} dia(s) em atraso.`,

@@ -8,10 +8,29 @@ import { registrarLog } from "./log"
 import { dataValida } from "@/lib/utils"
 import { deleteMatriculaDocuments } from "@/lib/matricula-files"
 import { valorDevidoDoAluno } from "@/lib/valor-devido"
+import { diaVencimentoConfigurado } from "@/lib/pagamentos-jobs"
+import { checkRateLimit } from "@/lib/rate-limit"
+import { TURMAS } from "@/lib/constants"
+import { headers } from "next/headers"
+import { z } from "zod"
 
 export type ActionResult = { success: true } | { error: string }
 export type AprovarResult = { success: true; alunoId: number } | { error: string }
 const CONSENTIMENTO_VERSAO = "2026-08-11"
+
+// Endpoint público: limita tamanho de cada campo e aceita só turmas cadastradas.
+const preMatriculaSchema = z.object({
+  nomeAluno: z.string().trim().min(1).max(120),
+  dataNascimento: z.string().max(10),
+  turma: z.enum(TURMAS),
+  horario: z.string().trim().max(60),
+  nomeResponsavel: z.string().trim().min(1).max(120),
+  telefone: z.string().trim().min(1).max(30),
+  email: z.union([z.literal(""), z.string().trim().max(254).email()]),
+  documentos: z.array(z.string().max(200)).max(10).optional(),
+  observacoes: z.string().trim().max(2000).optional(),
+  consentimento: z.literal(true),
+})
 
 export async function criarPreMatricula(data: {
   nomeAluno: string
@@ -25,7 +44,12 @@ export async function criarPreMatricula(data: {
   observacoes?: string
   consentimento: boolean
 }): Promise<ActionResult> {
-  if (!data.nomeAluno?.trim() || !data.nomeResponsavel?.trim() || !data.telefone?.trim()) {
+  // Limite por IP: 5 envios a cada 10 minutos.
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+  const limite = checkRateLimit(`pre-matricula:${ip}`, 5, 10 * 60_000)
+  if (!limite.ok) return { error: "Muitos envios. Aguarde alguns minutos e tente de novo." }
+
+  if (!data?.nomeAluno?.trim() || !data.nomeResponsavel?.trim() || !data.telefone?.trim()) {
     return { error: "Preencha os campos obrigatórios" }
   }
   if (!data.turma?.trim()) return { error: "Escolha a turma" }
@@ -36,6 +60,8 @@ export async function criarPreMatricula(data: {
   if (data.consentimento !== true) {
     return { error: "É necessário autorizar o tratamento dos dados para enviar a pré-matrícula" }
   }
+  const parsed = preMatriculaSchema.safeParse({ ...data, email: data.email?.trim() ?? "" })
+  if (!parsed.success) return { error: "Dados inválidos. Confira turma, e-mail e o tamanho dos textos." }
   const dataNasc = new Date(data.dataNascimento)
 
   // Endpoint público: só aceita caminhos de upload internos (vindos de
@@ -78,6 +104,8 @@ export async function listarPreMatriculas(status?: string) {
   })
 }
 
+class JaAprovada extends Error {}
+
 export async function aprovarPreMatricula(
   id: number,
   opts: { mensalidade: number; desconto?: number; meses?: number }
@@ -97,6 +125,13 @@ export async function aprovarPreMatricula(
 
   try {
     const aluno = await db.$transaction(async (tx) => {
+      // Trava atômica: duas aprovações simultâneas passam pela checagem acima, mas só uma
+      // consegue virar a pré-matrícula para "aprovada"; a outra aborta sem criar aluno.
+      const { count } = await tx.preMatricula.updateMany({
+        where: { id, status: { not: "aprovada" } },
+        data: { status: "aprovada", decididoEm: new Date() },
+      })
+      if (count === 0) throw new JaAprovada()
       let responsavelId: number | null = null
       if (pre.email?.trim()) {
         const resp = await tx.responsavel.findFirst({ where: { email: pre.email.trim() } })
@@ -119,11 +154,11 @@ export async function aprovarPreMatricula(
           responsavelId,
         },
       })
-      await tx.preMatricula.update({ where: { id }, data: { status: "aprovada", decididoEm: new Date() } })
+      const diaVencimento = diaVencimentoConfigurado()
       const qtdMeses = Math.max(0, Math.min(12, Number(opts.meses ?? 0)))
       for (let i = 0; i < qtdMeses; i++) {
         const dataRef = addMonths(new Date(), i)
-        const vencimento = new Date(dataRef.getFullYear(), dataRef.getMonth(), 10)
+        const vencimento = new Date(dataRef.getFullYear(), dataRef.getMonth(), diaVencimento)
         await tx.pagamento.create({
           data: {
             alunoId: novo.id,
@@ -144,6 +179,7 @@ export async function aprovarPreMatricula(
     revalidatePath("/pagamentos")
     return { success: true, alunoId: aluno.id }
   } catch (e) {
+    if (e instanceof JaAprovada) return { error: "Pré-matrícula já aprovada" }
     return { error: e instanceof Error ? e.message : "Erro ao aprovar pré-matrícula" }
   }
 }

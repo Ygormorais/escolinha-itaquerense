@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "@/app/actions/log"
+import { restanteDoPagamento } from "@/lib/valor-devido"
 import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
+
+/** Marca a mensalidade enquanto a cobrança está sendo criada no Mercado Pago. */
+const STATUS_EMITINDO = "emitindo"
 
 type Canal = "PIX" | "Boleto"
 type ActionResult = { success: true } | { error: string }
@@ -47,6 +51,7 @@ export async function emitirCobranca(
         select: {
           nome: true,
           mensalidade: true,
+          desconto: true,
           email: true,
           responsavel: true,
           responsavelRef: { select: { nome: true, email: true, cpf: true } },
@@ -56,7 +61,11 @@ export async function emitirCobranca(
   })
 
   if (!pagamento) return { error: "Pagamento não encontrado." }
+  if (pagamento.dataPagamento) return { error: "Esta mensalidade já está paga." }
   if (pagamento.externalId) return { error: "Cobrança já emitida para este pagamento." }
+  // Cobra o que falta: valor devido (com desconto) menos as baixas parciais já recebidas.
+  const restante = Math.round(restanteDoPagamento(pagamento) * 100) / 100
+  if (restante <= 0) return { error: "Não há valor a cobrar nesta mensalidade." }
 
   // O pagador é o responsável; cai para o aluno se não houver vínculo.
   const pagadorNome = pagamento.aluno.responsavelRef?.nome ?? pagamento.aluno.responsavel
@@ -74,12 +83,23 @@ export async function emitirCobranca(
   const [firstName, ...rest] = (pagadorNome ?? "Responsável").trim().split(/\s+/)
   const lastName = rest.join(" ") || firstName
 
+  // Reserva atômica antes de chamar o Mercado Pago: duplo clique ou emissão em lote simultânea
+  // não criam duas cobranças (a segunda fica órfã e o webhook não a acharia).
+  const reserva = await db.pagamento.updateMany({
+    where: {
+      id: pagamentoId, externalId: null, dataPagamento: null,
+      OR: [{ statusCobranca: null }, { statusCobranca: { not: STATUS_EMITINDO } }],
+    },
+    data: { statusCobranca: STATUS_EMITINDO },
+  })
+  if (reserva.count === 0) return { error: "Cobrança já emitida ou em emissão para este pagamento." }
+
   try {
     const paymentType = canal === "PIX" ? "pix" : "bolbradesco"
 
     const response = await mpPayment.create({
       body: {
-        transaction_amount: pagamento.aluno.mensalidade,
+        transaction_amount: restante,
         description: `Mensalidade ${pagamento.mesReferencia} — ${pagamento.aluno.nome}`,
         payment_method_id: paymentType,
         payer: {
@@ -117,7 +137,7 @@ export async function emitirCobranca(
       data.externalUrl = response.transaction_details?.external_resource_url ?? null
     }
 
-    await db.pagamento.update({ where: { id: pagamentoId }, data })
+    await db.pagamento.updateMany({ where: { id: pagamentoId, externalId: null }, data })
 
     await registrarLog(
       "cobranca_emitida",
@@ -131,6 +151,13 @@ export async function emitirCobranca(
     revalidatePath("/inadimplencia")
     return { success: true }
   } catch (e) {
+    // Desfaz a reserva para a emissão poder ser tentada de novo.
+    await db.pagamento
+      .updateMany({
+        where: { id: pagamentoId, externalId: null, statusCobranca: STATUS_EMITINDO },
+        data: { statusCobranca: pagamento.statusCobranca },
+      })
+      .catch(() => null)
     return { error: e instanceof Error ? e.message : "Erro ao emitir cobrança no Mercado Pago." }
   }
 }

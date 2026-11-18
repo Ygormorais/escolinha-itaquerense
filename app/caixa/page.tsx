@@ -5,6 +5,7 @@ import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
 import { formatMoney, plural } from "@/lib/utils"
 import { requireAuth } from "@/lib/auth"
+import { resumirRecibosDoCaixa } from "@/lib/caixa-mensalidades"
 
 export const metadata = { title: "Caixa — Escolinha Itaquerense" }
 
@@ -14,16 +15,14 @@ export default async function CaixaPage() {
   const inicio = startOfMonth(now)
   const fim = endOfMonth(now)
 
-  const [pagamentosMes, custosMes, recebimentosMes, transacoesPendentes, alunos, descontosAgg] = await Promise.all([
-    db.pagamento.findMany({
-      where: {
-        OR: [
-          { dataPagamento: { gte: inicio, lte: fim } },
-          // Baixa parcial: ainda sem dataPagamento, mas o dinheiro entrou (recibo no período).
-          { dataPagamento: null, valorRecebido: { gt: 0 }, recibos: { some: { canceladoAt: null, dataPagamento: { gte: inicio, lte: fim } } } },
-        ],
+  const [recibosMes, custosMes, recebimentosMes, transacoesPendentes, alunos, descontosAgg] = await Promise.all([
+    // Cada baixa de mensalidade (parcial ou integral) tem um recibo com valor e forma próprios.
+    db.recibo.findMany({
+      where: { canceladoAt: null, pagamentoId: { not: null }, dataPagamento: { gte: inicio, lte: fim } },
+      select: {
+        id: true, valor: true, formaPagamento: true, dataPagamento: true, mesReferencia: true,
+        pagamento: { select: { aluno: { select: { id: true, nome: true, turma: true } } } },
       },
-      include: { aluno: { select: { id: true, nome: true, turma: true } } },
       orderBy: { dataPagamento: "desc" },
     }),
     db.custo.findMany({
@@ -48,17 +47,11 @@ export default async function CaixaPage() {
     }),
   ])
 
-  const totalRecebido =
-    pagamentosMes.reduce((s, p) => s + (p.valorRecebido ?? 0), 0) +
-    recebimentosMes.reduce((s, r) => s + r.valor, 0)
+  const { lancamentos: pagamentosMes, total: totalMensalidades, porForma } = resumirRecibosDoCaixa(recibosMes)
+  const totalRecebido = totalMensalidades + recebimentosMes.reduce((s, r) => s + r.valor, 0)
   const totalCustos = custosMes.reduce((s, c) => s + c.valor, 0)
   const totalPendente = transacoesPendentes.reduce((s, t) => s + t.valor, 0)
 
-  const porForma = pagamentosMes.reduce((acc, p) => {
-    const forma = p.formaPagamento || "Outros"
-    acc[forma] = (acc[forma] || 0) + (p.valorRecebido ?? 0)
-    return acc
-  }, {} as Record<string, number>)
   for (const r of recebimentosMes) {
     porForma[r.formaPagamento] = (porForma[r.formaPagamento] || 0) + r.valor
   }

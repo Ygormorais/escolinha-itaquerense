@@ -24,7 +24,8 @@ type PagamentoPendente = {
   id: number
   mesReferencia: string
   dataVencimento: Date | string
-  aluno: { mensalidade: number }
+  /** Quanto falta pagar (já descontado o desconto e as baixas parciais). */
+  restante: number
 }
 
 type Modo = "avulso" | "mensalidade"
@@ -49,10 +50,11 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
   const [pagamentoId, setPagamentoId] = useState<string>("")
   const [valorMens, setValorMens] = useState("")
   const [dataMens, setDataMens] = useState(hoje)
+  const [motivo, setMotivo] = useState("")
 
   function reset() {
     setDescricao(""); setCategoria("Uniforme"); setValorAvulso(""); setDataAvulso(hoje)
-    setAlunoId(""); setPendentes([]); setPagamentoId(""); setValorMens(""); setDataMens(hoje)
+    setAlunoId(""); setPendentes([]); setPagamentoId(""); setValorMens(""); setDataMens(hoje); setMotivo("")
     setModo("avulso")
   }
 
@@ -67,7 +69,7 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
   function handlePagamentoChange(id: string) {
     setPagamentoId(id)
     const p = pendentes.find((x) => String(x.id) === id)
-    if (p) setValorMens(String(p.aluno.mensalidade))
+    if (p) setValorMens(String(p.restante))
   }
 
   function handleSubmit() {
@@ -88,6 +90,7 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
           dataPagamento: dataMens,
           formaPagamento: "Dinheiro",
           valorRecebido: Number(valorMens),
+          observacoes: motivo.trim() || undefined,
         })
         if ("error" in res) { toast.error(res.error); return }
         toast.success("Mensalidade recebida em dinheiro")
@@ -98,10 +101,14 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
     })
   }
 
+  const restanteSelecionado = pendentes.find((x) => String(x.id) === pagamentoId)?.restante
+  const valorDiferente =
+    restanteSelecionado !== undefined && valorMens !== "" && Math.abs(Number(valorMens) - restanteSelecionado) > 0.005
+
   const podeSalvar =
     modo === "avulso"
       ? descricao.trim() !== "" && Number(valorAvulso) > 0
-      : pagamentoId !== "" && Number(valorMens) > 0
+      : pagamentoId !== "" && Number(valorMens) > 0 && (!valorDiferente || motivo.trim() !== "")
 
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset() }}>
@@ -192,6 +199,12 @@ export function RegistrarDinheiroDialog({ alunos }: { alunos: Aluno[] }) {
               <Label htmlFor="din-data-mens">Data</Label>
               <Input id="din-data-mens" type="date" value={dataMens} onChange={(e) => setDataMens(e.target.value)} />
             </div>
+            {valorDiferente && (
+              <div className="col-span-2 space-y-1">
+                <Label htmlFor="din-motivo">Motivo (valor diferente do restante)</Label>
+                <Input id="din-motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: pagamento parcial, combinado com a família" />
+              </div>
+            )}
           </div>
         )}
 

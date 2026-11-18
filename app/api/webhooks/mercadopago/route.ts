@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache"
 import { requireEnv } from "@/lib/env"
 import { logger } from "@/lib/logger"
 import { emitirReciboSeguro } from "@/lib/baixa"
+import { registrarLog } from "@/app/actions/log"
 
 function verifyMpSignature(req: Request, paymentId: string, rawTs: string): boolean {
   const secret = requireEnv("MERCADOPAGO_WEBHOOK_SECRET", "")
@@ -75,13 +76,34 @@ export async function POST(req: Request) {
     // idempotência: webhooks do MP são reentregues; só notifica na transição p/ pago
     const jaPago = pagamento.dataPagamento != null
     const statusLocal = mpStatusToLocal(mpData.status as MpPaymentStatus)
+
+    // Mensalidade já baixada e agora o Mercado Pago aprova outra cobrança: se a baixa não veio
+    // deste mesmo pagamento (reentrega do webhook), a família pagou em duplicidade. Registra
+    // para a secretaria estornar; não mexe na mensalidade.
+    if (statusLocal === "pago" && jaPago) {
+      const baixaPeloMp = await db.recibo.count({
+        where: { pagamentoId: pagamento.id, emitidoPor: "Mercado Pago", canceladoAt: null },
+      })
+      if (baixaPeloMp === 0) {
+        logger.error("webhook/mercadopago: pagamento em duplicidade, estornar no Mercado Pago", {
+          pagamentoId: pagamento.id, mpPaymentId: String(mpData.id), valor: mpData.transaction_amount,
+        })
+        await registrarLog(
+          "pagamento_duplicado",
+          `Pagamento em duplicidade no Mercado Pago — ${pagamento.aluno.nome} (estornar)`,
+          { mes: pagamento.mesReferencia, mpPaymentId: String(mpData.id), valor: mpData.transaction_amount },
+        )
+      }
+      return NextResponse.json({ ok: true })
+    }
     const updateData: Record<string, unknown> = { statusCobranca: statusLocal }
 
     if (statusLocal === "pago") {
       updateData.dataPagamento = mpData.date_approved
         ? new Date(mpData.date_approved as string)
         : new Date()
-      updateData.valorRecebido = mpData.transaction_amount
+      // A cobrança é do restante devido: soma ao que já foi recebido em baixas parciais.
+      updateData.valorRecebido = Math.round(((pagamento.valorRecebido ?? 0) + Number(mpData.transaction_amount ?? 0)) * 100) / 100
       updateData.formaPagamento = pagamento.canalPrevisto
     }
 
@@ -90,7 +112,7 @@ export async function POST(req: Request) {
     let primeiraBaixa = false
     if (statusLocal === "pago") {
       const { count } = await db.pagamento.updateMany({
-        where: { id: pagamento.id, dataPagamento: null },
+        where: { id: pagamento.id, dataPagamento: null, valorRecebido: pagamento.valorRecebido },
         data: updateData,
       })
       primeiraBaixa = count === 1

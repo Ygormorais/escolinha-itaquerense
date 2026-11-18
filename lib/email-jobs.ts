@@ -4,6 +4,8 @@ import { getConfig } from "@/lib/config"
 import { differenceInDays } from "date-fns"
 import { logger } from "@/lib/logger"
 import { escapeHtml } from "@/lib/utils"
+import { formatarDataUtc, inicioDeHojeUtc } from "@/lib/datas-clube"
+import { restanteDoPagamento } from "@/lib/valor-devido"
 
 export type ResultadoEmail = { enviados: number; erros: number; semEmail: number }
 
@@ -15,10 +17,11 @@ export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail 
     const config = getConfig()
 
     const inadimplentes = await db.pagamento.findMany({
-      where: { dataPagamento: null, dataVencimento: { lt: new Date() } },
+      // Em atraso só a partir do dia seguinte ao vencimento.
+      where: { dataPagamento: null, dataVencimento: { lt: inicioDeHojeUtc() } },
       include: {
         aluno: {
-          select: { nome: true, email: true, responsavel: true, mensalidade: true },
+          select: { nome: true, email: true, responsavel: true, mensalidade: true, desconto: true },
         },
       },
     })
@@ -28,6 +31,7 @@ export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail 
     let semEmail = 0
 
     for (const p of inadimplentes) {
+      if (restanteDoPagamento(p) <= 0) continue
       const email = p.aluno.email
       if (!email) {
         semEmail++
@@ -57,7 +61,7 @@ export async function runEnviarLembretesInadimplentes(): Promise<ResultadoEmail 
               </tr>
               <tr style="background:#f1f5f9">
                 <td style="padding:8px 12px;border:1px solid #e2e8f0">Valor</td>
-                <td style="padding:8px 12px;border:1px solid #e2e8f0"><strong>R$ ${p.aluno.mensalidade.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></td>
+                <td style="padding:8px 12px;border:1px solid #e2e8f0"><strong>R$ ${restanteDoPagamento(p).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></td>
               </tr>
               <tr>
                 <td style="padding:8px 12px;border:1px solid #e2e8f0">Dias em atraso</td>
@@ -95,16 +99,17 @@ export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { er
     const erroConfiguracao = getErroConfiguracaoEmail()
     if (erroConfiguracao) return { error: erroConfiguracao }
     const config = getConfig()
-    const amanha = new Date()
-    amanha.setDate(amanha.getDate() + 3)
+    const hoje = inicioDeHojeUtc()
+    const ateTresDias = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000)
 
+    // Inclui quem vence hoje (vencimento à meia-noite UTC do dia).
     const vencendo = await db.pagamento.findMany({
       where: {
         dataPagamento: null,
-        dataVencimento: { gte: new Date(), lte: amanha },
+        dataVencimento: { gte: hoje, lte: ateTresDias },
       },
       include: {
-        aluno: { select: { nome: true, email: true, responsavel: true, mensalidade: true } },
+        aluno: { select: { nome: true, email: true, responsavel: true, mensalidade: true, desconto: true } },
       },
     })
 
@@ -113,6 +118,7 @@ export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { er
     let semEmail = 0
 
     for (const p of vencendo) {
+      if (restanteDoPagamento(p) <= 0) continue
       const email = p.aluno.email
       if (!email) {
         semEmail++
@@ -129,8 +135,8 @@ export async function runEnviarLembreteVencendo(): Promise<ResultadoEmail | { er
             <p style="margin-top:0">Olá, <strong>${escapeHtml(p.aluno.responsavel || p.aluno.nome)}</strong>!</p>
             <p>Lembramos que a mensalidade de <strong>${escapeHtml(p.aluno.nome)}</strong> referente a
             <strong>${p.mesReferencia}</strong> vence em
-            <strong>${new Date(p.dataVencimento).toLocaleDateString("pt-BR")}</strong>.</p>
-            <p>Valor: <strong>R$ ${p.aluno.mensalidade.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>
+            <strong>${formatarDataUtc(p.dataVencimento)}</strong>.</p>
+            <p>Valor: <strong>R$ ${restanteDoPagamento(p).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>
             ${config.chavePix ? `<p style="font-size:13px">PIX: <strong>${config.chavePix}</strong></p>` : ""}
             <p style="font-size:12px;color:#6b7280;margin-bottom:0">${escapeHtml(config.telefone || config.nome)}</p>
           </div>
