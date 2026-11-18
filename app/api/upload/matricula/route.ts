@@ -6,6 +6,7 @@ import { randomUUID } from "crypto"
 import path from "path"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { getClientIp } from "@/lib/client-ip"
 import { resolveUploadsDir } from "@/lib/uploads-path"
 
 const MAX_BYTES = 5 * 1024 * 1024
@@ -22,7 +23,7 @@ function detectExtByMagic(buf: Uint8Array): string | null {
 }
 
 export async function POST(request: Request) {
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+  const ip = getClientIp(request)
   const limit = checkRateLimit(`upload-matricula:${ip}`, 10)
   if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
 

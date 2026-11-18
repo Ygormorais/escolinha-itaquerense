@@ -40,6 +40,15 @@ function tipoDeEvento(tipo: string): ItemAgenda["tipo"] {
   return "evento"
 }
 
+/**
+ * Partida sem horário é gravada às 12:00 (cadastro manual só tem a data; a FPFS às vezes não traz
+ * a hora). Esse 12:00 é um valor de preenchimento, então não é exibido como horário do jogo.
+ */
+function horaDaPartida(data: Date): string | null {
+  const hora = format(data, "HH:mm")
+  return hora === "12:00" ? null : hora
+}
+
 export function montarAgenda(eventos: EventoInput[], jogos: JogoInput[]): DiaAgenda[] {
   const itens: ItemAgenda[] = [
     ...eventos.map((e) => ({
@@ -58,7 +67,7 @@ export function montarAgenda(eventos: EventoInput[], jogos: JogoInput[]): DiaAge
     ...jogos.map((j) => ({
       tipo: "jogo" as const,
       data: j.partida.data,
-      hora: format(j.partida.data, "HH:mm"),
+      hora: horaDaPartida(j.partida.data),
       titulo: `Jogo vs ${j.partida.adversario}`,
       local: j.partida.local,
       jogo: { escalacaoId: j.escalacaoId, confirmacao: j.confirmacao, adversario: j.partida.adversario },

@@ -73,9 +73,10 @@ export function RadarEvolutionChart({ snapshots }: { snapshots: AvaliacaoSnapsho
       </div>
 
       <ResponsiveContainer width="100%" height={260} initialDimension={{ width: 640, height: 260 }}>
-        <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+        {/* Raio menor e margem lateral maior: rótulos longos ("Comportamento") não saem do card no celular. */}
+        <RadarChart data={radarData} outerRadius="62%" margin={{ top: 10, right: 36, bottom: 10, left: 36 }}>
           <PolarGrid stroke="#e5e7eb" />
-          <PolarAngleAxis dataKey="habilidade" tick={{ fontSize: 12 }} />
+          <PolarAngleAxis dataKey="habilidade" tick={{ fontSize: 11 }} />
           <Radar
             name="Nota"
             dataKey="valor"

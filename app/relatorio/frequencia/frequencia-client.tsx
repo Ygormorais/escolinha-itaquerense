@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PageHeader } from "@/components/layout/page-header"
 import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
 import { EmptyState } from "@/components/ui/empty-state"
-import { printHTML } from "@/lib/print"
+import { html, printHTML } from "@/lib/print"
 import { sanitizeCSVCell } from "@/lib/utils"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -109,9 +109,9 @@ export function RelatorioFrequenciaClient({
 
   function imprimirPDF() {
     const linhas = filtrados.map((s) =>
-      `<tr><td>${s.nome}</td><td>${s.turma}</td><td>${s.totalAulas}</td><td>${s.totalPresencas}</td><td>${s.percentual}%</td></tr>`
-    ).join("")
-    printHTML(`
+      html`<tr><td>${s.nome}</td><td>${s.turma}</td><td>${s.totalAulas}</td><td>${s.totalPresencas}</td><td>${s.percentual}%</td></tr>`
+    )
+    printHTML(html`
       <h1>Relatório de Frequência — ${mesAtual}</h1>
       <p>${filtrados.length} alunos · Média ${mediaGeral}%</p>
       <table>
@@ -153,7 +153,7 @@ export function RelatorioFrequenciaClient({
               <Printer className="size-4" />
               Imprimir PDF
             </Button>
-            <Button size="sm" onClick={exportarCSV}>
+            <Button size="sm" variant="outline" onClick={exportarCSV}>
               <Download className="size-4 mr-1" /> Exportar CSV
             </Button>
           </div>

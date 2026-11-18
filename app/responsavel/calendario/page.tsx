@@ -1,3 +1,5 @@
+import { CalendarDays } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { PAGINA_PORTAL } from "@/components/layout/pagina"
 import { redirect } from "next/navigation"
 import Link from "next/link"
@@ -158,9 +160,7 @@ export default async function CalendarioPage({
       </div>
 
       {dias.length === 0 ? (
-        <p className="rounded-xl border border-black/5 bg-[var(--color-paper-50)] px-4 py-8 text-center text-sm text-muted-foreground">
-          Nenhum compromisso em {tituloMes}.
-        </p>
+        <EmptyState icon={CalendarDays} title={`Nenhum compromisso em ${tituloMes}`} description="Treinos, jogos e eventos da turma aparecem aqui assim que forem marcados. Use as setas para ver outros meses." />
       ) : (
         <div className="flex flex-col gap-6">
           {dias.map((dia) => (

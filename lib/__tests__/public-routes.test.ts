@@ -22,6 +22,7 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/noticias/publico")).toBe(true)
     expect(isPublicRoute("/noticias/publico/123")).toBe(true)
     expect(isPublicRoute("/buscar")).toBe(true)
+    expect(isPublicRoute("/validar-recibo/abc123")).toBe(true)
   })
 
   it("rotas protegidas não são públicas", () => {

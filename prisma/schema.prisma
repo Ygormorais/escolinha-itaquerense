@@ -163,6 +163,7 @@ model Responsavel {
   senha             String
   cpf               String?                 @unique
   ativo             Boolean                 @default(true)
+  sessaoVersao      Int                     @default(0) // incrementa em redefinição de senha/logout
   alunos            Aluno[]
   chatSessions      ChatSession[]
   resetTokens       ResetToken[]
@@ -226,6 +227,7 @@ model Usuario {
   senha     String
   role      String   @default("secretaria") // admin, secretaria, tecnico
   ativo     Boolean  @default(true)
+  sessaoVersao Int   @default(0) // incrementa em troca de senha/logout: revoga cookies antigos
   createdAt DateTime @default(now())
   acoesResponsavel AcaoDesenvolvimento[] @relation("ResponsavelAcaoDesenvolvimento")
   notificacoesInternas NotificacaoInterna[]
@@ -251,6 +253,8 @@ model Recibo {
   emitidoPor     String?
   canceladoAt    DateTime?
   canceladoPor   String?
+  /// Id da transação do extrato OFX que gerou a baixa; impede usar o mesmo crédito duas vezes.
+  fitidOfx       String?
   /// Baixa que gerou o recibo (null em recibo avulso ou se o pagamento foi excluído).
   pagamentoId    Int?
   pagamento      Pagamento? @relation(fields: [pagamentoId], references: [id], onDelete: SetNull)
@@ -260,6 +264,7 @@ model Recibo {
 
   @@index([pagamentoId])
   @@index([alunoId])
+  @@index([fitidOfx])
 }
 
 model Campeonato {

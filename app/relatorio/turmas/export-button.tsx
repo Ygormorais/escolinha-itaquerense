@@ -2,6 +2,7 @@
 
 import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 type TurmaRow = {
   turma: string
@@ -29,7 +30,7 @@ export function ExportTurmasButton({ data, mes }: { data: TurmaRow[]; mes: strin
         t.taxaPresenca !== null ? String(t.taxaPresenca) : "—",
       ]),
     ]
-    const csv = linhas.map((l) => l.join(";")).join("\n")
+    const csv = linhas.map((l) => l.map(sanitizeCSVCell).join(";")).join("\n")
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")

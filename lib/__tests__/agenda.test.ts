@@ -48,6 +48,14 @@ describe("montarAgenda", () => {
     expect(dias[0].itens.map((i) => i.titulo)).toEqual(["Cedo", "Tarde", "SemHora"])
   })
 
+  it("jogo cadastrado só com a data (12:00 de preenchimento) não mostra horário; com horário real mostra", () => {
+    const semHorario = jogo({ partida: { data: new Date(2026, 5, 19, 12, 0), adversario: "A", local: "" } })
+    const comHorario = jogo({ partida: { data: new Date(2026, 5, 20, 9, 30), adversario: "B", local: "" } })
+    const dias = montarAgenda([], [semHorario, comHorario])
+    expect(dias[0].itens[0].hora).toBeNull()
+    expect(dias[1].itens[0].hora).toBe("09:30")
+  })
+
   it("mapeia o tipo do evento (Reunião -> reuniao, desconhecido -> evento)", () => {
     const dias = montarAgenda([ev({ tipo: "Reunião" }), ev({ tipo: "Festa", data: new Date(2026, 5, 17, 12) })], [])
     expect(dias[0].itens[0].tipo).toBe("reuniao")

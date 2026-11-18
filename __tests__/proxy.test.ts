@@ -75,3 +75,15 @@ describe("isPublicPath — não confunde prefixo com rota similar", () => {
     ["/noticias/publicidade", false],
   ])("%s retorna %s", (path, expected) => expect(isPublicPath(path)).toBe(expected))
 })
+
+describe("isPublicPath — metadados e validação de recibo", () => {
+  it.each(["/robots.txt", "/sitemap.xml", "/validar-recibo/abc123"])(
+    "%s é público",
+    (path) => expect(isPublicPath(path)).toBe(true),
+  )
+
+  it.each(["/robots.txt.bak", "/validar-recibos", "/recibos/1"])(
+    "%s continua protegido",
+    (path) => expect(isPublicPath(path)).toBe(false),
+  )
+})

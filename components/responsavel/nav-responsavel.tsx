@@ -6,7 +6,9 @@ import { usePathname, useRouter } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { limparCacheOffline } from "@/lib/limpar-cache-offline"
 import { NotificacaoBell } from "@/components/responsavel/notificacao-bell"
+import { FaixaAbas } from "@/components/ui/faixa-abas"
 import { GRUPOS_PORTAL, abaAtiva, grupoDaRota } from "@/lib/portal-navegacao"
 
 /**
@@ -22,6 +24,7 @@ export function NavResponsavel() {
   async function handleLogout() {
     try {
       await fetch("/api/responsavel/logout", { method: "POST" })
+      await limparCacheOffline()
     } finally {
       router.replace("/responsavel/login")
       router.refresh()
@@ -102,9 +105,9 @@ export function NavResponsavel() {
       {grupo && grupo.paginas.length > 1 ? (
         <nav
           aria-label={`Seções de ${grupo.label}`}
-          className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 print:hidden [&::-webkit-scrollbar]:hidden"
+          className="-mx-4 mb-6 border-b border-border px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 print:hidden"
         >
-          <div className="flex gap-1">
+          <FaixaAbas className="gap-1">
             {grupo.paginas.map((p) => {
               const ativa = aba?.href === p.href
               return (
@@ -121,7 +124,7 @@ export function NavResponsavel() {
                 </Link>
               )
             })}
-          </div>
+          </FaixaAbas>
         </nav>
       ) : (
         <div className="mb-4" aria-hidden />

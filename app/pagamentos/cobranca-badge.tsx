@@ -3,6 +3,7 @@ const STYLES: Record<string, string> = {
   pago: "bg-success-50 text-success-600",
   vencido: "bg-danger-50 text-danger-600",
   cancelado: "bg-warning-50 text-warning-600",
+  emitindo: "bg-muted text-muted-foreground",
 }
 
 const LABELS: Record<string, string> = {
@@ -10,6 +11,7 @@ const LABELS: Record<string, string> = {
   pago: "Pago MP",
   vencido: "Vencido",
   cancelado: "Cancelado",
+  emitindo: "Emitindo",
 }
 
 export function CobrancaBadge({ status }: { status: string | null }) {

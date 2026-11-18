@@ -28,6 +28,7 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
       canalPrevisto: true,
       mesReferencia: true,
       valorDevido: true,
+      valorRecebido: true,
       aluno: { select: { nome: true, responsavelId: true } },
     },
   })
@@ -43,13 +44,14 @@ async function sincronizarStatusCobrancas(): Promise<{ atualizados: number }> {
         // Baixa só com a mensalidade ainda em aberto: o webhook pode ter baixado enquanto o
         // cron consultava o Mercado Pago.
         const { count } = await db.pagamento.updateMany({
-          where: statusLocal === "pago" ? { id: p.id, dataPagamento: null } : { id: p.id },
+          where: statusLocal === "pago" ? { id: p.id, dataPagamento: null, valorRecebido: p.valorRecebido } : { id: p.id },
           data: {
             statusCobranca: statusLocal,
             ...(statusLocal === "pago"
               ? {
                   dataPagamento: new Date(mpData.date_approved as string),
-                  valorRecebido: mpData.transaction_amount,
+                  // Soma ao já recebido em baixas parciais (a cobrança é do restante).
+                  valorRecebido: Math.round(((p.valorRecebido ?? 0) + Number(mpData.transaction_amount ?? 0)) * 100) / 100,
                   formaPagamento: p.canalPrevisto,
                 }
               : {}),

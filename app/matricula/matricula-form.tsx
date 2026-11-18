@@ -7,14 +7,21 @@ import { toast } from "sonner"
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
-import { TURMAS, HORARIOS } from "@/lib/constants"
+import { TURMAS } from "@/lib/constants"
+import type { TurmaInfo } from "@/lib/landing/turmas"
 import { criarPreMatricula } from "@/app/actions/matricula"
 
-export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) {
+/** Horário quando a turma ainda não tem horário publicado: a escolinha combina com a família. */
+const A_COMBINAR = "A combinar"
+
+export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: string | null; turmas?: TurmaInfo[] }) {
   const [aluno, setAluno] = useState("")
   const [dataNasc, setDataNasc] = useState("")
-  const [turma, setTurma] = useState("Sub-9")
-  const [horario, setHorario] = useState("Seg/Qua 08h")
+  // Nada pré-selecionado: a família escolhe entre as turmas que existem (as mesmas de /horarios).
+  const [turma, setTurma] = useState("")
+  const [horario, setHorario] = useState("")
+  const opcoesTurma = turmas.length > 0 ? turmas.map((t) => t.turma) : [...TURMAS]
+  const opcoesHorario = [...(turmas.find((t) => t.turma === turma)?.horarios ?? []), A_COMBINAR]
   const [responsavel, setResponsavel] = useState("")
   const [telefone, setTelefone] = useState("")
   const [email, setEmail] = useState("")
@@ -51,6 +58,7 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
 
   function validar(): string | null {
     if (!aluno.trim()) return "Nome do aluno é obrigatório."
+    if (!turma) return "Escolha a turma."
     if (!responsavel.trim()) return "Nome do responsável é obrigatório."
     if (!dataNasc) return "Data de nascimento é obrigatória."
     if (!telefone.trim()) return "Telefone é obrigatório."
@@ -76,7 +84,7 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
         nomeAluno: aluno,
         dataNascimento: isoDate,
         turma,
-        horario,
+        horario: horario || A_COMBINAR,
         nomeResponsavel: responsavel,
         telefone,
         email,
@@ -178,24 +186,24 @@ export function MatriculaForm({ whatsappUrl }: { whatsappUrl?: string | null }) 
 
           <div className="mat-row">
             <div className="mat-field">
-              <label>Turma</label>
-              <Select value={turma} onValueChange={(v) => { if (v) setTurma(v) }}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
+              <label>Turma *</label>
+              <Select value={turma} onValueChange={(v) => { if (v) { setTurma(v); setHorario("") } }}>
+                <SelectTrigger className="w-full" aria-label="Turma">
+                  <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TURMAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {opcoesTurma.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="mat-field">
               <label>Horário</label>
-              <Select value={horario} onValueChange={(v) => { if (v) setHorario(v) }}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
+              <Select value={horario} onValueChange={(v) => { if (v) setHorario(v) }} disabled={!turma}>
+                <SelectTrigger className="w-full" aria-label="Horário">
+                  <SelectValue placeholder={turma ? "Selecione" : "Escolha a turma primeiro"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {HORARIOS.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  {opcoesHorario.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

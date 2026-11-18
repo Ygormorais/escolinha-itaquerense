@@ -31,7 +31,7 @@ export type MesPortal = {
 }
 
 /** Dia de hoje (AAAA-MM-DD) no fuso do clube. */
-function hojeNoClube(agora: Date): string {
+export function hojeNoClube(agora: Date): string {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(agora)
 }
 

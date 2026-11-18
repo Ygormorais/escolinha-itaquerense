@@ -8,6 +8,7 @@ import { tratarPendencia } from "@/app/actions/tratamento-pendencias"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { PendenciaGrupo } from "@/lib/pendencias-data"
+import { sanitizeCSVCell } from "@/lib/utils"
 
 export function PendenciasClient({ grupos: gruposIniciais }: { grupos: PendenciaGrupo[] }) {
   const [grupos, setGrupos] = useState(gruposIniciais)
@@ -31,7 +32,7 @@ export function PendenciasClient({ grupos: gruposIniciais }: { grupos: Pendencia
 
   function exportar() {
     const linhas = [["area", "titulo", "detalhe", "prioridade", "situacao", "responsavel"], ...gruposFiltrados.flatMap((grupo) => grupo.itens.map((item) => [grupo.titulo, item.titulo, item.detalhe, item.prioridade, item.situacao, item.responsavel ?? ""]))]
-    const csv = linhas.map((linha) => linha.map((valor) => `"${valor.replaceAll('"', '""')}"`).join(";")).join("\r\n")
+    const csv = linhas.map((linha) => linha.map(sanitizeCSVCell).join(";")).join("\r\n")
     const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }))
     const link = document.createElement("a"); link.href = url; link.download = "pendencias.csv"; link.click(); URL.revokeObjectURL(url)
   }

@@ -67,7 +67,7 @@ export function TurmasClient({
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative max-w-xs flex-1">
+        <div className="relative w-full sm:max-w-xs sm:flex-1">
           <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input
             className="pl-8"

@@ -3,11 +3,13 @@ import { Check } from "lucide-react"
 import { PaginaPublica } from "@/components/site/pagina-publica"
 import { getConfig } from "@/lib/config"
 import { MatriculaForm } from "./matricula-form"
+import { getTurmasHorarios } from "@/lib/landing/turmas"
 
 export const metadata = {
   title: "Pré-Matrícula — E.C. Itaquerense",
   description:
     "Pré-matrícula da escolinha de futsal do E.C. Itaquerense. Envie os dados do aluno e do responsável — respondemos em até 48h.",
+  robots: { index: true, follow: true }, // página pública: indexável
 }
 
 const css = `
@@ -137,7 +139,7 @@ const TRUST = [
 ]
 
 export default async function MatriculaPage() {
-  const config = await getConfig()
+  const [config, turmas] = await Promise.all([getConfig(), getTurmasHorarios()])
   const waDigits = config.whatsapp?.replace(/\D/g, "") ?? ""
   const whatsappUrl =
     waDigits.length >= 10
@@ -175,7 +177,7 @@ export default async function MatriculaPage() {
               </span>
             </div>
           </div>
-          <MatriculaForm whatsappUrl={whatsappUrl} />
+          <MatriculaForm whatsappUrl={whatsappUrl} turmas={turmas} />
         </div>
     </PaginaPublica>
   )

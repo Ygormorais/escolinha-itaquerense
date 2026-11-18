@@ -9,10 +9,13 @@ import { startOfMonth, endOfMonth, format } from "date-fns"
 import { mergeRecebimentosDinheiro } from "@/lib/caixa/dinheiro"
 import { formatMoney, plural } from "@/lib/utils"
 import { RegistrarDinheiroDialog } from "./registrar-dinheiro-dialog"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Dinheiro — Escolinha Itaquerense" }
 
 export default async function DinheiroPage() {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin"])
   const now = new Date()
   const inicio = startOfMonth(now)
   const fim = endOfMonth(now)

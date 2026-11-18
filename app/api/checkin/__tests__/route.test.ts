@@ -95,8 +95,8 @@ describe("POST /api/checkin", () => {
     const res = await POST(makeRequest({ token: "assinado", matricula: "1", dataNascimento: "2015-06-15" }) as unknown as NextRequest)
 
     expect(mockDb.frequencia.upsert).toHaveBeenCalledWith({
-      where: { alunoId_data: { alunoId: 1, data: new Date("2026-06-24T12:00:00.000Z") } },
-      create: { alunoId: 1, data: new Date("2026-06-24T12:00:00.000Z"), presenca: "Presente" },
+      where: { alunoId_data: { alunoId: 1, data: new Date("2026-06-24T00:00:00.000Z") } },
+      create: { alunoId: 1, data: new Date("2026-06-24T00:00:00.000Z"), presenca: "Presente" },
       update: { presenca: "Presente" },
     })
     expect(res.headers.get("location")).toContain("ja=1")

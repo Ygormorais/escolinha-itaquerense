@@ -12,7 +12,8 @@ type ActionResult = { success: true } | { error: string }
 export async function salvarFrequencia(
   registros: { alunoId: number; data: string; presenca: string }[]
 ): Promise<ActionResult> {
-  await requireAuth(["admin", "secretaria"])
+  // O técnico faz a chamada da turma pelo celular, então também salva.
+  await requireAuth(["admin", "secretaria", "tecnico"])
   const VALIDAS = new Set(["Presente", "Ausente", "Justificado"])
   if (registros.some((r) => !VALIDAS.has(r.presenca))) {
     return { error: "Valor de presença inválido" }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2, LogOut, ShieldCheck } from "lucide-react"
 import { AuthCard } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
+import { limparCacheOffline } from "@/lib/limpar-cache-offline"
 
 /**
  * Quando já existe cookie de equipe, não pulamos o login em silêncio:
@@ -26,6 +27,7 @@ export function SessionGate({
     startLoading(async () => {
       try {
         await fetch("/api/auth/logout", { method: "POST" })
+        await limparCacheOffline()
         router.replace("/login")
         router.refresh()
       } catch {

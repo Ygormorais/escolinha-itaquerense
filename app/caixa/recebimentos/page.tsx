@@ -11,6 +11,7 @@ import { format, startOfMonth, endOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { MonthPicker } from "@/app/caixa/month-picker"
 import Link from "next/link"
+import { requireAuth } from "@/lib/auth"
 
 export const metadata = { title: "Recebimentos — Escolinha Itaquerense" }
 
@@ -19,6 +20,8 @@ export default async function RecebimentosPage({
 }: {
   searchParams: Promise<{ mes?: string }>
 }) {
+  // O proxy só confere o cookie; aqui o perfil vem do banco.
+  await requireAuth(["admin"])
   const sp = await searchParams
   const now = new Date()
   const mesParam = sp.mes ?? format(now, "yyyy-MM")

@@ -4,13 +4,16 @@ vi.mock("@/lib/db", () => {
   const db = {
     $transaction: vi.fn(),
     transacaoMaquina: { createMany: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn(), aggregate: vi.fn(), count: vi.fn(), groupBy: vi.fn() },
-    pagamento: { create: vi.fn(), upsert: vi.fn(), findUnique: vi.fn() },
+    pagamento: { create: vi.fn(), upsert: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn() },
     aluno: { findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn() },
   }
   return { db }
 })
 
-vi.mock("@/lib/baixa", () => ({
+vi.mock("@/lib/baixa", async (importOriginal) => ({
+  // gravarBaixa real: a regra de acumular/quitar é parte do que se testa.
+  ...(await importOriginal<typeof import("@/lib/baixa")>()),
+  encerrarCobrancaAtiva: vi.fn().mockResolvedValue(undefined),
   emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
   cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(0),
 }))
@@ -29,7 +32,7 @@ vi.mock("@/lib/maquina-csv", () => ({
 import { importarCSV, reconciliarTransacao, reconciliarAuto, getResumoMaquina, getTransacoes } from "@/app/actions/maquina"
 import { db } from "@/lib/db"
 import { parseCSV, parseTransacoes } from "@/lib/maquina-csv"
-import { emitirReciboSeguro } from "@/lib/baixa"
+import { emitirReciboSeguro, encerrarCobrancaAtiva } from "@/lib/baixa"
 
 const m = db as unknown as {
   $transaction: ReturnType<typeof vi.fn>
@@ -42,7 +45,7 @@ const m = db as unknown as {
     count: ReturnType<typeof vi.fn>
     groupBy: ReturnType<typeof vi.fn>
   }
-  pagamento: { create: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn> }
+  pagamento: { create: ReturnType<typeof vi.fn>; upsert: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn> }
   aluno: { findMany: ReturnType<typeof vi.fn>; findFirst: ReturnType<typeof vi.fn> }
 }
 const mParseCSV = parseCSV as unknown as ReturnType<typeof vi.fn>
@@ -50,6 +53,11 @@ const mParseTransacoes = parseTransacoes as unknown as ReturnType<typeof vi.fn>
 
 function tx(over: Record<string, unknown> = {}) {
   return { id: 1, status: "pendente", dataTransacao: new Date("2026-06-05"), valor: 200, parcelas: 1, bandeira: "Visa", tipo: "Crédito", nomeNoCartao: "MARIA SILVA", parcela: "", ...over }
+}
+
+/** Mensalidade em aberto como a action a lê (com o aluno para calcular o devido). */
+function mensalidadeAberta(id: number, extra: Record<string, unknown> = {}) {
+  return { id, dataPagamento: null, valorRecebido: null, valorDevido: null, observacoes: null, externalId: null, aluno: { mensalidade: 200, desconto: 0 }, ...extra }
 }
 
 beforeEach(() => {
@@ -64,7 +72,8 @@ beforeEach(() => {
   m.transacaoMaquina.aggregate.mockResolvedValue({ _sum: { valor: 0 } })
   m.transacaoMaquina.count.mockResolvedValue(0)
   m.transacaoMaquina.groupBy.mockResolvedValue([])
-  m.pagamento.create.mockResolvedValue({ id: 99 })
+  m.pagamento.create.mockResolvedValue(mensalidadeAberta(99))
+  m.pagamento.updateMany.mockResolvedValue({ count: 1 })
   m.pagamento.upsert.mockResolvedValue({ id: 99 })
   m.pagamento.findUnique.mockResolvedValue(null)
   m.aluno.findMany.mockResolvedValue([])
@@ -162,18 +171,47 @@ describe("reconciliarTransacao", () => {
     expect(m.pagamento.upsert).not.toHaveBeenCalled()
   })
 
-  it("faz upsert do pagamento (chave aluno+mês) e marca a transação como reconciliada", async () => {
+  it("cria a mensalidade do mês (chave aluno+mês) e baixa pelo valor do cartão", async () => {
     ;(db.aluno as unknown as { findUnique: ReturnType<typeof vi.fn> }).findUnique.mockResolvedValue({ mensalidade: 200, desconto: 20 })
+    m.pagamento.create.mockResolvedValue(mensalidadeAberta(99, { valorDevido: 180 }))
     const res = await reconciliarTransacao(1, 5, "Junho/2026", "2026-06-10")
     expect(res).toEqual({ success: true })
-    const call = m.pagamento.upsert.mock.calls[0][0]
-    expect(call.where).toEqual({ alunoId_mesReferencia: { alunoId: 5, mesReferencia: "Junho/2026" } })
-    expect(call.update).toMatchObject({ valorRecebido: 200, formaPagamento: "Cartão Crédito (Visa)" })
-    expect(call.create).toMatchObject({ alunoId: 5, mesReferencia: "Junho/2026", valorRecebido: 200, valorDevido: 180 })
-    expect(m.pagamento.create).not.toHaveBeenCalled()
-    expect(m.transacaoMaquina.update.mock.calls[0][0].data).toMatchObject({
-      status: "reconciliado", alunoId: 5, pagamentoId: 99,
-    })
+    expect(m.pagamento.findUnique.mock.calls.at(-1)![0].where).toEqual({ alunoId_mesReferencia: { alunoId: 5, mesReferencia: "Junho/2026" } })
+    expect(m.pagamento.create.mock.calls[0][0].data).toMatchObject({ alunoId: 5, mesReferencia: "Junho/2026", valorDevido: 180 })
+    expect(m.pagamento.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 99, dataPagamento: null, valorRecebido: null },
+      data: expect.objectContaining({ valorRecebido: 200, formaPagamento: "Cartão Crédito (Visa)", statusCobranca: "pago" }),
+    }))
+    expect(m.transacaoMaquina.update.mock.calls[0][0].data).toMatchObject({ pagamentoId: 99 })
+  })
+
+  it("cartão menor que o devido fica parcial, soma ao já recebido e encerra o Pix (o valor da cobrança ficou velho)", async () => {
+    ;(db.aluno as unknown as { findUnique: ReturnType<typeof vi.fn> }).findUnique.mockResolvedValue({ mensalidade: 300, desconto: 0 })
+    m.pagamento.findUnique
+      .mockResolvedValueOnce(null) // checagem de mês já pago
+      .mockResolvedValueOnce(mensalidadeAberta(50, { valorRecebido: 50, valorDevido: 300, externalId: "mp-1", aluno: { mensalidade: 300, desconto: 0 } }))
+    const res = await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(res).toEqual({ success: true })
+    const { where, data } = m.pagamento.updateMany.mock.calls[0][0]
+    expect(where).toEqual({ id: 50, dataPagamento: null, valorRecebido: 50 })
+    expect(data).toMatchObject({ valorRecebido: 250, statusCobranca: "parcial" })
+    expect(data).not.toHaveProperty("dataPagamento")
+    expect(encerrarCobrancaAtiva).toHaveBeenCalledWith(expect.anything(), 50)
+  })
+
+  it("baixa integral encerra o Pix/boleto ativo no Mercado Pago", async () => {
+    m.pagamento.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(mensalidadeAberta(50, { externalId: "mp-1" }))
+    await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(encerrarCobrancaAtiva).toHaveBeenCalledWith(expect.anything(), 50)
+  })
+
+  it("outra baixa chegou antes (updateMany 0): desfaz, sem recibo", async () => {
+    m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
+    const res = await reconciliarTransacao(1, 5, "2026-06", "2026-06-10")
+    expect(res).toEqual({ error: "Transação já reconciliada" })
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
   })
 
   it("não reconcilia de novo uma transação já reconciliada (idempotência)", async () => {
@@ -207,12 +245,8 @@ describe("reconciliarAuto", () => {
     expect(m.aluno.findMany).toHaveBeenCalledTimes(1)
     expect(m.aluno.findFirst).not.toHaveBeenCalled()
     expect(m.$transaction).toHaveBeenCalledTimes(2)
-    expect(m.pagamento.upsert.mock.calls[0][0].where).toEqual({
-      alunoId_mesReferencia: { alunoId: 10, mesReferencia: "2026-06" },
-    })
-    expect(m.pagamento.upsert.mock.calls[1][0].where).toEqual({
-      alunoId_mesReferencia: { alunoId: 11, mesReferencia: "2026-06" },
-    })
+    expect(m.pagamento.create.mock.calls[0][0].data).toMatchObject({ alunoId: 10, mesReferencia: "2026-06" })
+    expect(m.pagamento.create.mock.calls[1][0].data).toMatchObject({ alunoId: 11, mesReferencia: "2026-06" })
   })
 
   it("contabiliza nome não encontrado sem gravar pagamento", async () => {

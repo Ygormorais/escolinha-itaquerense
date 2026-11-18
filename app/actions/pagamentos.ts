@@ -6,15 +6,69 @@ import { registrarLog } from "@/app/actions/log"
 import { requireAuth } from "@/lib/auth"
 import { getConfig } from "@/lib/config"
 import { dataValida, plural } from "@/lib/utils"
-import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
+import { matriculadoAteFimDoMes, mesReferenciaValido, runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
 import { notificarPagamentoConfirmado } from "@/lib/whatsapp-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
 import { restanteDoPagamento, valorDevidoDoAluno, valorDevidoDoPagamento } from "@/lib/valor-devido"
-import { cancelarRecibosDoPagamento, emitirReciboSeguro } from "@/lib/baixa"
+import { calcularBaixa, cancelarRecibosDoPagamento, emitirReciboSeguro, encerrarCobrancaAtiva, gravarBaixa } from "@/lib/baixa"
 
 type ActionResult = { success: true } | { error: string }
 type ReciboEmitido = { numero: string; codigoVerificacao: string } | null
 type BaixaResult = { success: true; recibo: ReciboEmitido } | { error: string }
+
+type ResultadoBaixa = { success: true; quitada: boolean; recibo: ReciboEmitido } | { error: string }
+
+/**
+ * Regra única de baixa de mensalidade (central, dinheiro, marcar como pago): soma ao já recebido,
+ * quita ou deixa parcial, exige motivo quando o valor difere do restante e cancela a cobrança
+ * Pix/boleto ativa numa baixa integral. Não revalida rotas: cada chamador decide.
+ */
+async function executarBaixa(
+  usuario: string,
+  pagamentoId: number,
+  dados: { valor: number; formaPagamento: string; dataPagamento: string; observacao?: string },
+): Promise<ResultadoBaixa> {
+  const valor = Math.round(Number(dados.valor) * 100) / 100
+  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
+  if (!dados.formaPagamento) return { error: "Informe a forma de pagamento" }
+  if (!dataValida(dados.dataPagamento)) return { error: "Data de pagamento inválida" }
+  const pag = await db.pagamento.findUnique({
+    where: { id: pagamentoId },
+    select: {
+      id: true, dataPagamento: true, valorRecebido: true, valorDevido: true, observacoes: true, mesReferencia: true, externalId: true,
+      aluno: { select: { nome: true, mensalidade: true, desconto: true } },
+    },
+  })
+  if (!pag) return { error: "Mensalidade não encontrada" }
+  if (pag.dataPagamento) return { error: "Esta mensalidade já está paga" }
+
+  const restante = restanteDoPagamento(pag)
+  const motivo = dados.observacao?.trim() ?? ""
+  if (Math.abs(valor - restante) > 0.005 && !motivo) {
+    return { error: "Informe o motivo para um valor diferente do devido" }
+  }
+  if (!calcularBaixa(pag, valor).quitada && pag.externalId) {
+    return { error: "Há cobrança Pix/boleto ativa nesta mensalidade. Cancele a cobrança antes de dar baixa parcial." }
+  }
+  const data = new Date(dados.dataPagamento)
+  const nota = motivo
+    ? `${dados.dataPagamento} ${dados.formaPagamento} ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}: ${motivo}`
+    : null
+
+  const { aplicada, quitada } = await gravarBaixa(db, pag, { valor, formaPagamento: dados.formaPagamento, dataPagamento: data, nota })
+  if (!aplicada) return { error: "A mensalidade mudou; recarregue e tente de novo" }
+  if (pag.externalId) await encerrarCobrancaAtiva(db, pagamentoId)
+
+  const recibo = await emitirReciboSeguro(db, {
+    pagamentoId, valor, formaPagamento: dados.formaPagamento, dataPagamento: data, emitidoPor: usuario,
+  })
+  await registrarLog("pagamento", `${quitada ? "Pagamento registrado" : "Pagamento parcial registrado"} — ${pag.aluno.nome}`, {
+    mes: pag.mesReferencia,
+    valor: valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+    forma: dados.formaPagamento,
+  })
+  return { success: true, quitada, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
+}
 
 export async function registrarPagamento(
   id: number,
@@ -26,34 +80,15 @@ export async function registrarPagamento(
   }
 ): Promise<BaixaResult> {
   const session = await requireAuth(["admin", "secretaria"])
-  const valor = Number(data.valorRecebido)
-  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
-  if (!data.dataPagamento || !data.formaPagamento) return { error: "Campos obrigatórios ausentes" }
-  if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
-    // Só baixa mensalidade em aberto: duas abas ou lista desatualizada não sobrescrevem a
-    // baixa anterior nem geram segundo recibo.
-    const { count } = await db.pagamento.updateMany({
-      where: { id, dataPagamento: null },
-      data: {
-        dataPagamento: new Date(data.dataPagamento),
-        formaPagamento: data.formaPagamento,
-        valorRecebido: data.valorRecebido,
-        canalPrevisto: data.formaPagamento,
-        statusCobranca: "pago",
-        observacoes: data.observacoes ?? null,
-      },
+    const r = await executarBaixa(session.user, id, {
+      valor: data.valorRecebido, formaPagamento: data.formaPagamento,
+      dataPagamento: data.dataPagamento, observacao: data.observacoes,
     })
-    if (count === 0) return { error: "Esta mensalidade já está paga" }
-    const recibo = await emitirReciboSeguro(db, {
-      pagamentoId: id, valor, formaPagamento: data.formaPagamento,
-      dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
-    })
-    const pag = await db.pagamento.findUnique({ where: { id }, include: { aluno: { select: { nome: true } } } })
-    await registrarLog("pagamento", `Pagamento registrado — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: data.valorRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), forma: data.formaPagamento })
+    if ("error" in r) return r
     // Os clientes atualizam a rota depois de concluir o próprio fluxo.
     // Revalidar dentro da action desmonta o diálogo antes de exibir o recibo.
-    return { success: true, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
+    return { success: true, recibo: r.recibo }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
   }
@@ -68,60 +103,11 @@ export async function registrarBaixa(
   dados: { valor: number; formaPagamento: string; dataPagamento: string; observacao?: string },
 ): Promise<{ success: true; quitada: boolean; recibo: ReciboEmitido } | { error: string }> {
   const session = await requireAuth(["admin", "secretaria"])
-  const valor = Math.round(Number(dados.valor) * 100) / 100
-  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
-  if (!dados.formaPagamento) return { error: "Informe a forma de pagamento" }
-  if (!dataValida(dados.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
-    const pag = await db.pagamento.findUnique({
-      where: { id: pagamentoId },
-      select: {
-        id: true, dataPagamento: true, valorRecebido: true, valorDevido: true, observacoes: true, mesReferencia: true, externalId: true,
-        aluno: { select: { nome: true, mensalidade: true, desconto: true } },
-      },
-    })
-    if (!pag) return { error: "Mensalidade não encontrada" }
-    if (pag.dataPagamento) return { error: "Esta mensalidade já está paga" }
-
-    const restante = restanteDoPagamento(pag)
-    const motivo = dados.observacao?.trim() ?? ""
-    if (Math.abs(valor - restante) > 0.005 && !motivo) {
-      return { error: "Informe o motivo para um valor diferente do devido" }
-    }
-    const acumulado = Math.round(((pag.valorRecebido ?? 0) + valor) * 100) / 100
-    const quitada = acumulado + 0.005 >= valorDevidoDoPagamento(pag)
-    if (!quitada && pag.externalId) {
-      return { error: "Há cobrança Pix/boleto ativa nesta mensalidade. Cancele a cobrança antes de dar baixa parcial." }
-    }
-    const data = new Date(dados.dataPagamento)
-    const nota = motivo
-      ? `${dados.dataPagamento} ${dados.formaPagamento} ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}: ${motivo}`
-      : null
-
-    // Gravação condicional pelo acumulado lido: duas baixas parciais simultâneas não se sobrescrevem.
-    const { count } = await db.pagamento.updateMany({
-      where: { id: pagamentoId, dataPagamento: null, valorRecebido: pag.valorRecebido },
-      data: {
-        valorRecebido: acumulado,
-        formaPagamento: dados.formaPagamento,
-        canalPrevisto: dados.formaPagamento,
-        statusCobranca: quitada ? "pago" : "parcial",
-        ...(quitada ? { dataPagamento: data } : {}),
-        ...(nota ? { observacoes: pag.observacoes ? `${pag.observacoes}\n${nota}` : nota } : {}),
-      },
-    })
-    if (count === 0) return { error: "A mensalidade mudou; recarregue e tente de novo" }
-
-    const recibo = await emitirReciboSeguro(db, {
-      pagamentoId, valor, formaPagamento: dados.formaPagamento, dataPagamento: data, emitidoPor: session.user,
-    })
-    await registrarLog("pagamento", `${quitada ? "Pagamento registrado" : "Pagamento parcial registrado"} — ${pag.aluno.nome}`, {
-      mes: pag.mesReferencia,
-      valor: valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
-      forma: dados.formaPagamento,
-    })
+    const r = await executarBaixa(session.user, pagamentoId, dados)
+    if ("error" in r) return r
     for (const rota of ["/pagamentos", "/caixa", "/caixa/recebimentos", "/dashboard"]) revalidatePath(rota)
-    return { success: true, quitada, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
+    return r
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao registrar pagamento" }
   }
@@ -129,16 +115,25 @@ export async function registrarBaixa(
 
 export async function getPagamentosPendentes(alunoId: number) {
   await requireAuth(["admin", "secretaria"])
-  return db.pagamento.findMany({
+  const lista = await db.pagamento.findMany({
     where: { alunoId, dataPagamento: null },
     select: {
       id: true,
       mesReferencia: true,
       dataVencimento: true,
-      aluno: { select: { mensalidade: true } },
+      valorDevido: true,
+      valorRecebido: true,
+      aluno: { select: { mensalidade: true, desconto: true } },
     },
     orderBy: { dataVencimento: "asc" },
   })
+  // `restante` já desconta o desconto e as baixas parciais: é o que o diálogo pré-preenche.
+  return lista.map((p) => ({
+    id: p.id,
+    mesReferencia: p.mesReferencia,
+    dataVencimento: p.dataVencimento,
+    restante: restanteDoPagamento(p),
+  }))
 }
 
 export async function registrarPagamentosLote(
@@ -187,6 +182,7 @@ export async function registrarPagamentosLote(
         dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
       })
       if (recibo) recibos.push({ pagamentoId: p.id, numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao })
+      if (p.externalId) await encerrarCobrancaAtiva(db, p.id)
     }
 
     await registrarLog("pagamento", `Lote: ${plural(atualizados, "pagamento registrado", "pagamentos registrados", "nenhum")}`, { forma: data.formaPagamento, data: data.dataPagamento })
@@ -205,6 +201,7 @@ export async function gerarMensalidadesMes(
   mes: string
 ): Promise<{ criados: number; ignorados: number } | { error: string }> {
   await requireAuth(["admin", "secretaria"])
+  if (!mesReferenciaValido(mes)) return { error: "Mês inválido. Use o formato AAAA-MM." }
   try {
     const result = await runGerarMensalidadesMes(mes)
     revalidatePath("/pagamentos")
@@ -226,7 +223,7 @@ export async function gerarMensalidadesAno(
   try {
     const rawDia = getConfig().diaVencimento
     const diaVencimento = Number.isInteger(rawDia) && rawDia >= 1 && rawDia <= 28 ? rawDia : 10
-    const alunos = await db.aluno.findMany({ where: { status: "Ativo" }, select: { id: true, mensalidade: true, desconto: true } })
+    const alunos = await db.aluno.findMany({ where: { status: "Ativo" }, select: { id: true, mensalidade: true, desconto: true, dataMatricula: true } })
     let criados = 0
     let ignorados = 0
 
@@ -237,7 +234,7 @@ export async function gerarMensalidadesAno(
         select: { alunoId: true },
       })
       const existentesSet = new Set(existentes.map((e) => e.alunoId))
-      const novos = alunos.filter((a) => !existentesSet.has(a.id))
+      const novos = alunos.filter((a) => !existentesSet.has(a.id) && matriculadoAteFimDoMes(a, ano, mesNum))
 
       if (novos.length > 0) {
         await db.pagamento.createMany({
@@ -297,34 +294,18 @@ export async function marcarComoPago(
   data: { dataPagamento: string; formaPagamento: string; valorRecebido: number }
 ): Promise<BaixaResult> {
   const session = await requireAuth(["admin", "secretaria"])
-  const valor = Number(data.valorRecebido)
-  if (!Number.isFinite(valor) || valor <= 0) return { error: "Valor inválido" }
-  if (!dataValida(data.dataPagamento)) return { error: "Data de pagamento inválida" }
   try {
-    const { count } = await db.pagamento.updateMany({
-      where: { id, dataPagamento: null },
-      data: {
-        dataPagamento: new Date(data.dataPagamento),
-        formaPagamento: data.formaPagamento,
-        valorRecebido: data.valorRecebido,
-        canalPrevisto: data.formaPagamento,
-        statusCobranca: "pago",
-      },
+    const r = await executarBaixa(session.user, id, {
+      valor: data.valorRecebido, formaPagamento: data.formaPagamento, dataPagamento: data.dataPagamento,
     })
-    if (count === 0) return { error: "Esta mensalidade já está paga" }
-
-    const recibo = await emitirReciboSeguro(db, {
-      pagamentoId: id, valor, formaPagamento: data.formaPagamento,
-      dataPagamento: new Date(data.dataPagamento), emitidoPor: session.user,
-    })
+    if ("error" in r) return r
 
     const pag = await db.pagamento.findUnique({
       where: { id },
       include: { aluno: { select: { id: true, nome: true, responsavelId: true } } },
     })
-    await registrarLog("pagamento_pago", `Pagamento marcado como pago — ${pag?.aluno.nome ?? ""}`, { mes: pag?.mesReferencia ?? "", valor: data.valorRecebido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) })
-    // Notifica responsável — best-effort
-    if (pag) {
+    // Notifica responsável só quando a baixa quitou — best-effort
+    if (pag && r.quitada) {
       notificarPagamentoConfirmado(id).catch(() => null)
       if (pag.aluno.responsavelId) {
         sendPushToResponsavel(pag.aluno.responsavelId, "pagamentoConfirmado", {
@@ -338,7 +319,7 @@ export async function marcarComoPago(
     revalidatePath("/pagamentos")
     revalidatePath("/dashboard")
     if (pag) revalidatePath(`/alunos/${pag.aluno.id}`)
-    return { success: true, recibo: recibo && { numero: recibo.numero, codigoVerificacao: recibo.codigoVerificacao } }
+    return { success: true, recibo: r.recibo }
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Erro ao marcar como pago" }
   }

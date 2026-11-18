@@ -24,19 +24,20 @@ export type PontoEvolucao = {
   Comportamento: number | null
 }
 
-type BadgeVariant = "default" | "destructive" | "secondary" | "outline"
+type BadgeVariant = "success" | "warning" | "destructive" | "outline"
 
 export function notaBadgeColor(valor: number | null): BadgeVariant {
   if (valor === null) return "outline"
-  if (valor >= 7) return "default"
-  if (valor >= 5) return "secondary"
+  // Verde para bom, amarelo para atenção: o vermelho cheio é só para alerta.
+  if (valor >= 7) return "success"
+  if (valor >= 5) return "warning"
   return "destructive"
 }
 
 export function freqBadgeColor(valor: number | null): BadgeVariant {
   if (valor === null) return "outline"
-  if (valor >= 75) return "default"
-  if (valor >= 50) return "secondary"
+  if (valor >= 75) return "success"
+  if (valor >= 50) return "warning"
   return "destructive"
 }
 

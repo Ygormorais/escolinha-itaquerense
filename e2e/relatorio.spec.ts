@@ -55,7 +55,7 @@ test.describe("Relatórios — admin", () => {
 
   test("relatório de pagamentos mantém busca e ano na URL", async ({ page }) => {
     await page.goto("/relatorio/pagamentos")
-    await expect(page.locator('input[type="number"]')).toBeVisible()
+    await expect(page.getByRole("textbox", { name: "Ano do relatório" })).toBeVisible()
     await page.getByPlaceholder("Buscar aluno...").fill("Teste")
     await page.getByPlaceholder("Buscar aluno...").press("Enter")
     await expect(page).toHaveURL(/q=Teste/)

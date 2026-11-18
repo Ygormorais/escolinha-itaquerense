@@ -1,3 +1,4 @@
+// Next 16.4.5: inclui as correções de segurança do 16.4.2 a 16.4.5.
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

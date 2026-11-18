@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { verifyCheckinToken } from "@/lib/checkin-token"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { getClientIp } from "@/lib/client-ip"
 
 function redirectToCheckin(req: NextRequest, token: string, result: "ok" | "ja" | "erro") {
   const url = new URL("/checkin", req.url)
@@ -14,7 +15,7 @@ function redirectToCheckin(req: NextRequest, token: string, result: "ok" | "ja" 
 
 // POST /api/checkin — o QR identifica turma/data; matrícula + nascimento identificam o aluno.
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+  const ip = getClientIp(req)
   const globalLimit = checkRateLimit(`checkin:${ip}`, 60, 10 * 60_000)
   if (!globalLimit.ok) return rateLimitResponse(globalLimit.retryAfterMs)
 
@@ -44,7 +45,8 @@ export async function POST(req: NextRequest) {
     return redirectToCheckin(req, token, "erro")
   }
 
-  const data = new Date(`${claims.data}T12:00:00.000Z`)
+  // Meia-noite UTC, como a chamada da turma (salvarFrequencia)
+  const data = new Date(`${claims.data}T00:00:00.000Z`)
   const existente = await db.frequencia.findUnique({
     where: { alunoId_data: { alunoId, data } },
     select: { id: true },

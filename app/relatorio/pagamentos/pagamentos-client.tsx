@@ -15,9 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PageHeader } from "@/components/layout/page-header"
 import { RelatorioNav } from "@/components/relatorio/relatorio-nav"
-import { format } from "date-fns"
+import { formatarDataUtc, hojeNoClube } from "@/lib/datas-clube"
 import type { RscDate } from "@/lib/rsc-date"
-import { printHTML } from "@/lib/print"
+import { html, printHTML } from "@/lib/print"
 import { getPaymentChannel, type PaymentChannel } from "@/lib/payment-channel"
 import { TURMAS } from "@/lib/constants"
 import type { StaffRole } from "@/lib/permissions"
@@ -50,7 +50,8 @@ const statusBadge: Record<string, string> = {
 
 function calcStatus(p: Pagamento): "Pago" | "Atrasado" | "Pendente" {
   if (p.dataPagamento) return "Pago"
-  return new Date(p.dataVencimento) < new Date() ? "Atrasado" : "Pendente"
+  // Vencimento é gravado à meia-noite UTC: atrasa só no dia seguinte, pelo calendário do clube.
+  return new Date(p.dataVencimento).toISOString().slice(0, 10) < hojeNoClube() ? "Atrasado" : "Pendente"
 }
 
 type CanalResumo = { canal: PaymentChannel; total: number; quantidade: number; pagos: number }
@@ -116,9 +117,9 @@ export function RelatorioPagamentosClient({
     const linhas = completos.map((p) => {
       const st = calcStatus(p)
       const canal = getPaymentChannel(p.formaPagamento)
-      return `<tr><td>${p.aluno.nome}</td><td>${p.aluno.turma}</td><td>${p.mesReferencia}</td><td>${canal}</td><td>${format(new Date(p.dataVencimento), "dd/MM/yyyy")}</td><td>${p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}</td><td>R$ ${(p.valorRecebido ?? 0).toFixed(2)}</td><td>${st}</td></tr>`
-    }).join("")
-    printHTML(`
+      return html`<tr><td>${p.aluno.nome}</td><td>${p.aluno.turma}</td><td>${p.mesReferencia}</td><td>${canal}</td><td>${formatarDataUtc(p.dataVencimento)}</td><td>${p.dataPagamento ? formatarDataUtc(p.dataPagamento) : "—"}</td><td>R$ ${(p.valorRecebido ?? 0).toFixed(2)}</td><td>${st}</td></tr>`
+    })
+    printHTML(html`
       <h1>Relatório de Pagamentos — ${filters.ano}</h1>
       <p>${completos.length} registros filtrados · Recebido: ${formatMoney(resumo.totalRecebido)} · Pendente: ${formatMoney(resumo.totalPendente)} · Em atraso: ${formatMoney(resumo.totalAtrasado)}</p>
       <table>
@@ -136,8 +137,8 @@ export function RelatorioPagamentosClient({
       const canal = getPaymentChannel(p.formaPagamento)
       return [
         p.aluno.nome, p.aluno.turma, p.mesReferencia, canal,
-        format(new Date(p.dataVencimento), "dd/MM/yyyy"),
-        p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "",
+        formatarDataUtc(p.dataVencimento),
+        p.dataPagamento ? formatarDataUtc(p.dataPagamento) : "",
         formatMoney(p.valorRecebido ?? 0), st,
       ].map(sanitizeCSVCell).join(";")
     })
@@ -160,12 +161,12 @@ export function RelatorioPagamentosClient({
         action={
           <div className="flex gap-2">
             <Input
-              type="number"
-              min={2020}
-              max={2099}
+              type="text"
+              inputMode="numeric"
+              maxLength={4}
               value={anoInput}
               aria-label="Ano do relatório"
-              className="h-9 w-24"
+              className="h-9 w-20 shrink-0 text-center tabular-nums"
               onChange={(e) => {
                 const value = e.target.value
                 setAnoInput(value)
@@ -175,7 +176,7 @@ export function RelatorioPagamentosClient({
             <Button size="sm" variant="outline" onClick={imprimirPDF} disabled={exportando || total === 0}>
               <Printer className="size-4" /> Imprimir PDF
             </Button>
-            <Button size="sm" onClick={exportarCSV} disabled={exportando || total === 0}>
+            <Button size="sm" variant="outline" onClick={exportarCSV} disabled={exportando || total === 0}>
               <Download className="size-4 mr-1" /> Exportar CSV
             </Button>
           </div>
@@ -313,7 +314,7 @@ export function RelatorioPagamentosClient({
           const canal = getPaymentChannel(p.formaPagamento)
           return <article key={p.id} className="rounded-[var(--radius-card)] border bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3"><div className="min-w-0"><Link href={`/alunos/${p.aluno.id}`} className="block truncate font-semibold text-brand-800 hover:underline">{p.aluno.nome}</Link><p className="mt-1 text-xs text-muted-foreground">{p.aluno.turma} · {p.mesReferencia} · {canal}</p></div><span className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${statusBadge[st]}`}>{st}</span></div>
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><div><dt className="text-xs text-muted-foreground">Vencimento</dt><dd>{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</dd></div><div><dt className="text-xs text-muted-foreground">Valor</dt><dd data-numeric className="font-semibold">{formatMoney(p.valorRecebido ?? p.aluno.mensalidade ?? 0)}</dd></div></dl>
+            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><div><dt className="text-xs text-muted-foreground">Vencimento</dt><dd>{formatarDataUtc(p.dataVencimento)}</dd></div><div><dt className="text-xs text-muted-foreground">Valor</dt><dd data-numeric className="font-semibold">{formatMoney(p.valorRecebido ?? p.aluno.mensalidade ?? 0)}</dd></div></dl>
           </article>
         })}
       </div>
@@ -367,9 +368,9 @@ export function RelatorioPagamentosClient({
                       <TableCell>
                         <Badge variant="outline" className="text-xs">{canal}</Badge>
                       </TableCell>
-                      <TableCell className="text-sm">{format(new Date(p.dataVencimento), "dd/MM/yyyy")}</TableCell>
+                      <TableCell className="text-sm">{formatarDataUtc(p.dataVencimento)}</TableCell>
                       <TableCell className="text-sm">
-                        {p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "—"}
+                        {p.dataPagamento ? formatarDataUtc(p.dataPagamento) : "—"}
                       </TableCell>
                       <TableCell className="text-right text-sm font-medium">
                         {formatMoney(p.valorRecebido ?? p.aluno.mensalidade ?? 0)}

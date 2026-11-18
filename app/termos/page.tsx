@@ -1,6 +1,9 @@
 import { PaginaPublica } from "@/components/site/pagina-publica"
 
-export const metadata = { title: "Termos de Uso — Escolinha Itaquerense" }
+export const metadata = {
+  title: "Termos de Uso — Escolinha Itaquerense",
+  robots: { index: true, follow: true }, // página pública: indexável
+}
 
 export default function TermosPage() {
   return (
@@ -14,7 +17,7 @@ export default function TermosPage() {
         <h2>Condutas</h2>
         <p>É proibido tentar acessar dados de outros alunos, interferir no funcionamento do sistema ou usar o portal para finalidades não relacionadas à escolinha.</p>
         <h2>Revisão</h2>
-        <p>Os termos podem ser atualizados para refletir mudanças operacionais ou legais. Este texto deve receber validação jurídica antes da publicação comercial definitiva.</p>
+        <p>Os termos podem ser atualizados para refletir mudanças operacionais ou legais.</p>
       </div>
     </PaginaPublica>
   )

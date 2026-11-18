@@ -10,8 +10,11 @@ vi.mock("@/lib/db", () => ({
       update: vi.fn(),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
+    recibo: { count: vi.fn().mockResolvedValue(0) },
   },
 }))
+
+vi.mock("@/app/actions/log", () => ({ registrarLog: vi.fn() }))
 
 vi.mock("@/lib/mercadopago", () => ({
   mpPayment: { get: vi.fn() },
@@ -64,7 +67,7 @@ function makeRequest(body: object, opts: { signature?: string; requestId?: strin
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("POST /api/webhooks/mercadopago", () => {
-  let db: { pagamento: { findFirst: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn> } }
+  let db: { pagamento: { findFirst: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn> }; recibo: { count: ReturnType<typeof vi.fn> } }
   let mpPayment: { get: ReturnType<typeof vi.fn> }
 
   beforeEach(async () => {
@@ -115,7 +118,7 @@ describe("POST /api/webhooks/mercadopago", () => {
     expect(db.pagamento.update).not.toHaveBeenCalled()
   })
 
-  it("atualiza status e não notifica se pagamento já estava pago", async () => {
+  it("mensalidade já paga e sem baixa deste pagamento do MP: registra duplicidade, sem regravar nem notificar", async () => {
     const paymentId = "111"
     const ts = "1700000000002"
     const sig = makeSignature(paymentId, "req-123", ts)
@@ -133,15 +136,15 @@ describe("POST /api/webhooks/mercadopago", () => {
       canalPrevisto: "pix",
       aluno: { nome: "Fulano", telefone: null, email: null, responsavel: null },
     })
-    // Já pago: a baixa condicional não encontra a mensalidade em aberto.
-    db.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
+    // Nenhum recibo do Mercado Pago: a baixa veio de outro canal (dinheiro, maquininha...).
+    db.recibo.count.mockResolvedValueOnce(0)
 
     const { POST } = await import("../route")
     const res = await POST(makeRequest({ type: "payment", data: { id: paymentId } }, { signature: sig }))
     expect(res.status).toBe(200)
-    expect(db.pagamento.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 1, dataPagamento: null } }),
-    )
+    expect(db.pagamento.updateMany).not.toHaveBeenCalled()
+    const { registrarLog } = await import("@/app/actions/log")
+    expect(registrarLog).toHaveBeenCalledWith("pagamento_duplicado", expect.any(String), expect.objectContaining({ mpPaymentId: paymentId }))
     const { notificarPagamentoConfirmado } = await import("@/lib/whatsapp-jobs")
     expect(notificarPagamentoConfirmado).not.toHaveBeenCalled()
   })
@@ -161,6 +164,7 @@ describe("POST /api/webhooks/mercadopago", () => {
       id: 42,
       externalId: paymentId,
       dataPagamento: null,
+      valorRecebido: null,
       canalPrevisto: "pix",
       aluno: { nome: "Ciclano", telefone: "11999999999", email: null, responsavel: null },
     })
@@ -171,7 +175,7 @@ describe("POST /api/webhooks/mercadopago", () => {
     expect(res.status).toBe(200)
     expect(db.pagamento.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 42, dataPagamento: null },
+        where: { id: 42, dataPagamento: null, valorRecebido: null },
         data: expect.objectContaining({ statusCobranca: "pago" }),
       }),
     )

@@ -16,7 +16,8 @@
 }
 
 .lp .nc .nc-inner {
-  padding: clamp(48px, 7vw, 72px) 0;
+  /* Só vertical: o gutter lateral vem do .container (padding: 0 … zerava a margem no celular). */
+  padding-block: clamp(48px, 7vw, 72px);
 }
 
 .lp .nc .nc-header {

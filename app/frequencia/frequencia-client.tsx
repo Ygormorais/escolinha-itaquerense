@@ -13,6 +13,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
+import { ehErroDeRede } from "@/lib/erro-rede"
 import { salvarFrequencia, getFrequenciaPorTurmaData } from "@/app/actions/frequencia"
 import { Label } from "@/components/ui/label"
 import { TURMAS } from "@/lib/constants"
@@ -56,10 +57,12 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
     setSincronizando(true)
     const restantes: ItemFila[] = []
     let enviados = 0
+    let erroServidor = false
     for (const item of fila) {
-      try { const resposta = await salvarFrequencia(item.registros); if ("error" in resposta) restantes.push(item); else enviados++ } catch { restantes.push(item) }
+      try { const resposta = await salvarFrequencia(item.registros); if ("error" in resposta) restantes.push(item); else enviados++ } catch (e) { restantes.push(item); if (!ehErroDeRede(e)) erroServidor = true }
     }
     gravarFila(restantes); setPendentesOffline(restantes.length); setSincronizando(false)
+    if (erroServidor) toast.error("Não foi possível sincronizar: entre novamente ou procure a secretaria. Os dados continuam no aparelho.")
     if (enviados) toast.success(`${enviados} lançamento(s) offline sincronizado(s).`)
   }
 
@@ -107,7 +110,7 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
       if (!navigator.onLine) {
         const chave = `${turma}:${data}`; const fila = lerFila().filter((item) => item.chave !== chave); const nova = [...fila, { chave, registros, criadoEm: new Date().toISOString() }]; gravarFila(nova); setPendentesOffline(nova.length); toast.success("Frequência salva no aparelho para sincronização."); return
       }
-      try { const result = await salvarFrequencia(registros); if ("error" in result) toast.error(result.error); else toast.success("Frequência salva") } catch { const chave = `${turma}:${data}`; const fila = lerFila().filter((item) => item.chave !== chave); const nova = [...fila, { chave, registros, criadoEm: new Date().toISOString() }]; gravarFila(nova); setPendentesOffline(nova.length); toast.success("Conexão indisponível. Frequência guardada no aparelho.") }
+      try { const result = await salvarFrequencia(registros); if ("error" in result) toast.error(result.error); else toast.success("Frequência salva") } catch (e) { if (!ehErroDeRede(e)) { toast.error("Não foi possível salvar a frequência. Entre novamente ou procure a secretaria."); return } const chave = `${turma}:${data}`; const fila = lerFila().filter((item) => item.chave !== chave); const nova = [...fila, { chave, registros, criadoEm: new Date().toISOString() }]; gravarFila(nova); setPendentesOffline(nova.length); toast.success("Conexão indisponível. Frequência guardada no aparelho.") }
     })
   }
 
@@ -289,11 +292,12 @@ export function FrequenciaClient({ turmaInicial }: { turmaInicial?: string }) {
                 )}
                 {alunos.map((aluno) => (
                   <TableRow key={aluno.id} className="hover:bg-muted/40 transition-colors">
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium whitespace-normal">
                       <Link href={`/alunos/${aluno.id}`} className="hover:underline text-brand-800">{aluno.nome}</Link>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      {/* Quebra em vez de vazar: no celular as três opções não cabem numa linha. */}
+                      <div className="flex flex-wrap gap-1.5">
                         {OPCOES.map((opcao) => (
                           <button
                             key={opcao}

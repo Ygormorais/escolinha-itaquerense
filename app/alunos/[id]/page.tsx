@@ -1,6 +1,6 @@
 import { PAGINA_ADMIN } from "@/components/layout/pagina"
 import { db } from "@/lib/db"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
 import dynamic from "next/dynamic"
@@ -38,6 +38,7 @@ import { AvaliacoesCard } from "./avaliacoes-card"
 import { PassaporteDesenvolvimento } from "./passaporte-desenvolvimento"
 import { carregarPainelDesenvolvimento } from "@/lib/desenvolvimento-data"
 import { getSession } from "@/lib/session"
+import { can } from "@/lib/auth"
 
 const statusPagStyle: Record<string, string> = {
   "Pago": "bg-success-50 text-success-600",
@@ -76,6 +77,10 @@ export default async function AlunoDetailPage({
   const config = getConfig()
 
   const session = await getSession()
+  // O proxy só confere a assinatura do cookie; a sessão revogada (senha trocada) cai aqui.
+  if (!session.authenticated) redirect("/login")
+  // Financeiro, uniformes e edição são de admin/secretaria; o técnico vê só o esportivo.
+  const verFinanceiro = can(session.role, "secretaria")
   const podeVerDesenvolvimento = session.role === "admin" || session.role === "tecnico"
   const [aluno, totalPagamentos, todosPagamentos, uniformes, avaliacoes, desenvolvimento] = await Promise.all([
     db.aluno.findUnique({
@@ -84,18 +89,20 @@ export default async function AlunoDetailPage({
         pagamentos: {
           orderBy: { dataVencimento: "desc" },
           skip: (pagina - 1) * PAG_PAGE_SIZE,
-          take: PAG_PAGE_SIZE,
+          take: verFinanceiro ? PAG_PAGE_SIZE : 0,
         },
         frequencias: { orderBy: { data: "desc" }, take: 30 },
       },
     }),
-    db.pagamento.count({ where: { alunoId: numId } }),
-    db.pagamento.findMany({
-      where: { alunoId: numId },
-      select: { mesReferencia: true, dataVencimento: true, dataPagamento: true },
-      orderBy: { mesReferencia: "asc" },
-    }),
-    getUniformes(numId),
+    verFinanceiro ? db.pagamento.count({ where: { alunoId: numId } }) : Promise.resolve(0),
+    verFinanceiro
+      ? db.pagamento.findMany({
+          where: { alunoId: numId },
+          select: { mesReferencia: true, dataVencimento: true, dataPagamento: true },
+          orderBy: { mesReferencia: "asc" },
+        })
+      : Promise.resolve([]),
+    verFinanceiro ? getUniformes(numId) : Promise.resolve([]),
     db.avaliacao.findMany({
       where: { alunoId: numId },
       orderBy: { periodo: "desc" },
@@ -106,13 +113,15 @@ export default async function AlunoDetailPage({
 
   if (!aluno) notFound()
 
-  const [totalPago, pendentes] = await Promise.all([
-    db.pagamento.aggregate({
-      where: { alunoId: numId, dataPagamento: { not: null } },
-      _sum: { valorRecebido: true },
-    }).then((r) => r._sum.valorRecebido ?? 0),
-    db.pagamento.count({ where: { alunoId: numId, dataPagamento: null } }),
-  ])
+  const [totalPago, pendentes] = verFinanceiro
+    ? await Promise.all([
+        db.pagamento.aggregate({
+          where: { alunoId: numId, dataPagamento: { not: null } },
+          _sum: { valorRecebido: true },
+        }).then((r) => r._sum.valorRecebido ?? 0),
+        db.pagamento.count({ where: { alunoId: numId, dataPagamento: null } }),
+      ])
+    : [0, 0]
 
   const totalPagesPag = Math.max(1, Math.ceil(totalPagamentos / PAG_PAGE_SIZE))
 
@@ -135,13 +144,15 @@ export default async function AlunoDetailPage({
         }
         action={
             <div className="flex items-center gap-2">
-              <MatriculaButton
-                aluno={aluno}
-                nomeClube={config.nome}
-                endereco={config.endereco}
-                cidade={config.cidade}
-                telefoneClube={config.telefone}
-              />
+              {verFinanceiro && (
+                <MatriculaButton
+                  aluno={aluno}
+                  nomeClube={config.nome}
+                  endereco={config.endereco}
+                  cidade={config.cidade}
+                  telefoneClube={config.telefone}
+                />
+              )}
               <Link
                 href={`/alunos/${aluno.id}/carteirinha`}
                 className={buttonVariants({ variant: "outline", size: "sm" })}
@@ -149,14 +160,16 @@ export default async function AlunoDetailPage({
                 <IdCard className="size-4" />
                 Carteirinha
               </Link>
-              <Link
-                href={`/recibos/declaracao?alunoId=${aluno.id}&ano=${new Date().getFullYear()}`}
-                className={buttonVariants({ variant: "outline", size: "sm" })}
-              >
-                <FileText className="size-4" />
-                Declaração anual
-              </Link>
-              <EditarAlunoButton aluno={aluno} />
+              {verFinanceiro && (
+                <Link
+                  href={`/recibos/declaracao?alunoId=${aluno.id}&ano=${new Date().getFullYear()}`}
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  <FileText className="size-4" />
+                  Declaração anual
+                </Link>
+              )}
+              {verFinanceiro && <EditarAlunoButton aluno={aluno} />}
               <AlunoPrintButton alunoId={aluno.id} />
             </div>
         }
@@ -197,6 +210,7 @@ export default async function AlunoDetailPage({
           </CardContent>
         </Card>
 
+        {verFinanceiro && (
         <Card>
           <CardHeader>
             <CardTitle>Financeiro</CardTitle>
@@ -217,9 +231,10 @@ export default async function AlunoDetailPage({
             ))}
           </CardContent>
         </Card>
+        )}
       </div>
 
-      <AdimplenciaChart pagamentos={todosPagamentos} />
+      {verFinanceiro && <AdimplenciaChart pagamentos={todosPagamentos} />}
 
       <FichaMedicaCard
         alunoId={aluno.id}
@@ -231,7 +246,7 @@ export default async function AlunoDetailPage({
         contatoEmergenciaParentesco={aluno.contatoEmergenciaParentesco ?? null}
       />
 
-      <UniformesCard alunoId={aluno.id} uniformes={uniformes} />
+      {verFinanceiro && <UniformesCard alunoId={aluno.id} uniformes={uniformes} />}
 
       <FrequenciaChart alunoId={aluno.id} />
 
@@ -239,6 +254,7 @@ export default async function AlunoDetailPage({
 
       {desenvolvimento && <PassaporteDesenvolvimento alunoId={aluno.id} insights={desenvolvimento.insights} historico={desenvolvimento.historico} />}
 
+      {verFinanceiro && (<>
       <div className="grid gap-3 md:hidden" data-slot="student-payment-mobile-list">
         {aluno.pagamentos.map((p) => {
           const status = calcStatus(p.dataVencimento, p.dataPagamento)
@@ -345,6 +361,8 @@ export default async function AlunoDetailPage({
           </Table>
         </CardContent>
       </Card>
+
+      </>)}
 
       <Card>
         <CardHeader>

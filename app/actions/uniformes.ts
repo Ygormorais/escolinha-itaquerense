@@ -8,6 +8,7 @@ import { registrarLog } from "@/app/actions/log"
 type ActionResult = { success: true } | { error: string }
 
 export async function getUniformes(alunoId: number) {
+  await requireAuth(["admin", "secretaria"])
   return db.uniforme.findMany({
     where: { alunoId },
     orderBy: { createdAt: "asc" },

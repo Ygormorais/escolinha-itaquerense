@@ -22,6 +22,8 @@ async function criarPreMatriculaPublica(page: Parameters<typeof loginAsAdmin>[0]
   await page.waitForLoadState("networkidle")
 
   await page.fill('input[id="aluno"]', nomeAluno)
+  await page.getByRole("combobox", { name: "Turma" }).click()
+  await page.locator('[role="option"]').first().click()
   await page.fill('input[id="dataNasc"]', "20032015")
   await page.fill('input[id="responsavel"]', "Responsável E2E Aprovacao")
   await page.fill('input[id="telefone"]', "(11) 98765-4321")

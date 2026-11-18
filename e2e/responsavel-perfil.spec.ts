@@ -27,11 +27,11 @@ test.describe("Portal autenticado — perfil do aluno", () => {
     await expect(page).toHaveURL(/\/responsavel\/aluno\/\d+/, { timeout: 8000 })
   })
 
-  test("página de perfil exibe link 'Voltar ao portal'", async ({ page }) => {
+  test("página de perfil exibe link 'Voltar ao Início'", async ({ page }) => {
     await page.goto("/responsavel")
     await page.getByRole("link", { name: /Ver Perfil/i }).first().click()
     await expect(page).toHaveURL(/\/responsavel\/aluno\/\d+/, { timeout: 8000 })
-    await expect(page.getByRole("link", { name: /Voltar ao portal/i })).toBeVisible()
+    await expect(page.getByRole("link", { name: /Voltar ao Início/i })).toBeVisible()
   })
 
   test("página de perfil exibe nome do aluno no hero", async ({ page }) => {

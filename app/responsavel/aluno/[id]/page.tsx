@@ -97,7 +97,7 @@ export default async function PerfilAlunoPage({ params }: { params: Promise<{ id
   return (
     <div className={PAGINA_PORTAL}>
       {/* Hero */}
-      <PortalHero backHref="/responsavel" title={aluno.nome}>
+      <PortalHero backHref="/responsavel" backLabel="Voltar ao Início" title={aluno.nome}>
         <div className="flex items-center gap-5">
           {aluno.foto ? (
             <div className="relative size-20 shrink-0 overflow-hidden rounded-full border-2 border-white/30">

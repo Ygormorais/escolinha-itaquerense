@@ -5,6 +5,7 @@ vi.mock("@/lib/db", () => ({
     pagamento: {
       findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
       findMany: vi.fn(),
     },
   },
@@ -35,6 +36,7 @@ const m = db as unknown as {
   pagamento: {
     findUnique: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
+    updateMany: ReturnType<typeof vi.fn>
     findMany: ReturnType<typeof vi.fn>
   }
 }
@@ -47,6 +49,7 @@ const mp = mpPayment as unknown as {
 beforeEach(() => {
   vi.clearAllMocks()
   m.pagamento.update.mockResolvedValue({})
+  m.pagamento.updateMany.mockResolvedValue({ count: 1 })
   m.pagamento.findMany.mockResolvedValue([])
 })
 
@@ -57,7 +60,7 @@ describe("emitirCobranca — PIX", () => {
       mesReferencia: "2026-06",
       dataVencimento: new Date("2026-06-10"),
       externalId: null,
-      aluno: { nome: "João Silva", mensalidade: 150, email: "joao@test.com" },
+      aluno: { nome: "João Silva", mensalidade: 150, desconto: 0, email: "joao@test.com" },
     })
     mp.create.mockResolvedValue({
       id: "mp-123",
@@ -73,9 +76,9 @@ describe("emitirCobranca — PIX", () => {
     const res = await emitirCobranca(1, "PIX")
 
     expect(res).toEqual({ success: true })
-    expect(m.pagamento.update).toHaveBeenCalledWith(
+    expect(m.pagamento.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 1 },
+        where: { id: 1, externalId: null },
         data: expect.objectContaining({
           canalPrevisto: "PIX",
           statusCobranca: "pendente",
@@ -91,13 +94,54 @@ describe("emitirCobranca — PIX", () => {
     m.pagamento.findUnique.mockResolvedValue({
       id: 1,
       externalId: "mp-existente",
-      aluno: { nome: "João", mensalidade: 150, email: null },
+      aluno: { nome: "João", mensalidade: 150, desconto: 0, email: null },
     })
 
     const res = await emitirCobranca(1, "PIX")
 
     expect(res).toEqual({ error: "Cobrança já emitida para este pagamento." })
     expect(mp.create).not.toHaveBeenCalled()
+  })
+})
+
+describe("emitirCobranca — valor e corrida", () => {
+  const base = {
+    id: 7, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, dataPagamento: null,
+    valorDevido: 120, valorRecebido: 60, statusCobranca: null,
+    aluno: { nome: "Ana", mensalidade: 150, desconto: 30, email: null },
+  }
+
+  it("cobra o restante devido (desconto e baixa parcial), não a mensalidade cheia", async () => {
+    m.pagamento.findUnique.mockResolvedValue(base)
+    mp.create.mockResolvedValue({ id: "mp-1", status: "pending", point_of_interaction: { transaction_data: { qr_code: "q", ticket_url: "u" } } })
+    await emitirCobranca(7, "PIX")
+    expect(mp.create).toHaveBeenCalledWith(expect.objectContaining({ body: expect.objectContaining({ transaction_amount: 60 }) }))
+  })
+
+  it("recusa mensalidade já paga ou sem restante", async () => {
+    m.pagamento.findUnique.mockResolvedValueOnce({ ...base, dataPagamento: new Date("2026-06-05") })
+    expect(await emitirCobranca(7, "PIX")).toEqual({ error: "Esta mensalidade já está paga." })
+    m.pagamento.findUnique.mockResolvedValueOnce({ ...base, valorRecebido: 120 })
+    expect(await emitirCobranca(7, "PIX")).toEqual({ error: "Não há valor a cobrar nesta mensalidade." })
+    expect(mp.create).not.toHaveBeenCalled()
+  })
+
+  it("reserva antes de chamar o MP: sem reserva (corrida) não cria segunda cobrança", async () => {
+    m.pagamento.findUnique.mockResolvedValue(base)
+    m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
+    const res = await emitirCobranca(7, "PIX")
+    expect(res).toEqual({ error: "Cobrança já emitida ou em emissão para este pagamento." })
+    expect(mp.create).not.toHaveBeenCalled()
+  })
+
+  it("falha no MP desfaz a reserva", async () => {
+    m.pagamento.findUnique.mockResolvedValue(base)
+    mp.create.mockRejectedValue(new Error("MP down"))
+    const res = await emitirCobranca(7, "PIX")
+    expect(res).toEqual({ error: "MP down" })
+    expect(m.pagamento.updateMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({ where: { id: 7, externalId: null, statusCobranca: "emitindo" }, data: { statusCobranca: null } })
+    )
   })
 })
 
@@ -138,7 +182,7 @@ describe("emitirCobranca — Boleto", () => {
       externalId: null,
       aluno: {
         nome: "Pedro",
-        mensalidade: 200,
+        mensalidade: 200, desconto: 0,
         email: "pedro@test.com",
         responsavel: "Carlos Souza",
         responsavelRef: { nome: "Carlos Souza", email: "carlos@test.com", cpf: "191.191.191-00" },
@@ -174,9 +218,9 @@ describe("emitirCobranca — Boleto", () => {
         }),
       })
     )
-    expect(m.pagamento.update).toHaveBeenCalledWith(
+    expect(m.pagamento.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 3 },
+        where: { id: 3, externalId: null },
         data: expect.objectContaining({
           canalPrevisto: "Boleto",
           linhaDigitavel: "1234.5678 9012.3456 7890.1234 5 67890000020000",
@@ -194,7 +238,7 @@ describe("emitirCobranca — Boleto", () => {
       externalId: null,
       aluno: {
         nome: "Ana",
-        mensalidade: 200,
+        mensalidade: 200, desconto: 0,
         email: "ana@test.com",
         responsavel: "Beatriz",
         responsavelRef: { nome: "Beatriz", email: "bia@test.com", cpf: null },
@@ -236,8 +280,8 @@ describe("emitirCobrancasMes", () => {
   it("emite cobranças para todos os pendentes do mês", async () => {
     m.pagamento.findMany.mockResolvedValue([{ id: 10 }, { id: 11 }])
     m.pagamento.findUnique
-      .mockResolvedValueOnce({ id: 10, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "A", mensalidade: 100, email: null } })
-      .mockResolvedValueOnce({ id: 11, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "B", mensalidade: 120, email: null } })
+      .mockResolvedValueOnce({ id: 10, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "A", mensalidade: 100, desconto: 0, email: null } })
+      .mockResolvedValueOnce({ id: 11, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "B", mensalidade: 120, desconto: 0, email: null } })
     mp.create.mockResolvedValue({ id: "mp-x", status: "pending", point_of_interaction: { transaction_data: { qr_code: "qr", ticket_url: "url" } } })
 
     const res = await emitirCobrancasMes("2026-06", "PIX")
@@ -258,8 +302,8 @@ describe("emitirCobrancasMes", () => {
   it("contabiliza erros quando MP falha para alguns", async () => {
     m.pagamento.findMany.mockResolvedValue([{ id: 20 }, { id: 21 }])
     m.pagamento.findUnique
-      .mockResolvedValueOnce({ id: 20, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "C", mensalidade: 100, email: null } })
-      .mockResolvedValueOnce({ id: 21, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "D", mensalidade: 100, email: null } })
+      .mockResolvedValueOnce({ id: 20, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "C", mensalidade: 100, desconto: 0, email: null } })
+      .mockResolvedValueOnce({ id: 21, mesReferencia: "2026-06", dataVencimento: new Date("2026-06-10"), externalId: null, aluno: { nome: "D", mensalidade: 100, desconto: 0, email: null } })
     mp.create
       .mockResolvedValueOnce({ id: "mp-ok", status: "pending", point_of_interaction: { transaction_data: { qr_code: "q", ticket_url: "u" } } })
       .mockRejectedValueOnce(new Error("MP down"))

@@ -6,14 +6,18 @@ import { db } from "@/lib/db"
 import { createResponsavelSession, responsavelCookieName, responsavelCookieMaxAge } from "@/lib/responsavel-session"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { rateLimitResponse } from "@/lib/rate-limit-response"
+import { getClientIp, accountKey, accountLimit } from "@/lib/client-ip"
 import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth-messages"
 
 export async function POST(request: Request) {
   const { email: rawEmail, senha } = await request.json()
   const email = (rawEmail ?? "").trim().toLowerCase()
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+  const ip = getClientIp(request)
   const limit = checkRateLimit(`resp-login:${ip}`)
   if (!limit.ok) return rateLimitResponse(limit.retryAfterMs)
+  const conta = accountLimit(20)
+  const limitConta = checkRateLimit(`resp-login-conta:${accountKey(email)}`, conta.max, conta.windowMs)
+  if (!limitConta.ok) return rateLimitResponse(limitConta.retryAfterMs)
 
   const responsavel = await db.responsavel.findUnique({ where: { email } })
   if (!responsavel || !responsavel.ativo) {
@@ -25,7 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: INVALID_CREDENTIALS_MESSAGE }, { status: 401 })
   }
 
-  const token = await createResponsavelSession(responsavel.id)
+  const token = await createResponsavelSession(responsavel.id, responsavel.sessaoVersao)
   const response = NextResponse.json({ ok: true, nome: responsavel.nome })
   response.cookies.set(responsavelCookieName(), token, {
     httpOnly: true,
