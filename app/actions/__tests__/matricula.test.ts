@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/db", () => {
   const db: Record<string, unknown> = {
-    preMatricula: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn(), delete: vi.fn() },
+    preMatricula: { findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn(), create: vi.fn(), delete: vi.fn() },
     aluno: { create: vi.fn() },
     responsavel: { findFirst: vi.fn() },
     log: { create: vi.fn() },
@@ -17,14 +17,17 @@ vi.mock("@/lib/auth", () => ({
 }))
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
+vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers({ "x-forwarded-for": "203.0.113.9" })) }))
+vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: vi.fn(() => ({ ok: true })) }))
 vi.mock("@/lib/matricula-files", () => ({ deleteMatriculaDocuments: vi.fn().mockResolvedValue(0) }))
 
 import { aprovarPreMatricula, criarPreMatricula, deletarPreMatricula } from "@/app/actions/matricula"
 import { db } from "@/lib/db"
 import { deleteMatriculaDocuments } from "@/lib/matricula-files"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 const m = db as unknown as {
-  preMatricula: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> }
+  preMatricula: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> }
   aluno: { create: ReturnType<typeof vi.fn> }
   responsavel: { findFirst: ReturnType<typeof vi.fn> }
 }
@@ -47,7 +50,8 @@ const prePendente = {
 beforeEach(() => {
   vi.clearAllMocks()
   m.preMatricula.findUnique.mockResolvedValue(prePendente)
-  m.preMatricula.update.mockResolvedValue({ ...prePendente, status: "aprovada" })
+  m.preMatricula.updateMany.mockResolvedValue({ count: 1 })
+  vi.mocked(checkRateLimit).mockReturnValue({ ok: true } as never)
   m.aluno.create.mockResolvedValue({ id: 99 })
   m.preMatricula.create.mockResolvedValue({ id: 5 })
   m.responsavel.findFirst.mockResolvedValue(null)
@@ -94,8 +98,8 @@ describe("aprovarPreMatricula", () => {
       status: "Ativo",
     })
     expect(data.dataMatricula).toBeInstanceOf(Date)
-    expect(m.preMatricula.update).toHaveBeenCalledWith({
-      where: { id: 1 },
+    expect(m.preMatricula.updateMany).toHaveBeenCalledWith({
+      where: { id: 1, status: { not: "aprovada" } },
       data: { status: "aprovada", decididoEm: expect.any(Date) },
     })
   })
@@ -130,7 +134,17 @@ describe("aprovarPreMatricula", () => {
       expect(res).toEqual({ error: "Informe uma mensalidade válida" })
     }
     expect(m.aluno.create).not.toHaveBeenCalled()
-    expect(m.preMatricula.update).not.toHaveBeenCalled()
+    expect(m.preMatricula.updateMany).not.toHaveBeenCalled()
+  })
+
+  it("trava atômica: aprovação simultânea (updateMany 0) não cria aluno nem mensalidades", async () => {
+    m.preMatricula.updateMany.mockResolvedValue({ count: 0 })
+    const createSpy = vi.fn()
+    ;(db as unknown as Record<string, unknown>).pagamento = { create: createSpy }
+    const res = await aprovarPreMatricula(1, { mensalidade: 200, meses: 3 })
+    expect(res).toEqual({ error: "Pré-matrícula já aprovada" })
+    expect(m.aluno.create).not.toHaveBeenCalled()
+    expect(createSpy).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando a pre-matricula nao existe", async () => {
@@ -174,6 +188,32 @@ describe("aprovarPreMatricula", () => {
 
     await aprovarPreMatricula(1, { mensalidade: 200, meses: 0 })
     expect(createSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe("criarPreMatricula — validação e rate limit", () => {
+  const ok = {
+    nomeAluno: "João", dataNascimento: "2015-04-10", turma: "Sub-11", horario: "10h",
+    nomeResponsavel: "Maria", telefone: "11999998888", email: "maria@email.com", consentimento: true,
+  }
+
+  it("bloqueia quando o limite por IP estoura, sem gravar", async () => {
+    vi.mocked(checkRateLimit).mockReturnValue({ ok: false } as never)
+    const res = await criarPreMatricula(ok)
+    expect(res).toEqual({ error: "Muitos envios. Aguarde alguns minutos e tente de novo." })
+    expect(m.preMatricula.create).not.toHaveBeenCalled()
+    expect(checkRateLimit).toHaveBeenCalledWith("pre-matricula:203.0.113.9", 5, 600000)
+  })
+
+  it.each([
+    ["turma que não existe", { turma: "Sub-99" }],
+    ["e-mail malformado", { email: "não-é-email" }],
+    ["observações gigantes", { observacoes: "x".repeat(2001) }],
+    ["nome gigante", { nomeAluno: "a".repeat(121) }],
+  ])("rejeita %s", async (_nome, extra) => {
+    const res = await criarPreMatricula({ ...ok, ...extra })
+    expect(res).toEqual({ error: "Dados inválidos. Confira turma, e-mail e o tamanho dos textos." })
+    expect(m.preMatricula.create).not.toHaveBeenCalled()
   })
 })
 
