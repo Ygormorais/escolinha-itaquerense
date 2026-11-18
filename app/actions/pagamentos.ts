@@ -57,7 +57,7 @@ async function executarBaixa(
 
   const { aplicada, quitada } = await gravarBaixa(db, pag, { valor, formaPagamento: dados.formaPagamento, dataPagamento: data, nota })
   if (!aplicada) return { error: "A mensalidade mudou; recarregue e tente de novo" }
-  if (quitada && pag.externalId) await encerrarCobrancaAtiva(db, pagamentoId)
+  if (pag.externalId) await encerrarCobrancaAtiva(db, pagamentoId)
 
   const recibo = await emitirReciboSeguro(db, {
     pagamentoId, valor, formaPagamento: dados.formaPagamento, dataPagamento: data, emitidoPor: usuario,

@@ -5,7 +5,10 @@ vi.mock("@/lib/db", () => {
     aluno: { findMany: vi.fn() },
     pagamento: { findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     recibo: { findMany: vi.fn() },
-    $transaction: vi.fn(async (ops: unknown[]) => Promise.all(ops)),
+    // Aceita as duas formas: lista de operações e callback transacional (usa o próprio db como tx).
+    $transaction: vi.fn(async (arg: unknown) =>
+      typeof arg === "function" ? (arg as (tx: unknown) => unknown)(db) : Promise.all(arg as unknown[]),
+    ),
   }
   return { db }
 })
@@ -14,7 +17,7 @@ vi.mock("@/lib/baixa", async (importOriginal) => ({
   // gravarBaixa/calcularBaixa reais: a regra de acumular e quitar é o que se quer provar.
   ...(await importOriginal<typeof import("@/lib/baixa")>()),
   encerrarCobrancaAtiva: vi.fn().mockResolvedValue(undefined),
-  emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
+  emitirReciboDaBaixa: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
   cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(0),
 }))
 vi.mock("@/lib/auth", () => ({ requireAuth: vi.fn().mockResolvedValue({}) }))
@@ -27,7 +30,7 @@ import { db } from "@/lib/db"
 import { parseOFX } from "@/lib/ofx-parser"
 import { matchTransactions } from "@/lib/ofx-matcher"
 import { revalidatePath } from "next/cache"
-import { emitirReciboSeguro, encerrarCobrancaAtiva } from "@/lib/baixa"
+import { emitirReciboDaBaixa, encerrarCobrancaAtiva } from "@/lib/baixa"
 
 const m = db as unknown as {
   aluno: { findMany: ReturnType<typeof vi.fn> }
@@ -162,7 +165,7 @@ describe("confirmarImportacaoOFX", () => {
     expect(m.pagamento.updateMany).not.toHaveBeenCalled()
   })
 
-  it("valor menor que o devido fica parcial: acumula, não quita e não encerra a cobrança", async () => {
+  it("valor menor que o devido fica parcial: acumula, não quita e encerra a cobrança (o valor dela ficou velho)", async () => {
     m.pagamento.findMany.mockResolvedValueOnce([aberta(10, 300, { externalId: "mp-1" })])
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
@@ -172,7 +175,7 @@ describe("confirmarImportacaoOFX", () => {
     const { data } = m.pagamento.updateMany.mock.calls[0][0]
     expect(data).toMatchObject({ valorRecebido: 150, statusCobranca: "parcial" })
     expect(data).not.toHaveProperty("dataPagamento")
-    expect(encerrarCobrancaAtiva).not.toHaveBeenCalled()
+    expect(encerrarCobrancaAtiva).toHaveBeenCalledWith(expect.anything(), 10)
   })
 
   it("soma ao parcial já recebido e quita, encerrando o Pix ativo", async () => {
@@ -198,7 +201,7 @@ describe("confirmarImportacaoOFX", () => {
     )
     expect(res).toEqual({ atualizados: 0 })
     expect(m.pagamento.updateMany).not.toHaveBeenCalled()
-    expect(emitirReciboSeguro).not.toHaveBeenCalled()
+    expect(emitirReciboDaBaixa).not.toHaveBeenCalled()
   })
 
   it("grava o fitid no recibo da baixa", async () => {
@@ -207,7 +210,7 @@ describe("confirmarImportacaoOFX", () => {
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
       "<OFX>...</OFX>"
     )
-    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ fitidOfx: "F1" }))
+    expect(emitirReciboDaBaixa).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ fitidOfx: "F1" }))
   })
 
   it("aceita diferença de 1 centavo (tolerância)", async () => {
@@ -325,13 +328,13 @@ describe("recibo das baixas pelo extrato", () => {
   it("emite um recibo por pagamento baixado, com o valor e a data do extrato", async () => {
     m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     await confirmarImportacaoOFX([{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }], "<OFX>...</OFX>")
-    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 10, valor: 150, formaPagamento: "Importação OFX" }))
+    expect(emitirReciboDaBaixa).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 10, valor: 150, formaPagamento: "Importação OFX" }))
   })
 
   it("não emite recibo quando outro processo baixou antes (updateMany 0)", async () => {
     m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
     await confirmarImportacaoOFX([{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }], "<OFX>...</OFX>")
-    expect(emitirReciboSeguro).not.toHaveBeenCalled()
+    expect(emitirReciboDaBaixa).not.toHaveBeenCalled()
   })
 })

@@ -228,7 +228,7 @@ export async function reconciliarTransacao(
     if (e instanceof BaixaNaoAplicada) return { error: "Transação já reconciliada" }
     throw e
   }
-  if (resultado.quitada && resultado.temCobranca) await encerrarCobrancaAtiva(db, resultado.pagamentoId)
+  if (resultado.temCobranca) await encerrarCobrancaAtiva(db, resultado.pagamentoId)
 
   revalidatePath("/caixa/maquina")
   revalidatePath("/caixa/recebimentos")
@@ -294,7 +294,7 @@ export async function reconciliarAuto() {
       if (e instanceof BaixaNaoAplicada) continue
       throw e
     }
-    if (resultado.quitada && resultado.temCobranca) await encerrarCobrancaAtiva(db, resultado.pagamentoId)
+    if (resultado.temCobranca) await encerrarCobrancaAtiva(db, resultado.pagamentoId)
     reconciliados++
   }
 

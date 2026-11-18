@@ -5,7 +5,8 @@ import { db } from "@/lib/db"
 import { parseOFX } from "@/lib/ofx-parser"
 import { matchTransactions, type MatchResult } from "@/lib/ofx-matcher"
 import { revalidatePath } from "next/cache"
-import { emitirReciboSeguro, encerrarCobrancaAtiva, gravarBaixa } from "@/lib/baixa"
+import { emitirReciboDaBaixa, encerrarCobrancaAtiva, gravarBaixa } from "@/lib/baixa"
+import { Prisma } from "@prisma/client"
 
 // Arquivo é lido no client como latin1 (1 byte = 1 char), então content.length
 // bate com o tamanho em bytes do arquivo original.
@@ -108,16 +109,27 @@ export async function confirmarImportacaoOFX(
     for (const s of validas) {
       const tx = txPorFitid.get(s.fitid)!
       const pagamento = pagamentoPorId.get(s.pagamentoId)!
-      const { aplicada, quitada } = await gravarBaixa(db, pagamento, {
-        valor: tx.amount, formaPagamento: "Importação OFX", dataPagamento: tx.date,
-      })
+      // Baixa e recibo (que carrega o fitid, único entre recibos ativos) na MESMA transação:
+      // se outra importação já usou este crédito, a gravação falha e nada é creditado.
+      let aplicada = false
+      try {
+        aplicada = await db.$transaction(async (trx) => {
+          const r = await gravarBaixa(trx, pagamento, { valor: tx.amount, formaPagamento: "Importação OFX", dataPagamento: tx.date })
+          if (!r.aplicada) return false
+          await emitirReciboDaBaixa(trx, {
+            pagamentoId: s.pagamentoId, valor: tx.amount, formaPagamento: "Importação OFX",
+            dataPagamento: tx.date, emitidoPor: session?.user ?? null, fitidOfx: s.fitid,
+          })
+          return true
+        })
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") continue // fitid já usado
+        throw e
+      }
       if (!aplicada) continue
       atualizados++
-      await emitirReciboSeguro(db, {
-        pagamentoId: s.pagamentoId, valor: tx.amount, formaPagamento: "Importação OFX",
-        dataPagamento: tx.date, emitidoPor: session?.user ?? null, fitidOfx: s.fitid,
-      })
-      if (quitada && pagamento.externalId) await encerrarCobrancaAtiva(db, s.pagamentoId)
+      // Parcial ou integral: a cobrança emitida pelo valor antigo não vale mais (cobraria de novo).
+      if (pagamento.externalId) await encerrarCobrancaAtiva(db, s.pagamentoId)
     }
 
     revalidatePath("/pagamentos")

@@ -185,7 +185,7 @@ describe("reconciliarTransacao", () => {
     expect(m.transacaoMaquina.update.mock.calls[0][0].data).toMatchObject({ pagamentoId: 99 })
   })
 
-  it("cartão menor que o devido fica parcial, soma ao já recebido e não encerra o Pix", async () => {
+  it("cartão menor que o devido fica parcial, soma ao já recebido e encerra o Pix (o valor da cobrança ficou velho)", async () => {
     ;(db.aluno as unknown as { findUnique: ReturnType<typeof vi.fn> }).findUnique.mockResolvedValue({ mensalidade: 300, desconto: 0 })
     m.pagamento.findUnique
       .mockResolvedValueOnce(null) // checagem de mês já pago
@@ -196,7 +196,7 @@ describe("reconciliarTransacao", () => {
     expect(where).toEqual({ id: 50, dataPagamento: null, valorRecebido: 50 })
     expect(data).toMatchObject({ valorRecebido: 250, statusCobranca: "parcial" })
     expect(data).not.toHaveProperty("dataPagamento")
-    expect(encerrarCobrancaAtiva).not.toHaveBeenCalled()
+    expect(encerrarCobrancaAtiva).toHaveBeenCalledWith(expect.anything(), 50)
   })
 
   it("baixa integral encerra o Pix/boleto ativo no Mercado Pago", async () => {

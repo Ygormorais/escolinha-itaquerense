@@ -5,7 +5,7 @@ import { CaixaClient } from "./caixa-client"
 import { startOfMonth, endOfMonth } from "date-fns"
 import { formatMoney, plural } from "@/lib/utils"
 import { requireAuth } from "@/lib/auth"
-import { resumirRecibosDoCaixa } from "@/lib/caixa-mensalidades"
+import { pagamentosSemReciboComoRecibos, resumirRecibosDoCaixa } from "@/lib/caixa-mensalidades"
 
 export const metadata = { title: "Caixa — Escolinha Itaquerense" }
 
@@ -15,7 +15,7 @@ export default async function CaixaPage() {
   const inicio = startOfMonth(now)
   const fim = endOfMonth(now)
 
-  const [recibosMes, custosMes, recebimentosMes, transacoesPendentes, alunos, descontosAgg] = await Promise.all([
+  const [recibosEmitidos, semRecibo, custosMes, recebimentosMes, transacoesPendentes, alunos, descontosAgg] = await Promise.all([
     // Cada baixa de mensalidade (parcial ou integral) tem um recibo com valor e forma próprios.
     db.recibo.findMany({
       where: { canceladoAt: null, pagamentoId: { not: null }, dataPagamento: { gte: inicio, lte: fim } },
@@ -24,6 +24,14 @@ export default async function CaixaPage() {
         pagamento: { select: { aluno: { select: { id: true, nome: true, turma: true } } } },
       },
       orderBy: { dataPagamento: "desc" },
+    }),
+    // Mensalidades quitadas no mês sem nenhum recibo ativo: ainda são dinheiro recebido.
+    db.pagamento.findMany({
+      where: { dataPagamento: { gte: inicio, lte: fim }, recibos: { none: { canceladoAt: null } } },
+      select: {
+        id: true, valorRecebido: true, formaPagamento: true, dataPagamento: true, mesReferencia: true,
+        aluno: { select: { id: true, nome: true, turma: true } },
+      },
     }),
     db.custo.findMany({
       where: { data: { gte: inicio, lte: fim } },
@@ -47,6 +55,10 @@ export default async function CaixaPage() {
     }),
   ])
 
+  const recibosMes = [
+    ...recibosEmitidos,
+    ...pagamentosSemReciboComoRecibos(semRecibo.flatMap((p) => (p.dataPagamento ? [{ ...p, dataPagamento: p.dataPagamento }] : []))),
+  ].sort((a, b) => b.dataPagamento.getTime() - a.dataPagamento.getTime())
   const { lancamentos: pagamentosMes, total: totalMensalidades, porForma } = resumirRecibosDoCaixa(recibosMes)
   const totalRecebido = totalMensalidades + recebimentosMes.reduce((s, r) => s + r.valor, 0)
   const totalCustos = custosMes.reduce((s, c) => s + c.valor, 0)

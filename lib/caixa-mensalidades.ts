@@ -29,3 +29,29 @@ export function resumirRecibosDoCaixa(recibos: ReciboDoCaixa[]) {
   }
   return { lancamentos, total, porForma }
 }
+
+export type PagamentoSemRecibo = {
+  id: number
+  valorRecebido: number | null
+  formaPagamento: string | null
+  dataPagamento: Date
+  mesReferencia: string
+  aluno: { id: number; nome: string; turma: string }
+}
+
+/**
+ * Baixas sem recibo ativo (recibo que falhou ao emitir ou pagamento antigo) entram no caixa como
+ * uma linha da mensalidade, para o dinheiro recebido nunca sumir do total.
+ */
+export function pagamentosSemReciboComoRecibos(pagamentos: PagamentoSemRecibo[]): ReciboDoCaixa[] {
+  return pagamentos
+    .filter((p) => (p.valorRecebido ?? 0) > 0)
+    .map((p) => ({
+      id: -p.id, // negativo: não colide com o id de um recibo real
+      valor: p.valorRecebido ?? 0,
+      formaPagamento: p.formaPagamento ?? "Outros",
+      dataPagamento: p.dataPagamento,
+      mesReferencia: p.mesReferencia,
+      pagamento: { aluno: p.aluno },
+    }))
+}
