@@ -96,6 +96,8 @@ export default async function ResponsavelPage() {
 
   const hoje = hojeNoClube(new Date())
   const atrasadas = abertas.filter((p) => p.dataVencimento.toISOString().slice(0, 10) < hoje)
+  const aVencer = abertas.filter((p) => !atrasadas.includes(p))
+  const somaRestante = (lista: typeof abertas) => Math.round(lista.reduce((s, p) => s + restanteDoPagamento(p), 0) * 100) / 100
   const documentosPendentes = documentos.reduce((total, doc) => {
     const versao = doc.versoes[0]
     if (!versao?.obrigatorio) return total
@@ -107,8 +109,9 @@ export default async function ResponsavelPage() {
   }, 0)
   const acoes = acoesDoPortal({
     atrasadas: atrasadas.length,
-    aVencer: abertas.length - atrasadas.length,
-    totalRestante: Math.round(abertas.reduce((s, p) => s + restanteDoPagamento(p), 0) * 100) / 100,
+    aVencer: aVencer.length,
+    restanteAtrasado: somaRestante(atrasadas),
+    restanteAVencer: somaRestante(aVencer),
     documentosPendentes,
   })
 
