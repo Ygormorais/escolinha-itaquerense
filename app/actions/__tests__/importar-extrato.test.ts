@@ -4,12 +4,16 @@ vi.mock("@/lib/db", () => {
   const db = {
     aluno: { findMany: vi.fn() },
     pagamento: { findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
+    recibo: { findMany: vi.fn() },
     $transaction: vi.fn(async (ops: unknown[]) => Promise.all(ops)),
   }
   return { db }
 })
 
-vi.mock("@/lib/baixa", () => ({
+vi.mock("@/lib/baixa", async (importOriginal) => ({
+  // gravarBaixa/calcularBaixa reais: a regra de acumular e quitar é o que se quer provar.
+  ...(await importOriginal<typeof import("@/lib/baixa")>()),
+  encerrarCobrancaAtiva: vi.fn().mockResolvedValue(undefined),
   emitirReciboSeguro: vi.fn().mockResolvedValue({ id: 1, numero: "REC-1", codigoVerificacao: "COD1" }),
   cancelarRecibosDoPagamento: vi.fn().mockResolvedValue(0),
 }))
@@ -23,11 +27,12 @@ import { db } from "@/lib/db"
 import { parseOFX } from "@/lib/ofx-parser"
 import { matchTransactions } from "@/lib/ofx-matcher"
 import { revalidatePath } from "next/cache"
-import { emitirReciboSeguro } from "@/lib/baixa"
+import { emitirReciboSeguro, encerrarCobrancaAtiva } from "@/lib/baixa"
 
 const m = db as unknown as {
   aluno: { findMany: ReturnType<typeof vi.fn> }
   pagamento: { findMany: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn> }
+  recibo: { findMany: ReturnType<typeof vi.fn> }
   $transaction: ReturnType<typeof vi.fn>
 }
 
@@ -44,6 +49,13 @@ beforeEach(() => {
   m.pagamento.findMany.mockResolvedValue(pagamentos)
   m.pagamento.update.mockResolvedValue({})
   m.pagamento.updateMany.mockResolvedValue({ count: 1 })
+  m.recibo.findMany.mockResolvedValue([])
+})
+
+/** Mensalidade em aberto no formato que a action lê (com o aluno para o cálculo do devido). */
+const aberta = (id: number, mensalidade = 150, extra: Record<string, unknown> = {}) => ({
+  id, dataPagamento: null, valorRecebido: null, valorDevido: null, observacoes: null, externalId: null,
+  aluno: { mensalidade, desconto: 0 }, ...extra,
 })
 
 describe("previewOFX", () => {
@@ -89,8 +101,8 @@ describe("confirmarImportacaoOFX", () => {
 
   it("atualiza pagamentos selecionados e retorna contagem", async () => {
     m.pagamento.findMany.mockResolvedValueOnce([
-      { id: 10, dataPagamento: null },
-      { id: 11, dataPagamento: null },
+      aberta(10),
+      aberta(11, 200),
     ])
     const selecoes = [
       { pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" },
@@ -102,34 +114,36 @@ describe("confirmarImportacaoOFX", () => {
   })
 
   it("grava formaPagamento e valor/data a partir da transação OFX reparseada, não do client", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2099-01-01", fitid: "F1" }],
       "<OFX>...</OFX>"
     )
     expect(m.pagamento.updateMany).toHaveBeenCalledWith({
-      where: { id: 10, dataPagamento: null },
+      where: { id: 10, dataPagamento: null, valorRecebido: null },
       data: {
         dataPagamento: ofxTransactions[0].date,
         valorRecebido: ofxTransactions[0].amount,
         formaPagamento: "Importação OFX",
+        canalPrevisto: "Importação OFX",
+        statusCobranca: "pago",
       },
     })
   })
 
-  it("inclui dataPagamento: null no where do updateMany (trava contra corrida TOCTOU)", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+  it("trava a baixa em dataPagamento null e no acumulado lido (corrida TOCTOU)", async () => {
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
       "<OFX>...</OFX>"
     )
     expect(m.pagamento.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 10, dataPagamento: null } })
+      expect.objectContaining({ where: { id: 10, dataPagamento: null, valorRecebido: null } })
     )
   })
 
   it("conta como não atualizado quando updateMany afeta 0 linhas (pagamento baixado entre a consulta e o update)", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
@@ -139,7 +153,7 @@ describe("confirmarImportacaoOFX", () => {
   })
 
   it("pula pagamento que já está pago (não confia só na trava do client)", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: new Date("2026-06-01") }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10, 150, { dataPagamento: new Date("2026-06-01") })])
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
       "<OFX>...</OFX>"
@@ -148,8 +162,56 @@ describe("confirmarImportacaoOFX", () => {
     expect(m.pagamento.updateMany).not.toHaveBeenCalled()
   })
 
+  it("valor menor que o devido fica parcial: acumula, não quita e não encerra a cobrança", async () => {
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10, 300, { externalId: "mp-1" })])
+    const res = await confirmarImportacaoOFX(
+      [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
+      "<OFX>...</OFX>"
+    )
+    expect(res).toEqual({ atualizados: 1 })
+    const { data } = m.pagamento.updateMany.mock.calls[0][0]
+    expect(data).toMatchObject({ valorRecebido: 150, statusCobranca: "parcial" })
+    expect(data).not.toHaveProperty("dataPagamento")
+    expect(encerrarCobrancaAtiva).not.toHaveBeenCalled()
+  })
+
+  it("soma ao parcial já recebido e quita, encerrando o Pix ativo", async () => {
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10, 150, { valorRecebido: 50, externalId: "mp-1" })])
+    vi.mocked(parseOFX).mockReturnValueOnce([{ fitid: "F1", date: new Date("2026-06-05"), amount: 100, memo: "PIX" }] as never)
+    await confirmarImportacaoOFX(
+      [{ pagamentoId: 10, valor: 100, dataPagamento: "2026-06-05", fitid: "F1" }],
+      "<OFX>...</OFX>"
+    )
+    expect(m.pagamento.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 10, dataPagamento: null, valorRecebido: 50 },
+      data: expect.objectContaining({ valorRecebido: 150, statusCobranca: "pago" }),
+    }))
+    expect(encerrarCobrancaAtiva).toHaveBeenCalledWith(expect.anything(), 10)
+  })
+
+  it("pula fitid já usado em importação anterior (recibo ativo com o mesmo fitid)", async () => {
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
+    m.recibo.findMany.mockResolvedValueOnce([{ fitidOfx: "F1" }])
+    const res = await confirmarImportacaoOFX(
+      [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
+      "<OFX>...</OFX>"
+    )
+    expect(res).toEqual({ atualizados: 0 })
+    expect(m.pagamento.updateMany).not.toHaveBeenCalled()
+    expect(emitirReciboSeguro).not.toHaveBeenCalled()
+  })
+
+  it("grava o fitid no recibo da baixa", async () => {
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
+    await confirmarImportacaoOFX(
+      [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
+      "<OFX>...</OFX>"
+    )
+    expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ fitidOfx: "F1" }))
+  })
+
   it("aceita diferença de 1 centavo (tolerância)", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150.01, dataPagamento: "2026-06-05", fitid: "F1" }],
       "<OFX>...</OFX>"
@@ -158,7 +220,7 @@ describe("confirmarImportacaoOFX", () => {
   })
 
   it("pula seleção cujo valor não bate com a transação OFX real (fora da tolerância de 1 centavo)", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150.02, dataPagamento: "2026-06-05", fitid: "F1" }],
       "<OFX>...</OFX>"
@@ -168,7 +230,7 @@ describe("confirmarImportacaoOFX", () => {
   })
 
   it("pula seleção com fitid que não existe mais no OFX reparseado", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "INEXISTENTE" }],
       "<OFX>...</OFX>"
@@ -182,7 +244,7 @@ describe("confirmarImportacaoOFX", () => {
       { fitid: "F1", date: new Date("2026-06-05"), amount: 150, memo: "PIX Lucas" },
       { fitid: "F1", date: new Date("2026-06-06"), amount: 150, memo: "PIX Lucas (dup)" },
     ] as never)
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
       "<OFX>...</OFX>"
@@ -193,8 +255,8 @@ describe("confirmarImportacaoOFX", () => {
 
   it("pula seleções que reusam o mesmo fitid pra confirmar 2 pagamentos diferentes", async () => {
     m.pagamento.findMany.mockResolvedValueOnce([
-      { id: 10, dataPagamento: null },
-      { id: 11, dataPagamento: null },
+      aberta(10),
+      aberta(11, 200),
     ])
     const res = await confirmarImportacaoOFX(
       [
@@ -208,7 +270,7 @@ describe("confirmarImportacaoOFX", () => {
   })
 
   it("revalida os paths de pagamentos após confirmar", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
       "<OFX>...</OFX>"
@@ -219,7 +281,7 @@ describe("confirmarImportacaoOFX", () => {
   })
 
   it("retorna erro se updateMany falhar", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     m.pagamento.updateMany.mockRejectedValueOnce(new Error("FK violation"))
     const res = await confirmarImportacaoOFX(
       [{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }],
@@ -261,13 +323,13 @@ describe("recibo das baixas pelo extrato", () => {
   })
 
   it("emite um recibo por pagamento baixado, com o valor e a data do extrato", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     await confirmarImportacaoOFX([{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }], "<OFX>...</OFX>")
     expect(emitirReciboSeguro).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ pagamentoId: 10, valor: 150, formaPagamento: "Importação OFX" }))
   })
 
   it("não emite recibo quando outro processo baixou antes (updateMany 0)", async () => {
-    m.pagamento.findMany.mockResolvedValueOnce([{ id: 10, dataPagamento: null }])
+    m.pagamento.findMany.mockResolvedValueOnce([aberta(10)])
     m.pagamento.updateMany.mockResolvedValueOnce({ count: 0 })
     await confirmarImportacaoOFX([{ pagamentoId: 10, valor: 150, dataPagamento: "2026-06-05", fitid: "F1" }], "<OFX>...</OFX>")
     expect(emitirReciboSeguro).not.toHaveBeenCalled()
