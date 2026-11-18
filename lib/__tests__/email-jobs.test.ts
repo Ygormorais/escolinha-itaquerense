@@ -35,7 +35,7 @@ const HOJE = new Date("2026-10-16T12:00:00-03:00")
 
 function pagamento(
   id: number,
-  aluno: { nome: string; email: string | null; responsavel?: string | null; mensalidade?: number },
+  aluno: { nome: string; email: string | null; responsavel?: string | null; mensalidade?: number; desconto?: number },
   extra: Record<string, unknown> = {}
 ) {
   return {
@@ -43,7 +43,8 @@ function pagamento(
     mesReferencia: "2026-10",
     dataVencimento: new Date("2026-10-10T12:00:00-03:00"),
     valorRecebido: null,
-    aluno: { responsavel: null, mensalidade: 150, ...aluno },
+    valorDevido: null,
+    aluno: { responsavel: null, mensalidade: 150, desconto: 0, ...aluno },
     ...extra,
   }
 }
@@ -68,14 +69,14 @@ describe("runEnviarLembretesInadimplentes", () => {
     expect(mocks.findMany).not.toHaveBeenCalled()
   })
 
-  it("busca só mensalidades vencidas e não pagas", async () => {
+  it("só considera em atraso a partir do dia seguinte ao vencimento (início do dia no clube, em UTC)", async () => {
     mocks.findMany.mockResolvedValue([])
 
     await runEnviarLembretesInadimplentes()
 
     expect(mocks.findMany.mock.calls[0][0].where).toEqual({
       dataPagamento: null,
-      dataVencimento: { lt: HOJE },
+      dataVencimento: { lt: new Date("2026-10-16T00:00:00.000Z") },
     })
   })
 
@@ -127,6 +128,18 @@ describe("runEnviarLembretesInadimplentes", () => {
     expect(html).toContain("pix@escolinha")
   })
 
+  it("mostra o valor restante (desconto e baixa parcial) e pula quem já quitou", async () => {
+    mocks.findMany.mockResolvedValue([
+      pagamento(1, { nome: "Pedro", email: "a@example.test", mensalidade: 150, desconto: 30 }, { valorRecebido: 60 }),
+      pagamento(2, { nome: "Ana", email: "b@example.test", mensalidade: 150, desconto: 30 }, { valorRecebido: 120 }),
+    ])
+
+    const r = await runEnviarLembretesInadimplentes()
+
+    expect(r).toEqual({ enviados: 1, erros: 0, semEmail: 0 })
+    expect(mocks.enviarEmail.mock.calls[0][2]).toContain("R$ 60,00")
+  })
+
   it("devolve erro quando a consulta ao banco falha", async () => {
     mocks.findMany.mockRejectedValue(new Error("database is locked"))
 
@@ -142,7 +155,7 @@ describe("runEnviarLembreteVencendo", () => {
 
     expect(mocks.findMany.mock.calls[0][0].where).toEqual({
       dataPagamento: null,
-      dataVencimento: { gte: HOJE, lte: new Date("2026-10-19T12:00:00-03:00") },
+      dataVencimento: { gte: new Date("2026-10-16T00:00:00.000Z"), lte: new Date("2026-10-19T00:00:00.000Z") },
     })
   })
 

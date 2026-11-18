@@ -6,7 +6,42 @@ import { parseCSV, parseTransacoes, detectarFormato } from "@/lib/maquina-csv"
 import { requireAuth } from "@/lib/auth"
 import { buildMaquinaWhere, MAQUINA_PAGE_SIZE, parseMaquinaFilters } from "@/lib/maquina-query"
 import { valorDevidoDoAluno } from "@/lib/valor-devido"
-import { emitirReciboSeguro } from "@/lib/baixa"
+import { emitirReciboSeguro, encerrarCobrancaAtiva, gravarBaixa, type ClienteRecibo } from "@/lib/baixa"
+import type { Prisma } from "@prisma/client"
+
+class BaixaNaoAplicada extends Error {}
+
+/**
+ * Baixa da maquininha na mensalidade do mês, com a regra da central: soma ao já recebido
+ * (quita ou fica parcial) em vez de sobrescrever. Cria a mensalidade se ainda não existe.
+ * Lança BaixaNaoAplicada quando outra baixa chegou antes, para desfazer a transação.
+ */
+async function baixarPorMaquininha(
+  tx: Prisma.TransactionClient,
+  dados: {
+    alunoId: number; mesReferencia: string; dataVencimento: Date; valorDevido: number | null
+    valor: number; formaPagamento: string; dataPagamento: Date; observacao: string; emitidoPor: string | null
+  },
+): Promise<{ pagamentoId: number; quitada: boolean; temCobranca: boolean }> {
+  const incluirAluno = { aluno: { select: { mensalidade: true, desconto: true } } }
+  const chave = { alunoId_mesReferencia: { alunoId: dados.alunoId, mesReferencia: dados.mesReferencia } }
+  const pag =
+    (await tx.pagamento.findUnique({ where: chave, include: incluirAluno })) ??
+    (await tx.pagamento.create({
+      data: { alunoId: dados.alunoId, mesReferencia: dados.mesReferencia, dataVencimento: dados.dataVencimento, valorDevido: dados.valorDevido },
+      include: incluirAluno,
+    }))
+  if (pag.dataPagamento) throw new BaixaNaoAplicada()
+  const { aplicada, quitada } = await gravarBaixa(tx, pag, {
+    valor: dados.valor, formaPagamento: dados.formaPagamento, dataPagamento: dados.dataPagamento, nota: dados.observacao,
+  })
+  if (!aplicada) throw new BaixaNaoAplicada()
+  await emitirReciboSeguro(tx as ClienteRecibo, {
+    pagamentoId: pag.id, valor: dados.valor, formaPagamento: dados.formaPagamento,
+    dataPagamento: dados.dataPagamento, emitidoPor: dados.emitidoPor,
+  })
+  return { pagamentoId: pag.id, quitada, temCobranca: pag.externalId != null }
+}
 
 type AlunoConciliacao = { id: number; nomeBusca: string; responsavelBusca: string }
 type ChaveTransacao = { dataTransacao: Date; valor: number; nomeNoCartao: string }
@@ -161,14 +196,8 @@ export async function reconciliarTransacao(
   if (transacao.status === "reconciliado") return { error: "Transação já reconciliada" }
   if (!Number.isFinite(transacao.valor) || transacao.valor <= 0) return { error: "Valor inválido na transação" }
 
-  const dados = {
-    dataPagamento: transacao.dataTransacao,
-    formaPagamento: `Cartão ${transacao.tipo} (${transacao.bandeira})`,
-    valorRecebido: transacao.valor,
-    observacoes: observacoes || `Reconciliado via maquininha - ${transacao.nomeNoCartao}`,
-  }
-  // upsert na unique (alunoId, mesReferencia): se a mensalidade do mês já existe,
-  // marca como paga via cartão (não duplica); senão cria.
+  const formaPagamento = `Cartão ${transacao.tipo} (${transacao.bandeira})`
+  const observacao = observacoes || `Reconciliado via maquininha - ${transacao.nomeNoCartao}`
   const alunoValores = await db.aluno.findUnique({ where: { id: alunoId }, select: { mensalidade: true, desconto: true } })
   // Mês já pago (em dinheiro, Pix etc.) não é sobrescrito pelo cartão nem ganha segundo recibo.
   const existente = await db.pagamento.findUnique({
@@ -176,34 +205,30 @@ export async function reconciliarTransacao(
     select: { dataPagamento: true },
   })
   if (existente?.dataPagamento) return { error: "A mensalidade desse mês já está paga" }
-  const reservada = await db.$transaction(async (tx) => {
-    // Reserva atômica: duas conciliações simultâneas da mesma transação passam pela checagem
-    // de status acima, mas só uma consegue marcar a transação; a outra não baixa nem emite recibo.
-    const { count } = await tx.transacaoMaquina.updateMany({
-      where: { id, status: "pendente" },
-      data: { status: "reconciliado", alunoId },
-    })
-    if (count === 0) return false
-    const pagamento = await tx.pagamento.upsert({
-      where: { alunoId_mesReferencia: { alunoId, mesReferencia } },
-      update: dados,
-      create: {
-        alunoId, mesReferencia, dataVencimento: new Date(dataVencimento), ...dados,
+  let resultado: { pagamentoId: number; quitada: boolean; temCobranca: boolean } | null = null
+  try {
+    resultado = await db.$transaction(async (tx) => {
+      // Reserva atômica: duas conciliações simultâneas da mesma transação passam pela checagem
+      // de status acima, mas só uma consegue marcar a transação; a outra não baixa nem emite recibo.
+      const { count } = await tx.transacaoMaquina.updateMany({
+        where: { id, status: "pendente" },
+        data: { status: "reconciliado", alunoId },
+      })
+      if (count === 0) throw new BaixaNaoAplicada()
+      const r = await baixarPorMaquininha(tx, {
+        alunoId, mesReferencia, dataVencimento: new Date(dataVencimento),
         valorDevido: alunoValores ? valorDevidoDoAluno(alunoValores) : null,
-      },
+        valor: transacao.valor, formaPagamento, dataPagamento: transacao.dataTransacao,
+        observacao, emitidoPor: session?.user ?? null,
+      })
+      await tx.transacaoMaquina.update({ where: { id }, data: { pagamentoId: r.pagamentoId } })
+      return r
     })
-
-    await tx.transacaoMaquina.update({
-      where: { id },
-      data: { status: "reconciliado", alunoId, pagamentoId: pagamento.id },
-    })
-    await emitirReciboSeguro(tx, {
-      pagamentoId: pagamento.id, valor: dados.valorRecebido, formaPagamento: dados.formaPagamento,
-      dataPagamento: dados.dataPagamento, emitidoPor: session?.user ?? null,
-    })
-    return true
-  })
-  if (!reservada) return { error: "Transação já reconciliada" }
+  } catch (e) {
+    if (e instanceof BaixaNaoAplicada) return { error: "Transação já reconciliada" }
+    throw e
+  }
+  if (resultado.temCobranca) await encerrarCobrancaAtiva(db, resultado.pagamentoId)
 
   revalidatePath("/caixa/maquina")
   revalidatePath("/caixa/recebimentos")
@@ -247,35 +272,29 @@ export async function reconciliarAuto() {
     })
     if (existente?.dataPagamento) { jaPagos++; continue }
 
-    const dadosAuto = {
-      dataPagamento: t.dataTransacao,
-      formaPagamento: `Cartão ${t.tipo} (${t.bandeira})`,
-      valorRecebido: t.valor,
-      observacoes: `Reconciliado automático - ${t.nomeNoCartao}`,
+    const formaPagamento = `Cartão ${t.tipo} (${t.bandeira})`
+    let resultado: { pagamentoId: number; quitada: boolean; temCobranca: boolean }
+    try {
+      resultado = await db.$transaction(async (tx) => {
+        const { count } = await tx.transacaoMaquina.updateMany({
+          where: { id: t.id, status: "pendente" },
+          data: { status: "reconciliado", alunoId: aluno.id },
+        })
+        if (count === 0) throw new BaixaNaoAplicada()
+        const r = await baixarPorMaquininha(tx, {
+          alunoId: aluno.id, mesReferencia: mes, dataVencimento: dataVenc,
+          valorDevido: valorDevidoPorAluno.get(aluno.id) ?? null,
+          valor: t.valor, formaPagamento, dataPagamento: t.dataTransacao,
+          observacao: `Reconciliado automático - ${t.nomeNoCartao}`, emitidoPor: session?.user ?? null,
+        })
+        await tx.transacaoMaquina.update({ where: { id: t.id }, data: { pagamentoId: r.pagamentoId } })
+        return r
+      })
+    } catch (e) {
+      if (e instanceof BaixaNaoAplicada) continue
+      throw e
     }
-    const reservada = await db.$transaction(async (tx) => {
-      const { count } = await tx.transacaoMaquina.updateMany({
-        where: { id: t.id, status: "pendente" },
-        data: { status: "reconciliado", alunoId: aluno.id },
-      })
-      if (count === 0) return false
-      const pagamento = await tx.pagamento.upsert({
-        where: { alunoId_mesReferencia: { alunoId: aluno.id, mesReferencia: mes } },
-        update: dadosAuto,
-        create: { alunoId: aluno.id, mesReferencia: mes, dataVencimento: dataVenc, ...dadosAuto, valorDevido: valorDevidoPorAluno.get(aluno.id) ?? null },
-      })
-
-      await tx.transacaoMaquina.update({
-        where: { id: t.id },
-        data: { status: "reconciliado", alunoId: aluno.id, pagamentoId: pagamento.id },
-      })
-      await emitirReciboSeguro(tx, {
-        pagamentoId: pagamento.id, valor: dadosAuto.valorRecebido, formaPagamento: dadosAuto.formaPagamento,
-        dataPagamento: dadosAuto.dataPagamento, emitidoPor: session?.user ?? null,
-      })
-      return true
-    })
-    if (!reservada) continue
+    if (resultado.temCobranca) await encerrarCobrancaAtiva(db, resultado.pagamentoId)
     reconciliados++
   }
 

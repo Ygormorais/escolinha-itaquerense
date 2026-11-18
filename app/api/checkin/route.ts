@@ -45,7 +45,8 @@ export async function POST(req: NextRequest) {
     return redirectToCheckin(req, token, "erro")
   }
 
-  const data = new Date(`${claims.data}T12:00:00.000Z`)
+  // Meia-noite UTC, como a chamada da turma (salvarFrequencia)
+  const data = new Date(`${claims.data}T00:00:00.000Z`)
   const existente = await db.frequencia.findUnique({
     where: { alunoId_data: { alunoId, data } },
     select: { id: true },

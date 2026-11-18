@@ -5,6 +5,8 @@ import { formatMoney } from "@/lib/utils"
 import { ehAniversarioNoDia } from "@/lib/aniversariantes"
 import { sendPushToResponsavel } from "@/lib/push"
 import { logger } from "@/lib/logger"
+import { formatarDataUtc, inicioDeHojeUtc } from "@/lib/datas-clube"
+import { restanteDoPagamento } from "@/lib/valor-devido"
 
 export async function runEnviarLembretesWhatsAppInadimplencia() {
   const t0 = performance.now()
@@ -18,16 +20,18 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
   const atrasadas = await db.pagamento.findMany({
     where: {
       dataPagamento: null,
-      dataVencimento: { lt: new Date() },
+      // Em atraso só a partir do dia seguinte ao vencimento.
+      dataVencimento: { lt: inicioDeHojeUtc() },
     },
     include: {
-      aluno: { select: { id: true, nome: true, telefone: true, responsavel: true, mensalidade: true } },
+      aluno: { select: { id: true, nome: true, telefone: true, responsavel: true, mensalidade: true, desconto: true } },
     },
   })
 
   // Agrupa por alunoId para consolidar múltiplos meses em 1 mensagem
   const porAluno = new Map<number, typeof atrasadas>()
   for (const p of atrasadas) {
+    if (restanteDoPagamento(p) <= 0) continue
     const lista = porAluno.get(p.aluno.id) ?? []
     lista.push(p)
     porAluno.set(p.aluno.id, lista)
@@ -58,8 +62,8 @@ export async function runEnviarLembretesWhatsAppInadimplencia() {
     }
 
     const nome = aluno.responsavel?.split(" ")[0] ?? "responsável"
-    const linhasMeses = pagamentos.map((p) => `• ${p.mesReferencia} — ${formatMoney(aluno.mensalidade)}`).join("\n")
-    const total = formatMoney(pagamentos.length * aluno.mensalidade)
+    const linhasMeses = pagamentos.map((p) => `• ${p.mesReferencia} — ${formatMoney(restanteDoPagamento(p))}`).join("\n")
+    const total = formatMoney(pagamentos.reduce((soma, p) => soma + restanteDoPagamento(p), 0))
     const pixLine = config.chavePix ? `\nPIX: ${config.chavePix}` : ""
 
     const msg = (config.templateCobranca || "Olá {responsavel}!\n\nLembrete: mensalidades de *{aluno}* em atraso:\n\n{meses}\n\nTotal: *{total}*\n{pix}\n\nQualquer dúvida, entre em contato.")
@@ -108,16 +112,17 @@ export async function runEnviarLembretesWhatsAppVencendo() {
   // 1 lembrete por vencimento e libera o do próximo mês.
   const DEDUP_MS = 4 * 24 * 60 * 60 * 1000
 
-  const tresDias = new Date()
-  tresDias.setDate(tresDias.getDate() + 3)
+  const hoje = inicioDeHojeUtc()
+  const tresDias = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000)
 
+  // Inclui quem vence hoje (vencimento à meia-noite UTC do dia).
   const vencendo = await db.pagamento.findMany({
     where: {
       dataPagamento: null,
-      dataVencimento: { gte: new Date(), lte: tresDias },
+      dataVencimento: { gte: hoje, lte: tresDias },
     },
     include: {
-      aluno: { select: { id: true, nome: true, telefone: true, responsavel: true, mensalidade: true } },
+      aluno: { select: { id: true, nome: true, telefone: true, responsavel: true, mensalidade: true, desconto: true } },
     },
   })
 
@@ -134,6 +139,7 @@ export async function runEnviarLembretesWhatsAppVencendo() {
   const ultimoEnvioMap = new Map(ultimosEnvios.map((e) => [e.alunoId, e.createdAt]))
 
   for (const p of vencendo) {
+    if (restanteDoPagamento(p) <= 0) continue
     const tel = p.aluno.telefone?.replace(/\D/g, "")
     if (!tel || tel.length < 8) { semTelefone++; continue }
 
@@ -144,7 +150,7 @@ export async function runEnviarLembretesWhatsAppVencendo() {
       continue
     }
 
-    const dataVenc = new Date(p.dataVencimento).toLocaleDateString("pt-BR")
+    const dataVenc = formatarDataUtc(p.dataVencimento)
     const pixLine = config.chavePix ? `\nPIX: ${config.chavePix}` : ""
     const nome = p.aluno.responsavel?.split(" ")[0] ?? "responsável"
 
@@ -152,7 +158,7 @@ export async function runEnviarLembretesWhatsAppVencendo() {
       .replace("{responsavel}", nome)
       .replace("{aluno}", p.aluno.nome)
       .replace("{data}", dataVenc)
-      .replace("{valor}", formatMoney(p.aluno.mensalidade))
+      .replace("{valor}", formatMoney(restanteDoPagamento(p)))
       .replace("{pix}", pixLine)
 
     try {

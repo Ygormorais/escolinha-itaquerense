@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { format } from "date-fns"
+import { formatarDataUtc } from "@/lib/datas-clube"
 import { MessageCircle, QrCode, Receipt, Trash2Icon, CheckCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 import { formatMoney } from "@/lib/utils"
@@ -34,7 +34,7 @@ const columns: DataTableColumn<Pagamento>[] = [
   {
     id: "vencimento",
     header: "Vencimento",
-    cell: (p) => format(new Date(p.dataVencimento), "dd/MM/yyyy"),
+    cell: (p) => formatarDataUtc(p.dataVencimento),
   },
   {
     id: "status",
@@ -71,7 +71,7 @@ const columns: DataTableColumn<Pagamento>[] = [
   {
     id: "pagamento",
     header: "Pagamento",
-    cell: (p) => (p.dataPagamento ? format(new Date(p.dataPagamento), "dd/MM/yyyy") : "-"),
+    cell: (p) => (p.dataPagamento ? formatarDataUtc(p.dataPagamento) : "-"),
   },
   {
     id: "valor",

@@ -5,7 +5,8 @@ import { db } from "@/lib/db"
 import { parseOFX } from "@/lib/ofx-parser"
 import { matchTransactions, type MatchResult } from "@/lib/ofx-matcher"
 import { revalidatePath } from "next/cache"
-import { emitirReciboSeguro } from "@/lib/baixa"
+import { emitirReciboDaBaixa, encerrarCobrancaAtiva, gravarBaixa } from "@/lib/baixa"
+import { Prisma } from "@prisma/client"
 
 // Arquivo é lido no client como latin1 (1 byte = 1 char), então content.length
 // bate com o tamanho em bytes do arquivo original.
@@ -78,13 +79,23 @@ export async function confirmarImportacaoOFX(
     const fitidUsados = new Map<string, number>()
     for (const s of selecoes) fitidUsados.set(s.fitid, (fitidUsados.get(s.fitid) ?? 0) + 1)
 
-    const pagamentos = await db.pagamento.findMany({
-      where: { id: { in: selecoes.map((s) => s.pagamentoId) } },
-    })
+    const [pagamentos, jaImportados] = await Promise.all([
+      db.pagamento.findMany({
+        where: { id: { in: selecoes.map((s) => s.pagamentoId) } },
+        include: { aluno: { select: { mensalidade: true, desconto: true } } },
+      }),
+      // Crédito já usado em importação anterior (recibo ativo com o mesmo fitid) não baixa de novo.
+      db.recibo.findMany({
+        where: { fitidOfx: { in: selecoes.map((s) => s.fitid) }, canceladoAt: null },
+        select: { fitidOfx: true },
+      }),
+    ])
     const pagamentoPorId = new Map(pagamentos.map((p) => [p.id, p]))
+    const fitidsJaUsados = new Set(jaImportados.map((r) => r.fitidOfx))
 
     const validas = selecoes.filter((s) => {
       if ((fitidUsados.get(s.fitid) ?? 0) > 1) return false
+      if (fitidsJaUsados.has(s.fitid)) return false
       const pagamento = pagamentoPorId.get(s.pagamentoId)
       const tx = txPorFitid.get(s.fitid)
       if (!pagamento || pagamento.dataPagamento !== null) return false
@@ -92,33 +103,33 @@ export async function confirmarImportacaoOFX(
       return true
     })
 
-    // Condição de corrida: entre o findMany acima e este update outro processo pode
-    // ter baixado o mesmo pagamento. O `dataPagamento: null` no where do updateMany
-    // garante atomicamente que só grava se ainda estiver pendente; 0 linhas afetadas
-    // vira "pulado", não erro fatal do lote.
-    const resultados = await db.$transaction(
-      validas.map((s) => {
-        const tx = txPorFitid.get(s.fitid)!
-        return db.pagamento.updateMany({
-          where: { id: s.pagamentoId, dataPagamento: null },
-          data: {
-            dataPagamento: tx.date,
-            valorRecebido: tx.amount,
-            formaPagamento: "Importação OFX",
-          },
-        })
-      })
-    )
-    const atualizados = resultados.reduce((soma, r) => soma + r.count, 0)
-
-    // Um recibo por pagamento efetivamente baixado (count 0 = outro processo baixou antes).
-    for (const [i, s] of validas.entries()) {
-      if (resultados[i]?.count !== 1) continue
+    // Mesma regra da baixa da central: soma ao já recebido (quita ou fica parcial) com condição
+    // atômica sobre o acumulado; 0 linhas afetadas vira "pulado", não erro fatal do lote.
+    let atualizados = 0
+    for (const s of validas) {
       const tx = txPorFitid.get(s.fitid)!
-      await emitirReciboSeguro(db, {
-        pagamentoId: s.pagamentoId, valor: tx.amount, formaPagamento: "Importação OFX",
-        dataPagamento: tx.date, emitidoPor: session?.user ?? null,
-      })
+      const pagamento = pagamentoPorId.get(s.pagamentoId)!
+      // Baixa e recibo (que carrega o fitid, único entre recibos ativos) na MESMA transação:
+      // se outra importação já usou este crédito, a gravação falha e nada é creditado.
+      let aplicada = false
+      try {
+        aplicada = await db.$transaction(async (trx) => {
+          const r = await gravarBaixa(trx, pagamento, { valor: tx.amount, formaPagamento: "Importação OFX", dataPagamento: tx.date })
+          if (!r.aplicada) return false
+          await emitirReciboDaBaixa(trx, {
+            pagamentoId: s.pagamentoId, valor: tx.amount, formaPagamento: "Importação OFX",
+            dataPagamento: tx.date, emitidoPor: session?.user ?? null, fitidOfx: s.fitid,
+          })
+          return true
+        })
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") continue // fitid já usado
+        throw e
+      }
+      if (!aplicada) continue
+      atualizados++
+      // Parcial ou integral: a cobrança emitida pelo valor antigo não vale mais (cobraria de novo).
+      if (pagamento.externalId) await encerrarCobrancaAtiva(db, s.pagamentoId)
     }
 
     revalidatePath("/pagamentos")

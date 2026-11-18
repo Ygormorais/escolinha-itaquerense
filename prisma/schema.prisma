@@ -253,6 +253,8 @@ model Recibo {
   emitidoPor     String?
   canceladoAt    DateTime?
   canceladoPor   String?
+  /// Id da transação do extrato OFX que gerou a baixa; impede usar o mesmo crédito duas vezes.
+  fitidOfx       String?
   /// Baixa que gerou o recibo (null em recibo avulso ou se o pagamento foi excluído).
   pagamentoId    Int?
   pagamento      Pagamento? @relation(fields: [pagamentoId], references: [id], onDelete: SetNull)
@@ -262,6 +264,7 @@ model Recibo {
 
   @@index([pagamentoId])
   @@index([alunoId])
+  @@index([fitidOfx])
 }
 
 model Campeonato {

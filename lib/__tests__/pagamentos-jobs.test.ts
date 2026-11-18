@@ -27,6 +27,25 @@ beforeEach(() => {
   mockDb.pagamento.createMany.mockResolvedValue({ count: 0 })
 })
 
+describe("runGerarMensalidadesMes — mês e data de matrícula", () => {
+  it.each(["", "2026-13", "2026-00", "2026-6", "junho", "2026-06-01"])("rejeita mês malformado (%j) sem consultar o banco", async (mes) => {
+    await expect(runGerarMensalidadesMes(mes)).rejects.toThrow("Mês inválido")
+    expect(mockDb.aluno.findMany).not.toHaveBeenCalled()
+  })
+
+  it("não cobra aluno matriculado depois do mês, e mantém quem já era aluno ou não tem data", async () => {
+    mockDb.aluno.findMany.mockResolvedValue([
+      { id: 1, nome: "Antigo", mensalidade: 100, desconto: 0, dataMatricula: new Date("2025-01-10T00:00:00Z") },
+      { id: 2, nome: "Novo", mensalidade: 100, desconto: 0, dataMatricula: new Date("2025-10-05T00:00:00Z") },
+      { id: 3, nome: "Sem data", mensalidade: 100, desconto: 0, dataMatricula: null },
+    ])
+    mockDb.pagamento.findMany.mockResolvedValue([])
+    const r = await runGerarMensalidadesMes("2025-09")
+    expect(mockDb.pagamento.createMany.mock.calls[0][0].data.map((d: { alunoId: number }) => d.alunoId)).toEqual([1, 3])
+    expect(r.criados).toBe(2)
+  })
+})
+
 describe("runGerarMensalidadesMes", () => {
   it("cria mensalidades para alunos ativos no mês", async () => {
     mockDb.aluno.findMany.mockResolvedValue([
