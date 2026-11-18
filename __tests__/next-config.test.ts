@@ -12,8 +12,8 @@ async function getPermissionsPolicy(path: string) {
 }
 
 describe("Permissions-Policy", () => {
-  it.each(["/", "/frequencia", "/frequencia/scanner/extra"])(
-    "nega câmera fora da rota exata do scanner: %s",
+  it.each(["/", "/frequencia", "/frequencia/scanner/extra", "/alunos", "/alunos/12/carteirinha"])(
+    "nega câmera fora das rotas exatas do scanner e da ficha do aluno: %s",
     async (path) => {
       await expect(getPermissionsPolicy(path)).resolves.toBe(
         "camera=(), microphone=(), geolocation=()",
@@ -36,6 +36,12 @@ describe("Permissions-Policy", () => {
     expect(policy).toContain("geolocation=()")
     expect(policy).not.toBe(
       "camera=(), microphone=(), geolocation=()",
+    )
+  })
+
+  it("libera a câmera na ficha do aluno para tirar a foto", async () => {
+    await expect(getPermissionsPolicy("/alunos/12")).resolves.toBe(
+      "camera=(self), microphone=(), geolocation=()",
     )
   })
 })

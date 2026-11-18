@@ -1,12 +1,13 @@
 "use client"
 
 import { useRef, useState, useTransition } from "react"
-import { Camera, Loader2, Trash2 } from "lucide-react"
+import { Camera, Loader2, Trash2, Video } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { FotoWebcamDialog } from "./foto-webcam-dialog"
 
 export function FotoUpload({
   alunoId,
@@ -18,15 +19,11 @@ export function FotoUpload({
   const [preview, setPreview] = useState<string | null>(fotoAtual)
   const [uploading, startUploading] = useTransition()
   const [removing, startRemoving] = useTransition()
+  const [webcamAberta, setWebcamAberta] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (inputRef.current) inputRef.current.value = ""
-
+  function enviar(file: File, aoConcluir?: () => void) {
     const formData = new FormData()
     formData.append("foto", file)
     formData.append("alunoId", String(alunoId))
@@ -38,11 +35,19 @@ export function FotoUpload({
         if (!res.ok) { toast.error(data.error); return }
         setPreview(data.url + "?t=" + Date.now())
         toast.success("Foto atualizada")
+        aoConcluir?.()
         router.refresh()
       } catch {
         toast.error("Erro ao enviar foto")
       }
     })
+  }
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (inputRef.current) inputRef.current.value = ""
+    enviar(file)
   }
 
   function handleRemover() {
@@ -96,6 +101,17 @@ export function FotoUpload({
 
       <div className="flex flex-col items-center gap-1">
         <p className="text-xs text-muted-foreground">Foto 3×4</p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setWebcamAberta(true)}
+          disabled={uploading || removing}
+          className="gap-1.5"
+        >
+          <Video className="size-3.5" />
+          Tirar foto
+        </Button>
         {preview && (
           <ConfirmDialog
             title="Remover foto?"
@@ -117,6 +133,13 @@ export function FotoUpload({
           </ConfirmDialog>
         )}
       </div>
+
+      <FotoWebcamDialog
+        open={webcamAberta}
+        onOpenChange={setWebcamAberta}
+        enviando={uploading}
+        onCapturar={(arquivo) => enviar(arquivo, () => setWebcamAberta(false))}
+      />
     </div>
   )
 }
