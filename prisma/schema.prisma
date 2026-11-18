@@ -164,8 +164,11 @@ model Responsavel {
   cpf               String?                 @unique
   ativo             Boolean                 @default(true)
   sessaoVersao      Int                     @default(0) // incrementa em redefinição de senha/logout
+  /// Token do feed .ics (assinatura de calendário). Nulo = sem feed; trocar o valor revoga o link antigo.
+  calendarioToken   String?                 @unique
+  calendarioTokenCriadoEm DateTime?
   alunos            Aluno[]
-  chatSessions      ChatSession[]
+  chatSessions     ChatSession[]
   resetTokens       ResetToken[]
   solicitacoes      Solicitacao[]
   renovacoes        RenovacaoMatricula[]

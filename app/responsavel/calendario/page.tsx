@@ -18,6 +18,7 @@ import { PortalHero } from "@/components/responsavel/portal-hero"
 import { db } from "@/lib/db"
 import { getResponsavelSession } from "@/lib/responsavel-session"
 import { eventoAplicaATurma, montarAgenda, type ItemAgenda } from "@/lib/agenda"
+import { AssinarCalendario } from "@/components/responsavel/assinar-calendario"
 import { ConvocacaoCard } from "@/components/responsavel/convocacao-card"
 import { DisponibilidadeCard } from "@/components/responsavel/disponibilidade-card"
 
@@ -65,6 +66,7 @@ export default async function CalendarioPage({
   const responsavel = await db.responsavel.findUnique({
     where: { id: session.responsavelId },
     select: {
+      calendarioToken: true,
       alunos: {
         where: { status: "Ativo" },
         select: { id: true, nome: true, turma: true },
@@ -130,6 +132,8 @@ export default async function CalendarioPage({
   return (
     <div className={PAGINA_PORTAL}>
       <PortalHero backHref="/responsavel" title={tituloMes} />
+
+      <AssinarCalendario tokenInicial={responsavel?.calendarioToken ?? null} />
 
       {alunos.length > 1 && (
         <div className="flex flex-wrap items-center gap-2">

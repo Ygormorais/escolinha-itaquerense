@@ -14,6 +14,7 @@ describe("isPublicPath — prefixos de API públicos", () => {
     "/api/auth/logout",
     "/api/responsavel/auth",
     "/api/responsavel/recuperar-senha",
+    "/api/calendario/0123456789abcdef0123456789abcdef0123456789abcdef.ics",
     "/api/push/subscribe",
     "/api/push/preferencias",
     "/api/whatsapp/webhook",
