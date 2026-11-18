@@ -1,5 +1,8 @@
 // Next 16.4.5: inclui as correções de segurança do 16.4.2 a 16.4.5.
 import type { NextConfig } from "next";
+import { buildContentSecurityPolicy } from "./lib/csp";
+
+const isDev = process.env.NODE_ENV !== "production";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -61,7 +64,12 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-DNS-Prefetch-Control", value: "off" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          // Sem "preload": entrar na lista de preload do navegador é praticamente irreversível.
+          // Só adicione depois de confirmar o domínio definitivo e que todos os subdomínios têm HTTPS.
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          // Report-Only: não bloqueia nada; violações chegam em /api/csp-report (logs).
+          { key: "Content-Security-Policy-Report-Only", value: buildContentSecurityPolicy({ dev: isDev }) },
         ],
       },
       {
