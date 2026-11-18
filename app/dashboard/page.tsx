@@ -8,8 +8,10 @@ import { GraficoRecebidoPrevisto } from "@/components/inicio/grafico-recebido-pr
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { normalizeDashboardMonth } from "@/lib/dashboard-query"
-import { alunosEmRiscoDeEvasao, summarizeFrequency } from "@/lib/dashboard-metrics"
+import { summarizeFrequency } from "@/lib/dashboard-metrics"
 import { carregarPendencias } from "@/lib/pendencias-data"
+import { carregarAtencaoEvasao } from "@/lib/risco-evasao-data"
+import { RiscoEvasaoCard } from "@/components/dashboard/risco-evasao-card"
 import { acoesDoInicio, resumoAtraso, serieRecebidoPrevisto, type AcaoInicio } from "@/lib/inicio"
 import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
 import { formatMoney, plural } from "@/lib/utils"
@@ -37,7 +39,7 @@ export default async function DashboardPage({
   const inicioMes = startOfMonth(dataRef)
   const fimMes = endOfMonth(dataRef)
 
-  const [alunosAtivos, vencidas, pagamentos6Meses, frequencias, preMatriculas, pendencias, vencendoSemana, inadimplentesComFrequencia] = await Promise.all([
+  const [alunosAtivos, vencidas, pagamentos6Meses, frequencias, preMatriculas, pendencias, vencendoSemana, atencaoEvasao] = await Promise.all([
     db.aluno.count({ where: { status: "Ativo" } }),
     verDinheiro
       ? db.pagamento.findMany({
@@ -62,18 +64,7 @@ export default async function DashboardPage({
     verDinheiro
       ? db.pagamento.count({ where: { dataPagamento: null, dataVencimento: { gte: now, lte: addDays(now, 7) }, aluno: { status: "Ativo" } } })
       : Promise.resolve(0),
-    verDinheiro
-      ? db.aluno.findMany({
-          where: { status: "Ativo", pagamentos: { some: { dataPagamento: null, dataVencimento: { lt: now } } } },
-          select: {
-            id: true,
-            nome: true,
-            turma: true,
-            frequencias: { where: { data: { gte: inicioMes, lte: fimMes } }, select: { presenca: true } },
-            pagamentos: { where: { dataPagamento: null, dataVencimento: { lt: now } }, select: { id: true } },
-          },
-        })
-      : Promise.resolve([]),
+    verDinheiro ? carregarAtencaoEvasao() : Promise.resolve([]),
   ])
 
   const atraso = resumoAtraso(vencidas.map((v) => ({ alunoId: v.alunoId, ...v.aluno })))
@@ -88,11 +79,9 @@ export default async function DashboardPage({
   // Recebido e previsto na mesma base do gráfico: mensalidades geradas para o mês.
   const doMes = serie[serie.length - 1] ?? { recebido: 0, previsto: 0 }
   const presenca = summarizeFrequency(frequencias)
-  const riscoEvasao = alunosEmRiscoDeEvasao(inadimplentesComFrequencia).length
   const alertas: AcaoInicio[] = [
     { chave: "vencendo", texto: `Vencem nos próximos 7 dias · ${vencendoSemana}`, href: "/pagamentos", quantidade: vencendoSemana, prioridade: "normal" },
     { chave: "prematriculas", texto: `Pré-matrículas aguardando · ${preMatriculas}`, href: "/configuracoes/matriculas", quantidade: canAccessStaffPath("/configuracoes/matriculas", role) ? preMatriculas : 0, prioridade: "normal" },
-    { chave: "risco", texto: `Em atraso e com pouca presença · ${riscoEvasao}`, href: "/pagamentos?filtro=atrasados", quantidade: riscoEvasao, prioridade: "alta" },
   ]
   const { acoes, total } = acoesDoInicio(pendencias, alertas)
 
@@ -140,6 +129,7 @@ export default async function DashboardPage({
         <PrecisaDeVoce acoes={acoes} total={total} />
         {verDinheiro && <GraficoRecebidoPrevisto serie={serie} />}
       </div>
+      {verDinheiro && <RiscoEvasaoCard alunos={atencaoEvasao} />}
     </div>
   )
 }
