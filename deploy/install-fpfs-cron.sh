@@ -56,7 +56,7 @@ else
 FPFS_AUTO_SYNC=0
 ' >> "$APP_DIR/.env"
 fi
-echo "FPFS_AUTO_SYNC=0 definido no .env (reinicie o app para valer)."
+echo "FPFS_AUTO_SYNC=0 definido no .env (o deploy.sh instala o cron antes de subir o app, então já vale; fora do deploy, reinicie o app)."
 echo "Cron FPFS instalado para ${BASE}; o Bearer será lido do .env em tempo de execução."
 echo "Log: /tmp/escolinha-fpfs-cron.log"
 echo "Teste manual: $WRAPPER $BASE"
