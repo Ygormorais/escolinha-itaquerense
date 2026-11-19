@@ -1,9 +1,12 @@
 import { PaginaPublica } from "@/components/site/pagina-publica"
+import { metadataPublica } from "@/lib/site/seo"
 
-export const metadata = {
-  title: "Política de Privacidade — Escolinha Itaquerense",
-  robots: { index: true, follow: true }, // página pública: indexável
-}
+export const metadata = metadataPublica({
+  title: "Política de Privacidade",
+  description:
+    "Quais dados da família e do aluno a escolinha do E.C. Itaquerense trata, para quê, quem acessa e por quanto tempo são guardados.",
+  path: "/privacidade",
+})
 
 export default function PrivacidadePage() {
   return (

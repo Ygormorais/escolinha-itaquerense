@@ -39,7 +39,7 @@ ou o boot falha. Preencher no `.env` (modelo em `.env.production.example`):
 - [ ] `SESSION_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` (o app recusa defaults em produção)
 - [ ] `CRON_SECRET` (cron retorna 401 sem Bearer válido)
 - [ ] `EVOLUTION_API_KEY` (webhook WhatsApp retorna 401 sem header `apikey`)
-- [ ] `ANTHROPIC_API_KEY` (chatbot WhatsApp cai em resposta padrão sem ela)
+- [ ] `ANTHROPIC_API_KEY` (opcional: vazia = chatbot WhatsApp sem IA, encaminha para a secretaria)
 - [ ] `FPFS_SYNC_TOKEN` (POST /api/sync/fpfs retorna 401 sem token)
 - [ ] `MERCADOPAGO_ACCESS_TOKEN` e `MERCADOPAGO_WEBHOOK_SECRET` para cobranças PIX/Boleto
 - [ ] `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_EMAIL` para push notifications (PWA)

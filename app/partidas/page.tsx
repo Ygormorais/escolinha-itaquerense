@@ -6,6 +6,8 @@ import { ClassificacaoTabela } from "@/components/site/classificacao-tabela"
 import { AnuncioBanner } from "@/components/site/anuncio-banner"
 import { getAnuncio } from "@/lib/site/anuncios-dados"
 import { getConfig } from "@/lib/config"
+import { metadataPublica } from "@/lib/site/seo"
+import { montarJsonLdPartidas, serializarJsonLd } from "@/lib/site/jsonld"
 import { TEXTO_ANUNCIAR, whatsappUrl } from "@/lib/site/whatsapp"
 import { getPartidasPublicasCached } from "@/lib/site/partidas-dados"
 import { getClassificacoesPorCategoria } from "@/lib/site/classificacao"
@@ -26,11 +28,11 @@ import "./partidas.css"
 
 export const dynamic = "force-dynamic"
 
-export const metadata = {
-  title: "Partidas — E.C. Itaquerense",
+export const metadata = metadataPublica({
+  title: "Partidas e resultados",
   description: "Agenda e resultados das categorias de base do E.C. Itaquerense, com classificação por categoria.",
-  robots: { index: true, follow: true }, // página pública: indexável
-}
+  path: "/partidas",
+})
 
 const SITUACOES: { valor: Situacao; rotulo: string }[] = [
   { valor: "todos", rotulo: "Todas" },
@@ -146,6 +148,8 @@ export default async function PartidasPage({
   const filtradas = filtrarPartidas(todas, f, new Date())
   const { itens, pagina, totalPaginas } = paginar(filtradas, f.pagina)
   const classificacao = f.categoria ? classificacoes.get(f.categoria) : undefined
+  // Próximos jogos em casa como SportsEvent (só times e datas; nada de dado de aluno).
+  const eventosLd = montarJsonLdPartidas(todas, getConfig(), process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
 
   return (
     <PaginaPublica
@@ -153,6 +157,12 @@ export default async function PartidasPage({
       descricao="Agenda e resultados das categorias de base do Elite Itaquerense, com a classificação de cada categoria."
       className="pt"
     >
+      {eventosLd.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializarJsonLd(eventosLd) }}
+        />
+      )}
           <div className="pt-filtros">
             <nav className="pt-cats" aria-label="Categoria">
               <Link href={hrefPartidas(f, { categoria: null })} className={"pg-pill" + (!f.categoria ? " is-on" : "")} aria-current={!f.categoria ? "page" : undefined}>

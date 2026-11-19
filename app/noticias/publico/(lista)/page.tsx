@@ -5,11 +5,14 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { PaginaPublica } from "@/components/site/pagina-publica"
 import { hrefNoticia } from "@/lib/noticias/conteudo"
+import { metadataPublica } from "@/lib/site/seo"
 
-export const metadata = {
-  title: "Notícias — E.C. Itaquerense",
-  robots: { index: true, follow: true }, // página pública: indexável
-}
+export const metadata = metadataPublica({
+  title: "Notícias",
+  description:
+    "Notícias, resultados, convocações e conquistas das categorias de base do E.C. Itaquerense, em Itaquera, zona leste de São Paulo.",
+  path: "/noticias/publico",
+})
 
 /** Fundo do cartão sem foto: preto, com verde só para resultado (cor só para situação). */
 const CORES: Record<string, string> = {

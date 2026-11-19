@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server"
 import { getSessionSecret } from "@/lib/env"
 import { SESSION_COOKIE, SESSION_PREFIX, SESSION_MAX_AGE_SECONDS } from "@/lib/session-constants"
 import { canAccessStaffPath, isStaffRole } from "@/lib/permissions"
+import { isPrivateAppPath } from "@/lib/public-routes"
 
 const COOKIE_NAME = SESSION_COOKIE
 
@@ -71,6 +72,7 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/api/sync/") ||       // fpfs (x-fpfs-token)
     hasPrefix(pathname, "/api/config/public") ||
     hasPrefix(pathname, "/api/escudo") || // escudos FPFS na landing (proxy anti-hotlink)
+    pathname === "/api/csp-report" || // relatórios CSP enviados pelo navegador (sem cookie)
     hasPrefix(pathname, "/api/anuncio") || // clique em banner de publicidade (conta e redireciona)
     hasPrefix(pathname, "/api/upload/matricula") ||
     pathname.startsWith("/uploads/fotos/") ||
@@ -97,6 +99,8 @@ export function isPublicPath(pathname: string): boolean {
     pathname === "/logo.jpg" ||
     pathname === "/sw.js" ||
     pathname === "/manifest.json" ||
+    pathname === "/opengraph-image" || // prévia 1200x630 (WhatsApp/redes) gerada por app/opengraph-image.tsx
+    pathname === "/twitter-image" ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
     hasPrefix(pathname, "/validar-recibo") // QR do recibo: conferência por terceiros
@@ -144,6 +148,13 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isPublicPath(pathname)) {
+    return nextResponse()
+  }
+
+  // Caminho que não é público nem de uma área privada conhecida não existe:
+  // segue para o Next responder 404 (página "não encontrada"), em vez de
+  // mandar quem digitou um link errado para a tela de login da equipe.
+  if (!isPrivateAppPath(pathname)) {
     return nextResponse()
   }
 

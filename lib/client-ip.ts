@@ -4,7 +4,12 @@
  * Por isso usamos só o último valor.
  */
 export function getClientIp(request: Request): string {
-  const xff = request.headers.get("x-forwarded-for")
+  return getClientIpFromHeaders(request.headers)
+}
+
+/** Mesma regra para quem só tem os cabeçalhos (ex.: ações de servidor via headers()). */
+export function getClientIpFromHeaders(headers: Pick<Headers, "get">): string {
+  const xff = headers.get("x-forwarded-for")
   if (!xff) return "unknown"
   const partes = xff.split(",").map((p) => p.trim()).filter(Boolean)
   return partes[partes.length - 1] ?? "unknown"

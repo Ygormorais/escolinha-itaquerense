@@ -37,9 +37,42 @@ test.describe("Pré-Matrícula Pública", () => {
     await page.fill('input[id="responsavel"]', "Responsável Teste")
     await page.fill('input[id="telefone"]', "(11) 99999-8888")
     await page.fill('input[id="email"]', "teste@email.com")
+    // Anti-robô do servidor (produção): descarta envio em menos de 3 s após abrir o formulário.
+    await page.waitForTimeout(3100)
     await page.getByRole("checkbox").check()
     await page.click('button[type="submit"]')
     await expect(page.getByRole("heading", { name: /Pré-matrícula enviada/ })).toBeVisible({ timeout: 10000 })
+  })
+})
+
+test.describe("Pré-matrícula — erros por campo", () => {
+  test("envio vazio destaca os campos, liga a mensagem ao campo e foca o primeiro inválido", async ({ page }) => {
+    await page.goto("/matricula")
+    await page.waitForLoadState("networkidle")
+    await page.click('button[type="submit"]')
+
+    const aluno = page.locator("#aluno")
+    await expect(aluno).toHaveAttribute("aria-invalid", "true")
+    await expect(aluno).toHaveAttribute("aria-describedby", "erro-aluno")
+    await expect(page.locator("#erro-aluno")).toHaveText("Informe o nome do aluno.")
+    await expect(aluno).toBeFocused()
+    await expect(page.locator("#erro-telefone")).toBeVisible()
+    await expect(page.locator("#erro-consentimento")).toBeVisible()
+  })
+
+  test("o erro some quando a pessoa corrige o campo", async ({ page }) => {
+    await page.goto("/matricula")
+    await page.waitForLoadState("networkidle")
+    await page.click('button[type="submit"]')
+    await expect(page.locator("#erro-aluno")).toBeVisible()
+    await page.fill("#aluno", "Fulano de Tal")
+    await expect(page.locator("#erro-aluno")).toHaveCount(0)
+  })
+
+  test("a isca anti-robô não é alcançável pelo teclado nem exposta a leitores de tela", async ({ page }) => {
+    await page.goto("/matricula")
+    await expect(page.locator("#website")).toHaveAttribute("tabindex", "-1")
+    await expect(page.locator(".mat-isca")).toHaveAttribute("aria-hidden", "true")
   })
 })
 

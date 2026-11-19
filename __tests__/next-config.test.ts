@@ -11,6 +11,42 @@ async function getPermissionsPolicy(path: string) {
   return response.headers.get("Permissions-Policy")
 }
 
+async function getHeader(path: string, name: string) {
+  const response = await unstable_getResponseFromNextConfig({
+    url: `https://escolinha.test${path}`,
+    nextConfig,
+  })
+  return response.headers.get(name)
+}
+
+describe("cabeçalhos de segurança", () => {
+  it("HSTS sem preload (decisão irreversível, só depois de confirmar o domínio)", async () => {
+    const hsts = await getHeader("/", "Strict-Transport-Security")
+    expect(hsts).toContain("max-age=")
+    expect(hsts).not.toMatch(/preload/i)
+  })
+
+  it("isola a janela com COOP same-origin", async () => {
+    await expect(getHeader("/", "Cross-Origin-Opener-Policy")).resolves.toBe("same-origin")
+  })
+
+  it("CSP está em modo Report-Only (não bloqueia) e não há CSP imposta ainda", async () => {
+    await expect(getHeader("/", "Content-Security-Policy")).resolves.toBeNull()
+    const csp = await getHeader("/horarios", "Content-Security-Policy-Report-Only")
+    expect(csp).not.toBeNull()
+    for (const trecho of [
+      "default-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "report-uri /api/csp-report",
+    ]) {
+      expect(csp).toContain(trecho)
+    }
+  })
+})
+
 describe("Permissions-Policy", () => {
   it.each(["/", "/frequencia", "/frequencia/scanner/extra", "/alunos", "/alunos/12/carteirinha"])(
     "nega câmera fora das rotas exatas do scanner e da ficha do aluno: %s",

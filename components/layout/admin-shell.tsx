@@ -25,9 +25,6 @@ export function AdminShell({ children, role = "admin", pendingEscalacoes = 0, pe
     // min-w-0: item flex tem min-width:auto por padrão e não encolhe abaixo do conteúdo —
     // sem isso, qualquer elemento largo (tabela, picker) estoura a página toda no mobile.
     <div className="flex h-full w-full min-w-0 flex-col md:flex-row">
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:m-2 focus:rounded-lg focus:bg-brand-800 focus:p-3 focus:text-white">
-        Pular para o conteúdo principal
-      </a>
       <header className="dark relative flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground md:hidden">
         <div className="absolute inset-x-0 top-0 h-0.5 bg-brand-600" aria-hidden />
         <button
