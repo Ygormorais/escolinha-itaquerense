@@ -26,6 +26,8 @@ export type ClubConfig = {
   templateCobranca: string
   templateLembreteVencimento: string
   templateFalta: string
+  /** Modelos click-to-chat da secretaria editados no admin; o que faltar usa o padrão de lib/whatsapp-modelos. */
+  modelosMensagem?: Partial<Record<"cobranca" | "convocacao" | "chuva" | "vaga" | "atencao", string>>
 }
 
 export function resolveClubConfigPath(): string {

@@ -65,6 +65,7 @@ export function isPublicPath(pathname: string): boolean {
     pathname === "/api/health" ||
     hasPrefix(pathname, "/api/auth") ||
     hasPrefix(pathname, "/api/responsavel") ||
+    hasPrefix(pathname, "/api/calendario") || // feed .ics: autorizado pelo token longo na própria URL
     pathname.startsWith("/api/push/") ||
     pathname.startsWith("/api/whatsapp/") ||   // webhook + reativar (auth própria)
     pathname.startsWith("/api/webhooks/") ||   // mercadopago (assinatura HMAC)

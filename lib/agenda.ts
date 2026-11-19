@@ -44,7 +44,7 @@ function tipoDeEvento(tipo: string): ItemAgenda["tipo"] {
  * Partida sem horário é gravada às 12:00 (cadastro manual só tem a data; a FPFS às vezes não traz
  * a hora). Esse 12:00 é um valor de preenchimento, então não é exibido como horário do jogo.
  */
-function horaDaPartida(data: Date): string | null {
+export function horaDaPartida(data: Date): string | null {
   const hora = format(data, "HH:mm")
   return hora === "12:00" ? null : hora
 }

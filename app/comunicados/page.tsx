@@ -4,6 +4,8 @@ import { ComunicadoMassa } from "@/components/whatsapp/comunicado-massa"
 import { PageHeader } from "@/components/layout/page-header"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { getConfig } from "@/lib/config"
+import { MODELOS_MENSAGEM, textoDoModelo } from "@/lib/whatsapp-modelos"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,6 +18,13 @@ export const metadata: Metadata = {
 
 export default async function ComunicadosPage() {
   await requireAuth()
+  const config = getConfig()
+  const modelos = MODELOS_MENSAGEM.map((m) => ({
+    id: m.id,
+    titulo: m.titulo,
+    descricao: m.descricao,
+    texto: textoDoModelo(m.id, config.modelosMensagem),
+  }))
 
   const historico = await db.whatsAppMensagem.findMany({
     where: { origem: "comunicado" },
@@ -47,7 +56,7 @@ export default async function ComunicadosPage() {
         title="Comunicados"
         description="Abra o WhatsApp com o aviso pronto para enviar a um grupo ou lista de transmissão"
       />
-      <ComunicadoMassa />
+      <ComunicadoMassa modelos={modelos} clube={config.nome} />
 
       {lotes.length > 0 && (
         <Card>

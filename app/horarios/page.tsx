@@ -25,7 +25,7 @@ export default async function HorariosPage() {
       titulo="Turmas e horários"
       descricao="Escolha a modalidade e a categoria do seu filho: escolinha de formação ou equipes federadas da temporada 2026."
     >
-      <HorariosClient turmas={turmas} waUrl={waUrl} local={local} />
+      <HorariosClient turmas={turmas} waUrl={waUrl} waNumero={waNumber} local={local} />
     </PaginaPublica>
   )
 }

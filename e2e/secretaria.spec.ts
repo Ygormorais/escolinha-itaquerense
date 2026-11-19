@@ -128,6 +128,17 @@ test.describe("Comunicados", () => {
     await page.goto("/comunicados")
     await expect(page.getByLabel("Mensagem", { exact: true })).toBeVisible()
   })
+
+  test("modelo de aviso de chuva preenche a mensagem com as variáveis", async ({ page }) => {
+    await page.goto("/comunicados")
+    await page.getByLabel("Modelo", { exact: true }).selectOption({ label: "Aviso de chuva" })
+    await page.getByLabel("Turma", { exact: true }).fill("Sub-9")
+    await page.getByLabel("Data", { exact: true }).fill("sábado, 21/11")
+    await page.getByRole("button", { name: "Usar modelo na mensagem" }).click()
+    const mensagem = page.getByLabel("Mensagem", { exact: true })
+    await expect(mensagem).toHaveValue(/turma Sub-9/)
+    await expect(mensagem).toHaveValue(/sábado, 21\/11/)
+  })
 })
 
 test.describe("Histórico (logs)", () => {

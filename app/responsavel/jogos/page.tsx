@@ -360,6 +360,17 @@ function MatchCard({
           </a>
         )}
 
+        {p.golsPro == null && new Date(p.data) >= new Date() && (
+          <a
+            href={`/api/responsavel/calendario/jogo/${p.id}`}
+            className="inline-flex min-h-9 items-center gap-1.5 text-xs font-bold text-brand-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+            aria-label={`Adicionar o jogo contra ${adv} ao calendário (baixar arquivo .ics)`}
+          >
+            <Calendar className="size-3.5" aria-hidden />
+            Adicionar ao calendário
+          </a>
+        )}
+
         {p.golsPro == null && new Date(p.data) >= new Date() && alunos.length > 0 && (
           <div className="space-y-2 border-t border-border pt-3">
             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
