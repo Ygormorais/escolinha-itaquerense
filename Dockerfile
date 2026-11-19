@@ -56,6 +56,8 @@ COPY --from=builder /app/deploy/railway-start.sh ./deploy/railway-start.sh
 COPY --from=builder /app/.next ./.next
 # next start lê a configuração do disco (imagens remotas, headers, poweredByHeader).
 COPY --from=builder /app/next.config.ts ./next.config.ts
+# Módulos que o próprio next.config.ts importa (sem eles o next start cai ao carregar a configuração).
+COPY --from=builder /app/lib/csp.ts ./lib/csp.ts
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
