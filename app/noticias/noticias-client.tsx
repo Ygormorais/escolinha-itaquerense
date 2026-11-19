@@ -2,12 +2,13 @@
 
 import { plural } from "@/lib/utils"
 import { useMemo, useState, useTransition } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Newspaper, Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2, Search } from "lucide-react"
+import { Newspaper, Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2, Search, ExternalLink } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/ui/empty-state"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -31,6 +32,9 @@ type Noticia = {
   subtitulo: string | null
   categoria: string
   imagemUrl: string | null
+  slug: string | null
+  corpo: string | null
+  videoUrl: string | null
   publicado: boolean
   destaque: boolean
   createdAt: RscDate
@@ -40,7 +44,7 @@ const CATEGORIAS = ["Notícia", "Resultado", "Convocação", "Evento", "Comunica
 
 const BLANK = {
   titulo: "", subtitulo: "", categoria: "Notícia",
-  imagemUrl: "", publicado: true, destaque: false,
+  imagemUrl: "", corpo: "", videoUrl: "", publicado: true, destaque: false,
 }
 
 export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
@@ -76,6 +80,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
     setForm({
       titulo: n.titulo, subtitulo: n.subtitulo ?? "",
       categoria: n.categoria, imagemUrl: n.imagemUrl ?? "",
+      corpo: n.corpo ?? "", videoUrl: n.videoUrl ?? "",
       publicado: n.publicado, destaque: n.destaque,
     })
     setEditTarget(n)
@@ -89,6 +94,8 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
       subtitulo: form.subtitulo || undefined,
       categoria: form.categoria,
       imagemUrl: form.imagemUrl || undefined,
+      corpo: form.corpo || undefined,
+      videoUrl: form.videoUrl || undefined,
       publicado: form.publicado,
       destaque: form.destaque,
     }
@@ -193,6 +200,11 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
               >
                 {n.publicado ? <Eye className="size-4 text-success-600" /> : <EyeOff className="size-4 text-muted-foreground" />}
               </Button>
+              {n.publicado && n.slug && (
+                <Link href={`/noticias/publico/${n.slug}`} target="_blank" rel="noopener" aria-label={`Abrir a página de "${n.titulo}"`} title="Abrir a página pública" className={buttonVariants({ size: "icon-sm", variant: "ghost" })}>
+                  <ExternalLink className="size-4" />
+                </Link>
+              )}
               <Button size="icon-sm" variant="ghost" onClick={() => openEdit(n)}>
                 <Pencil className="size-4" />
               </Button>
@@ -208,7 +220,7 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
 
       {/* Dialog criar/editar */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[90dvh] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Newspaper className="size-4" />
@@ -239,10 +251,19 @@ export function NoticiasClient({ noticias }: { noticias: Noticia[] }) {
                 <Input value={form.imagemUrl} onChange={(e) => setForm({ ...form, imagemUrl: e.target.value })} placeholder="https://..." />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="noticia-corpo">Texto da matéria</Label>
+              <Textarea id="noticia-corpo" value={form.corpo} onChange={(e) => setForm({ ...form, corpo: e.target.value })} placeholder="Conte a notícia. Deixe uma linha em branco entre os parágrafos." rows={6} />
+              <p className="text-xs text-muted-foreground">Aparece na página própria da notícia, que as famílias podem compartilhar.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="noticia-video">Vídeo do YouTube</Label>
+              <Input id="noticia-video" value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." />
+            </div>
             <div className="flex items-center justify-between rounded-lg border p-3 gap-4">
               <div>
                 <p className="text-sm font-medium">Publicar</p>
-                <p className="text-xs text-muted-foreground">Aparece na landing page</p>
+                <p className="text-xs text-muted-foreground">Aparece no site e ganha página própria</p>
               </div>
               <Switch checked={form.publicado} onCheckedChange={(v) => setForm({ ...form, publicado: v })} />
             </div>

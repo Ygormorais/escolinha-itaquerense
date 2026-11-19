@@ -4,13 +4,18 @@ import { describe, expect, it, vi } from "vitest"
 import robots from "@/app/robots"
 import sitemap from "@/app/sitemap"
 import { mascararTelefone } from "@/lib/mascarar-telefone"
+import { listarNoticiasParaSitemap } from "@/lib/noticias/dados"
+
+vi.mock("@/lib/noticias/dados", () => ({
+  listarNoticiasParaSitemap: vi.fn().mockResolvedValue([]),
+}))
 
 const raiz = process.cwd()
 const ler = (p: string) => readFileSync(join(raiz, p), "utf8")
 
 describe("robots e sitemap", () => {
-  it("sitemap lista só rotas públicas, sem área autenticada nem redirecionamentos", () => {
-    const urls = sitemap().map((i) => new URL(i.url).pathname)
+  it("sitemap lista só rotas públicas, sem área autenticada nem redirecionamentos", async () => {
+    const urls = (await sitemap()).map((i) => new URL(i.url).pathname)
     expect(urls).toContain("/")
     expect(urls).toContain("/matricula")
     expect(urls).toContain("/horarios")
@@ -19,6 +24,19 @@ describe("robots e sitemap", () => {
       expect(u).not.toBe("/login")
       expect(u).not.toBe("/resultados")
     }
+  })
+
+  it("sitemap inclui as notícias publicadas com a data de atualização", async () => {
+    const updatedAt = new Date("2026-11-10T12:00:00Z")
+    vi.mocked(listarNoticiasParaSitemap).mockResolvedValueOnce([{ slug: "vitoria-sub-11", updatedAt }])
+    const item = (await sitemap()).find((i) => i.url.endsWith("/noticias/publico/vitoria-sub-11"))
+    expect(item?.lastModified).toEqual(updatedAt)
+  })
+
+  it("sitemap segue válido se o banco falhar", async () => {
+    vi.mocked(listarNoticiasParaSitemap).mockRejectedValueOnce(new Error("db fora"))
+    const urls = (await sitemap()).map((i) => new URL(i.url).pathname)
+    expect(urls).toContain("/")
   })
 
   it("robots libera o site público e bloqueia áreas autenticadas", () => {
@@ -30,7 +48,7 @@ describe("robots e sitemap", () => {
   })
 
   it("páginas públicas abrem com index:true e o layout raiz segue fechado", () => {
-    for (const p of ["app/page.tsx", "app/matricula/page.tsx", "app/horarios/page.tsx", "app/partidas/page.tsx", "app/noticias/publico/page.tsx"]) {
+    for (const p of ["app/page.tsx", "app/matricula/page.tsx", "app/horarios/page.tsx", "app/partidas/page.tsx", "app/noticias/publico/(lista)/page.tsx"]) {
       // metadataPublica (lib/site/seo) define robots index:true; o teste dela cobre o valor.
       expect(ler(p), p).toMatch(/metadataPublica\(|robots: \{ index: true, follow: true \}/)
     }

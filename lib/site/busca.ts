@@ -3,7 +3,7 @@
  * Todas as palavras digitadas precisam aparecer (em qualquer campo do item).
  */
 
-export type NoticiaBusca = { id: number; titulo: string; subtitulo: string | null; categoria: string; createdAt: Date }
+export type NoticiaBusca = { id: number; titulo: string; subtitulo: string | null; categoria: string; createdAt: Date; slug?: string | null }
 /** Matéria institucional da landing (conteúdo fixo em lib/landing/materias.ts). */
 export type MateriaBusca = { id: string; titulo: string; resumo: string; badge: string; periodo?: string; fonte?: string; href?: string; externo?: boolean }
 export type PartidaBusca = { id: number; data: string; categoria: string; competicao: string; casa: string; fora: string; href: string; externo: boolean }

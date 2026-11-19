@@ -2,6 +2,11 @@
  * Matérias institucionais da landing — curadoria de fontes públicas sobre o Elite.
  * Fontes: Fato Paulista, História do Futebol, Museu do Futebol/CRFB, acervo do clube.
  * Links externos abrem a matéria original (não inventar fatos).
+ *
+ * Decisão: estas matérias NÃO têm página própria (/noticias/publico/[slug]) nem entram no
+ * sitemap. São curadoria com link para a fonte original (copiar o texto seria reproduzir
+ * conteúdo de terceiros) e o conteúdo é código, sem slug/estado de publicação. Só as notícias
+ * do banco (modelo Noticia, cadastradas em /noticias) ganham página, OG e sitemap.
  */
 
 export type MateriaAbaId =

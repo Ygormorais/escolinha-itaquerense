@@ -1,6 +1,7 @@
 import { format } from "date-fns"
 import type { HeroDestaque } from "@/lib/landing/jogos"
 import { linkPartida } from "@/lib/landing/noticias"
+import { hrefNoticia } from "@/lib/noticias/conteudo"
 
 export interface HeroCta {
   label: string
@@ -26,6 +27,8 @@ export interface NoticiaHero {
   subtitulo: string | null
   categoria: string
   imagemUrl: string | null
+  /** Endereço da página da notícia; sem ele (legado) o link cai na listagem. */
+  slug?: string | null
 }
 
 export interface FaixaPartida {
@@ -117,7 +120,7 @@ export function montarSlidesHero(noticias: NoticiaHero[]): HeroSlide[] {
     kicker: n.categoria,
     titulo: n.titulo,
     descricao: n.subtitulo ?? "",
-    cta: { label: "Ler publicação", href: "/noticias/publico" },
+    cta: { label: "Ler publicação", href: hrefNoticia(n.slug) },
     imagem: n.imagemUrl ?? undefined,
   }))
   return [INSTITUCIONAL, ...publicacoes, HISTORIA]

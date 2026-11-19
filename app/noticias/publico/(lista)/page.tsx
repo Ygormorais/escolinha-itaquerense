@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { PaginaPublica } from "@/components/site/pagina-publica"
+import { hrefNoticia } from "@/lib/noticias/conteudo"
 import { metadataPublica } from "@/lib/site/seo"
 
 export const metadata = metadataPublica({
@@ -29,7 +30,10 @@ const css = `
   @media(max-width:900px){.np .grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.np .grid{grid-template-columns:1fr}}
 
-  /* CARD */
+  /* CARD (inteiro clicável: leva à página da notícia) */
+  .np a.card{color:inherit;text-decoration:none;transition:border-color .2s,box-shadow .2s}
+  .np a.card:hover{border-color:var(--red);box-shadow:var(--shadow-sm)}
+  .np a.card:hover .card-titulo{text-decoration:underline;text-underline-offset:3px}
   .np .card{border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-card);
     border:1px solid var(--border);display:flex;flex-direction:column}
   .np .card-img{position:relative;height:180px;flex-shrink:0}
@@ -57,7 +61,7 @@ export default async function NoticiasPublicoPage() {
   const noticias = await db.noticia.findMany({
     where: { publicado: true },
     orderBy: [{ destaque: "desc" }, { createdAt: "desc" }],
-    select: { id: true, titulo: true, subtitulo: true, categoria: true, imagemUrl: true, createdAt: true },
+    select: { id: true, titulo: true, subtitulo: true, categoria: true, imagemUrl: true, createdAt: true, slug: true },
   })
 
   return (
@@ -78,10 +82,10 @@ export default async function NoticiasPublicoPage() {
               {noticias.map((n) => {
                 const grad = CORES[n.categoria] ?? CORES["Notícia"]
                 return (
-                  <div className="card" key={n.id}>
+                  <Link href={hrefNoticia(n.slug)} className="card" key={n.id}>
                     <div className="card-img">
                       {n.imagemUrl ? (
-                        <Image src={n.imagemUrl} alt={n.titulo} fill style={{ objectFit: "cover" }} />
+                        <Image src={n.imagemUrl} alt="" fill style={{ objectFit: "cover" }} />
                       ) : (
                         <>
                           <div className="card-img-grad" style={{ background: grad }} />
@@ -98,7 +102,7 @@ export default async function NoticiasPublicoPage() {
                       {n.subtitulo && <div className="card-sub">{n.subtitulo}</div>}
                       <div className="card-date">{format(new Date(n.createdAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</div>
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>

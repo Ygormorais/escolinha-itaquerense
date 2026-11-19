@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { extractYoutubeId } from "@/lib/youtube"
 
 export const AlunoSchema = z.object({
   nome: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(120, "Nome muito longo"),
@@ -47,6 +48,13 @@ export const NoticiaSchema = z.object({
   subtitulo: z.string().max(400).optional(),
   categoria: z.string().min(1, "Selecione uma categoria").max(80),
   imagemUrl: z.string().url("URL inválida").max(500).optional().or(z.literal("")),
+  corpo: z.string().max(10000, "Texto muito longo (máximo de 10.000 caracteres)").optional(),
+  videoUrl: z
+    .string()
+    .trim()
+    .max(300)
+    .refine((v) => v === "" || extractYoutubeId(v) !== null, "Use um link do YouTube")
+    .optional(),
   publicado: z.boolean(),
   destaque: z.boolean(),
 })

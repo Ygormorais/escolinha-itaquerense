@@ -11,12 +11,13 @@ import {
   type MateriaCard,
 } from "@/lib/landing/materias"
 import type { NoticiaClube } from "./noticias-clube-carrossel"
+import { hrefNoticia } from "@/lib/noticias/conteudo"
 import { centralizarAba } from "./centralizar-aba"
 import "./materias-tabs.css"
 
 function PublicacaoCard({ n }: { n: NoticiaClube }) {
   return (
-    <Link href="/noticias/publico" className="mt-card mt-card-pub">
+    <Link href={hrefNoticia(n.slug)} className="mt-card mt-card-pub">
       <div className="mt-card-media">
         {n.imagemUrl ? (
           <Image src={n.imagemUrl} alt="" fill sizes="(max-width:700px) 100vw, 40vw" style={{ objectFit: "cover" }} />
