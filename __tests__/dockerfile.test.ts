@@ -50,8 +50,11 @@ describe("Dockerfile — imagem final", () => {
     },
   )
 
-  it("copia o next.config.ts lido pelo next start", () => {
+  it("copia o next.config.ts lido pelo next start e tudo o que ele importa", () => {
     expect(copiado("next.config.ts")).toBe(true)
+    for (const dep of importsRelativos("next.config.ts")) {
+      expect(copiado(dep), `${dep} falta no runner (next start cairia ao carregar a configuração)`).toBe(true)
+    }
   })
 
   it.each(["NEXT_PUBLIC_APP_URL", "NEXT_PUBLIC_VAPID_PUBLIC_KEY"])(
