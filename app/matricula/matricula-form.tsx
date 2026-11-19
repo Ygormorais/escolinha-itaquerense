@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -10,9 +10,26 @@ import {
 import { TURMAS } from "@/lib/constants"
 import type { TurmaInfo } from "@/lib/landing/turmas"
 import { criarPreMatricula } from "@/app/actions/matricula"
+import {
+  dataBrParaIso,
+  primeiroCampoComErro,
+  validarPreMatricula,
+  type CampoPreMatricula,
+  type ErrosPreMatricula,
+} from "@/lib/site/matricula-validacao"
 
 /** Horário quando a turma ainda não tem horário publicado: a escolinha combina com a família. */
 const A_COMBINAR = "A combinar"
+
+/** Mensagem de erro ligada ao campo por aria-describedby; role="alert" a anuncia no leitor de tela. */
+function MensagemErro({ campo, erros }: { campo: CampoPreMatricula; erros: ErrosPreMatricula }) {
+  if (!erros[campo]) return null
+  return (
+    <p id={`erro-${campo}`} className="mat-erro" role="alert">
+      {erros[campo]}
+    </p>
+  )
+}
 
 export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: string | null; turmas?: TurmaInfo[] }) {
   const [aluno, setAluno] = useState("")
@@ -31,6 +48,33 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
   const [uploading, startUploading] = useTransition()
   const [pending, startTransition] = useTransition()
   const [enviado, setEnviado] = useState(false)
+  const [erros, setErros] = useState<ErrosPreMatricula>({})
+  // Isca anti-robô (invisível) e momento em que o formulário foi aberto.
+  const [website, setWebsite] = useState("")
+  const [abertoEm] = useState(() => Date.now())
+  const formRef = useRef<HTMLFormElement>(null)
+
+  /** Limpa o erro do campo assim que a pessoa volta a editá-lo. */
+  function limpar(campo: CampoPreMatricula) {
+    setErros((atual) => {
+      if (!atual[campo]) return atual
+      const proximo = { ...atual }
+      delete proximo[campo]
+      return proximo
+    })
+  }
+
+  /** Atributos de acessibilidade de um campo que pode estar com erro. */
+  function ariaErro(campo: CampoPreMatricula) {
+    return erros[campo]
+      ? { "aria-invalid": true as const, "aria-describedby": `erro-${campo}` }
+      : {}
+  }
+
+  function focarCampo(campo: CampoPreMatricula) {
+    // Espera o React pintar os erros antes de mover o foco.
+    requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>(`#${campo}`)?.focus())
+  }
 
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -56,33 +100,31 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
     })
   }
 
-  function validar(): string | null {
-    if (!aluno.trim()) return "Nome do aluno é obrigatório."
-    if (!turma) return "Escolha a turma."
-    if (!responsavel.trim()) return "Nome do responsável é obrigatório."
-    if (!dataNasc) return "Data de nascimento é obrigatória."
-    if (!telefone.trim()) return "Telefone é obrigatório."
-    const tel = telefone.replace(/\D/g, "")
-    if (tel.length < 10 || tel.length > 11) return "Telefone inválido — informe DDD + número."
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataNasc)) return "Data inválida — use DD/MM/AAAA."
-    const [, , a] = dataNasc.split("/").map(Number)
-    const anoAtual = new Date().getFullYear()
-    if (anoAtual - a < 3 || anoAtual - a > 20) return "Data de nascimento fora do intervalo esperado (3–20 anos)."
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return "E-mail inválido."
-    if (!consentimento) return "Autorize o tratamento dos dados para enviar a pré-matrícula."
-    return null
-  }
-
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const erro = validar()
-    if (erro) { toast.error(erro); return }
+    // Data digitada como DD/MM/AAAA; se não for uma data real, vai vazia e vira erro.
+    const iso = dataBrParaIso(dataNasc)
+    const encontrados = validarPreMatricula({
+      nomeAluno: aluno,
+      dataNascimento: iso ?? "",
+      turma,
+      nomeResponsavel: responsavel,
+      telefone,
+      email,
+      consentimento,
+    })
+    if (dataNasc && !iso) encontrados.dataNasc = "Data inválida — use DD/MM/AAAA."
+    setErros(encontrados)
+    const primeiro = primeiroCampoComErro(encontrados)
+    if (primeiro || !iso) {
+      toast.error("Confira os campos destacados.")
+      if (primeiro) focarCampo(primeiro)
+      return
+    }
     startTransition(async () => {
-      const [d, m, a] = dataNasc.split("/")
-      const isoDate = `${a}-${m}-${d}`
       const result = await criarPreMatricula({
         nomeAluno: aluno,
-        dataNascimento: isoDate,
+        dataNascimento: iso,
         turma,
         horario: horario || A_COMBINAR,
         nomeResponsavel: responsavel,
@@ -91,8 +133,15 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
         documentos: documentos.map((d) => d.url),
         observacoes,
         consentimento,
+        website,
+        abertoEm,
       })
       if ("error" in result) {
+        if (result.campos) {
+          setErros(result.campos)
+          const campo = primeiroCampoComErro(result.campos)
+          if (campo) focarCampo(campo)
+        }
         toast.error(result.error)
       } else {
         setEnviado(true)
@@ -135,7 +184,20 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit} noValidate>
+      {/* Isca anti-robô: fora da tela e do teclado; quem preenche é descartado pelo servidor. */}
+      <div className="mat-isca" aria-hidden="true">
+        <label htmlFor="website">Deixe este campo em branco</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
 
       {/* ── 1. Dados do Aluno ── */}
       <div className="mat-sec">
@@ -154,16 +216,19 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
               id="aluno"
               className="mat-input"
               value={aluno}
-              onChange={(e) => setAluno(e.target.value)}
+              onChange={(e) => { setAluno(e.target.value); limpar("aluno") }}
               placeholder="Nome completo do aluno"
+              autoComplete="off"
               required
+              {...ariaErro("aluno")}
             />
+            <MensagemErro campo="aluno" erros={erros} />
           </div>
 
           <div className="mat-field">
-            <label htmlFor="dataNasc">Data de nascimento *</label>
+            <label htmlFor="dataNasc">Data de nascimento (DD/MM/AAAA) *</label>
             <div className="mat-input-wrap">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
               </svg>
               <input
@@ -178,28 +243,33 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
                   if (digits.length > 4) masked = digits.slice(0,2) + "/" + digits.slice(2,4) + "/" + digits.slice(4)
                   else if (digits.length > 2) masked = digits.slice(0,2) + "/" + digits.slice(2)
                   setDataNasc(masked)
+                  limpar("dataNasc")
                 }}
                 placeholder="DD/MM/AAAA"
+                autoComplete="off"
+                {...ariaErro("dataNasc")}
               />
             </div>
+            <MensagemErro campo="dataNasc" erros={erros} />
           </div>
 
           <div className="mat-row">
             <div className="mat-field">
-              <label>Turma *</label>
-              <Select value={turma} onValueChange={(v) => { if (v) { setTurma(v); setHorario("") } }}>
-                <SelectTrigger className="w-full" aria-label="Turma">
+              <label htmlFor="turma">Turma *</label>
+              <Select value={turma} onValueChange={(v) => { if (v) { setTurma(v); setHorario(""); limpar("turma") } }}>
+                <SelectTrigger id="turma" className="w-full" aria-label="Turma" {...ariaErro("turma")}>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
                   {opcoesTurma.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <MensagemErro campo="turma" erros={erros} />
             </div>
             <div className="mat-field">
-              <label>Horário</label>
+              <label htmlFor="horario">Horário</label>
               <Select value={horario} onValueChange={(v) => { if (v) setHorario(v) }} disabled={!turma}>
-                <SelectTrigger className="w-full" aria-label="Horário">
+                <SelectTrigger id="horario" className="w-full" aria-label="Horário">
                   <SelectValue placeholder={turma ? "Selecione" : "Escolha a turma primeiro"} />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,10 +298,13 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
               id="responsavel"
               className="mat-input"
               value={responsavel}
-              onChange={(e) => setResponsavel(e.target.value)}
+              onChange={(e) => { setResponsavel(e.target.value); limpar("responsavel") }}
               placeholder="Nome completo do responsável"
+              autoComplete="name"
               required
+              {...ariaErro("responsavel")}
             />
+            <MensagemErro campo="responsavel" erros={erros} />
           </div>
 
           <div className="mat-row">
@@ -254,10 +327,14 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
                     masked = `(${digits}`
                   }
                   setTelefone(masked)
+                  limpar("telefone")
                 }}
                 placeholder="(11) 99999-9999"
+                autoComplete="tel-national"
                 required
+                {...ariaErro("telefone")}
               />
+              <MensagemErro campo="telefone" erros={erros} />
             </div>
             <div className="mat-field">
               <label htmlFor="email">Email</label>
@@ -266,9 +343,12 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
                 className="mat-input"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); limpar("email") }}
                 placeholder="seu@email.com"
+                autoComplete="email"
+                {...ariaErro("email")}
               />
+              <MensagemErro campo="email" erros={erros} />
             </div>
           </div>
         </div>
@@ -348,17 +428,20 @@ export function MatriculaForm({ whatsappUrl, turmas = [] }: { whatsappUrl?: stri
       <div className="mat-sec">
         <label className="flex items-start gap-3 text-sm leading-6">
           <input
+            id="consentimento"
             type="checkbox"
             checked={consentimento}
-            onChange={(event) => setConsentimento(event.target.checked)}
+            onChange={(event) => { setConsentimento(event.target.checked); limpar("consentimento") }}
             required
             className="mt-1 size-4 shrink-0"
+            {...ariaErro("consentimento")}
           />
           <span>
             Autorizo o tratamento dos dados informados para análise da pré-matrícula e contato da
             escolinha, conforme a <Link href="/privacidade" className="underline">Política de Privacidade</Link>. *
           </span>
         </label>
+        <MensagemErro campo="consentimento" erros={erros} />
       </div>
 
       <button type="submit" disabled={pending} className="mat-submit">

@@ -20,6 +20,12 @@
 .lp .foot-name strong{font-family:var(--font-heading),system-ui,sans-serif;font-size:22px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.01em}
 .lp .foot-brand p{max-width:36ch;margin-bottom:16px}
 .lp .foot-brand address{display:flex;flex-direction:column;font-style:normal}
+.lp .foot-rota{margin-top:16px}
+.lp .foot-rota-rotulo{display:block;font-size:13px;font-weight:700;color:#fff;margin-bottom:6px}
+.lp .foot-rota ul,.lp .foot-contato{display:flex;flex-wrap:wrap;gap:8px}
+.lp .foot-contato{margin-top:16px}
+.lp .foot-rota li a,.lp .foot-contato li a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid rgba(255,255,255,.28);border-radius:var(--radius-pill);font-weight:600;font-size:14px}
+.lp .foot-rota li a:hover,.lp .foot-contato li a:hover{border-color:#fff}
 .lp .foot-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
 .lp .foot-col h3{font-family:var(--font-body),sans-serif;font-size:15px;font-weight:700;color:#fff;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.16)}
 .lp .foot-col li a{display:inline-block;padding:5px 0}

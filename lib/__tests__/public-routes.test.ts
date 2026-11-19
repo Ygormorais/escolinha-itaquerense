@@ -1,5 +1,8 @@
+import fs from "node:fs"
+import path from "node:path"
 import { describe, it, expect } from "vitest"
-import { isPublicRoute } from "@/lib/public-routes"
+import { isPrivateAppPath, isPublicRoute } from "@/lib/public-routes"
+import { isPublicPath } from "@/proxy"
 
 describe("isPublicRoute", () => {
   it("rotas exatas públicas", () => {
@@ -37,5 +40,36 @@ describe("isPublicRoute", () => {
   it("não confunde prefixo com rota similar", () => {
     expect(isPublicRoute("/responsavel-admin")).toBe(false)
     expect(isPublicRoute("/matricula-online")).toBe(false)
+  })
+})
+
+describe("isPrivateAppPath", () => {
+  it.each(["/dashboard", "/alunos", "/alunos/1", "/api/alunos", "/api", "/uploads/documentos/x.pdf", "/noticias/admin", "/configuracoes/matriculas"])(
+    "%s é área privada",
+    (rota) => expect(isPrivateAppPath(rota)).toBe(true),
+  )
+
+  it.each(["/nao-existe", "/admin", "/alunosx", "/apix", "/foo/alunos", "/Alunos"])(
+    "%s não é área privada (vira 404)",
+    (rota) => expect(isPrivateAppPath(rota)).toBe(false),
+  )
+
+  it("toda pasta de app/ é pública ou privada: nenhuma rota nova fica sem classificação", () => {
+    const appDir = path.join(process.cwd(), "app")
+    const pastas = fs
+      .readdirSync(appDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && !d.name.startsWith("_"))
+      .map((d) => d.name)
+      // pastas que não viram rota (ações de servidor)
+      .filter((nome) => nome !== "actions")
+      // portal do responsável: o proxy tem ramo próprio (cookie responsavel_session)
+      .filter((nome) => nome !== "responsavel")
+    expect(pastas.length).toBeGreaterThan(10)
+
+    const semClasse = pastas.filter((nome) => {
+      const rota = `/${nome}`
+      return !isPrivateAppPath(rota) && !isPublicPath(rota) && !isPublicPath(`${rota}/x`)
+    })
+    expect(semClasse).toEqual([])
   })
 })

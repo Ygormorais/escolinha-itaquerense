@@ -112,6 +112,42 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
             </div>
 
             <div className="border-t pt-4 space-y-4">
+              <p className="text-sm font-semibold text-foreground">Site público: mapa e redes sociais</p>
+              <p className="text-xs text-muted-foreground">
+                Aparecem no rodapé do site e nos dados que o Google usa para mostrar o clube. Tudo é opcional.
+              </p>
+              <div className="space-y-1">
+                <Label htmlFor="cfg-cep">CEP</Label>
+                <Input id="cfg-cep" name="cep" value={form.cep ?? ""} onChange={handleChange} placeholder="00000-000" autoComplete="off" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="cfg-latitude">Latitude</Label>
+                  <Input id="cfg-latitude" name="latitude" value={form.latitude ?? ""} onChange={handleChange} placeholder="-23.5395" inputMode="decimal" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="cfg-longitude">Longitude</Label>
+                  <Input id="cfg-longitude" name="longitude" value={form.longitude ?? ""} onChange={handleChange} placeholder="-46.4571" inputMode="decimal" />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Com latitude e longitude o botão &quot;Como chegar&quot; abre o ponto exato; sem elas usa o endereço.
+              </p>
+              <div className="space-y-1">
+                <Label htmlFor="cfg-instagram">Instagram</Label>
+                <Input id="cfg-instagram" name="instagram" type="url" value={form.instagram ?? ""} onChange={handleChange} placeholder="https://www.instagram.com/seu_clube" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="cfg-facebook">Facebook</Label>
+                <Input id="cfg-facebook" name="facebook" type="url" value={form.facebook ?? ""} onChange={handleChange} placeholder="https://www.facebook.com/seu_clube" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="cfg-youtube">YouTube</Label>
+                <Input id="cfg-youtube" name="youtube" type="url" value={form.youtube ?? ""} onChange={handleChange} placeholder="https://www.youtube.com/@seu_clube" />
+              </div>
+            </div>
+
+            <div className="border-t pt-4 space-y-4">
               <p className="text-sm font-semibold text-foreground">PIX</p>
               <div className="space-y-1">
                 <Label htmlFor="cfg-pix">Chave PIX</Label>

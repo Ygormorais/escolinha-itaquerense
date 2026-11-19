@@ -5,7 +5,6 @@ import { addMonths, format } from "date-fns"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { registrarLog } from "./log"
-import { dataValida } from "@/lib/utils"
 import { deleteMatriculaDocuments } from "@/lib/matricula-files"
 import { valorDevidoDoAluno } from "@/lib/valor-devido"
 import { diaVencimentoConfigurado } from "@/lib/pagamentos-jobs"
@@ -13,10 +12,25 @@ import { checkRateLimit } from "@/lib/rate-limit"
 import { TURMAS } from "@/lib/constants"
 import { headers } from "next/headers"
 import { z } from "zod"
+import { getClientIpFromHeaders } from "@/lib/client-ip"
+import {
+  primeiroCampoComErro,
+  validarPreMatricula,
+  type ErrosPreMatricula,
+} from "@/lib/site/matricula-validacao"
 
 export type ActionResult = { success: true } | { error: string }
+/** Resultado da pré-matrícula pública; `campos` traz a mensagem de cada campo inválido. */
+export type PreMatriculaResult = { success: true } | { error: string; campos?: ErrosPreMatricula }
 export type AprovarResult = { success: true; alunoId: number } | { error: string }
 const CONSENTIMENTO_VERSAO = "2026-08-11"
+
+/** Formulário preenchido em menos que isso é robô. Em dev/e2e fica zerado para não travar a suíte. */
+function tempoMinimoPreenchimentoMs(): number {
+  const configurado = Number(process.env.MATRICULA_TEMPO_MINIMO_MS)
+  if (Number.isFinite(configurado) && process.env.MATRICULA_TEMPO_MINIMO_MS !== undefined) return configurado
+  return process.env.NODE_ENV === "production" ? 3000 : 0
+}
 
 // Endpoint público: limita tamanho de cada campo e aceita só turmas cadastradas.
 const preMatriculaSchema = z.object({
@@ -43,23 +57,44 @@ export async function criarPreMatricula(data: {
   documentos?: string[]
   observacoes?: string
   consentimento: boolean
-}): Promise<ActionResult> {
-  // Limite por IP: 5 envios a cada 10 minutos.
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+  /** Isca anti-robô: campo invisível; pessoa nunca preenche. */
+  website?: string
+  /** Momento (ms desde 1970) em que o formulário foi aberto. */
+  abertoEm?: number
+}): Promise<PreMatriculaResult> {
+  // Limite por IP: 5 envios a cada 10 minutos. Usa o mesmo getClientIp do upload
+  // (último valor do X-Forwarded-For, o que o proxy acrescentou e o cliente não forja).
+  const ip = getClientIpFromHeaders(await headers())
   const limite = checkRateLimit(`pre-matricula:${ip}`, 5, 10 * 60_000)
   if (!limite.ok) return { error: "Muitos envios. Aguarde alguns minutos e tente de novo." }
 
-  if (!data?.nomeAluno?.trim() || !data.nomeResponsavel?.trim() || !data.telefone?.trim()) {
-    return { error: "Preencha os campos obrigatórios" }
+  // Robô: isca preenchida ou formulário enviado rápido demais. Responde sucesso para
+  // não dar pista, mas não grava nada.
+  const rapidoDemais =
+    typeof data?.abertoEm === "number" && Date.now() - data.abertoEm < tempoMinimoPreenchimentoMs()
+  if ((typeof data?.website === "string" && data.website.trim() !== "") || rapidoDemais) {
+    return { success: true }
   }
-  if (!data.turma?.trim()) return { error: "Escolha a turma" }
 
-  if (!dataValida(data.dataNascimento)) {
-    return { error: "Data de nascimento inválida" }
+  // Mesma validação do formulário (lib/site/matricula-validacao).
+  const erros = validarPreMatricula({
+    nomeAluno: data?.nomeAluno ?? "",
+    dataNascimento: data?.dataNascimento ?? "",
+    turma: data?.turma ?? "",
+    nomeResponsavel: data?.nomeResponsavel ?? "",
+    telefone: data?.telefone ?? "",
+    email: data?.email ?? "",
+    consentimento: data?.consentimento === true,
+  })
+  const primeiro = primeiroCampoComErro(erros)
+  if (primeiro) {
+    const quantidade = Object.keys(erros).length
+    return {
+      error: quantidade === 1 ? erros[primeiro]! : "Confira os campos destacados no formulário.",
+      campos: erros,
+    }
   }
-  if (data.consentimento !== true) {
-    return { error: "É necessário autorizar o tratamento dos dados para enviar a pré-matrícula" }
-  }
+
   const parsed = preMatriculaSchema.safeParse({ ...data, email: data.email?.trim() ?? "" })
   if (!parsed.success) return { error: "Dados inválidos. Confira turma, e-mail e o tamanho dos textos." }
   const dataNasc = new Date(data.dataNascimento)

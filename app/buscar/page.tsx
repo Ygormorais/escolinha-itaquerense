@@ -9,7 +9,11 @@ import { MATERIAS } from "@/lib/landing/materias"
 import "./buscar.css"
 
 export const dynamic = "force-dynamic"
-export const metadata = { title: "Buscar — E.C. Itaquerense", robots: { index: false } }
+export const metadata = {
+  title: "Buscar",
+  description: "Busque notícias, matérias e partidas do site da escolinha de futebol do E.C. Itaquerense.",
+  robots: { index: false, follow: true }, // resultado de busca: fora do índice do Google
+}
 
 export default async function BuscarPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
   const { q: qRaw } = await searchParams

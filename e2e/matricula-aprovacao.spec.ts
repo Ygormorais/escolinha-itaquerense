@@ -28,6 +28,8 @@ async function criarPreMatriculaPublica(page: Parameters<typeof loginAsAdmin>[0]
   await page.fill('input[id="responsavel"]', "Responsável E2E Aprovacao")
   await page.fill('input[id="telefone"]', "(11) 98765-4321")
   await page.fill('input[id="email"]', `e2e.aprovacao.${Date.now()}@email.test`)
+  // Anti-robô do servidor (produção): descarta envio em menos de 3 s após abrir o formulário.
+  await page.waitForTimeout(3100)
   await page.getByRole("checkbox").check()
   await page.click('button[type="submit"]')
 

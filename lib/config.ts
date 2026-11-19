@@ -6,6 +6,15 @@ export type ClubConfig = {
   endereco: string
   telefone: string
   cidade: string
+  /** CEP do local de treino (opcional; usado nos dados estruturados do Google). */
+  cep: string
+  /** Coordenadas do local de treino, em graus decimais (opcional; melhora "Como chegar" e o mapa do Google). */
+  latitude: string
+  longitude: string
+  /** Redes sociais do clube: endereço completo (https://...) ou vazio. */
+  instagram: string
+  facebook: string
+  youtube: string
   metaMensal: number
   capacidadeTurma: number
   chavePix: string
@@ -33,6 +42,12 @@ export const DEFAULT: ClubConfig = {
   endereco: "R. Augusto Carlos Baumann, 588",
   telefone: "",
   cidade: "Itaquera — São Paulo/SP",
+  cep: "",
+  latitude: "",
+  longitude: "",
+  instagram: "",
+  facebook: "",
+  youtube: "",
   metaMensal: 0,
   capacidadeTurma: 20,
   chavePix: "ygorcamisa1@gmail.com",

@@ -22,6 +22,13 @@ export function SiteRodape({ dentroDaLanding = false }: Opcoes = {}) {
       whatsapp={config.whatsapp}
       endereco={config.endereco}
       cidade={config.cidade}
+      contato={{
+        latitude: config.latitude,
+        longitude: config.longitude,
+        instagram: config.instagram,
+        facebook: config.facebook,
+        youtube: config.youtube,
+      }}
       dentroDaLanding={dentroDaLanding}
     />
   )

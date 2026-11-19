@@ -80,7 +80,7 @@ export function eventosDoFeed(entrada: EntradaFeed): EventoIcs[] {
 
   for (const t of gerarTreinos(entrada.slotsTreino, entrada.inicio, entrada.fim, entrada.feriados, entrada.bloqueios)) {
     resultado.push({
-      uid: `treino-${t.chave.replace("|", "-")}-${t.turmas.join("_").replace(/[^A-Za-z0-9_-]/g, "")}@${DOMINIO_UID}`,
+      uid: `treino-${t.chave.replaceAll("|", "-")}-${t.turmas.join("_").replace(/[^A-Za-z0-9_-]/g, "")}@${DOMINIO_UID}`,
       dia: t.dia,
       hora: t.hora,
       duracaoMin: DURACAO_TREINO_MIN,

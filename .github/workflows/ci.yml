@@ -140,3 +140,43 @@ jobs:
         run: |
           echo "Partes do e2e: ${{ needs.e2e-parte.result }}"
           test "${{ needs.e2e-parte.result }}" = "success"
+
+  # Valida a imagem de produção: constrói, sobe com um volume vazio (migrations + seed) e confere /api/health.
+  # Não é check obrigatório da master; serve para pegar cedo o que o build do Next não pega (Dockerfile, seed, volume).
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Construir a imagem
+        run: docker build --build-arg NEXT_PUBLIC_APP_URL=https://exemplo.escolinha.test -t escolinha:ci .
+
+      - name: Subir com volume vazio e checar /api/health
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          docker volume create escolinha-ci-data >/dev/null
+          docker run -d --name escolinha-ci -p 3000:3000 -v escolinha-ci-data:/data \
+            -e NODE_ENV=production \
+            -e SESSION_SECRET="$(openssl rand -hex 32)" \
+            -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD="$(openssl rand -hex 12)" \
+            -e CRON_SECRET="$(openssl rand -hex 16)" -e EVOLUTION_API_KEY=ci -e FPFS_SYNC_TOKEN=ci \
+            -e NEXT_PUBLIC_APP_URL=https://exemplo.escolinha.test \
+            escolinha:ci >/dev/null
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/health | grep -q '"status":"ok"'; then
+              echo "health ok após ${i} tentativas"; exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::/api/health não respondeu ok"; docker logs escolinha-ci | tail -60; exit 1
+
+      - name: Conferir páginas públicas e robots
+        run: |
+          set -Eeuo pipefail
+          for p in / /horarios /matricula /robots.txt /sitemap.xml /login; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:3000$p")
+            echo "$p -> $code"
+            [ "$code" = "200" ] || { echo "::error::$p respondeu $code"; docker logs escolinha-ci | tail -40; exit 1; }
+          done
