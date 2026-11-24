@@ -31,7 +31,7 @@ export async function runEnviarLembretesAulaExperimental(agora: Date = new Date(
   const resultado: ResultadoLembreteAula = { candidatas: 0, whatsapp: 0, email: 0, semCanal: 0, erros: 0 }
 
   const aulas = await db.aulaExperimental.findMany({
-    where: { status: "agendada", lembreteEnviadoEm: null, janela: { data: dataDeAmanha(agora), ativa: true } },
+    where: { status: "agendada", lembreteEnviadoEm: null, janela: { data: dataDeAmanha(agora) } },
     include: { janela: true },
   })
   resultado.candidatas = aulas.length

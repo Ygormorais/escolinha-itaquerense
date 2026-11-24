@@ -20,7 +20,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ jane
   const { janelaId } = await params
   const id = /^\d{1,9}$/.test(janelaId) ? Number(janelaId) : null
   const janela = id ? await db.janelaAulaExperimental.findUnique({ where: { id } }) : null
-  if (!janela || !janela.ativa) {
+  // "Fechar no site" só para novas inscrições: quem já agendou continua podendo baixar o evento.
+  if (!janela) {
     return new NextResponse("Aula não encontrada.", { status: 404, headers: { "Cache-Control": "no-store" } })
   }
 

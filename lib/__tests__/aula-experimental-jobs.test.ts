@@ -52,7 +52,7 @@ describe("lembrete da véspera da aula experimental", () => {
     await runEnviarLembretesAulaExperimental(AGORA)
     expect(m.aulaExperimental.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { status: "agendada", lembreteEnviadoEm: null, janela: { data: "2026-11-25", ativa: true } },
+        where: { status: "agendada", lembreteEnviadoEm: null, janela: { data: "2026-11-25" } },
       }),
     )
   })
