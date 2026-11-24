@@ -422,3 +422,33 @@ export async function prepararMensalidadesPortalE2E() {
   })
   return { reciboJaneiro: reciboJaneiro.id, reciboAlheio: reciboAlheio.id, temParcial: parcial != null, mes }
 }
+
+const AULA_EXP_LOCAL = "Quadra E2E Aula Experimental"
+
+function diaEm(dias: number): string {
+  return new Date(Date.now() + dias * 24 * 3600_000).toISOString().slice(0, 10)
+}
+
+/** Duas datas abertas (uma com vaga, uma lotada) e uma inscrição que compareceu para o admin converter. */
+export async function resetAulaExperimentalE2E() {
+  await db.aulaExperimental.deleteMany({ where: { janela: { local: AULA_EXP_LOCAL } } })
+  await db.janelaAulaExperimental.deleteMany({ where: { local: AULA_EXP_LOCAL } })
+  await db.preMatricula.deleteMany({ where: { nomeAluno: "E2E Atleta Convertido" } })
+
+  const aberta = await db.janelaAulaExperimental.create({
+    data: { turma: "Sub-11", data: diaEm(5), hora: "10:00", duracaoMin: 60, local: AULA_EXP_LOCAL, capacidade: 5 },
+  })
+  const lotada = await db.janelaAulaExperimental.create({
+    data: { turma: "Sub-11", data: diaEm(6), hora: "10:00", duracaoMin: 60, local: AULA_EXP_LOCAL, capacidade: 1 },
+  })
+  const base = {
+    dataNascimento: new Date(2015, 5, 15, 12),
+    nomeResponsavel: "Responsável E2E",
+    telefone: "11999990000",
+    consentimentoEm: new Date(),
+    consentimentoVersao: "2026-11-24",
+  }
+  await db.aulaExperimental.create({ data: { ...base, janelaId: lotada.id, nomeAtleta: "E2E Atleta Lotando" } })
+  await db.aulaExperimental.create({ data: { ...base, janelaId: aberta.id, nomeAtleta: "E2E Atleta Convertido", status: "compareceu" } })
+  return { abertaId: aberta.id, lotadaId: lotada.id }
+}
