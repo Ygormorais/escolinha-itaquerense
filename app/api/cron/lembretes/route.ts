@@ -9,6 +9,7 @@ import { db } from "@/lib/db"
 import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
 import { revalidatePath } from "next/cache"
 import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
+import { runEnviarLembretesAulaExperimental } from "@/lib/aula-experimental-jobs"
 import { runPushVencimento, runPushInadimplentes } from "@/lib/push-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
 import { format } from "date-fns"
@@ -107,7 +108,7 @@ export async function GET(request: Request) {
         }))
       : null
 
-  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas, pushVencimento, pushInadimplentes] = await Promise.all([
+  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas, pushVencimento, pushInadimplentes, aulaExperimental] = await Promise.all([
     runEnviarLembretesInadimplentes(),
     runEnviarLembreteVencendo(),
     runEnviarLembretesWhatsAppInadimplencia(),
@@ -116,6 +117,9 @@ export async function GET(request: Request) {
     sincronizarStatusCobrancas(),
     runPushVencimento(),
     runPushInadimplentes(),
+    runEnviarLembretesAulaExperimental().catch((e: unknown) => ({
+      error: e instanceof Error ? e.message : "Erro nos lembretes de aula experimental",
+    })),
   ])
 
   const housekeeping = isDomingo ? await runHousekeeping() : null
@@ -127,6 +131,7 @@ export async function GET(request: Request) {
     email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
     whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo, aniversarios: waAniversarios },
     push: { vencimento: pushVencimento, inadimplentes: pushInadimplentes },
+    aulaExperimental,
     cobrancas,
     housekeeping,
     geracaoMensal,
