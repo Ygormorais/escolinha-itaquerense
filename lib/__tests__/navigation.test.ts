@@ -42,6 +42,7 @@ describe("navSectionsFor", () => {
     const alunos = navSectionsFor("admin", { solicitacoes: 2, matriculas: 3 }).find((s) => s.label === "Alunos")!
     expect(alunos.children.find((c) => c.href === "/configuracoes/solicitacoes")?.badge).toBe(2)
     expect(alunos.children.find((c) => c.href === "/configuracoes/matriculas")?.badge).toBe(3)
+    expect(alunos.children.some((c) => c.href === "/configuracoes/aula-experimental")).toBe(true)
   })
 
   it("Pendências e Secretaria continuam alcançáveis, como sub-itens do Início", () => {
