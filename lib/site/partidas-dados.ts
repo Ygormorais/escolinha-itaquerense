@@ -68,7 +68,7 @@ export async function getPartidasPublicas(agora: Date = new Date()): Promise<Par
  * cartão compartilhável. Jogo futuro, sem placar ou neutro/inexistente devolve null (404).
  */
 export async function getPartidaFinalizadaPublica(id: number, agora: Date = new Date()): Promise<PartidaLinha | null> {
-  const [p] = await buscarPartidas({ id, local: { in: ["Casa", "Fora"] }, golsPro: { not: null }, golsContra: { not: null } }, 1)
+  const [p] = await buscarPartidas({ id, local: { in: ["Casa", "Fora"] }, golsPro: { not: null }, golsContra: { not: null }, data: { lte: agora } }, 1)
   return p ? paraLinha(p, agora) : null
 }
 

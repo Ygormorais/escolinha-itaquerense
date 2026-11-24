@@ -37,7 +37,7 @@ test.describe("Pesquisa de satisfação (NPS)", () => {
 
     // Sem nota escolhida, o servidor nem é chamado e o erro aparece.
     await page.getByRole("button", { name: "Enviar resposta" }).click()
-    await expect(page.getByRole("alert")).toContainText("Escolha uma nota")
+    await expect(page.locator("#pesquisa-erro")).toContainText("Escolha uma nota")
 
     await page.getByRole("radio", { name: "3" }).check({ force: true })
     await page.getByLabel(/O que motivou a sua nota/).fill("Os horários mudaram sem aviso.")
