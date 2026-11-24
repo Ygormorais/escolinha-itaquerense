@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { CalendarPlus, Check, MessageCircle, Trash2, UserCheck, UserX, X } from "lucide-react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -184,15 +184,15 @@ function ListaInscricoes({ aulas }: { aulas: AulaRow[] }) {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
                   {a.whatsappHref && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      nativeButton={false}
-                      render={<a href={a.whatsappHref} target="_blank" rel="noopener noreferrer" />}
-                    >
-                      <MessageCircle className="size-4" aria-hidden />
-                      WhatsApp<span className="sr-only"> para {a.nomeResponsavel} (abre em nova aba)</span>
-                    </Button>
+                    <a
+                      href={a.whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({ size: "sm", variant: "outline" })}
+                    >
+                      <MessageCircle className="size-4" aria-hidden />
+                      WhatsApp<span className="sr-only"> para {a.nomeResponsavel} (abre em nova aba)</span>
+                    </a>
                   )}
                   {a.status !== "convertida" && a.status !== "cancelada" && (
                     <>
