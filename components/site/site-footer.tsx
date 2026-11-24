@@ -74,6 +74,7 @@ export function SiteFooter({
       titulo: "Escolinha",
       links: [
         { href: "/horarios", rotulo: "Turmas e horários" },
+        { href: "/aula-experimental", rotulo: "Aula experimental grátis" },
         { href: "/matricula", rotulo: "Pré-matrícula" },
         { href: "/partidas", rotulo: "Partidas" },
       ],

@@ -214,6 +214,7 @@ export function LandingClient({
             </div>
             <div className="btn-row">
               <a href="/matricula" className="btn btn-white">Fazer pré-matrícula</a>
+              <a href="/aula-experimental" className="btn btn-ghost-white">Agendar aula experimental grátis</a>
               {waUrl && (
                 <a href={waUrl} className="btn btn-ghost-white" target="_blank" rel="noopener noreferrer">
                   Falar no WhatsApp

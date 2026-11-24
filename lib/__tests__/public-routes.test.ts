@@ -22,6 +22,8 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/responsavel/mensalidades")).toBe(true)
     expect(isPublicRoute("/matricula")).toBe(true)
     expect(isPublicRoute("/matricula/nova")).toBe(true)
+    expect(isPublicRoute("/aula-experimental")).toBe(true)
+    expect(isPublicRoute("/aula-experimental/ics/3")).toBe(true)
     expect(isPublicRoute("/noticias/publico")).toBe(true)
     expect(isPublicRoute("/noticias/publico/123")).toBe(true)
     expect(isPublicRoute("/buscar")).toBe(true)

@@ -463,6 +463,12 @@ export default function HorariosClient({ turmas, waUrl, waNumero, local = null }
                 Perguntar sobre avaliações
               </a>
             )}
+            {modalidade === "escolinha" && (
+              <Link className="btn-white btn-white-dark" href="/aula-experimental">
+                <CalendarDays size={16} strokeWidth={2} aria-hidden />
+                Agendar aula experimental
+              </Link>
+            )}
             <a className="btn-wa" href={waUrl} target="_blank" rel="noopener noreferrer">
               <MessageCircle size={16} strokeWidth={2} aria-hidden />
               Falar no WhatsApp
