@@ -42,7 +42,8 @@ test.describe("Pesquisa de satisfação (NPS)", () => {
     await page.getByRole("radio", { name: "3" }).check({ force: true })
     await page.getByLabel(/O que motivou a sua nota/).fill("Os horários mudaram sem aviso.")
     await page.getByRole("button", { name: "Enviar resposta" }).click()
-    await expect(page.getByText("Obrigado pela sua opinião!")).toBeVisible()
+    // A revalidação pode trocar o formulário pela tela "já respondida" antes do aviso local: as duas confirmam o envio.
+    await expect(page.getByText("Obrigado pela sua opinião!").or(page.getByText("Resposta recebida. Obrigado!"))).toBeVisible()
 
     await page.goto("/responsavel/pesquisa")
     await expect(page.getByText("Resposta recebida. Obrigado!")).toBeVisible()
