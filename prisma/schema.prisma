@@ -1186,3 +1186,44 @@ model Anuncio {
 
   @@index([posicao, ativo])
 }
+
+/// Data e horário de aula experimental aberto ao público, com número de vagas.
+model JanelaAulaExperimental {
+  id         Int      @id @default(autoincrement())
+  turma      String
+  data       String // yyyy-MM-dd (dia no fuso do clube)
+  hora       String // HH:mm
+  duracaoMin Int      @default(60)
+  local      String?
+  capacidade Int
+  ativa      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  aulas      AulaExperimental[]
+
+  @@index([ativa, data])
+  @@index([turma])
+}
+
+/// Inscrição de uma criança em uma aula experimental (lead da escolinha).
+model AulaExperimental {
+  id                  Int      @id @default(autoincrement())
+  janelaId            Int
+  janela              JanelaAulaExperimental @relation(fields: [janelaId], references: [id], onDelete: Restrict)
+  nomeAtleta          String
+  dataNascimento      DateTime
+  nomeResponsavel     String
+  telefone            String
+  email               String?
+  status              String   @default("agendada") // agendada | compareceu | faltou | convertida | cancelada
+  consentimentoEm     DateTime
+  consentimentoVersao String
+  preMatriculaId      Int?
+  lembreteEnviadoEm   DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([janelaId, status])
+  @@index([status, createdAt])
+  @@index([telefone])
+}

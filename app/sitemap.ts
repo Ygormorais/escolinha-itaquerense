@@ -11,6 +11,7 @@ const ROTAS_PUBLICAS_SITEMAP: {
 }[] = [
   { path: "", changeFrequency: "daily", priority: 1 },
   { path: "/matricula", changeFrequency: "monthly", priority: 0.9 },
+  { path: "/aula-experimental", changeFrequency: "weekly", priority: 0.8 },
   { path: "/horarios", changeFrequency: "monthly", priority: 0.8 },
   { path: "/noticias/publico", changeFrequency: "weekly", priority: 0.7 },
   { path: "/partidas", changeFrequency: "daily", priority: 0.6 },

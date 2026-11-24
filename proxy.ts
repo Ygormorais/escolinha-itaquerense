@@ -80,6 +80,7 @@ export function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/uploads/midia/") ||
     pathname.startsWith("/uploads/publicidade/") || // banners públicos
     hasPrefix(pathname, "/matricula") ||
+    hasPrefix(pathname, "/aula-experimental") || // agendamento público + .ics da aula (sem dados pessoais)
     pathname.startsWith("/qr/") ||
     hasPrefix(pathname, "/checkin") ||
     pathname.startsWith("/api/checkin") ||

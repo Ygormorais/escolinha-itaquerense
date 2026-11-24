@@ -118,6 +118,7 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
           <nav className={"main" + (navOpen ? " open" : "")} id="nav" aria-label="Menu do site">
             <ul className="nav-l">
               <li><a href="/horarios" onClick={closeNav}>Turmas</a></li>
+              <li><a href="/aula-experimental" onClick={closeNav}>Aula grátis</a></li>
               <li><a href="/partidas" onClick={closeNav}>Partidas</a></li>
               <li><Link href="/#materias" onClick={closeNav}>Notícias</Link></li>
             </ul>
