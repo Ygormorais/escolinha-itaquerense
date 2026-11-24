@@ -28,4 +28,15 @@ describe("acoesDoPortal", () => {
     expect(acoes[0]).toMatchObject({ chave: "documentos", href: "/responsavel/documentos", quantidade: 3 })
     expect(acoes[0].texto).toContain("3 documentos para aceitar")
   })
+
+  it("pesquisa de satisfação aberta vira uma ação normal depois das urgências", () => {
+    const acoes = acoesDoPortal({ ...base, atrasadas: 1, restanteAtrasado: 100, pesquisaPendente: { titulo: "Pesquisa de dezembro" } })
+    expect(acoes.map((a) => a.chave)).toEqual(["atraso", "pesquisa"])
+    expect(acoes[1]).toMatchObject({ href: "/responsavel/pesquisa", prioridade: "normal", quantidade: 1 })
+    expect(acoes[1].texto).toContain("Pesquisa de dezembro")
+  })
+
+  it("sem pesquisa pendente nada é acrescentado", () => {
+    expect(acoesDoPortal({ ...base, pesquisaPendente: null })).toEqual([])
+  })
 })

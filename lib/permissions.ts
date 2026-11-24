@@ -57,6 +57,7 @@ export function canAccessStaffPath(pathname: string, role: StaffRole): boolean {
     "/configuracoes/escalacoes",
     "/configuracoes/matriculas",
     "/configuracoes/responsaveis",
+    "/configuracoes/satisfacao",
     "/configuracoes/solicitacoes",
   ].some((prefix) => matchesPrefix(pathname, prefix))) return true
   if (role === "tecnico" && matchesPrefix(pathname, "/configuracoes/escalacoes")) return true

@@ -12,6 +12,8 @@ export type EntradaAcoesPortal = {
   restanteAVencer: number
   /** Documentos obrigatórios aguardando o aceite da família. */
   documentosPendentes: number
+  /** Pesquisa de satisfação aberta que a família ainda não respondeu (já filtrada por elegibilidade). */
+  pesquisaPendente?: { titulo: string } | null
 }
 
 /**
@@ -43,6 +45,15 @@ export function acoesDoPortal(e: EntradaAcoesPortal): AcaoInicio[] {
       texto: `${plural(e.documentosPendentes, "documento para aceitar", "documentos para aceitar")}`,
       href: "/responsavel/documentos",
       quantidade: e.documentosPendentes,
+      prioridade: "normal",
+    })
+  }
+  if (e.pesquisaPendente) {
+    acoes.push({
+      chave: "pesquisa",
+      texto: `Pesquisa de satisfação: ${e.pesquisaPendente.titulo}`,
+      href: "/responsavel/pesquisa",
+      quantidade: 1,
       prioridade: "normal",
     })
   }

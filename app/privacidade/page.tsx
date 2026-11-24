@@ -14,7 +14,7 @@ export default function PrivacidadePage() {
       <p className="pg-atualizacao">Última atualização: 11 de agosto de 2026.</p>
       <div className="pg-texto">
         <h2>Dados tratados</h2>
-        <p>Tratamos dados de alunos, responsáveis e equipe necessários para matrícula, atividades esportivas, comunicação, pagamentos e segurança. Dados de saúde só devem ser informados quando necessários ao atendimento do aluno.</p>
+        <p>Tratamos dados de alunos, responsáveis e equipe necessários para matrícula, atividades esportivas, comunicação, pagamentos e segurança. Dados de saúde só devem ser informados quando necessários ao atendimento do aluno. Nas pesquisas de satisfação do portal, guardamos apenas a nota, o comentário opcional e as turmas dos atletas; a família pode pedir que o nome não apareça junto da resposta.</p>
         <h2>Finalidades e acesso</h2>
         <p>Os dados são usados para administrar a escolinha e o portal da família. O acesso é limitado por perfil: responsáveis visualizam somente alunos vinculados; equipe administrativa acessa informações necessárias à sua função.</p>
         <h2>Segurança e retenção</h2>

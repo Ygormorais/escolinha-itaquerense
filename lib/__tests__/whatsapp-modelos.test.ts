@@ -10,7 +10,7 @@ import {
 
 describe("modelos de mensagem", () => {
   it("tem os cinco modelos esperados com texto em português", () => {
-    expect(MODELOS_MENSAGEM.map((m) => m.id)).toEqual(["cobranca", "convocacao", "chuva", "vaga", "atencao"])
+    expect(MODELOS_MENSAGEM.map((m) => m.id)).toEqual(["cobranca", "convocacao", "chuva", "vaga", "atencao", "satisfacao"])
   })
 
   it("lista variáveis sem repetir", () => {

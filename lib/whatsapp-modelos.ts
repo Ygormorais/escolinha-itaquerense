@@ -5,7 +5,7 @@ import { buildWhatsAppHref } from "@/lib/browser-safety"
  * pronto, sem depender do robô (Evolution) estar conectado. Variáveis entre chaves, ex.: {aluno}.
  */
 
-export type ModeloId = "cobranca" | "convocacao" | "chuva" | "vaga" | "atencao"
+export type ModeloId = "cobranca" | "convocacao" | "chuva" | "vaga" | "atencao" | "satisfacao"
 
 export type ModeloMensagem = { id: ModeloId; titulo: string; descricao: string; padrao: string }
 
@@ -44,6 +44,13 @@ export const MODELOS_MENSAGEM: ModeloMensagem[] = [
     descricao: "Conversa com a família que está se afastando.",
     padrao:
       "Olá, {responsavel}! Aqui é da {clube}. {motivo} Está tudo bem com {aluno}? Queremos ajudar no que for preciso; é só responder esta mensagem.",
+  },
+  {
+    id: "satisfacao",
+    titulo: "Retorno da pesquisa de satisfação",
+    descricao: "Conversa acolhedora com quem deu nota baixa na pesquisa.",
+    padrao:
+      "Olá, {responsavel}! Aqui é da {clube}. Obrigado por responder à nossa pesquisa de satisfação. Queremos muito entender como melhorar a experiência da sua família com a gente. Pode nos contar mais? Responda esta mensagem ou, se preferir, ligamos num horário bom para você.",
   },
 ]
 

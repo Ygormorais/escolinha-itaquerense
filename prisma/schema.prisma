@@ -178,6 +178,7 @@ model Responsavel {
   disponibilidadesPartida DisponibilidadePartida[]
   disponibilidadesEvento DisponibilidadeEvento[]
   aceitesDocumentos DocumentoAceite[]
+  respostasSatisfacao RespostaSatisfacao[]
   createdAt         DateTime                @default(now())
 }
 
@@ -1185,4 +1186,42 @@ model Anuncio {
   updatedAt       DateTime  @updatedAt
 
   @@index([posicao, ativo])
+}
+
+/// Campanha de pesquisa de satisfação (NPS). Datas à meia-noite UTC; aberta entre início e fim (inclusive) até ser encerrada.
+model PesquisaSatisfacao {
+  id                Int      @id @default(autoincrement())
+  titulo            String
+  pergunta          String
+  inicio            DateTime
+  fim               DateTime
+  /// Preenchido quando o admin encerra antes do fim.
+  encerradaEm       DateTime?
+  /// Liga o lembrete por push perto do fim da campanha.
+  lembrete          Boolean  @default(false)
+  lembreteEnviadoEm DateTime?
+  criadoPor         String
+  createdAt         DateTime @default(now())
+  respostas         RespostaSatisfacao[]
+
+  @@index([inicio, fim])
+}
+
+/// Uma resposta por responsável por campanha. Coleta mínima: nota, comentário opcional e as turmas (para o filtro).
+model RespostaSatisfacao {
+  id            Int         @id @default(autoincrement())
+  pesquisaId    Int
+  pesquisa      PesquisaSatisfacao @relation(fields: [pesquisaId], references: [id], onDelete: Cascade)
+  responsavelId Int
+  responsavel   Responsavel @relation(fields: [responsavelId], references: [id], onDelete: Cascade)
+  nota          Int
+  comentario    String?
+  /// Turmas dos atletas ativos na data da resposta, separadas por vírgula.
+  turmas        String      @default("")
+  /// O responsável pediu que o nome não apareça junto da resposta.
+  anonimo       Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+
+  @@unique([pesquisaId, responsavelId])
+  @@index([pesquisaId, nota])
 }

@@ -67,6 +67,12 @@ describe("canAccessStaffPath", () => {
     expect(canAccessStaffPath("/relatorio/frequencia", "tecnico")).toBe(true)
   })
 
+  it("pesquisa de satisfação: admin e secretaria acessam; técnico não", () => {
+    expect(canAccessStaffPath("/configuracoes/satisfacao", "admin")).toBe(true)
+    expect(canAccessStaffPath("/configuracoes/satisfacao", "secretaria")).toBe(true)
+    expect(canAccessStaffPath("/configuracoes/satisfacao", "tecnico")).toBe(false)
+  })
+
   it("bloqueia caixa, custos e saúde para secretaria", () => {
     expect(canAccessStaffPath("/caixa", "secretaria")).toBe(false)
     expect(canAccessStaffPath("/custos/recorrentes", "secretaria")).toBe(false)
