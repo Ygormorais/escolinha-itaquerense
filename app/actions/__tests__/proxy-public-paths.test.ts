@@ -22,6 +22,8 @@ describe("isPublicPath — rotas externas com auth própria", () => {
     "/checkin",
     "/horarios",
     "/matricula",
+    "/aula-experimental",
+    "/aula-experimental/ics/3",
     "/resultados",
     "/partidas",
     "/termos",

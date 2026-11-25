@@ -9,8 +9,8 @@ import {
 } from "@/lib/whatsapp-modelos"
 
 describe("modelos de mensagem", () => {
-  it("tem os cinco modelos esperados com texto em português", () => {
-    expect(MODELOS_MENSAGEM.map((m) => m.id)).toEqual(["cobranca", "convocacao", "chuva", "vaga", "atencao", "satisfacao"])
+  it("tem os sete modelos esperados com texto em português", () => {
+    expect(MODELOS_MENSAGEM.map((m) => m.id)).toEqual(["cobranca", "convocacao", "chuva", "vaga", "atencao", "satisfacao", "experimental"])
   })
 
   it("lista variáveis sem repetir", () => {

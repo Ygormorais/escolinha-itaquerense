@@ -12,6 +12,7 @@ const PUBLIC_EXACT_ROUTES = new Set([
 
 const PUBLIC_PREFIX_ROUTES = [
   "/matricula",
+  "/aula-experimental",
   "/noticias/publico",
   "/responsavel",
   "/validar-recibo",

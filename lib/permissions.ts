@@ -52,6 +52,7 @@ function matchesPrefix(pathname: string, prefix: string): boolean {
 export function canAccessStaffPath(pathname: string, role: StaffRole): boolean {
   if (role === "admin") return true
   if (role === "secretaria" && [
+    "/configuracoes/aula-experimental",
     "/configuracoes/automacoes",
     "/configuracoes/documentos",
     "/configuracoes/escalacoes",

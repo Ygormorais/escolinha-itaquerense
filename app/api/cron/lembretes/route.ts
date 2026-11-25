@@ -9,6 +9,7 @@ import { db } from "@/lib/db"
 import { mpPayment, mpStatusToLocal, type MpPaymentStatus } from "@/lib/mercadopago"
 import { revalidatePath } from "next/cache"
 import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
+import { runEnviarLembretesAulaExperimental } from "@/lib/aula-experimental-jobs"
 import { runPushVencimento, runPushInadimplentes } from "@/lib/push-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
 import { runLembretePesquisaSatisfacao } from "@/lib/satisfacao-jobs"
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
         }))
       : null
 
-  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas, pushVencimento, pushInadimplentes, pesquisaSatisfacao] = await Promise.all([
+  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas, pushVencimento, pushInadimplentes, pesquisaSatisfacao, aulaExperimental] = await Promise.all([
     runEnviarLembretesInadimplentes(),
     runEnviarLembreteVencendo(),
     runEnviarLembretesWhatsAppInadimplencia(),
@@ -118,6 +119,9 @@ export async function GET(request: Request) {
     runPushVencimento(),
     runPushInadimplentes(),
     runLembretePesquisaSatisfacao(),
+    runEnviarLembretesAulaExperimental().catch((e: unknown) => ({
+      error: e instanceof Error ? e.message : "Erro nos lembretes de aula experimental",
+    })),
   ])
 
   const housekeeping = isDomingo ? await runHousekeeping() : null
@@ -130,6 +134,7 @@ export async function GET(request: Request) {
     whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo, aniversarios: waAniversarios },
     push: { vencimento: pushVencimento, inadimplentes: pushInadimplentes },
     pesquisaSatisfacao,
+    aulaExperimental,
     cobrancas,
     housekeeping,
     geracaoMensal,
