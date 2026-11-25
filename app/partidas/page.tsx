@@ -158,7 +158,9 @@ export default async function PartidasPage({
   const filtradas = filtrarPartidas(todas, f, new Date())
   const { itens, pagina, totalPaginas } = paginar(filtradas, f.pagina)
   const base = baseUrlSite()
-  const classificacao = f.categoria ? classificacoes.get(f.categoria) : undefined
+  // Só existe uma categoria? Mostra a classificação dela direto, sem pedir para "escolher".
+  const categoriaDaTabela = f.categoria ?? (categorias.length === 1 ? categorias[0] : null)
+  const classificacao = categoriaDaTabela ? classificacoes.get(categoriaDaTabela) : undefined
   // Próximos jogos em casa como SportsEvent (só times e datas; nada de dado de aluno).
   const eventosLd = montarJsonLdPartidas(todas, getConfig(), process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
 
@@ -224,11 +226,11 @@ export default async function PartidasPage({
           <AnuncioBanner anuncio={anuncio} dentroDeContainer contratarUrl={whatsappUrl(getConfig().whatsapp, TEXTO_ANUNCIAR)} />
 
           <section className="pt-classif" aria-labelledby="pt-classif-h">
-            <h2 id="pt-classif-h" className="pg-secao">Classificação{f.categoria ? ` · ${f.categoria}` : ""}</h2>
+            <h2 id="pt-classif-h" className="pg-secao">Classificação{categoriaDaTabela ? ` · ${categoriaDaTabela}` : ""}</h2>
             {classificacao ? (
               <ClassificacaoTabela camp={classificacao} />
-            ) : f.categoria ? (
-              <p className="pt-nota">Ainda não há classificação publicada para o {f.categoria}.</p>
+            ) : categoriaDaTabela ? (
+              <p className="pt-nota">Ainda não há classificação publicada para o {categoriaDaTabela}.</p>
             ) : (
               <p className="pt-nota">Escolha uma categoria acima para ver a tabela de classificação.</p>
             )}
