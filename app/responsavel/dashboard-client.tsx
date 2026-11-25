@@ -22,6 +22,7 @@ import type { JogoPortal } from "@/lib/responsavel-jogos"
 import { nomeTime } from "@/lib/landing/times"
 import { AdvCrest } from "@/components/responsavel/adv-crest"
 import { buildWhatsAppHref } from "@/lib/browser-safety"
+import { hojeNoClube } from "@/lib/portal-mensalidades"
 import { PrecisaDeVoce } from "@/components/inicio/precisa-de-voce"
 import type { AcaoInicio } from "@/lib/inicio"
 
@@ -67,11 +68,21 @@ export function ResponsavelDashboardClient({
 }) {
   const whatsappHref = buildWhatsAppHref(whatsapp)
 
-  function statusPagamento(aluno: Aluno): { label: string; variant: "default" | "secondary" | "outline" | "destructive" } {
+  type StatusPagamento = { label: string; variant: "success" | "warning" | "secondary" | "destructive" }
+
+  /**
+   * Situação do aluno nas últimas mensalidades, com a mesma regra do "Precisa de você":
+   * vencida e sem quitação = atrasada; em aberto que ainda vai vencer = a vencer;
+   * mês sem cobrança gerada não é pendência.
+   */
+  function statusPagamento(aluno: Aluno): StatusPagamento {
+    const hoje = hojeNoClube(new Date())
+    const emAberto = aluno.pagamentos.filter((p) => !p.dataPagamento)
+    if (emAberto.some((p) => new Date(p.dataVencimento).toISOString().slice(0, 10) < hoje)) return { label: "Atrasada", variant: "destructive" }
+    if (emAberto.length > 0) return { label: "A vencer", variant: "warning" }
     const mesAtual = format(new Date(), "yyyy-MM")
-    const pago = aluno.pagamentos.find((p) => p.mesReferencia === mesAtual)
-    if (pago?.dataPagamento) return { label: "Em dia", variant: "default" }
-    return { label: "Pendente", variant: "destructive" }
+    if (aluno.pagamentos.some((p) => p.mesReferencia === mesAtual)) return { label: "Em dia", variant: "success" }
+    return { label: "Sem cobrança no mês", variant: "secondary" }
   }
 
   function frequenciaUltimos(aluno: Aluno): string {
