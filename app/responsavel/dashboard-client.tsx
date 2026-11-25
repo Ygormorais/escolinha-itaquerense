@@ -31,6 +31,8 @@ type Aluno = {
   turma: string
   mensalidade: number
   desconto: number
+  /** Calculada no servidor sobre todas as mensalidades abertas (não só as 6 do histórico). */
+  situacaoAberta: "atrasada" | "a-vencer" | "nenhuma"
   pagamentos: {
     mesReferencia: string
     dataVencimento: RscDate
@@ -67,11 +69,19 @@ export function ResponsavelDashboardClient({
 }) {
   const whatsappHref = buildWhatsAppHref(whatsapp)
 
-  function statusPagamento(aluno: Aluno): { label: string; variant: "default" | "secondary" | "outline" | "destructive" } {
+  type StatusPagamento = { label: string; variant: "success" | "warning" | "secondary" | "destructive" }
+
+  /**
+   * Situação do aluno nas últimas mensalidades, com a mesma regra do "Precisa de você":
+   * vencida e sem quitação = atrasada; em aberto que ainda vai vencer = a vencer;
+   * mês sem cobrança gerada não é pendência.
+   */
+  function statusPagamento(aluno: Aluno): StatusPagamento {
+    if (aluno.situacaoAberta === "atrasada") return { label: "Atrasada", variant: "destructive" }
+    if (aluno.situacaoAberta === "a-vencer") return { label: "A vencer", variant: "warning" }
     const mesAtual = format(new Date(), "yyyy-MM")
-    const pago = aluno.pagamentos.find((p) => p.mesReferencia === mesAtual)
-    if (pago?.dataPagamento) return { label: "Em dia", variant: "default" }
-    return { label: "Pendente", variant: "destructive" }
+    if (aluno.pagamentos.some((p) => p.mesReferencia === mesAtual)) return { label: "Em dia", variant: "success" }
+    return { label: "Sem cobrança no mês", variant: "secondary" }
   }
 
   function frequenciaUltimos(aluno: Aluno): string {
