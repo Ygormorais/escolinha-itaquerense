@@ -6,6 +6,7 @@ import { buscarProximosEventos } from "@/lib/responsavel-eventos"
 import { buscarJogosPortal } from "@/lib/responsavel-jogos"
 import { getConfig } from "@/lib/config"
 import { acoesDoPortal } from "@/lib/portal-acoes"
+import { podeResponder } from "@/lib/satisfacao"
 import { hojeNoClube } from "@/lib/portal-mensalidades"
 import { restanteDoPagamento } from "@/lib/valor-devido"
 
@@ -57,7 +58,7 @@ export default async function ResponsavelPage() {
   const alunoIds = responsavel.alunos.map((a) => a.id)
   const turmasAlunos = responsavel.alunos.map((a) => a.turma)
 
-  const [comunicados, proximosEventos, jogos, abertas, documentos] = await Promise.all([
+  const [comunicados, proximosEventos, jogos, abertas, documentos, pesquisas] = await Promise.all([
     alunoIds.length > 0
       ? db.whatsAppMensagem.findMany({
           where: {
@@ -92,6 +93,15 @@ export default async function ResponsavelPage() {
           },
         })
       : Promise.resolve([]),
+    // Pesquisa de satisfação em andamento (a elegibilidade é decidida abaixo, pela regra única).
+    alunoIds.length > 0
+      ? db.pesquisaSatisfacao.findMany({
+          where: { encerradaEm: null },
+          orderBy: { inicio: "desc" },
+          take: 3,
+          select: { titulo: true, inicio: true, fim: true, encerradaEm: true, respostas: { where: { responsavelId: session.responsavelId }, select: { id: true } } },
+        })
+      : Promise.resolve([]),
   ])
 
   const hoje = hojeNoClube(new Date())
@@ -107,12 +117,14 @@ export default async function ResponsavelPage() {
     )
     return total + sem.length
   }, 0)
+  const pesquisaPendente = pesquisas.find((p) => podeResponder({ campanha: p, hoje, alunosAtivos: alunoIds.length, jaRespondeu: p.respostas.length > 0 })) ?? null
   const acoes = acoesDoPortal({
     atrasadas: atrasadas.length,
     aVencer: aVencer.length,
     restanteAtrasado: somaRestante(atrasadas),
     restanteAVencer: somaRestante(aVencer),
     documentosPendentes,
+    pesquisaPendente,
   })
 
   return (

@@ -19,6 +19,9 @@ vi.mock("@/lib/push-jobs", () => ({
   runPushVencimento: vi.fn().mockResolvedValue({ enviados: 0 }),
   runPushInadimplentes: vi.fn().mockResolvedValue({ enviados: 0 }),
 }))
+vi.mock("@/lib/satisfacao-jobs", () => ({
+  runLembretePesquisaSatisfacao: vi.fn().mockResolvedValue({ campanhas: 0, enviados: 0 }),
+}))
 vi.mock("@/lib/aula-experimental-jobs", () => ({
   runEnviarLembretesAulaExperimental: vi.fn().mockResolvedValue({ candidatas: 0, whatsapp: 0, email: 0, semCanal: 0, erros: 0 }),
 }))

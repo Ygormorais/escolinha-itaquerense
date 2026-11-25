@@ -1,11 +1,13 @@
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
+import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle } from "lucide-react"
 import { PaginaPublica } from "@/components/site/pagina-publica"
 import { EscudoTime } from "@/components/site/escudo-time"
 import { ClassificacaoTabela } from "@/components/site/classificacao-tabela"
 import { AnuncioBanner } from "@/components/site/anuncio-banner"
 import { getAnuncio } from "@/lib/site/anuncios-dados"
 import { getConfig } from "@/lib/config"
+import { baseUrlSite } from "@/lib/noticias/dados"
+import { whatsappCompartilharHref } from "@/lib/site/partida-compartilhar"
 import { metadataPublica } from "@/lib/site/seo"
 import { montarJsonLdPartidas, serializarJsonLd } from "@/lib/site/jsonld"
 import { TEXTO_ANUNCIAR, whatsappUrl } from "@/lib/site/whatsapp"
@@ -48,9 +50,10 @@ const RESULTADO: Record<PartidaLinha["resultado"], { rotulo: string; tom: string
   SemPlacar: { rotulo: "Sem placar", tom: "none" },
 }
 
-function Linha({ p }: { p: PartidaLinha }) {
+function Linha({ p, base }: { p: PartidaLinha; base: string }) {
   const { dia, hora } = formatarDataHora(p.data)
   const res = RESULTADO[p.resultado]
+  const compartilhar = whatsappCompartilharHref(p, base)
   const placarFalado = p.placar ? `${p.casa} ${p.placar[0]}, ${p.fora} ${p.placar[1]}` : `${p.casa} contra ${p.fora}`
   return (
     <li className={"pt-linha" + (res ? ` is-${res.tom}` : " is-next")}>
@@ -83,6 +86,13 @@ function Linha({ p }: { p: PartidaLinha }) {
 
       <div className="pt-acao">
         {res && <span className={`pt-res pt-res-${res.tom}`}>{res.rotulo}</span>}
+        {compartilhar && (
+          <a href={compartilhar} target="_blank" rel="noopener noreferrer" className="pt-link pt-compartilhar">
+            <MessageCircle size={14} strokeWidth={2.25} aria-hidden />
+            Compartilhar
+            <span className="sr-only"> resultado {p.casa} contra {p.fora} no WhatsApp (abre em nova aba)</span>
+          </a>
+        )}
         {p.externo && (
           <a href={p.href} target="_blank" rel="noopener noreferrer" className="pt-link">
             {p.temSumula ? "Súmula" : "Na FPFS"}
@@ -147,6 +157,7 @@ export default async function PartidasPage({
   const categorias = [...new Set([...todas.map((p) => p.categoria), ...classificacoes.keys()])].sort(ordenarCategorias)
   const filtradas = filtrarPartidas(todas, f, new Date())
   const { itens, pagina, totalPaginas } = paginar(filtradas, f.pagina)
+  const base = baseUrlSite()
   const classificacao = f.categoria ? classificacoes.get(f.categoria) : undefined
   // Próximos jogos em casa como SportsEvent (só times e datas; nada de dado de aluno).
   const eventosLd = montarJsonLdPartidas(todas, getConfig(), process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
@@ -197,7 +208,7 @@ export default async function PartidasPage({
                 <span>Detalhes</span>
               </div>
               <ol className="pt-lista">
-                {itens.map((p) => <Linha key={p.id} p={p} />)}
+                {itens.map((p) => <Linha key={p.id} p={p} base={base} />)}
               </ol>
             </>
           ) : (

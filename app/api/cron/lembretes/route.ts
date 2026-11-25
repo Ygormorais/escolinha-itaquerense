@@ -12,6 +12,7 @@ import { runGerarMensalidadesMes } from "@/lib/pagamentos-jobs"
 import { runEnviarLembretesAulaExperimental } from "@/lib/aula-experimental-jobs"
 import { runPushVencimento, runPushInadimplentes } from "@/lib/push-jobs"
 import { sendPushToResponsavel } from "@/lib/push"
+import { runLembretePesquisaSatisfacao } from "@/lib/satisfacao-jobs"
 import { format } from "date-fns"
 import { logger } from "@/lib/logger"
 import { emitirReciboSeguro } from "@/lib/baixa"
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
         }))
       : null
 
-  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas, pushVencimento, pushInadimplentes, aulaExperimental] = await Promise.all([
+  const [emailInadimplentes, emailVencendo, waInadimplentes, waVencendo, waAniversarios, cobrancas, pushVencimento, pushInadimplentes, pesquisaSatisfacao, aulaExperimental] = await Promise.all([
     runEnviarLembretesInadimplentes(),
     runEnviarLembreteVencendo(),
     runEnviarLembretesWhatsAppInadimplencia(),
@@ -117,6 +118,7 @@ export async function GET(request: Request) {
     sincronizarStatusCobrancas(),
     runPushVencimento(),
     runPushInadimplentes(),
+    runLembretePesquisaSatisfacao(),
     runEnviarLembretesAulaExperimental().catch((e: unknown) => ({
       error: e instanceof Error ? e.message : "Erro nos lembretes de aula experimental",
     })),
@@ -131,6 +133,7 @@ export async function GET(request: Request) {
     email: { inadimplentes: emailInadimplentes, vencendo: emailVencendo },
     whatsapp: { inadimplentes: waInadimplentes, vencendo: waVencendo, aniversarios: waAniversarios },
     push: { vencimento: pushVencimento, inadimplentes: pushInadimplentes },
+    pesquisaSatisfacao,
     aulaExperimental,
     cobrancas,
     housekeeping,

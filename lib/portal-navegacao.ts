@@ -78,6 +78,7 @@ export const GRUPOS_PORTAL: GrupoPortal[] = [
     paginas: [
       { href: "/responsavel/documentos", label: "Documentos" },
       { href: "/responsavel/solicitacoes", label: "Solicitações" },
+      { href: "/responsavel/pesquisa", label: "Pesquisa" },
       { href: "/responsavel/conversas", label: "Conversas" },
       { href: "/responsavel/renovacao", label: "Renovação" },
       { href: "/responsavel/notificacoes", label: "Notificações" },

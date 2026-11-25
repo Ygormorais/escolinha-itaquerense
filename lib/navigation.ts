@@ -19,6 +19,7 @@ import {
   Receipt,
   Send,
   Shirt,
+  SmilePlus,
   ShoppingBag,
   Trophy,
   UserCircle,
@@ -116,6 +117,7 @@ export const NAV_SECTIONS: NavSection[] = [
     href: "/configuracoes/documentos", label: "Configurações", icon: Settings,
     children: [
       { href: "/configuracoes/automacoes", label: "Automações", icon: History },
+      { href: "/configuracoes/satisfacao", label: "Satisfação", icon: SmilePlus },
       { href: "/historico", label: "Histórico", icon: History },
     ],
   },

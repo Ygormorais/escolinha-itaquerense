@@ -10,7 +10,7 @@ import {
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, ExternalLink, MapPin, Calendar } from "lucide-react"
+import { Trophy, ExternalLink, MapPin, Calendar, MessageCircle } from "lucide-react"
 import { PortalHero } from "@/components/responsavel/portal-hero"
 import { ConvocacaoCard } from "@/components/responsavel/convocacao-card"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -19,6 +19,8 @@ import { candidatosEscudoAdversario } from "@/lib/landing/escudo-adversario"
 import { AdvCrest } from "@/components/responsavel/adv-crest"
 import { DisponibilidadeCard } from "@/components/responsavel/disponibilidade-card"
 import { cn } from "@/lib/utils"
+import { baseUrlSite } from "@/lib/noticias/dados"
+import { jogoParaCompartilhar, whatsappCompartilharHref } from "@/lib/site/partida-compartilhar"
 import Link from "next/link"
 
 
@@ -233,6 +235,7 @@ export default async function JogosPage() {
                         <MatchCard
                           key={p.id}
                           p={p}
+                          categoria={cat}
                           alunos={alunos.filter((aluno) =>
                             turmasParaCategorias([aluno.turma]).has(cat),
                           )}
@@ -249,7 +252,7 @@ export default async function JogosPage() {
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {recentes.map((p) => (
-                        <MatchCard key={p.id} p={p} alunos={[]} />
+                        <MatchCard key={p.id} p={p} categoria={cat} alunos={[]} />
                       ))}
                     </div>
                   </div>
@@ -277,8 +280,10 @@ export default async function JogosPage() {
 
 function MatchCard({
   p,
+  categoria,
   alunos,
 }: {
+  categoria: string
   p: {
     id: number
     adversario: string
@@ -301,6 +306,10 @@ function MatchCard({
   const placar =
     p.golsPro != null && p.golsContra != null ? `${p.golsPro} × ${p.golsContra}` : null
   const crests = candidatosEscudoAdversario(p.adversario, p.adversarioEscudoUrl)
+  const compartilhar = whatsappCompartilharHref(
+    jogoParaCompartilhar({ ...p, adversario: adv, categoria }),
+    baseUrlSite(),
+  )
 
   return (
     <article
@@ -357,6 +366,19 @@ function MatchCard({
           >
             Ver súmula na FPFS
             <ExternalLink className="size-3" />
+          </a>
+        )}
+
+        {compartilhar && (
+          <a
+            href={compartilhar}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-9 items-center gap-1.5 text-xs font-bold text-brand-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+            aria-label={`Compartilhar o resultado contra ${adv} no WhatsApp (abre em nova aba)`}
+          >
+            <MessageCircle className="size-3.5" aria-hidden />
+            Compartilhar resultado
           </a>
         )}
 
