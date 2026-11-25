@@ -77,7 +77,7 @@ export default async function ResponsavelPage() {
     alunoIds.length > 0
       ? db.pagamento.findMany({
           where: { alunoId: { in: alunoIds }, dataPagamento: null },
-          select: { dataVencimento: true, valorDevido: true, valorRecebido: true, aluno: { select: { mensalidade: true, desconto: true } } },
+          select: { alunoId: true, dataVencimento: true, valorDevido: true, valorRecebido: true, aluno: { select: { mensalidade: true, desconto: true } } },
         })
       : Promise.resolve([]),
     // Documentos obrigatórios (versão vigente) sem aceite desta família.
@@ -129,7 +129,15 @@ export default async function ResponsavelPage() {
 
   return (
     <ResponsavelDashboardClient
-      responsavel={responsavel}
+      responsavel={{
+        ...responsavel,
+        // Situação de cada aluno a partir de TODAS as mensalidades abertas (o histórico traz só as 6 últimas).
+        alunos: responsavel.alunos.map((a) => {
+          const doAluno = abertas.filter((p) => p.alunoId === a.id)
+          const situacaoAberta = doAluno.some((p) => atrasadas.includes(p)) ? "atrasada" : doAluno.length > 0 ? "a-vencer" : "nenhuma"
+          return { ...a, situacaoAberta }
+        }),
+      }}
       comunicados={comunicados}
       proximosEventos={proximosEventos}
       jogos={jogos}

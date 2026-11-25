@@ -22,7 +22,6 @@ import type { JogoPortal } from "@/lib/responsavel-jogos"
 import { nomeTime } from "@/lib/landing/times"
 import { AdvCrest } from "@/components/responsavel/adv-crest"
 import { buildWhatsAppHref } from "@/lib/browser-safety"
-import { hojeNoClube } from "@/lib/portal-mensalidades"
 import { PrecisaDeVoce } from "@/components/inicio/precisa-de-voce"
 import type { AcaoInicio } from "@/lib/inicio"
 
@@ -32,6 +31,8 @@ type Aluno = {
   turma: string
   mensalidade: number
   desconto: number
+  /** Calculada no servidor sobre todas as mensalidades abertas (não só as 6 do histórico). */
+  situacaoAberta: "atrasada" | "a-vencer" | "nenhuma"
   pagamentos: {
     mesReferencia: string
     dataVencimento: RscDate
@@ -76,10 +77,8 @@ export function ResponsavelDashboardClient({
    * mês sem cobrança gerada não é pendência.
    */
   function statusPagamento(aluno: Aluno): StatusPagamento {
-    const hoje = hojeNoClube(new Date())
-    const emAberto = aluno.pagamentos.filter((p) => !p.dataPagamento)
-    if (emAberto.some((p) => new Date(p.dataVencimento).toISOString().slice(0, 10) < hoje)) return { label: "Atrasada", variant: "destructive" }
-    if (emAberto.length > 0) return { label: "A vencer", variant: "warning" }
+    if (aluno.situacaoAberta === "atrasada") return { label: "Atrasada", variant: "destructive" }
+    if (aluno.situacaoAberta === "a-vencer") return { label: "A vencer", variant: "warning" }
     const mesAtual = format(new Date(), "yyyy-MM")
     if (aluno.pagamentos.some((p) => p.mesReferencia === mesAtual)) return { label: "Em dia", variant: "success" }
     return { label: "Sem cobrança no mês", variant: "secondary" }
