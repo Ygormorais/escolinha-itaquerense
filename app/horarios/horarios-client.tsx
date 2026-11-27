@@ -154,11 +154,12 @@ const css = `
   .hc .strip-icon-dark{background:#0B0B0B}
   .hc .strip-text b{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
   .hc .strip-text p{font-size:13px;color:var(--text-muted);line-height:1.55}
-  .hc .info-strip-destaque{margin-top:32px;border-color:var(--red);background:#fff}
-  .hc .strip-cta{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;min-height:44px;padding:0 22px;
+  html.dark .hc .tcard-age-red,html.dark .hc .onde-btns a{color:var(--brand-200)}
+  .hc .info-strip-destaque{margin-top:32px;border-color:var(--red);background:var(--bg-card)}
+  .hc .strip-agendar{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;min-height:44px;padding:0 22px;
     border-radius:var(--radius-pill);background:var(--red);color:#fff;font-size:14px;font-weight:700;transition:background .2s}
-  .hc .strip-cta:hover{background:var(--red-dark)}
-  @media(max-width:560px){.hc .info-strip{flex-direction:column;text-align:center;padding:20px}.hc .strip-cta{margin-left:0}}
+  .hc .strip-agendar:hover{background:var(--red-dark)}
+  @media(max-width:560px){.hc .info-strip{flex-direction:column;text-align:center;padding:20px}.hc .strip-agendar{margin-left:0}}
 
   /* ── CTA ── */
   .hc .cta{border-radius:var(--radius-sm);color:#fff;text-align:center;padding:52px 28px;
@@ -385,7 +386,7 @@ export default function HorariosClient({ turmas, waUrl, waNumero, local = null }
             <b>Quer conhecer antes de matricular?</b>
             <p>Agende uma aula experimental gratuita: escolha a data, a turma da idade do atleta e venha treinar com a gente.</p>
           </div>
-          <Link className="strip-cta" href="/aula-experimental">
+          <Link className="strip-agendar" href="/aula-experimental">
             Agendar aula grátis
           </Link>
         </div>

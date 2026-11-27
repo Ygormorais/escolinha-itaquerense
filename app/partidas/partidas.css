@@ -96,3 +96,5 @@ html.dark .lp .pt-res-loss{background:color-mix(in srgb, var(--danger-600) 24%, 
 .lp .pt-card-detalhe{margin:0;color:var(--text-muted);font-size:15px}
 .lp .pt-card-acoes{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:8px}
 @media(max-width:420px){.lp .pt-card-acoes .pg-btn{width:100%}}
+
+html.dark .lp .pt-link{color:var(--brand-200)}

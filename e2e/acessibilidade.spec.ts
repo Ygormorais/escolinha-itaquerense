@@ -29,7 +29,7 @@ test.describe("Acessibilidade — portal da família", () => {
   for (const caminho of PAGINAS_PORTAL) {
     test(`${caminho} sem problemas críticos`, async ({ page }) => {
       await page.goto(caminho, { waitUntil: "networkidle" })
-      await expect(page).toHaveURL(new RegExp(caminho.replace(/\//g, "\/")))
+      expect(new URL(page.url()).pathname).toBe(caminho)
       expect(await violacoesSerias(page)).toEqual([])
     })
   }
@@ -40,7 +40,17 @@ test.describe("Acessibilidade — admin", () => {
     test(`${caminho} sem problemas críticos`, async ({ page }) => {
       await loginAsAdmin(page)
       await page.goto(caminho, { waitUntil: "networkidle" })
-      await expect(page).toHaveURL(new RegExp(caminho.replace(/\//g, "\/")))
+      expect(new URL(page.url()).pathname).toBe(caminho)
+      expect(await violacoesSerias(page)).toEqual([])
+    })
+  }
+})
+
+test.describe("Acessibilidade — site público no tema escuro", () => {
+  for (const caminho of ["/", "/horarios", "/partidas"]) {
+    test(`${caminho} sem problemas críticos`, async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem("theme", "dark"))
+      await page.goto(caminho, { waitUntil: "networkidle" })
       expect(await violacoesSerias(page)).toEqual([])
     })
   }
