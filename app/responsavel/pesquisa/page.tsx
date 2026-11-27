@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { db } from "@/lib/db"
 import { hojeNoClube } from "@/lib/datas-clube"
 import { getResponsavelSession } from "@/lib/responsavel-session"
+import { getConfig } from "@/lib/config"
 import { campanhaAberta } from "@/lib/satisfacao"
 import { PesquisaForm } from "./pesquisa-form"
 
@@ -42,7 +43,7 @@ export default async function PesquisaFamiliaPage() {
       ) : aberta.respostas.length > 0 ? (
         <EmptyState icon={ClipboardCheck} title="Resposta recebida. Obrigado!" description="Sua opinião já está com a coordenação. Se quiser falar com a gente, use Conversas ou Solicitações." />
       ) : (
-        <PesquisaForm pesquisaId={aberta.id} titulo={aberta.titulo} pergunta={aberta.pergunta} />
+        <PesquisaForm avaliacaoUrl={getConfig().googleAvaliacao} pesquisaId={aberta.id} titulo={aberta.titulo} pergunta={aberta.pergunta} />
       )}
     </div>
   )

@@ -9,7 +9,7 @@ import { getSession } from "@/lib/session"
 export const dynamic = "force-dynamic"
 
 export const metadata = {
-  title: "Área da equipe — Elite Itaquerense",
+  title: "Área da equipe — E.C. Itaquerense",
   robots: { index: false, follow: false },
 }
 

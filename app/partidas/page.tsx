@@ -167,7 +167,7 @@ export default async function PartidasPage({
   return (
     <PaginaPublica
       titulo="Partidas"
-      descricao="Agenda e resultados das categorias de base do Elite Itaquerense, com a classificação de cada categoria."
+      descricao="Agenda e resultados das categorias de base do E.C. Itaquerense, com a classificação de cada categoria."
       className="pt"
     >
       {eventosLd.length > 0 && (

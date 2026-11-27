@@ -112,10 +112,10 @@ export function SiteFooter({
           <div className="foot-brand">
             <div className="foot-name">
               <Image src="/logo.png" alt="" width={64} height={64} />
-              <strong>Elite<br />Itaquerense</strong>
+              <strong>E.C.<br />Itaquerense</strong>
             </div>
             <p>
-              Sociedade Esportiva Elite Itaquerense — tradição alvirrubra em Itaquera desde 1922.
+              E.C. Itaquerense — futsal de base alvirrubro em Itaquera.
               Formação esportiva e humana para as novas gerações.
             </p>
             {(endereco || cidade) && (
@@ -183,7 +183,7 @@ export function SiteFooter({
 
         <div className="foot-bottom">
           <div className="container foot-bottom-row">
-            <span>© {new Date().getFullYear()} Sociedade Esportiva Elite Itaquerense</span>
+            <span>© {new Date().getFullYear()} E.C. Itaquerense</span>
             <span className="foot-legal">
               <a href="/privacidade">Privacidade</a>
               <a href="/termos">Termos</a>

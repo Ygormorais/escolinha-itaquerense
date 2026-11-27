@@ -145,6 +145,11 @@ export function ConfigForm({ config }: { config: ClubConfig }) {
                 <Label htmlFor="cfg-youtube">YouTube</Label>
                 <Input id="cfg-youtube" name="youtube" type="url" value={form.youtube ?? ""} onChange={handleChange} placeholder="https://www.youtube.com/@seu_clube" />
               </div>
+              <div className="space-y-1 sm:col-span-2">
+                <Label htmlFor="cfg-googleAvaliacao">Avaliação no Google</Label>
+                <Input id="cfg-googleAvaliacao" name="googleAvaliacao" type="url" value={form.googleAvaliacao ?? ""} onChange={handleChange} placeholder="https://g.page/r/.../review" />
+                <p className="text-xs text-muted-foreground">Quem dá nota 9 ou 10 na pesquisa de satisfação recebe um convite para avaliar o clube neste link. Deixe vazio para não mostrar.</p>
+              </div>
             </div>
 
             <div className="border-t pt-4 space-y-4">
