@@ -2,7 +2,8 @@ import { cache } from "react"
 import { db } from "@/lib/db"
 import type { StaffRole } from "@/lib/permissions"
 import { carregarAtencaoEvasao } from "@/lib/risco-evasao-data"
-import { whatsappHrefPara } from "@/lib/whatsapp-modelos"
+import { preencherModelo, textoDoModelo, whatsappHrefPara } from "@/lib/whatsapp-modelos"
+import { getConfig } from "@/lib/config"
 import { subDays } from "date-fns"
 
 export type PendenciaItem = {
@@ -24,6 +25,7 @@ const informativa = { prioridade: "normal", situacao: "informativa" } as const
 
 async function gruposAdministrativos(): Promise<PendenciaGrupo[]> {
   const agora = new Date()
+  const config = getConfig()
   const [pagamentos, solicitacoes, renovacoes, espera, documentos, alunos, atencao, detratores] = await Promise.all([
     db.pagamento.findMany({ where: { dataPagamento: null, dataVencimento: { lt: agora }, aluno: { status: "Ativo" } }, select: { id: true, mesReferencia: true, dataVencimento: true, aluno: { select: { nome: true } } }, orderBy: { dataVencimento: "asc" }, take: 100 }),
     db.solicitacao.findMany({ where: { status: { in: ["pendente", "em_andamento"] } }, select: { id: true, tipo: true, createdAt: true, responsavel: { select: { nome: true } } }, orderBy: { createdAt: "asc" }, take: 100 }),
@@ -52,7 +54,7 @@ async function gruposAdministrativos(): Promise<PendenciaGrupo[]> {
   return [
     { titulo: "Mensalidades vencidas", descricao: "Pagamentos ativos ainda sem baixa.", itens: pagamentos.map((p) => ({ chave: `pag-${p.id}`, titulo: p.aluno.nome, detalhe: `${p.mesReferencia} · venceu em ${p.dataVencimento.toLocaleDateString("pt-BR")}`, href: "/inadimplencia", ...alta })) },
     { titulo: "Atenção: risco de evasão", descricao: "Faltas seguidas e mensalidade em atraso: um contato acolhedor a tempo evita a saída.", itens: atencao.map((a) => ({ chave: `risco-${a.id}`, titulo: a.nome, detalhe: `${a.turma} · ${a.motivos.join(" · ")}`, href: `/alunos/${a.id}`, whatsappHref: a.whatsappHref, ...(a.nivel === "alto" ? alta : normal) })) },
-    { titulo: "Pesquisa de satisfação", descricao: "Famílias que deram nota baixa e se identificaram: ouvir de perto evita a saída.", itens: detratores.map((r) => ({ chave: `nps-${r.id}`, titulo: r.responsavel.nome, detalhe: `Nota ${r.nota}${r.comentario ? ` · “${r.comentario.slice(0, 120)}”` : ""} · ${r.createdAt.toLocaleDateString("pt-BR")}`, href: "/configuracoes/satisfacao", whatsappHref: whatsappHrefPara(r.responsavel.telefone, `Olá, ${r.responsavel.nome.split(" ")[0]}! Obrigado por responder à nossa pesquisa. Queremos muito entender como melhorar: pode nos contar mais?`), ...(r.nota <= 3 ? alta : normal) })) },
+    { titulo: "Pesquisa de satisfação", descricao: "Famílias que deram nota baixa e se identificaram: ouvir de perto evita a saída.", itens: detratores.map((r) => ({ chave: `nps-${r.id}`, titulo: r.responsavel.nome, detalhe: `Nota ${r.nota}${r.comentario ? ` · “${r.comentario.slice(0, 120)}”` : ""} · ${r.createdAt.toLocaleDateString("pt-BR")}`, href: "/configuracoes/satisfacao", whatsappHref: whatsappHrefPara(r.responsavel.telefone, preencherModelo(textoDoModelo("satisfacao", config.modelosMensagem), { responsavel: r.responsavel.nome.split(" ")[0], clube: config.nome })), ...(r.nota <= 3 ? alta : normal) })) },
     { titulo: "Solicitações", descricao: "Pedidos aguardando conclusão.", itens: solicitacoes.map((s) => ({ chave: `sol-${s.id}`, titulo: s.responsavel.nome, detalhe: `${s.tipo} · aberto em ${s.createdAt.toLocaleDateString("pt-BR")}`, href: "/configuracoes/solicitacoes", ...(agora.getTime() - s.createdAt.getTime() > 7 * 86400000 ? alta : normal) })) },
     { titulo: "Renovações", descricao: "Renovações aguardando resposta.", itens: renovacoes.map((r) => ({ chave: `ren-${r.id}`, titulo: r.aluno.nome, detalhe: `${r.periodo} · desde ${r.createdAt.toLocaleDateString("pt-BR")}`, href: "/configuracoes/responsaveis", ...normal })) },
     { titulo: "Lista de espera", descricao: "Famílias aguardando contato ou vaga.", itens: espera.map((e) => ({ chave: `esp-${e.id}`, titulo: e.nomeAluno, detalhe: `${e.turma.nome} · ${e.status} desde ${e.createdAt.toLocaleDateString("pt-BR")}`, href: "/turmas#capacidade-turmas", ...informativa })) },
