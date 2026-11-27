@@ -4,6 +4,7 @@ import {
   campanhaAberta,
   campanhaSchema,
   categoriaDaNota,
+  urlAvaliacaoGoogle,
   conflitaComOutraCampanha,
   deveEnviarLembrete,
   faixaDoNps,
@@ -168,5 +169,21 @@ describe("painel", () => {
   it("usa o modelo personalizado quando existe", () => {
     const [x] = listarDetratores([resp(1, 1, "Sub-9")], { clube: "Clube Z", modelos: { satisfacao: "Oi {responsavel}, aqui é {clube}" } })
     expect(decodeURIComponent(x.whatsappHref!)).toContain("Oi Maria, aqui é Clube Z")
+  })
+})
+
+describe("urlAvaliacaoGoogle", () => {
+  const link = "https://g.page/r/abc/review"
+  it("só promotores recebem o convite", () => {
+    expect(urlAvaliacaoGoogle(link, 10)).toBe(link)
+    expect(urlAvaliacaoGoogle(link, 9)).toBe(link)
+    expect(urlAvaliacaoGoogle(link, 8)).toBeNull()
+    expect(urlAvaliacaoGoogle(link, 0)).toBeNull()
+  })
+  it("recusa link vazio, inválido ou sem https", () => {
+    expect(urlAvaliacaoGoogle("", 10)).toBeNull()
+    expect(urlAvaliacaoGoogle(undefined, 10)).toBeNull()
+    expect(urlAvaliacaoGoogle("javascript:alert(1)", 10)).toBeNull()
+    expect(urlAvaliacaoGoogle("http://g.page/r/abc", 10)).toBeNull()
   })
 })

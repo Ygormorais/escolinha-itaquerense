@@ -4,14 +4,14 @@ import { useState, useTransition } from "react"
 import { CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 import { responderPesquisa } from "@/app/actions/satisfacao"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { MAX_COMENTARIO } from "@/lib/satisfacao"
+import { MAX_COMENTARIO, urlAvaliacaoGoogle } from "@/lib/satisfacao"
 
 const NOTAS = Array.from({ length: 11 }, (_, i) => i)
 
-export function PesquisaForm({ pesquisaId, titulo, pergunta }: { pesquisaId: number; titulo: string; pergunta: string }) {
+export function PesquisaForm({ pesquisaId, titulo, pergunta, avaliacaoUrl }: { pesquisaId: number; titulo: string; pergunta: string; avaliacaoUrl?: string }) {
   const [nota, setNota] = useState<number | null>(null)
   const [comentario, setComentario] = useState("")
   const [anonimo, setAnonimo] = useState(false)
@@ -39,11 +39,20 @@ export function PesquisaForm({ pesquisaId, titulo, pergunta }: { pesquisaId: num
   }
 
   if (enviada) {
+    const linkGoogle = nota === null ? null : urlAvaliacaoGoogle(avaliacaoUrl, nota)
     return (
       <section role="status" className="flex flex-col items-center gap-3 rounded-xl border bg-card p-8 text-center">
         <CheckCircle2 className="size-10 text-success-600" aria-hidden />
         <h2 className="font-heading text-xl font-bold">Obrigado pela sua opinião!</h2>
         <p className="max-w-md text-sm text-muted-foreground">Ela chega direto à coordenação da escolinha e ajuda a melhorar a experiência dos atletas e das famílias.</p>
+        {linkGoogle ? (
+          <>
+            <p className="max-w-md text-sm text-muted-foreground">Que bom que você recomenda! Se puder, conte isso também no Google: ajuda outras famílias a nos encontrar.</p>
+            <a href={linkGoogle} target="_blank" rel="noopener noreferrer" className={buttonVariants()}>
+              Avaliar a escolinha no Google
+            </a>
+          </>
+        ) : null}
       </section>
     )
   }

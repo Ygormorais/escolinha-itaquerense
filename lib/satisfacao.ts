@@ -50,6 +50,17 @@ export function calcularNps(notas: number[]): ResumoNps {
   return { total, promotores, neutros, detratores, nps, distribuicao }
 }
 
+/** Convite para avaliar no Google: só para promotores e só com link https configurado. */
+export function urlAvaliacaoGoogle(url: string | null | undefined, nota: number): string | null {
+  if (categoriaDaNota(nota) !== "promotor") return null
+  try {
+    const u = new URL((url ?? "").trim())
+    return u.protocol === "https:" ? u.toString() : null
+  } catch {
+    return null
+  }
+}
+
 /** Faixa de leitura do NPS (referência comum de mercado). */
 export function faixaDoNps(nps: number | null): "sem-dados" | "excelente" | "bom" | "atencao" | "critico" {
   if (nps === null) return "sem-dados"

@@ -1,5 +1,5 @@
 // Prefixos das chaves de pendência por grupo (ver lib/pendencias-data.ts).
-const PREFIXOS_ADMINISTRATIVOS = ["pag", "sol", "ren", "esp", "doc"] as const
+const PREFIXOS_ADMINISTRATIVOS = ["pag", "sol", "ren", "esp", "doc", "risco", "nps"] as const
 const PREFIXOS_TECNICOS = ["rot", "obj", "conv", "med"] as const
 
 /** A chave pertence a um grupo que o perfil enxerga na central de pendências? */

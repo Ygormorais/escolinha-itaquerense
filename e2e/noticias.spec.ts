@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+import { db } from "@/lib/db"
 import { loginAsAdmin } from "./helpers"
 
 test.beforeEach(async ({ page }) => {
@@ -64,6 +65,11 @@ test.describe("Página da notícia (pública)", () => {
     await expect(wa).toHaveAttribute("href", /^https:\/\/wa\.me\/\?text=/)
     await expect(pub.locator('script[type="application/ld+json"]')).toHaveCount(1)
     await visitante.close()
+  })
+
+  // A notícia de teste não pode ficar no banco: apareceria no hero e na listagem do site.
+  test.afterAll(async () => {
+    await db.noticia.deleteMany({ where: { titulo: { startsWith: "Vitória no E2E " } } })
   })
 })
 

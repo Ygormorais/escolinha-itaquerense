@@ -95,7 +95,7 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
 .lp .hs-photo{z-index:-3}
 .lp .hs-shade-photo{background:linear-gradient(0deg,rgba(20,6,6,.9) 0%,rgba(20,6,6,.45) 48%,rgba(20,6,6,.15) 100%)}
 
-.lp .container.hs-copy{width:100%;padding-block:clamp(48px,8vw,96px) clamp(40px,6vw,72px)}
+.lp .container.hs-copy{width:100%;padding-block:clamp(48px,8vw,96px) clamp(72px,7vw,96px)}
 .lp .hs-text{max-width:clamp(300px,52vw,720px)}
 .lp .hs-kicker{display:flex;align-items:center;gap:12px;margin-bottom:18px;font-size:clamp(14px,1.4vw,16px);font-weight:600;color:var(--brand-200)}
 .lp .hs-kicker::before{content:"";flex:0 0 36px;height:4px;border-radius:2px;background:var(--brand-500)}
@@ -106,18 +106,18 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
 .lp .hs-cta:hover{background:var(--brand-100);transform:translateY(-1px)}
 .lp .hs a:focus-visible,.lp .hs button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 
-.lp .hs-bar{background:#0B0B0B;border-top:1px solid rgba(255,255,255,.14)}
-.lp .hs-bar-row{display:flex;align-items:stretch;min-height:56px}
-.lp .hs-tabs{display:flex;flex:1;min-width:0}
-.lp .hs-tab{position:relative;flex:1 1 0;min-width:0;padding:0 18px;border:0;background:none;color:rgba(255,255,255,.74);font-size:14px;font-weight:600;text-align:left;cursor:pointer;transition:color .2s,background .2s}
-.lp .hs-tab:hover{color:#fff;background:rgba(255,255,255,.06)}
-.lp .hs-tab::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:transparent;transition:background .2s}
-.lp .hs-tab[aria-current="true"]{color:#fff}
-.lp .hs-tab[aria-current="true"]::before{background:var(--brand-500)}
-.lp .hs-tab-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lp .hs-arrows{display:flex}
-.lp .hs-arrow{display:flex;align-items:center;justify-content:center;width:56px;border:0;border-left:1px solid rgba(255,255,255,.14);background:none;color:#fff;cursor:pointer;transition:background .2s}
-.lp .hs-arrow:hover{background:rgba(255,255,255,.1)}
+/* Controles sobre o hero (pontos + setas): a faixa preta saiu, a faixa branca de jogo fica logo abaixo. */
+.lp .hs-bar{position:absolute;inset:auto 0 12px;z-index:2;pointer-events:none}
+.lp .hs-bar-row{display:flex;align-items:center;justify-content:space-between;min-height:44px}
+.lp .hs-tabs{display:flex;align-items:center;gap:4px}
+.lp .hs-tab{position:relative;pointer-events:auto;flex:0 0 auto;width:28px;height:44px;padding:0;border:0;background:none;cursor:pointer}
+.lp .hs-tab::before{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:rgba(255,255,255,.4);transition:background .2s,transform .2s}
+.lp .hs-tab:hover::before{background:rgba(255,255,255,.75)}
+.lp .hs-tab[aria-current="true"]::before{background:#fff;transform:scale(1.2)}
+.lp .hs-tab-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lp .hs-arrows{display:flex;gap:8px}
+.lp .hs-arrow{pointer-events:auto;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid rgba(255,255,255,.3);border-radius:50%;background:rgba(0,0,0,.35);color:#fff;cursor:pointer;transition:background .2s}
+.lp .hs-arrow:hover{background:rgba(255,255,255,.2)}
 @media(max-width:700px){
   .lp .hs-slide{min-height:clamp(520px,78svh,680px)}
   .lp .hs-shade{background:linear-gradient(0deg,rgba(0,0,0,.94) 0%,rgba(0,0,0,.72) 40%,transparent 64%)}
@@ -125,11 +125,6 @@ html.dark .lp .strip-cta{color:var(--brand-200)}
   .lp .hs-crest{width:52vw;height:auto;max-width:none;left:50%;right:auto;top:24px;transform:translateX(-50%)}
   .lp .container.hs-copy{padding-top:calc(52vw + 40px)}
   .lp .hs-text{max-width:none}
-  .lp .hs-tabs{align-items:center;justify-content:center;gap:4px}
-  .lp .hs-tab{flex:0 0 auto;width:28px;height:44px;padding:0}
-  .lp .hs-tab::before{top:auto;bottom:auto;left:50%;right:auto;width:10px;height:10px;border-radius:50%;margin-left:-5px;margin-top:17px;background:rgba(255,255,255,.35)}
-  .lp .hs-tab[aria-current="true"]::before{background:#fff}
-  .lp .hs-tab-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 }
 @media(prefers-reduced-motion:reduce){
   .lp .hs-crest{transition:none}

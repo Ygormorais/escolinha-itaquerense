@@ -6,7 +6,7 @@ import { ResponsavelLoginClient } from "./responsavel-login-client"
 export const dynamic = "force-dynamic"
 
 export const metadata = {
-  title: "Portal da Família — Elite Itaquerense",
+  title: "Portal da Família — E.C. Itaquerense",
   robots: { index: false, follow: false },
 }
 

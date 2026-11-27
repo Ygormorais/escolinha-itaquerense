@@ -15,6 +15,8 @@ export type ClubConfig = {
   instagram: string
   facebook: string
   youtube: string
+  /** Link para avaliar o clube no Google (https://...). Mostrado a quem dá nota 9 ou 10 na pesquisa de satisfação. */
+  googleAvaliacao: string
   metaMensal: number
   capacidadeTurma: number
   chavePix: string
@@ -48,6 +50,7 @@ export const DEFAULT: ClubConfig = {
   instagram: "",
   facebook: "",
   youtube: "",
+  googleAvaliacao: "https://www.google.com/maps/search/?api=1&query=Sociedade+Esportiva+Elite+Itaquerense",
   metaMensal: 0,
   capacidadeTurma: 20,
   chavePix: "ygorcamisa1@gmail.com",

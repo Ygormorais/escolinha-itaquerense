@@ -13,6 +13,12 @@ describe("perfilPodeTratarChave", () => {
     expect(perfilPodeTratarChave("secretaria", "rot-1")).toBe(false)
   })
 
+  it("risco de evasão e pesquisa de satisfação são da secretaria", () => {
+    expect(perfilPodeTratarChave("secretaria", "risco-7")).toBe(true)
+    expect(perfilPodeTratarChave("secretaria", "nps-3")).toBe(true)
+    expect(perfilPodeTratarChave("tecnico", "nps-3")).toBe(false)
+  })
+
   it("admin trata os dois lados e recusa prefixo desconhecido", () => {
     expect(perfilPodeTratarChave("admin", "pag-1")).toBe(true)
     expect(perfilPodeTratarChave("admin", "conv-1")).toBe(true)

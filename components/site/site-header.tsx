@@ -57,7 +57,7 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
     <div className={dentroDaLanding ? "lp-chrome" : "lp lp-chrome"}>
       <div className="util" ref={utilRef}>
         <div className="container util-row">
-          <p className="util-id">Sociedade Esportiva Elite Itaquerense, desde 1922</p>
+          <p className="util-id">E.C. Itaquerense, futsal de base em Itaquera</p>
           <div className="util-tools">
             <a href="/responsavel" className="util-link">
               <span className="util-full">Portal da família</span>
@@ -118,7 +118,6 @@ export function SiteHeader({ whatsappUrl, dentroDaLanding = false }: { whatsappU
           <nav className={"main" + (navOpen ? " open" : "")} id="nav" aria-label="Menu do site">
             <ul className="nav-l">
               <li><a href="/horarios" onClick={closeNav}>Turmas</a></li>
-              <li><Link href="/aula-experimental" onClick={closeNav}>Aula grátis</Link></li>
               <li><Link href="/partidas" onClick={closeNav}>Partidas</Link></li>
               <li><Link href="/#materias" onClick={closeNav}>Notícias</Link></li>
             </ul>
