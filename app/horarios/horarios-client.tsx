@@ -52,11 +52,11 @@ const css = `
   .hc .tab-btn .tab-ico{display:flex;flex-shrink:0;opacity:.9}
   .hc .tab-btn .tab-label{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
   .hc .tab-btn .tab-label strong{font-size:14px;font-weight:700;letter-spacing:.1px}
-  .hc .tab-btn .tab-label span{font-size:11px;font-weight:400;opacity:.7}
+  .hc .tab-btn .tab-label span{font-size:11px;font-weight:400}
   .hc .tab-btn.active-escolinha{background:var(--red);color:#fff}
-  .hc .tab-btn.active-escolinha .tab-label span{opacity:.85}
+  .hc .tab-btn.active-escolinha .tab-label span{opacity:.95}
   .hc .tab-btn.active-federado{background:#0B0B0B;color:#fff}
-  .hc .tab-btn.active-federado .tab-label span{opacity:.85}
+  .hc .tab-btn.active-federado .tab-label span{opacity:.95}
   .hc .tab-btn:not([class*="active"]):hover{background:var(--bg-muted);color:var(--text)}
   .hc .tab-btn:focus-visible{outline:3px solid var(--red);outline-offset:-3px;z-index:1}
   .hc .tab-divider{width:1px;background:var(--border);flex-shrink:0}
@@ -154,7 +154,11 @@ const css = `
   .hc .strip-icon-dark{background:#0B0B0B}
   .hc .strip-text b{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
   .hc .strip-text p{font-size:13px;color:var(--text-muted);line-height:1.55}
-  @media(max-width:560px){.hc .info-strip{flex-direction:column;text-align:center;padding:20px}}
+  .hc .info-strip-destaque{margin-top:32px;border-color:var(--red);background:#fff}
+  .hc .strip-cta{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;min-height:44px;padding:0 22px;
+    border-radius:var(--radius-pill);background:var(--red);color:#fff;font-size:14px;font-weight:700;transition:background .2s}
+  .hc .strip-cta:hover{background:var(--red-dark)}
+  @media(max-width:560px){.hc .info-strip{flex-direction:column;text-align:center;padding:20px}.hc .strip-cta{margin-left:0}}
 
   /* ── CTA ── */
   .hc .cta{border-radius:var(--radius-sm);color:#fff;text-align:center;padding:52px 28px;
@@ -313,7 +317,7 @@ export default function HorariosClient({ turmas, waUrl, waNumero, local = null }
                   <div className="soon-card" key={sub}>
                     <div className="soon-cat">{sub}</div>
                     {FAIXA_ETARIA[sub] && (
-                      <div style={{ fontSize: 12, color: "var(--text-light)", fontWeight: 500 }}>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
                         {FAIXA_ETARIA[sub]}
                       </div>
                     )}
@@ -372,6 +376,19 @@ export default function HorariosClient({ turmas, waUrl, waNumero, local = null }
       )}
 
       {modalidade === "escolinha" ? (
+        <>
+        <div className="info-strip info-strip-destaque">
+          <div className="strip-icon strip-icon-dark" aria-hidden>
+            <CalendarDays size={20} strokeWidth={2} />
+          </div>
+          <div className="strip-text">
+            <b>Quer conhecer antes de matricular?</b>
+            <p>Agende uma aula experimental gratuita: escolha a data, a turma da idade do atleta e venha treinar com a gente.</p>
+          </div>
+          <Link className="strip-cta" href="/aula-experimental">
+            Agendar aula grátis
+          </Link>
+        </div>
         <div className="info-strip">
           <div className="strip-icon strip-icon-red" aria-hidden>
             <ModIcon size={20} strokeWidth={2} />
@@ -384,6 +401,7 @@ export default function HorariosClient({ turmas, waUrl, waNumero, local = null }
             </p>
           </div>
         </div>
+        </>
       ) : (
         <div className="fed-notice" role="note">
           <h3>
@@ -462,12 +480,6 @@ export default function HorariosClient({ turmas, waUrl, waNumero, local = null }
                 <Trophy size={16} strokeWidth={2} aria-hidden />
                 Perguntar sobre avaliações
               </a>
-            )}
-            {modalidade === "escolinha" && (
-              <Link className="btn-white btn-white-dark" href="/aula-experimental">
-                <CalendarDays size={16} strokeWidth={2} aria-hidden />
-                Agendar aula experimental
-              </Link>
             )}
             <a className="btn-wa" href={waUrl} target="_blank" rel="noopener noreferrer">
               <MessageCircle size={16} strokeWidth={2} aria-hidden />
