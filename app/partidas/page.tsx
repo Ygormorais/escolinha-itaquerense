@@ -62,7 +62,7 @@ function Linha({ p, base }: { p: PartidaLinha; base: string }) {
         {hora && <span className="pt-hora" data-numeric>{hora}</span>}
       </div>
 
-      <div className="pt-jogo" aria-label={placarFalado}>
+      <div className="pt-jogo" role="img" aria-label={placarFalado}>
         <span className="pt-time pt-casa" aria-hidden>{p.casa}</span>
         <span className="pt-centro" aria-hidden>
           <EscudoTime nome={p.casa} nosso={p.nosCasa} urls={p.escudosAdversario} />

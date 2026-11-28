@@ -104,3 +104,10 @@ html.dark .lp .turmas-mais{color:var(--brand-200)}
 .lp .autoplay-btn:hover{border-color:var(--red);color:var(--red)}
 .lp .autoplay-btn:focus-visible{outline:3px solid var(--red);outline-offset:3px}
 .lp .ncc-dots .autoplay-btn{margin:0 10px 0 0}
+
+/* Tema escuro: textos em vermelho de marca (#C62828) ficam com contraste baixo sobre o fundo escuro. */
+html.dark .lp .nc .nc-more,
+html.dark .lp .nc-action-primary,
+html.dark .lp .mt .mt-more,
+html.dark .lp .mt .mt-tab.active,
+html.dark .lp .mt .mt-card-link{color:var(--brand-200)}
