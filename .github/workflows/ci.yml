@@ -55,6 +55,9 @@ jobs:
           ADMIN_USERNAME: admin
           ADMIN_PASSWORD: ci-password
 
+      - name: Ensaio de restauração do backup
+        run: npm run db:backup:drill
+
   e2e-parte:
     name: e2e (parte ${{ matrix.parte }}/3)
     # Fixo: ubuntu-latest virou 26.04 e o Playwright 1.60 não instala o Chromium nele.

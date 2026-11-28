@@ -13,7 +13,7 @@ async function violacoesSerias(page: Page) {
 
 const PAGINAS_PUBLICAS = ["/", "/horarios", "/aula-experimental", "/partidas", "/noticias/publico", "/matricula", "/login", "/responsavel/login"]
 const PAGINAS_PORTAL = ["/responsavel", "/responsavel/mensalidades", "/responsavel/calendario", "/responsavel/jogos", "/responsavel/documentos"]
-const PAGINAS_ADMIN = ["/dashboard", "/pendencias", "/alunos", "/configuracoes/satisfacao", "/configuracoes/aula-experimental"]
+const PAGINAS_ADMIN = ["/dashboard", "/pendencias", "/alunos", "/recibos", "/configuracoes/satisfacao", "/configuracoes/aula-experimental"]
 
 test.describe("Acessibilidade — site público", () => {
   for (const caminho of PAGINAS_PUBLICAS) {
@@ -22,6 +22,13 @@ test.describe("Acessibilidade — site público", () => {
       expect(await violacoesSerias(page)).toEqual([])
     })
   }
+})
+
+test("Acessibilidade — /horarios na aba Federado", async ({ page }) => {
+  await page.goto("/horarios", { waitUntil: "networkidle" })
+  await page.getByRole("tab", { name: /Federado/ }).click()
+  await page.waitForTimeout(500) // fim da transição de cor das abas; o axe mediria cores intermediárias
+  expect(await violacoesSerias(page)).toEqual([])
 })
 
 test.describe("Acessibilidade — portal da família", () => {

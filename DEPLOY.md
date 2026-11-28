@@ -4,6 +4,8 @@ O deploy definitivo é **Node 22 + PM2 atrás do Caddy**, numa VPS Ubuntu
 (referência: Oracle Always Free ou Hetzner). SQLite em arquivo no disco —
 **instância única, sempre**.
 
+➡️ **Roteiro do dia do lançamento: [`docs/LANCAMENTO.md`](docs/LANCAMENTO.md).**
+
 ➡️ **Guia passo a passo (criar a VPS, setup, deploy, domínio, backup):
 [`deploy/README.md`](deploy/README.md).**
 
@@ -80,6 +82,10 @@ npm run db:backup
 
 # Validar integridade do backup completo mais recente, sem restaurar
 npm run db:backup:verify
+
+# Ensaio de restauração em ambiente descartável (migrations reais, dados, uploads e config);
+# não toca nos dados de produção. Rode uma vez por mês.
+npm run db:backup:drill
 
 # Atualizar para nova versão
 bash deploy/deploy.sh
