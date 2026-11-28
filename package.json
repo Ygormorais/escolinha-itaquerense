@@ -21,6 +21,7 @@
     "deploy:check": "npx tsx scripts/check-deploy.ts",
     "db:backup": "npx tsx scripts/backup.ts",
     "db:backup:verify": "npx tsx scripts/verify-backup.ts",
+    "db:backup:drill": "npx tsx scripts/drill-restauracao.ts",
     "db:restore": "npx tsx scripts/restore.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
